@@ -1,13 +1,21 @@
 class Schroedinger < Formula
   desc "High-speed implementation of the Dirac codec"
-  homepage "http://diracvideo.org/"
-  url "http://diracvideo.org/download/schroedinger/schroedinger-1.0.11.tar.gz"
-  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/s/schroedinger/schroedinger_1.0.11.orig.tar.gz"
+  homepage "https://launchpad.net/schroedinger"
+  url "https://launchpad.net/schroedinger/trunk/1.0.11/+download/schroedinger-1.0.11.tar.gz"
+  mirror "https://deb.debian.org/debian/pool/main/s/schroedinger/schroedinger_1.0.11.orig.tar.gz"
   sha256 "1e572a0735b92aca5746c4528f9bebd35aa0ccf8619b22fa2756137a8cc9f912"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
     rebuild 1
+    sha256 "81ea2f319f7e300c222b2788fdb03bfc3b3177f5a8166caa88afc1b4538b291d" => :big_sur
+    sha256 "904f8940085832802e511565d1bcea91262a0ca871612509c1e521db37da4227" => :catalina
+    sha256 "ab901d9879b3bc110eeb7eadd5ab815af7d7fc446b2f5577795737c410c3bf4e" => :mojave
+    sha256 "1e9953cbef67e87a7ca9ebecfcc4af5f0eb2261d17f3a1195386b7512b9312be" => :high_sierra
     sha256 "7d2d6d343f571e21f27ce5c13645ebe7039e4d45d2b96dba550f6383185c18f6" => :sierra
     sha256 "1b990c49b7d72f3030bcee52bf70094a6cf16111867565cdb7541f670636cf05" => :el_capitan
     sha256 "5b1355803b730a9727c959261f0e2afc217f77502eac88120f77941c5cf373db" => :yosemite
@@ -15,7 +23,7 @@ class Schroedinger < Formula
   end
 
   head do
-    url "git://diracvideo.org/git/schroedinger.git"
+    url "lp:schroedinger", using: :bzr
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build

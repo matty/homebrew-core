@@ -1,18 +1,24 @@
 class Bmake < Formula
   desc "Portable version of NetBSD make(1)"
   homepage "http://www.crufty.net/help/sjg/bmake.html"
-  url "http://www.crufty.net/ftp/pub/sjg/bmake-20160818.tar.gz"
-  sha256 "d64b23e3e4013b6d4ea590b05251874ffa9d841299b4e5344a6edf45ea7e1141"
+  url "http://www.crufty.net/ftp/pub/sjg/bmake-20200902.tar.gz"
+  sha256 "082c0442f03f2dbef8c3171000398c1936047aa0d5a2e1efc2c8474d69403bec"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "http://www.crufty.net/ftp/pub/sjg/"
+    regex(/href=.*?bmake[._-]v?(\d{6,8})\.t/i)
+  end
 
   bottle do
-    sha256 "38e0b7712c5ae20b9a2639f21aa46c96e7893e3a44ce8956d1c64f5efb16ed66" => :sierra
-    sha256 "6964daaba5e8b288e9b39ee9439821bac54f3babbc619fe9db5c6ae7d81284e8" => :el_capitan
-    sha256 "74d7a6b8f7fb23383762be1440171f50336283eebe1f48d7163ae5b81ae4489f" => :yosemite
+    sha256 "d8c3cb2430880e38822291e68afc105f7af9418b8bc14a4f923a86ae973cbd49" => :big_sur
+    sha256 "29e4ba42d18ce3e974cf9bd402a17519635ba350c371d3da5672fea14e40fe81" => :catalina
+    sha256 "4f0b8d35af1cf7fb1119359a82dffeb84a042e8804f0994b1dd56c8c4a952df1" => :mojave
+    sha256 "d0c4003a00e1d40d5273386eb54a0667daa928a78fe5aa03ce4449cead4207e4" => :high_sierra
   end
 
   def install
-    # The first, an oversight upstream; the second, don't pre-roff cat pages.
-    inreplace "bmake.1", ".Dt MAKE", ".Dt BMAKE"
+    # Don't pre-roff cat pages.
     inreplace "mk/man.mk", "MANTARGET?", "MANTARGET"
 
     # -DWITHOUT_PROG_LINK means "don't symlink as bmake-VERSION."
@@ -23,7 +29,7 @@ class Bmake < Formula
   end
 
   test do
-    (testpath/"Makefile").write <<-EOS.undent
+    (testpath/"Makefile").write <<~EOS
       all: hello
 
       hello:

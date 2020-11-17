@@ -1,153 +1,66 @@
 class Gnuplot < Formula
   desc "Command-driven, interactive function plotting"
-  homepage "http://www.gnuplot.info"
-  url "https://downloads.sourceforge.net/project/gnuplot/gnuplot/5.0.5/gnuplot-5.0.5.tar.gz"
-  sha256 "25f3e0bf192e01115c580f278c3725d7a569eb848786e12b455a3fda70312053"
-  revision 2
+  homepage "http://www.gnuplot.info/"
+  url "https://downloads.sourceforge.net/project/gnuplot/gnuplot/5.4.0/gnuplot-5.4.0.tar.gz"
+  sha256 "eb4082f03a399fd1e9e2b380cf7a4f785e77023d8dcc7e17570c1b5570a49c47"
+  license "gnuplot"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    rebuild 1
-    sha256 "a59e20d92f1f3791406ca9c38c1eba7b131b84deb6511d2ae8a598f8145987fe" => :sierra
-    sha256 "83629a50b7d5c36ed98508984e8ed91ca21a6e7e43540dbc5774c8756a919d3e" => :el_capitan
-    sha256 "05ee80125a10be3faa2150e2ce85d236525ed7a44e7ef839ceaaf0e8cd045ba8" => :yosemite
+    sha256 "26ea0150196aa8226b134676ff678d9f6fae15643c1d45ae525290bd59d058dc" => :big_sur
+    sha256 "07e87a593917fbb66d6eef8efe30ee04531bde21c5d4a45775bae98b5314b42d" => :catalina
+    sha256 "221b581e96e34f346ef8de648e8e4ddadf66250ec1b1d5d9a894d12846c11f0a" => :mojave
+    sha256 "43bd44cae7f514c857f548f671c6b600b31e077c2aa783d1b63d5295c467a2ad" => :high_sierra
   end
 
   head do
-    url ":pserver:anonymous:@gnuplot.cvs.sourceforge.net:/cvsroot/gnuplot", :using => :cvs
+    url "https://git.code.sf.net/p/gnuplot/gnuplot-main.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option "with-cairo", "Build the Cairo based terminals"
-  option "without-lua", "Build without the lua/TikZ terminal"
-  option "with-test", "Verify the build with make check"
-  option "with-wxmac", "Build wxmac support. Need with-cairo to build wxt terminal"
-  option "with-tex", "Build with LaTeX support"
-  option "with-aquaterm", "Build with AquaTerm support"
-  option "without-gd", "Build without gd based terminals"
-  option "with-libcerf", "Build with libcerf support"
-
-  deprecated_option "with-x" => "with-x11"
-  deprecated_option "pdf" => "with-pdflib-lite"
-  deprecated_option "wx" => "with-wxmac"
-  deprecated_option "qt" => "with-qt@5.7"
-  deprecated_option "with-qt" => "with-qt@5.7"
-  deprecated_option "with-qt5" => "with-qt@5.7"
-  deprecated_option "cairo" => "with-cairo"
-  deprecated_option "nolua" => "without-lua"
-  deprecated_option "tests" => "with-test"
-  deprecated_option "with-tests" => "with-test"
-  deprecated_option "latex" => "with-tex"
-  deprecated_option "with-latex" => "with-tex"
-
   depends_on "pkg-config" => :build
-  depends_on "gd" => :recommended
-  depends_on "lua" => :recommended
+  depends_on "gd"
+  depends_on "libcerf"
+  depends_on "lua"
+  depends_on "pango"
+  depends_on "qt"
   depends_on "readline"
-  depends_on "pango" if build.with?("cairo") || build.with?("wxmac")
-  depends_on "pdflib-lite" => :optional
-  depends_on "qt@5.7" => :optional
-  depends_on "wxmac" => :optional
-  depends_on :tex => :optional
-  depends_on :x11 => :optional
-
-  needs :cxx11 if build.with? "qt@5.7"
-
-  resource "libcerf" do
-    url "http://apps.jcns.fz-juelich.de/src/libcerf/libcerf-1.5.tgz"
-    mirror "https://www.mirrorservice.org/sites/distfiles.macports.org/libcerf/libcerf-1.5.tgz"
-    sha256 "e36dc147e7fff81143074a21550c259b5aac1b99fc314fc0ae33294231ca5c86"
-  end
 
   def install
     # Qt5 requires c++11 (and the other backends do not care)
-    ENV.cxx11 if build.with? "qt@5.7"
-
-    if build.with? "aquaterm"
-      # Add "/Library/Frameworks" to the default framework search path, so that an
-      # installed AquaTerm framework can be found. Brew does not add this path
-      # when building against an SDK (Nov 2013).
-      ENV.prepend "CPPFLAGS", "-F/Library/Frameworks"
-      ENV.prepend "LDFLAGS", "-F/Library/Frameworks"
-    end
-
-    if build.with? "libcerf"
-      # Build libcerf
-      resource("libcerf").stage do
-        system "./configure", "--prefix=#{buildpath}/libcerf", "--enable-static", "--disable-shared"
-        system "make", "install"
-      end
-      ENV.prepend "PKG_CONFIG_PATH", buildpath/"libcerf/lib/pkgconfig"
-    end
-
-    # Help configure find libraries
-    pdflib = Formula["pdflib-lite"].opt_prefix
+    ENV.cxx11
 
     args = %W[
       --disable-dependency-tracking
       --disable-silent-rules
       --prefix=#{prefix}
       --with-readline=#{Formula["readline"].opt_prefix}
+      --without-tutorial
+      --disable-wxwidgets
+      --with-qt
+      --without-x
     ]
-
-    args << "--without-libcerf" if build.without? "libcerf"
-
-    args << "--with-pdf=#{pdflib}" if build.with? "pdflib-lite"
-
-    args << "--without-gd" if build.without? "gd"
-
-    if build.without? "wxmac"
-      args << "--disable-wxwidgets"
-      args << "--without-cairo" if build.without? "cairo"
-    end
-
-    if build.with? "qt@5.7"
-      args << "--with-qt"
-    else
-      args << "--with-qt=no"
-    end
-
-    # The tutorial requires the deprecated subfigure TeX package installed
-    # or it halts in the middle of the build for user-interactive resolution.
-    # Per upstream: "--with-tutorial is horribly out of date."
-    args << "--without-tutorial"
-    args << "--without-lua" if build.without? "lua"
-    args << ((build.with? "aquaterm") ? "--with-aquaterm" : "--without-aquaterm")
-    args << ((build.with? "x11") ? "--with-x" : "--without-x")
-
-    if build.with? "tex"
-      args << "--with-latex"
-    else
-      args << "--without-latex"
-    end
 
     system "./prepare" if build.head?
     system "./configure", *args
     ENV.deparallelize # or else emacs tries to edit the same file with two threads
     system "make"
-    system "make", "check" if build.with?("test") || build.bottle?
     system "make", "install"
   end
 
-  def caveats
-    if build.with? "aquaterm"
-      <<-EOS.undent
-        AquaTerm support will only be built into Gnuplot if the standard AquaTerm
-        package from SourceForge has already been installed onto your system.
-        If you subsequently remove AquaTerm, you will need to uninstall and then
-        reinstall Gnuplot.
-      EOS
-    end
-  end
-
   test do
-    system "#{bin}/gnuplot", "-e", <<-EOS.undent
+    system "#{bin}/gnuplot", "-e", <<~EOS
       set terminal dumb;
       set output "#{testpath}/graph.txt";
       plot sin(x);
     EOS
-    File.exist? testpath/"graph.txt"
+    assert_predicate testpath/"graph.txt", :exist?
   end
 end

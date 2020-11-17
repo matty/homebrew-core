@@ -1,6 +1,8 @@
 class ArxLibertatis < Formula
   desc "Cross-platform, open source port of Arx Fatalis"
   homepage "https://arx-libertatis.org/"
+  license "GPL-3.0"
+  revision 2
 
   stable do
     url "https://arx-libertatis.org/files/arx-libertatis-1.1.2.tar.xz"
@@ -8,16 +10,21 @@ class ArxLibertatis < Formula
 
     # Add a missing include to CMakeLists.txt
     patch do
-      url "https://github.com/arx/ArxLibertatis/commit/442ba4af978160abd3856a9daec38f5b6e213cb4.patch"
-      sha256 "64a4276b75944da19b91cb812e833339d40826be763eb3d9033d67b698c2ca9f"
+      url "https://github.com/arx/ArxLibertatis/commit/442ba4af978160abd3856a9daec38f5b6e213cb4.patch?full_index=1"
+      sha256 "de361866cc51c14f317a67dcfd3b736160a577238f931c78a525ea2864b1add9"
     end
+  end
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
   bottle do
     cellar :any
-    sha256 "1395d10871dada5e6687de4f54f9ef868dd6d9ec285689d7c6d0cf42b84f8ef0" => :sierra
-    sha256 "43e112585b39aef6d6c21a173caa1d75ca2313ad07801731a8be5aa8bb85943e" => :el_capitan
-    sha256 "0e23af82f5b1875dd8de3f0796c56609bf521f72bbf94ebfb829489b83bee5dd" => :yosemite
+    sha256 "b93ffc0870dffd0bab99117814e3c094fc019c2315bdd8fc35f687c1009dd661" => :catalina
+    sha256 "39fc49249e5a82bd067c05bcd056b454a90ace91f364b3c33534901827247b2c" => :mojave
+    sha256 "2fe2043845655c6f3e75be1dc7213826fd142f806fd7b59006fdef940584e92a" => :high_sierra
   end
 
   head do
@@ -28,15 +35,15 @@ class ArxLibertatis < Formula
     end
   end
 
-  option "without-innoextract", "Build without arx-install-data"
-
-  depends_on "cmake" => :build
   depends_on "boost" => :build
+  depends_on "cmake" => :build
   depends_on "glm" => :build
   depends_on "freetype"
   depends_on "glew"
+  depends_on "innoextract"
   depends_on "sdl"
-  depends_on "innoextract" => :recommended
+
+  conflicts_with "rnv", because: "both install `arx` binaries"
 
   def install
     args = std_cmake_args
@@ -72,14 +79,13 @@ class ArxLibertatis < Formula
   end
 
   def caveats
-    if build.with? "innoextract"; then <<-EOS.undent
+    <<~EOS
       This package only contains the Arx Libertatis binary, not the game data.
-      To play Arx Fatalis you will need to obtain the game from GOG.com and install
-      the game data with:
+      To play Arx Fatalis you will need to obtain the game from GOG.com and
+      install the game data with:
 
         arx-install-data /path/to/setup_arx_fatalis.exe
-      EOS
-    end
+    EOS
   end
 
   test do

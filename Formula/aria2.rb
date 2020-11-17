@@ -1,20 +1,27 @@
 class Aria2 < Formula
   desc "Download with resuming and segmented downloading"
   homepage "https://aria2.github.io/"
-  url "https://github.com/aria2/aria2/releases/download/release-1.31.0/aria2-1.31.0.tar.xz"
-  sha256 "7b85619048b23406f241e38a5b1b8b0bc2cae9e80fd117810c2a71ecca813f8c"
+  url "https://github.com/aria2/aria2/releases/download/release-1.35.0/aria2-1.35.0.tar.xz"
+  sha256 "1e2b7fd08d6af228856e51c07173cfcf987528f1ac97e04c5af4a47642617dfd"
+  license "GPL-2.0-or-later"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "9a0bc8716a5ad5caa8c51b3c7536a111ed41b980b46c845230634e865931182c" => :sierra
-    sha256 "0b09dab0ab161a74b823c9b0300e7dc136e4eda9b0d3ef38498202b57f9b32ba" => :el_capitan
-    sha256 "4385913e1f2d5554a2625fed43b2a6a4033e78b0ea484f8f468e2ea30f9fcc17" => :yosemite
+    cellar :any
+    sha256 "05ea0971d6834d9dc50df6a6ca62978ce0f8bf324758225f9d3df091b60fc875" => :big_sur
+    sha256 "9cc5e04be8b0a58d1f2b60b8abfc636168edbf23e7018003c40f1dd6952aab0c" => :catalina
+    sha256 "761836ac608eb0a59d4a6f6065860c0e809ce454692e0937d9d0d89ad47f3ce4" => :mojave
+    sha256 "70cc7566a23c283015368f92dfeaa0d119e53cfc7c1b2276a73ff9f6167b529d" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libssh2" => :optional
+  depends_on "libssh2"
 
-  needs :cxx11
+  uses_from_macos "libxml2"
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "openssl@1.1"
+  end
 
   def install
     ENV.cxx11
@@ -22,15 +29,20 @@ class Aria2 < Formula
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
-      --with-appletls
-      --without-openssl
+      --with-libssh2
       --without-gnutls
       --without-libgmp
       --without-libnettle
       --without-libgcrypt
     ]
-
-    args << "--with-libssh2" if build.with? "libssh2"
+    on_macos do
+      args << "--with-appletls"
+      args << "--without-openssl"
+    end
+    on_linux do
+      args << "--without-appletls"
+      args << "--with-openssl"
+    end
 
     system "./configure", *args
     system "make", "install"
@@ -39,7 +51,7 @@ class Aria2 < Formula
   end
 
   test do
-    system "#{bin}/aria2c", "http://brew.sh"
-    assert File.exist?("index.html"), "Failed to create index.html!"
+    system "#{bin}/aria2c", "https://brew.sh/"
+    assert_predicate testpath/"index.html", :exist?, "Failed to create index.html!"
   end
 end

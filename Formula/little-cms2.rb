@@ -1,28 +1,35 @@
 class LittleCms2 < Formula
   desc "Color management engine supporting ICC profiles"
-  homepage "http://www.littlecms.com/"
-  url "https://downloads.sourceforge.net/project/lcms/lcms/2.8/lcms2-2.8.tar.gz"
-  sha256 "66d02b229d2ea9474e62c2b6cd6720fde946155cd1d0d2bffdab829790a0fb22"
+  homepage "https://www.littlecms.com/"
+  # Ensure release is announced at https://www.littlecms.com/categories/releases/
+  # (or https://www.littlecms.com/blog/)
+  url "https://downloads.sourceforge.net/project/lcms/lcms/2.11/lcms2-2.11.tar.gz"
+  sha256 "dc49b9c8e4d7cdff376040571a722902b682a795bf92985a85b48854c270772e"
+  license "MIT"
+  version_scheme 1
+
+  # The Little CMS website has been redesigned and there's no longer a
+  # "Download" page we can check for releases. As of writing this, checking the
+  # "Releases" blog posts seems to be our best option and we just have to hope
+  # that the post URLs, headings, etc. maintain a consistent format.
+  livecheck do
+    url "https://www.littlecms.com/categories/releases/"
+    regex(%r{href=.*lcms2[._-]v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "919b1bbdb351c10d60136e83af36f7d2637ae09bf710cc49393127d77a460005" => :sierra
-    sha256 "cf9ce2f00b795f4b8e245a9a5b1650c526503e30b1eb332496bcd1c41568594f" => :el_capitan
-    sha256 "57e2eaf3df51fbc1642eebc2a3c9655409948c85565dbbf91168498d21ad7d57" => :yosemite
-    sha256 "966dd0d04898592c268ddd31a6cd2657a63e520d504acc7c4c6046c31fed81eb" => :mavericks
+    sha256 "e6f70f21087ef1f0e1379446b5b5f460915d3a132763919feb245534ed9bc4af" => :big_sur
+    sha256 "b0fe7486871b0fb0e34012f48bce09e96229e5e2985d64e7a0164c2847e41975" => :catalina
+    sha256 "e05f0a487d2243411eeb9fd9909f875517d7b27feb3cb914117acd9c60b76fcc" => :mojave
+    sha256 "928d1b8b8292a2d7950d0ef1381c70996bcde325f0124d7dcb68059090544dac" => :high_sierra
   end
 
-  option :universal
-
-  depends_on "jpeg" => :recommended
-  depends_on "libtiff" => :recommended
+  depends_on "jpeg"
+  depends_on "libtiff"
 
   def install
-    ENV.universal_binary if build.universal?
-
     args = %W[--disable-dependency-tracking --prefix=#{prefix}]
-    args << "--without-tiff" if build.without? "libtiff"
-    args << "--without-jpeg" if build.without? "jpeg"
 
     system "./configure", *args
     system "make", "install"
@@ -30,6 +37,6 @@ class LittleCms2 < Formula
 
   test do
     system "#{bin}/jpgicc", test_fixtures("test.jpg"), "out.jpg"
-    assert File.exist?("out.jpg")
+    assert_predicate testpath/"out.jpg", :exist?
   end
 end

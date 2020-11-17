@@ -1,21 +1,27 @@
 class Frege < Formula
   desc "Non-strict, functional programming language in the spirit of Haskell"
   homepage "https://github.com/Frege/frege/"
-  url "https://github.com/Frege/frege/releases/download/3.22.324/frege3.22.524-gcc99d7e.jar"
-  version "3.22.524-gcc99d7e"
-  sha256 "8508f5b1f03beb69311a059e9a1684dfd0212ed1501fa96626f1e0b69363338a"
+  url "https://github.com/Frege/frege/releases/download/3.24public/frege3.24.405.jar"
+  sha256 "f5a6e40d1438a676de85620e3304ada4760878879e02dbb7c723164bd6087fc4"
+  license "BSD-3-Clause"
+  revision 3
+
+  livecheck do
+    url "https://github.com/Frege/frege/releases/latest"
+    regex(/href=.*?frege[._-]?(\d+(?:\.\d+)+)\.jar/i)
+  end
 
   bottle :unneeded
 
-  depends_on :java => "1.7+"
+  depends_on "openjdk"
 
   def install
-    libexec.install Dir["*"]
-    bin.write_jar_script libexec/"frege#{version}.jar", "fregec", "-Xss1m"
+    libexec.install "frege#{version}.jar"
+    bin.write_jar_script libexec/"frege#{version}.jar", "fregec"
   end
 
   test do
-    (testpath/"test.fr").write <<-EOS
+    (testpath/"test.fr").write <<~EOS
       module Hello where
 
       greeting friend = "Hello, " ++ friend ++ "!"
@@ -24,6 +30,7 @@ class Frege < Formula
           println (greeting "World")
     EOS
     system bin/"fregec", "-d", testpath, "test.fr"
-    system "java", "-Xss1m", "-cp", "#{testpath}:#{libexec}/frege#{version}.jar", "Hello"
+    output = shell_output "#{Formula["openjdk"].bin}/java -Xss1m -cp #{testpath}:#{libexec}/frege#{version}.jar Hello"
+    assert_equal "Hello, World!\n", output
   end
 end

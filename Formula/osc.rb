@@ -1,50 +1,43 @@
 class Osc < Formula
   include Language::Python::Virtualenv
 
-  desc "The Command Line Interface to work with an Open Build Service"
+  desc "Command-line interface to work with an Open Build Service"
   homepage "https://github.com/openSUSE/osc"
-  url "https://github.com/openSUSE/osc/archive/0.155.1.tar.gz"
-  sha256 "bd392cf601fade0770e2b1fef2a964dfaa02ee002a615708f230549708f26acc"
+  url "https://github.com/openSUSE/osc/archive/0.171.0.tar.gz"
+  sha256 "e824480c1c5811b05ea18236cd13164a15f7bcf17df929b43ed0617cfcb60f80"
+  license "GPL-2.0"
   head "https://github.com/openSUSE/osc.git"
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "cc20e8bef5cc964324336e3c6c9b8f0ef9d6e78126d862c89ef46940e436b025" => :sierra
-    sha256 "5a33b4648a76ef5f9db5889806709c8a4c38683e3f47b15a5e98526db6fd20f1" => :el_capitan
-    sha256 "b47248cf456a80a300d950f918b9aacae58164e8e8d69e193c86a28dacdd33ac" => :yosemite
+    sha256 "ce00021e980c530d2b3fccb16698f2869462bb59fd7b054b92a95024565ec840" => :big_sur
+    sha256 "bf7953f981826e73bd4be7ef9b1e8d4127afebd95febe9659a1b0f10a389e9a6" => :catalina
+    sha256 "6b55d18a07e128e2811a8c3c8d8bceed67201a4761977903b68780e8fc405225" => :mojave
+    sha256 "b5438d36082a8d13b22de3c7a4f67399ff8899707658e9146af73e8c572bda6c" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
   depends_on "swig" => :build
-  depends_on "curl"
-  depends_on "openssl" # For M2Crypto
+  depends_on "openssl@1.1"
+  depends_on "python@3.9"
 
-  resource "pycurl" do
-    url "https://files.pythonhosted.org/packages/12/3f/557356b60d8e59a1cce62ffc07ecc03e4f8a202c86adae34d895826281fb/pycurl-7.43.0.tar.gz"
-    sha256 "aa975c19b79b6aa6c0518c0cc2ae33528900478f0b500531dbcdbf05beec584c"
-  end
+  uses_from_macos "curl"
 
-  resource "urlgrabber" do
-    url "https://files.pythonhosted.org/packages/3c/fd/710150d9647e32f1eafe9d60ff55553a8754e185c791781da0246c7d6b57/urlgrabber-3.9.1.tar.gz"
-    sha256 "b4e276fa968c66671309a6d754c4b3b0cb2003dec8bca87a681378a22e0d3da7"
+  resource "chardet" do
+    url "https://files.pythonhosted.org/packages/fc/bb/a5768c230f9ddb03acc9ef3f0d4a3cf93462473795d18e9535498c8f929d/chardet-3.0.4.tar.gz"
+    sha256 "84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
   end
 
   resource "M2Crypto" do
-    url "https://files.pythonhosted.org/packages/9c/58/7e8d8c04995a422c3744929721941c400af0a2a8b8633f129d92f313cfb8/M2Crypto-0.25.1.tar.gz"
-    sha256 "ac303a1881307a51c85ee8b1d87844d9866ee823b4fdbc52f7e79187c2d9acef"
+    url "https://files.pythonhosted.org/packages/ff/df/84609ed874b5e6fcd3061a517bf4b6e4d0301f553baf9fa37bef2b509797/M2Crypto-0.36.0.tar.gz"
+    sha256 "1542c18e3ee5c01db5031d0b594677536963e3f54ecdf5315aeecb3a595b4dc1"
   end
 
   def install
-    venv = virtualenv_create(libexec)
-    venv.pip_install resources.reject { |r| r.name == "M2Crypto" }
-    resource("M2Crypto").stage do
-      inreplace "setup.py", %r{(self.openssl = )'/usr'}, "\\1'#{Formula["openssl"].prefix}'"
-      venv.pip_install "."
-    end
+    openssl = Formula["openssl@1.1"]
+    ENV["SWIG_FEATURES"] = "-I#{openssl.opt_include}"
 
-    inreplace "osc/conf.py", "'/etc/ssl/certs'", "'#{etc}/openssl/cert.pem'"
-    venv.pip_install_and_link buildpath
+    inreplace "osc/conf.py", "'/etc/ssl/certs'", "'#{openssl.pkgetc}/cert.pem'"
+    virtualenv_install_with_resources
     mv bin/"osc-wrapper.py", bin/"osc"
   end
 

@@ -1,51 +1,42 @@
 class Ibex < Formula
-  desc "C++ library for constraint processing over real numbers."
-  homepage "http://www.ibex-lib.org/"
-  url "https://github.com/ibex-team/ibex-lib/archive/ibex-2.3.3.tar.gz"
-  sha256 "0eef37cbfd3ea0f6f8645fb375c83d407c61dfa4d7ac9d7fedfd71f0b1191c7e"
+  desc "C++ library for constraint processing over real numbers"
+  homepage "https://web.archive.org/web/20190826220512/www.ibex-lib.org/"
+  url "https://github.com/ibex-team/ibex-lib/archive/ibex-2.8.9.tar.gz"
+  sha256 "fee448b3fa3929a50d36231ff2f14e5480a0b82506594861536e3905801a6571"
+  license "LGPL-3.0-only"
   head "https://github.com/ibex-team/ibex-lib.git"
 
-  bottle do
-    cellar :any
-    sha256 "a1972a6f268b7fd01c66d0754ec6c068ee77c5cefccc8482bdc28b225354cef3" => :sierra
-    sha256 "91e62c090a2fdc6b617daf74e99e8d3ea7731cc31a4086c9305ddfdd01605a6f" => :el_capitan
-    sha256 "1fc9b7764cd3fb2de926491b0725a8a961ec0558e9a0e2c5c24e7a2553c69bd4" => :yosemite
+  livecheck do
+    url :head
+    regex(/^ibex[._-]v?(\d+(?:\.\d+)+)$/i)
   end
 
-  option "with-java", "Enable Java bindings for CHOCO solver."
-  option "with-ampl", "Use AMPL file loader plugin"
-  option "without-ensta-robotics", "Don't build the Contractors for robotics (SLAM) plugin"
-  option "without-param-estim", "Don't build the Parameter Estimation (enhanced Q-intersection algorithm) plugin"
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "2fe73bcec8be89daf46ad449cced7ea3d5584d1eb8138343359fc0898e3ec826" => :big_sur
+    sha256 "838265b9b44453641e3cbc39dbbb8903666ba3413ef8c7dc68af69f9759f4351" => :catalina
+    sha256 "91e091b03e482a8bae5248a435a8e827c79923aaee9f98f99d33254e176560d2" => :mojave
+    sha256 "bb10a673525d7145196f523190401c2aa42345b5035ed2bcf261081e3653638f" => :high_sierra
+  end
 
-  depends_on :java => ["1.8+", :optional]
   depends_on "bison" => :build
+  depends_on "cmake" => :build
   depends_on "flex" => :build
-  depends_on "pkg-config" => :build
+  depends_on "pkg-config" => [:build, :test]
+
+  uses_from_macos "zlib"
 
   def install
-    if build.with?("java") && build.with?("ampl")
-      odie "Cannot set options --with-java and --with-ampl simultaneously for now."
+    ENV.cxx11
+
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make", "SHARED=true"
+      system "make", "install"
     end
 
-    args = %W[
-      --prefix=#{prefix}
-      --enable-shared
-      --with-affine
-      --with-optim
-    ]
-
-    args << "--with-jni" if build.with? "java"
-    args << "--with-ampl" if build.with? "ampl"
-    args << "--with-ensta-robotics" if build.with? "ensta-robotics"
-    args << "--with-param-estim" if build.with? "param-estim"
-
-    system "./waf", "configure", *args
-    system "make", "-C", "3rd/filibsrc"
-    system "./waf", "build"
-    system "./waf", "install"
-
-    pkgshare.install %w[examples benchs]
-    (pkgshare/"examples/symb01.txt").write <<-EOS.undent
+    pkgshare.install %w[examples benchs/solver]
+    (pkgshare/"examples/symb01.txt").write <<~EOS
       function f(x)
         return ((2*x,-x);(-x,3*x));
       end
@@ -53,21 +44,18 @@ class Ibex < Formula
   end
 
   test do
-    cp_r (pkgshare/"examples").children, testpath
-    cp pkgshare/"benchs/cyclohexan3D.bch", testpath/"c3D.bch"
+    ENV.cxx11
 
-    # so that pkg-config can remain a build-time only dependency
-    inreplace %w[makefile slam/makefile] do |s|
-      s.gsub! /CXXFLAGS.*pkg-config --cflags ibex./,
-              "CXXFLAGS := -ffloat-store -I#{include} -I#{include}/ibex"
-      s.gsub! /LIBS.*pkg-config --libs  ibex./,
-              "LIBS := -L#{lib} -libex -lprim -lClp -lCoinUtils -lm"
+    cp_r (pkgshare/"examples").children, testpath
+
+    (1..8).each do |n|
+      system "make", "lab#{n}"
+      system "./lab#{n}"
     end
 
-    system "make", "ctc01", "ctc02", "symb01", "solver01", "solver02"
-    system "make", "-C", "slam", "slam1", "slam2", "slam3"
-    %w[ctc01 ctc02 symb01].each { |a| system "./#{a}" }
-    %w[solver01 solver02].each { |a| system "./#{a}", "c3D.bch", "1e-05", "10" }
-    %w[slam1 slam2 slam3].each { |a| system "./slam/#{a}" }
+    (1..3).each do |n|
+      system "make", "-C", "slam", "slam#{n}"
+      system "./slam/slam#{n}"
+    end
   end
 end

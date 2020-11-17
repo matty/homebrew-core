@@ -1,29 +1,28 @@
 class Gtkmm3 < Formula
   desc "C++ interfaces for GTK+ and GNOME"
   homepage "https://www.gtkmm.org/"
-  url "https://download.gnome.org/sources/gtkmm/3.22/gtkmm-3.22.0.tar.xz"
-  sha256 "05da4d4b628fb20c8384630ddf478a3b5562952b2d6181fe28d58f6cbc0514f5"
+  url "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.2.tar.xz"
+  sha256 "6d71091bcd1863133460d4188d04102810e9123de19706fb656b7bb915b4adc3"
+  license "LGPL-2.1"
+  revision 1
+
+  livecheck do
+    url :stable
+    regex(/gtkmm[._-]v?(3\.([0-8]\d*?)?[02468](?:\.\d+)*?)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "f4b74a3653a650d6673252ec452828cc77c19b785eca7dbc1896d2f0d9d67750" => :sierra
-    sha256 "19c9ff80587d879c5971fe677170609d85066cb3a0fe66846af82d84a64f02f0" => :el_capitan
-    sha256 "08b2a592bb496de2d0b5e18cb260b4b214b8993ece9038340dc338bef0f2b488" => :yosemite
+    sha256 "373d7342c65f7286481b88fdcd96ad24daebe0f07a40bcaa95495c87ddf1e66a" => :big_sur
+    sha256 "c656b3844e5e94f34556e5b8b0b6ee3099e7a2c1b96c839229bbc9997c18218d" => :catalina
+    sha256 "12efd715a1422f80321a2af07a6d82d1e95772b4c23dea90d8138e3a22475886" => :mojave
+    sha256 "2183abaf056161d4d13d8bd86fc5795b3e32caf3db7c1a4b8a44eba320104402" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "atkmm"
   depends_on "gtk+3"
   depends_on "pangomm"
-  depends_on "atkmm"
-
-  needs :cxx11
-
-  # circumvent a bug in gtk+3
-  # bug report opened at https://bugzilla.gnome.org/show_bug.cgi?id=772281
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/60d3df52/gtkmm3/gtk_clipboard_get_selection.patch"
-    sha256 "0849da0516850eeffdab22941aa5d30cca40d4a7775683665e044b84d5ca0d85"
-  end
 
   def install
     ENV.cxx11
@@ -33,7 +32,7 @@ class Gtkmm3 < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gtkmm.h>
       class MyLabel : public Gtk::Label {
         MyLabel(Glib::ustring text) : Gtk::Label(text) {}
@@ -53,9 +52,10 @@ class Gtkmm3 < Formula
     glib = Formula["glib"]
     glibmm = Formula["glibmm"]
     gtkx3 = Formula["gtk+3"]
+    harfbuzz = Formula["harfbuzz"]
     libepoxy = Formula["libepoxy"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     pango = Formula["pango"]
     pangomm = Formula["pangomm"]
     pixman = Formula["pixman"]
@@ -79,6 +79,7 @@ class Gtkmm3 < Formula
       -I#{gtkx3.opt_include}
       -I#{gtkx3.opt_include}/gtk-3.0
       -I#{gtkx3.opt_include}/gtk-3.0/unix-print
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/gdkmm-3.0
       -I#{include}/gtkmm-3.0
       -I#{libepoxy.opt_include}
@@ -120,12 +121,14 @@ class Gtkmm3 < Formula
       -lgobject-2.0
       -lgtk-3
       -lgtkmm-3.0
-      -lintl
       -lpango-1.0
       -lpangocairo-1.0
       -lpangomm-1.4
       -lsigc-2.0
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cxx, "-std=c++11", "test.cpp", "-o", "test", *flags
     system "./test"
   end

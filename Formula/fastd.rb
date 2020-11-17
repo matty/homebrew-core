@@ -1,47 +1,39 @@
 class Fastd < Formula
   desc "Fast and Secure Tunnelling Daemon"
-  homepage "https://projects.universe-factory.net/projects/fastd"
-  revision 2
-
-  head "https://git.universe-factory.net/fastd/", :using => :git
-
-  stable do
-    url "https://projects.universe-factory.net/attachments/download/86/fastd-18.tar.xz"
-    sha256 "714ff09d7bd75f79783f744f6f8c5af2fe456c8cf876feaa704c205a73e043c9"
-
-    # https://projects.universe-factory.net/issues/239
-    # https://projects.universe-factory.net/projects/fastd/repository/revisions/2fa2187
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/c2c6049/fastd/patch-xcode8-clock_gettime.diff"
-      sha256 "dfa07eccf01a84a6e5eacc82c47c2cd5ba216e1f5032b41d2cef32e0b205ba9c"
-    end
-  end
+  homepage "https://github.com/NeoRaider/fastd"
+  url "https://github.com/NeoRaider/fastd.git",
+      tag:      "v21",
+      revision: "2ce6095b2795052e34110599c484205468fb9fa6"
+  license "BSD-2-Clause"
+  head "https://github.com/NeoRaider/fastd.git"
 
   bottle do
     cellar :any
-    sha256 "c677903580193501b1c9f261db458439a4b1faf16bb6f2d653bfbded0c27573a" => :sierra
-    sha256 "101454fa20fdae38fc728f9a0fed65422b5931ccfac649c91e31e7bb52567fe0" => :el_capitan
-    sha256 "71271192803a9b291017cc6779219e771c547d45026327c065d9a997d7f6b562" => :yosemite
+    sha256 "33e3a81748094389e5d7bd4cc894a75a01f40891f1a4693c4ea3e16014e912cb" => :catalina
+    sha256 "eb48fd5b2eab89e016223dbbfdf5faaf6a4e0194f0a3e5711218c4f3d83727f5" => :mojave
+    sha256 "5064081410018559132b1f2a970f897130474fa3f9919bd51c5e17253a67ed76" => :high_sierra
   end
 
+  depends_on "bison" => :build
   depends_on "cmake" => :build
-  depends_on "libuecc"
-  depends_on "libsodium"
-  depends_on "bison" => :build # fastd requires bison >= 2.5
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "json-c"
-  depends_on "openssl" => :optional
-  depends_on :tuntap => :optional
+  depends_on "libsodium"
+  depends_on "libuecc"
+  depends_on "openssl@1.1"
+
+  patch do
+    url "https://github.com/NeoRaider/fastd/commit/0d4045fb85d85903ebb9afe03a08d9b089300062.patch?full_index=1"
+    sha256 "bb0d62e40575408497c6a285e6443c8386b4b85427463dd29df7736f3fe4ae9f"
+  end
 
   def install
-    args = std_cmake_args
-    args << "-DENABLE_LTO=ON"
-    args << "-DENABLE_OPENSSL=ON" if build.with? "openssl"
-    args << buildpath
-    mkdir "fastd-build" do
-      system "cmake", *args
-      system "make"
-      system "make", "install"
+    mkdir "build" do
+      system "meson", "-DENABLE_LTO=ON", *std_meson_args, ".."
+      system "ninja"
+      system "ninja", "install"
     end
   end
 

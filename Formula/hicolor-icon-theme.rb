@@ -1,22 +1,25 @@
 class HicolorIconTheme < Formula
   desc "Fallback theme for FreeDesktop.org icon themes"
   homepage "https://wiki.freedesktop.org/www/Software/icon-theme/"
-  url "https://icon-theme.freedesktop.org/releases/hicolor-icon-theme-0.15.tar.xz"
-  sha256 "9cc45ac3318c31212ea2d8cb99e64020732393ee7630fa6c1810af5f987033cc"
+  url "https://icon-theme.freedesktop.org/releases/hicolor-icon-theme-0.17.tar.xz"
+  sha256 "317484352271d18cbbcfac3868eab798d67fff1b8402e740baa6ff41d588a9d8"
+  license "GPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "96769af537321b17416273e465e01408b41a2881ca5abab6bdfdba902d11e452" => :sierra
-    sha256 "a20e0c97ba6ba84166230805792f878bdc24f21861d0b43820ee6fcdde1e12c3" => :el_capitan
-    sha256 "e1e09d7dee2b5560d45d99a310d8e2903d30413eb53408a4079261e8ef5f3b55" => :yosemite
-    sha256 "e3e7a63d5af66fe6721839c12e00288e061ef092a046ff6db2dcc6f62f75b9c2" => :mavericks
-    sha256 "5647ecc1f44a15ee6cef8d37ae62d606251a0ae94f2659c9fac497270876367e" => :mountain_lion
+    sha256 "f4cd50751f22d1aae6156ce3e552dbe0afb21ce1aaa5a7cc7ce284c867a20865" => :big_sur
+    sha256 "8ba8d6065b652396583c55a0e73cff0007f96064a330ac20499ff1d887771eb8" => :catalina
+    sha256 "5ba4bb6a7e89f5fb0d43504d68d657a536be9540d4cc72552bd5965e15a82b91" => :mojave
+    sha256 "b33f58b98a6ca6bb72777eaf7b7a4bb393d5cc9ced6954dd7a7e52e18c214799" => :high_sierra
+    sha256 "cd8699f3944eb87b76fc89e4ca69f19df5d66aa8a4c89d636660d299e807f5b0" => :sierra
+    sha256 "cd8699f3944eb87b76fc89e4ca69f19df5d66aa8a4c89d636660d299e807f5b0" => :el_capitan
+    sha256 "cd8699f3944eb87b76fc89e4ca69f19df5d66aa8a4c89d636660d299e807f5b0" => :yosemite
   end
 
   head do
-    url "https://anongit.freedesktop.org/git/xdg/default-icon-theme.git"
-    depends_on "automake" => :build
+    url "https://gitlab.freedesktop.org/xdg/default-icon-theme.git"
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
   def install
@@ -30,6 +33,6 @@ class HicolorIconTheme < Formula
   end
 
   test do
-    File.exist? share/"icons/hicolor/index.theme"
+    assert_predicate share/"icons/hicolor/index.theme", :exist?
   end
 end

@@ -1,38 +1,38 @@
 class DatetimeFortran < Formula
   desc "Fortran time and date manipulation library"
-  homepage "https://github.com/milancurcic/datetime-fortran"
-  url "https://github.com/milancurcic/datetime-fortran/releases/download/v1.6.0/datetime-fortran-1.6.0.tar.gz"
-  sha256 "e46c583bca42e520a05180984315495495da4949267fc155e359524c2bf31e9a"
+  homepage "https://github.com/wavebitscientific/datetime-fortran"
+  url "https://github.com/wavebitscientific/datetime-fortran/releases/download/v1.7.0/datetime-fortran-1.7.0.tar.gz"
+  sha256 "cff4c1f53af87a9f8f31256a3e04176f887cc3e947a4540481ade4139baf0d6f"
+  license "MIT"
 
   bottle do
-    sha256 "46f58e0ccb9d289d9d4238782bd71b4b384b3637fb119089bcf191dcbd00a739" => :sierra
-    sha256 "0122e54aa32a7f3f511412991a9e7bc0157904071ebe561194417c98671594d1" => :el_capitan
-    sha256 "ba610fdf63062196dd75e6ef8721f1647bf7cb62a172e530a10cccc6d1877f28" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "82d8b0e2a51fb7df321659ed4f5da43c24edd5aba81e5e05250508b541f2eb4b" => :catalina
+    sha256 "ef59feabc30610c41a5ac4b2e594f1378d3edeb3b13dd7912825c48815d547e2" => :mojave
+    sha256 "cf59b21c0539aa14f5e0274387669d13dae47b3e11267cdb1baed8545f2bd535" => :high_sierra
   end
 
   head do
-    url "https://github.com/milancurcic/datetime-fortran.git"
+    url "https://github.com/wavebitscientific/datetime-fortran.git"
 
     depends_on "autoconf"   => :build
     depends_on "automake"   => :build
     depends_on "pkg-config" => :build
   end
 
-  option "without-test", "Skip build time tests (Not recommended)"
-  depends_on :fortran
+  depends_on "gcc" # for gfortran
 
   def install
     system "autoreconf", "-fvi" if build.head?
     system "./configure", "--prefix=#{prefix}",
                           "--disable-silent-rules"
-    system "make", "check" if build.with? "test"
     system "make", "install"
-    (pkgshare/"test").install "src/tests/datetime_tests.f90"
+    (pkgshare/"test").install "tests/datetime_tests.f90"
   end
 
   test do
-    ENV.fortran
-    system ENV.fc, "-odatetime_test", "-ldatetime", "-I#{HOMEBREW_PREFIX}/include", pkgshare/"test/datetime_tests.f90"
-    system testpath/"datetime_test"
+    system "gfortran", "-o", "test", "-I#{include}", "-L#{lib}", "-ldatetime",
+                       pkgshare/"test/datetime_tests.f90"
+    system "./test"
   end
 end

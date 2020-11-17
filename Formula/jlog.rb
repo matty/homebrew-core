@@ -1,19 +1,21 @@
 class Jlog < Formula
   desc "Pure C message queue with subscribers and publishers for logs"
   homepage "https://labs.omniti.com/labs/jlog"
-  url "https://github.com/omniti-labs/jlog/archive/2.2.2.1.tar.gz"
-  sha256 "44b639102eb9336b21e6ece54610403bf9de04987f809e7d8713050072fd2335"
+  url "https://github.com/omniti-labs/jlog/archive/2.5.3.tar.gz"
+  sha256 "66730afc62aa9c9f93ef686998a5396f8721edca3750097d4a2848a688d55bf9"
+  license "BSD-3-Clause"
   head "https://github.com/omniti-labs/jlog.git"
 
   bottle do
     cellar :any
-    sha256 "37fbd09023ab291b9480006004a7634dfb266aa74ff7d55b3c8c3567c9bc973f" => :sierra
-    sha256 "959e0c08b5adb6b1ff7e8dc660366f56d7e24629e3aef8c7623f68723cc62f1f" => :el_capitan
-    sha256 "dc25575310094b2dd1de67014ec968c45506723bc59d0ca7aa6491d0c0f8b2b7" => :yosemite
+    sha256 "bf009b8acfcfe3b702b017ef8e5c232fc791722fe505b71a0c3fabdeebd13443" => :big_sur
+    sha256 "28a606466256bf030942104c0e7b5618b442ecee7bcd7498cfac9f2cbb098ebc" => :catalina
+    sha256 "e45a56ff580b67b3a17407996d72768b57f06b6f7878ca8320dc8befe8f2793f" => :mojave
+    sha256 "583bdc22413565285d5f3551be33c17d12e18a25b665e57076332147cfb283d9" => :high_sierra
   end
 
-  depends_on "automake" => :build
   depends_on "autoconf" => :build
+  depends_on "automake" => :build
 
   def install
     system "autoconf"
@@ -22,7 +24,7 @@ class Jlog < Formula
   end
 
   test do
-    (testpath/"jlogtest.c").write <<-EOF.undent
+    (testpath/"jlogtest.c").write <<~EOS
       #include <stdio.h>
       #include <jlog.h>
       int main() {
@@ -57,8 +59,8 @@ class Jlog < Formula
         }
         jlog_ctx_close(ctx);
       }
-    EOF
-    system ENV.cc, "jlogtest.c", "-I#{include}", "-ljlog", "-o", "jlogtest"
+    EOS
+    system ENV.cc, "jlogtest.c", "-I#{include}", "-L#{lib}", "-ljlog", "-o", "jlogtest"
     system testpath/"jlogtest"
   end
 end

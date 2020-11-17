@@ -1,18 +1,24 @@
 class Rhino < Formula
   desc "JavaScript engine"
   homepage "https://www.mozilla.org/rhino/"
-  url "https://github.com/mozilla/rhino/releases/download/Rhino1_7_7_1_RELEASE/rhino-1.7.7.1.zip"
-  sha256 "f753d82002927208139f374e47febb35d7832a10890f57bb1a3c28cad0de6e84"
+  url "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.zip"
+  sha256 "8531e0e0229140c80d743ece77ffda155d4eb3fa56cca4f36fbfba1088478b3e"
+  license "MPL-2.0"
+
+  livecheck do
+    url "https://github.com/mozilla/rhino/releases/latest"
+    regex(%r{href=.*?/tag/.*?>Rhino (\d+(?:\.\d+)+)<}i)
+  end
 
   bottle :unneeded
 
-  conflicts_with "nut", :because => "both install `rhino` binaries"
+  conflicts_with "nut", because: "both install `rhino` binaries"
 
   def install
     rhino_jar = "rhino-#{version}.jar"
     libexec.install "lib/#{rhino_jar}"
     bin.write_jar_script libexec/rhino_jar, "rhino"
-    doc.install (buildpath/"docs").children
+    doc.install Dir["docs/*"]
   end
 
   test do

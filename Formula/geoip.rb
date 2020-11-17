@@ -1,26 +1,27 @@
 class Geoip < Formula
   desc "This library is for the GeoIP Legacy format (dat)"
   homepage "https://github.com/maxmind/geoip-api-c"
-  url "https://github.com/maxmind/geoip-api-c/releases/download/v1.6.9/GeoIP-1.6.9.tar.gz"
-  sha256 "4b446491843de67c1af9b887da17a3e5939e0aeed4826923a5f4bf09d845096f"
-
+  url "https://github.com/maxmind/geoip-api-c/releases/download/v1.6.12/GeoIP-1.6.12.tar.gz"
+  sha256 "1dfb748003c5e4b7fd56ba8c4cd786633d5d6f409547584f6910398389636f80"
+  license "LGPL-2.1"
   head "https://github.com/maxmind/geoip-api-c.git"
 
   bottle do
     cellar :any
-    sha256 "96fde02debe1a354a547110dd5ee6803ea4178de4aef37337ebb48c69f279c8e" => :sierra
-    sha256 "dc7c79eef8500456198b3ba981c13498c049b2f8c4398fe885534c386dfbf283" => :el_capitan
-    sha256 "0525ae799027334cafb551a349c7837c8b17853660797dff430b035ca0eedc65" => :yosemite
-    sha256 "5ee66187d1b4510fd463ebb8bf360c2d78a4252467a0e10e905a2a3502f9bcaa" => :mavericks
+    rebuild 1
+    sha256 "ea5652cb5a248ef0f280c7f5b9f652fa8b8a6dbd06df87c98bd3f21a6aa2b9c3" => :big_sur
+    sha256 "8cac6d2fe351dbae2398e8c18906b06cd01d4b5db20c6a886f0551eee358d785" => :catalina
+    sha256 "311704d07adf7fa502e60bd0e462ba26f6830838c09461f8bbac38ccb5da77f1" => :mojave
+    sha256 "17db912ce8ffcd831d775f22c1ea428faf55d7ecb4dd19cdba6ab3234874417c" => :high_sierra
+    sha256 "166b2195350b830ddcaea41a24dbdbcea48b9d42f96673088dd3d51b8d5774d7" => :sierra
   end
 
-  option :universal
-
-  depends_on "geoipupdate" => :optional
+  resource "database" do
+    url "https://src.fedoraproject.org/lookaside/pkgs/GeoIP/GeoIP.dat.gz/4bc1e8280fe2db0adc3fe48663b8926e/GeoIP.dat.gz"
+    sha256 "7fd7e4829aaaae2677a7975eeecd170134195e5b7e6fc7d30bf3caf34db41bcd"
+  end
 
   def install
-    ENV.universal_binary if build.universal?
-
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--datadir=#{var}",
@@ -44,8 +45,9 @@ class Geoip < Formula
   end
 
   test do
-    system "curl", "-O", "https://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz"
-    system "gunzip", "GeoIP.dat.gz"
-    system "#{bin}/geoiplookup", "-f", "GeoIP.dat", "8.8.8.8"
+    resource("database").stage do
+      output = shell_output("#{bin}/geoiplookup -f GeoIP.dat 8.8.8.8")
+      assert_match "GeoIP Country Edition: US, United States", output
+    end
   end
 end

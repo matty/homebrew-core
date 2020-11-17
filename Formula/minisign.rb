@@ -1,19 +1,19 @@
 class Minisign < Formula
-  desc "Sign files & verify signatures. Works with signify in OpenBSD."
+  desc "Sign files & verify signatures. Works with signify in OpenBSD"
   homepage "https://jedisct1.github.io/minisign/"
-  url "https://github.com/jedisct1/minisign/archive/0.7.tar.gz"
-  sha256 "0c9f25ae647b6ba38cf7e6aea1da4e8fb20e1bc64ef0c679da737a38c8ad43ef"
+  url "https://github.com/jedisct1/minisign/archive/0.9.tar.gz"
+  sha256 "caa4b3dd314e065c6f387b2713f7603673e39a8a0b1a76f96ef6c9a5b845da0f"
+  license "ISC"
 
   bottle do
     cellar :any
-    sha256 "2dc78271bcec93d6b2f9d33534cc8c0a322aa3250ee5824eaabcfd1872da06fa" => :sierra
-    sha256 "eda1ddf370982493aaa039c6056d0228041ff7a8784f2098e9133904a451d381" => :el_capitan
-    sha256 "f211d75128d691038180fc8a6acd2eed6880f67a769f643aa94f88ef26c6967f" => :yosemite
-    sha256 "352fc012382f22172b487831387f4a8159db1df819953165b56ae55506289fda" => :mavericks
+    sha256 "ff5a04ebf89d246f641855d36290a38810d18308dbc37377e15e0ae008137685" => :catalina
+    sha256 "25fc3bf106e6df3ad1e32d074faa895ebe22611b3af25df32efd399d88f1a094" => :mojave
+    sha256 "6bcd186e46f2cb55b9c07e6c4562caa2b3c16c5cd10c67c4294356a592e5c01b" => :high_sierra
   end
 
-  depends_on "libsodium"
   depends_on "cmake" => :build
+  depends_on "libsodium"
 
   def install
     system "cmake", ".", *std_cmake_args
@@ -23,7 +23,7 @@ class Minisign < Formula
 
   test do
     (testpath/"homebrew.txt").write "Hello World!"
-    (testpath/"keygen.sh").write <<-EOS.undent
+    (testpath/"keygen.sh").write <<~EOS
       #!/usr/bin/expect -f
       set timeout -1
       spawn #{bin}/minisign -G
@@ -39,10 +39,10 @@ class Minisign < Formula
     chmod 0755, testpath/"keygen.sh"
 
     system "./keygen.sh"
-    assert File.exist?("minisign.pub")
-    assert File.exist?(".minisign/minisign.key")
+    assert_predicate testpath/"minisign.pub", :exist?
+    assert_predicate testpath/".minisign/minisign.key", :exist?
 
-    (testpath/"signing.sh").write <<-EOS.undent
+    (testpath/"signing.sh").write <<~EOS
       #!/usr/bin/expect -f
       set timeout -1
       spawn #{bin}/minisign -Sm homebrew.txt
@@ -53,6 +53,6 @@ class Minisign < Formula
     chmod 0755, testpath/"signing.sh"
 
     system "./signing.sh"
-    assert File.exist?("homebrew.txt.minisig")
+    assert_predicate testpath/"homebrew.txt.minisig", :exist?
   end
 end

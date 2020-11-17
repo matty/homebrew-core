@@ -1,22 +1,22 @@
 class Cutter < Formula
   desc "Unit Testing Framework for C and C++"
-  homepage "https://cutter.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/cutter/cutter/1.2.5/cutter-1.2.5.tar.gz"
-  sha256 "e53613445e8fe20173a656db5a70a7eb0c4586be1d9f33dc93e2eddd2f646b20"
+  homepage "https://cutter.osdn.jp/"
+  url "https://osdn.mirror.constant.com/cutter/73761/cutter-1.2.8.tar.gz"
+  sha256 "bd5fcd6486855e48d51f893a1526e3363f9b2a03bac9fc23c157001447bc2a23"
+  license "LGPL-3.0"
   head "https://github.com/clear-code/cutter.git"
 
   bottle do
-    sha256 "86340637b5be8322183c8134175d90e364859265c6e23cb2ae764682ec435bbb" => :sierra
-    sha256 "8c1680aeae7279a5ea6baa71299f25cff015ccc7085bbdf468962f505cb79ca6" => :el_capitan
-    sha256 "94d199ff3bd76e593e6f14953c62a1ff9bc11d012a52d825dbfee52813d6be54" => :yosemite
-    sha256 "f4a22bcd3bed4ab5b4d536bd61613a0b526f390376fa614ed67f682f71339def" => :mavericks
-    sha256 "ce4d7aed7be9b99111e4515c617bd3c2e6a2bdcae8bca9c1a52f9d463747fa2a" => :mountain_lion
+    sha256 "3ac33f6c41d14b9d1fd3486fe811dda6219d45930b0359f4300b69c50a56572d" => :big_sur
+    sha256 "237aebfb6d39c2efcbbc27e550fbac0a6d1477b549416b69aa71c53c06dce231" => :catalina
+    sha256 "70999a7a96da94c5de52da9edb4bf9b3fe5e7b2372d189ccc5a7328f0c21400c" => :mojave
+    sha256 "ccff0989fe28eeb233bf0cc1f3681041d1945f6e3b0c2700899b8f02581426b6" => :high_sierra
   end
 
-  depends_on "pkg-config" => :build
   depends_on "intltool" => :build
-  depends_on "glib"
+  depends_on "pkg-config" => :build
   depends_on "gettext"
+  depends_on "glib"
 
   def install
     system "./configure", "--prefix=#{prefix}",

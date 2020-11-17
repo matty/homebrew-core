@@ -1,23 +1,26 @@
 class Stoken < Formula
   desc "Tokencode generator compatible with RSA SecurID 128-bit (AES)"
   homepage "https://stoken.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/stoken/stoken-0.91.tar.gz"
-  sha256 "419ed84000bc455ef77c78e3ebfd4c6fd2d932384563989f864becbafd51bcf4"
+  url "https://downloads.sourceforge.net/project/stoken/stoken-0.92.tar.gz"
+  sha256 "aa2b481b058e4caf068f7e747a2dcf5772bcbf278a4f89bc9efcbf82bcc9ef5a"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "e15fc74c664a18b8efc3d250c62e354b4dfc866878ee0605537de8e4fd228442" => :sierra
-    sha256 "35e25f3a37d3578c14001a583ed584d95a08c3168edaddd1ee6f548a61ccd231" => :el_capitan
-    sha256 "295ebb2ee6df4fa9f6aeaece981f90774746c2e30a564c8ce44471e15480a79d" => :yosemite
+    sha256 "701102c6cb8138920a8ccf7aae6d89ea247d259d17f7f4ce3e4af46cad516802" => :big_sur
+    sha256 "423dbce4e76710fe932fc4d86fa25b39ced8f138d781fcccbc3982ce83136216" => :catalina
+    sha256 "59ee230b63a707bf9c1fd966ec003c14ca16c7e61a331b765e31a1ba4b7db867" => :mojave
+    sha256 "6c6b704e5f9830e0192383c53717f64b0af48119d6f0d96d78de521820a6c84b" => :high_sierra
   end
 
-  depends_on "gtk+3" => :optional
-  if build.with? "gtk+3"
-    depends_on "gnome-icon-theme"
-    depends_on "hicolor-icon-theme"
-  end
   depends_on "pkg-config" => :build
   depends_on "nettle"
+
+  uses_from_macos "libxml2"
 
   def install
     args = %W[

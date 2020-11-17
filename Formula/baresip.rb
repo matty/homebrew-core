@@ -1,21 +1,22 @@
 class Baresip < Formula
   desc "Modular SIP useragent"
-  homepage "http://www.creytiv.com/baresip.html"
-  url "http://www.creytiv.com/pub/baresip-0.5.0.tar.gz"
-  sha256 "4c364f4bb2cf17f83b6ff2b35962fd94258158202dfa566f68531e8ba77c1436"
+  homepage "https://github.com/baresip/baresip"
+  url "https://github.com/baresip/baresip/releases/download/v0.6.5/baresip-0.6.5.tar.gz"
+  sha256 "2b035bd8b2121c72bec674768579a3bdcc5d1d567ecb0a84125864d69807b18d"
 
   bottle do
-    sha256 "a0e97dfd5efbb100ff712cf7ec5eec77f867b5a34099407ecb1aa8e558048835" => :sierra
-    sha256 "d9b26cebd156ba6fd43eba873ad57135d06d22f5e7ca409745fab562c8be5df5" => :el_capitan
-    sha256 "9952b751f556030faaad8c0a1260e2b9adcaaa039ec60ed3dd241edc99e8545e" => :yosemite
+    sha256 "26b195eb72f39e12b796100935469105d0a07968cf38d9dc1febec3322e40939" => :big_sur
+    sha256 "dd71d2ba58f82dd58b4da6c350b2d52ff4e04fe64679a446778615550dfb95b8" => :catalina
+    sha256 "ec2fb4cba298c281b40a0929c227b563508ecaf5564e9381872c14469fb73ef9" => :mojave
+    sha256 "b99e262d153eb3414c2a6fe813be98e78f71da205d66ede0ec799d1e07f0341a" => :high_sierra
   end
 
-  depends_on "librem"
   depends_on "libre"
+  depends_on "librem"
 
   def install
     # baresip doesn't like the 10.11 SDK when on Yosemite
-    if MacOS::Xcode.installed? && MacOS::Xcode.version.to_i >= 7
+    if MacOS::Xcode.version.to_i >= 7
       ENV.delete("SDKROOT")
       ENV.delete("HOMEBREW_SDKROOT") if MacOS::Xcode.without_clt?
     end
@@ -31,7 +32,8 @@ class Baresip < Formula
                               "USE_G711=1",
                               "USE_OPENGL=1",
                               "USE_STDIO=1",
-                              "USE_UUID=1"
+                              "USE_UUID=1",
+                              "HAVE_GETOPT=1"
   end
 
   test do

@@ -1,52 +1,78 @@
 class Mame < Formula
   desc "Multiple Arcade Machine Emulator"
-  homepage "http://mamedev.org/"
-  url "https://github.com/mamedev/mame/archive/mame0179.tar.gz"
-  version "0.179"
-  sha256 "d1616ef32b884c3e7913378ebf5282b6f846f895f419eb92a9068770581e081b"
+  homepage "https://mamedev.org/"
+  url "https://github.com/mamedev/mame/archive/mame0226.tar.gz"
+  version "0.226"
+  sha256 "7c4c9ec232ba988e65fd29665c9b8e40b5ac3aa9f561eeb107cebbf08ba94baf"
+  license "GPL-2.0-or-later"
   head "https://github.com/mamedev/mame.git"
+
+  # MAME tags (and filenames) are formatted like `mame0226`, so livecheck will
+  # report the version like `0226`. We work around this by matching the link
+  # text for the release title, since it contains the properly formatted version
+  # (e.g., 0.226).
+  livecheck do
+    url "https://github.com/mamedev/mame/releases/latest"
+    regex(%r{release-header.*?/releases/tag/mame[._-]?\d+(?:\.\d+)*["' >]>MAME v?(\d+(?:\.\d+)+)}im)
+  end
 
   bottle do
     cellar :any
-    sha256 "37c427967d31a90d2b96f77e48c238de613e083cac817632643a8a74efe03ea1" => :sierra
-    sha256 "58432629f3398e36238e4e015dd469c3bd77a8099b9438c90024a1c4219bbafd" => :el_capitan
-    sha256 "3a975c5da951529201a8af6a32d5db2cbf198aeb1d623a4d4151b80fc849cdad" => :yosemite
+    sha256 "8e1a4d788bf147d8c1b382a38fb4f2563d64fd3bec2cf9f7e7a7ec8aa79e6ebe" => :catalina
+    sha256 "cd0b9807e479bca5b2901073ddfe95a85b1f53f5ee509a238b3309f8d10652c9" => :mojave
+    sha256 "777250b5d11fec842d04a7af26ca8a0d26455f27fbbc8805cfd9d61d6c17a86e" => :high_sierra
   end
 
-  depends_on :macos => :yosemite
+  depends_on "glm" => :build
   depends_on "pkg-config" => :build
+  depends_on "pugixml" => :build
+  depends_on "python@3.9" => :build
+  depends_on "rapidjson" => :build
   depends_on "sphinx-doc" => :build
-  depends_on "sdl2"
-  depends_on "jpeg"
   depends_on "flac"
-  depends_on "portmidi"
+  depends_on "jpeg"
+  # Need C++ compiler and standard library support C++17.
+  depends_on macos: :high_sierra
   depends_on "portaudio"
+  depends_on "portmidi"
+  depends_on "sdl2"
+  depends_on "sqlite"
+  depends_on "utf8proc"
 
-  # Needs GCC 4.9 or newer
-  fails_with :gcc_4_0
-  fails_with :gcc
-  ("4.3".."4.8").each do |n|
-    fails_with :gcc => n
-  end
+  uses_from_macos "expat"
+  uses_from_macos "zlib"
 
   def install
+    # Cut sdl2-config's invalid option.
     inreplace "scripts/src/osd/sdl.lua", "--static", ""
-    system "make", "USE_LIBSDL=1",
-                   "USE_SYSTEM_LIB_EXPAT=", # brewed version not picked up
+
+    # Use bundled asio and lua instead of latest version.
+    # See: <https://github.com/mamedev/mame/issues/5721>
+    system "make", "PYTHON_EXECUTABLE=#{Formula["python@3.9"].opt_bin}/python3",
+                   "USE_LIBSDL=1",
+                   "USE_SYSTEM_LIB_EXPAT=1",
                    "USE_SYSTEM_LIB_ZLIB=1",
-                   "USE_SYSTEM_LIB_JPEG=1",
+                   "USE_SYSTEM_LIB_ASIO=",
+                   "USE_SYSTEM_LIB_LUA=",
                    "USE_SYSTEM_LIB_FLAC=1",
-                   "USE_SYSTEM_LIB_LUA=", # lua53 not available yet
+                   "USE_SYSTEM_LIB_GLM=1",
+                   "USE_SYSTEM_LIB_JPEG=1",
+                   "USE_SYSTEM_LIB_PORTAUDIO=1",
                    "USE_SYSTEM_LIB_PORTMIDI=1",
-                   "USE_SYSTEM_LIB_PORTAUDIO=1"
+                   "USE_SYSTEM_LIB_PUGIXML=1",
+                   "USE_SYSTEM_LIB_RAPIDJSON=1",
+                   "USE_SYSTEM_LIB_SQLITE3=1",
+                   "USE_SYSTEM_LIB_UTF8PROC=1"
     bin.install "mame64" => "mame"
     cd "docs" do
+      # We don't convert SVG files into PDF files, don't load the related extensions.
+      inreplace "source/conf.py", "'sphinxcontrib.rsvgconverter',", ""
       system "make", "text"
       doc.install Dir["build/text/*"]
       system "make", "man"
       man1.install "build/man/MAME.1" => "mame.1"
     end
-    pkgshare.install %w[artwork bgfx hash ini keymaps plugins samples uismall.bdf]
+    pkgshare.install %w[artwork bgfx hash ini keymaps language plugins samples uismall.bdf]
   end
 
   test do

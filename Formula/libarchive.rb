@@ -1,21 +1,32 @@
 class Libarchive < Formula
   desc "Multi-format archive and compression library"
-  homepage "http://www.libarchive.org"
-  url "http://www.libarchive.org/downloads/libarchive-3.2.2.tar.gz"
-  sha256 "691c194ee132d1f0f7a42541f091db811bc2e56f7107e9121be2bc8c04f1060f"
+  homepage "https://www.libarchive.org"
+  url "https://www.libarchive.org/downloads/libarchive-3.4.3.tar.xz"
+  sha256 "0bfc3fd40491768a88af8d9b86bf04a9e95b6d41a94f9292dbc0ec342288c05f"
+
+  livecheck do
+    url "https://libarchive.org/downloads/"
+    regex(/href=.*?libarchive[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "3903b25c80d2654fcaa6133064622a911dcd87aa8c14414fb87e32d412bbfd36" => :sierra
-    sha256 "9f9daba158d0249cc6208421fde53f9c66c6c4c18992f8bf5eb5a932feb146b1" => :el_capitan
-    sha256 "3f9b96060ed43436e38a07cf09772deed133da1ce886e3e71043dd41daa171a5" => :yosemite
+    sha256 "8177c2abd5a7eb3cce7ac240d7a5f3144e279f8bd5bdaaa4699a009c56a89ccb" => :big_sur
+    sha256 "ec29541614dd1acd7189e69c6e6a689f959d25e1fb52acf06e52b9a4c38166c4" => :catalina
+    sha256 "5cdfab0da88b4a1141cd2f512ad2815f69191bf7d9adc49e0cb9c814af286688" => :mojave
+    sha256 "df697f70e6100533afeffb949ec2c22c7fcdf23821a2a76c460977cecfbb01b8" => :high_sierra
   end
 
-  keg_only :provided_by_osx
+  keg_only :provided_by_macos
 
-  depends_on "xz" => :recommended
-  depends_on "lz4" => :optional
-  depends_on "lzop" => :optional
+  depends_on "libb2"
+  depends_on "lz4"
+  depends_on "xz"
+  depends_on "zstd"
+
+  uses_from_macos "bzip2"
+  uses_from_macos "expat"
+  uses_from_macos "zlib"
 
   def install
     system "./configure",

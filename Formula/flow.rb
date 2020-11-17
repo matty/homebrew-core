@@ -1,22 +1,29 @@
 class Flow < Formula
   desc "Static type checker for JavaScript"
   homepage "https://flowtype.org/"
-  url "https://github.com/facebook/flow/archive/v0.39.0.tar.gz"
-  sha256 "67308fcbfa2fc28996636a1be4d1b060c679af1fb570395243ada8a3d4a2ca48"
+  url "https://github.com/facebook/flow/archive/v0.138.0.tar.gz"
+  sha256 "f98e813a66186938666d3503f5aa4717c676b07d3fb7e5dac260029135dfbb37"
+  license "MIT"
   head "https://github.com/facebook/flow.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3ee1fa6fc0ef73e0effc7102679e5e02c1b457433d55bc87807ad690f2f666fe" => :sierra
-    sha256 "c23f6d7f19e6c64feb530ee123941f2324aae94f3ae601ff734b42b913b455fa" => :el_capitan
-    sha256 "df05178f88aa88956468c2e20d0e0770f5beb80586e94885858bb89d401921d7" => :yosemite
+    sha256 "f311096608baa2a1240f49fda7aceff82ad46b2f7f5726881cb806276aeebc31" => :big_sur
+    sha256 "b618b3c14d7320f7f1d373cd124753cf6087f83fcddc8c1d669b7221737df046" => :catalina
+    sha256 "389f59a45920687d79760978e84dbaac6428ec77afafb6956e0674c1026e86ea" => :mojave
+    sha256 "169ec8af94a62bd05bc75b56fe21395f2421d20bf094eb4afa17381514e60860" => :high_sierra
   end
 
   depends_on "ocaml" => :build
-  depends_on "ocamlbuild" => :build
+  depends_on "opam" => :build
+
+  uses_from_macos "m4" => :build
+  uses_from_macos "rsync" => :build
+  uses_from_macos "unzip" => :build
 
   def install
-    system "make"
+    system "make", "all-homebrew"
+
     bin.install "bin/flow"
 
     bash_completion.install "resources/shell/bash-completion" => "flow-completion.bash"
@@ -25,7 +32,7 @@ class Flow < Formula
 
   test do
     system "#{bin}/flow", "init", testpath
-    (testpath/"test.js").write <<-EOS.undent
+    (testpath/"test.js").write <<~EOS
       /* @flow */
       var x: string = 123;
     EOS

@@ -1,17 +1,16 @@
 class When < Formula
   desc "Tiny personal calendar"
   homepage "http://www.lightandmatter.com/when/when.html"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/w/when/when_1.1.36.orig.tar.gz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/w/when/when_1.1.36.orig.tar.gz"
-  sha256 "3ff95c1881e8fe25c82943720a81c9b9b3bd4ac002cd8ffc2d25c588fe7d50b1"
+  url "https://github.com/bcrowell/when/archive/1.1.40.tar.gz"
+  sha256 "1363d48c32c4bb528514abf012ae0a61e7c686504a047ce870e72e791447c3d1"
   head "https://github.com/bcrowell/when.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f7ed7b34c5d51139d447e0c02e3ca15986db8fcd279e9902dad3d23938d74c3a" => :sierra
-    sha256 "9e2fc9c54fdf0984a9f4bfde45441f45be9b1a491197527a68608e8619923dee" => :el_capitan
-    sha256 "d9c2db7f27a06e70583b88c17c299616b0b0b154874148b827ef97bde9e841ec" => :yosemite
-    sha256 "d9e387024317d27260e29bcf3ea6cf08eec55b0dba291f0d9328f1b9e2353233" => :mavericks
+    sha256 "c92678460a5deb08ee3c85dc76650914f691a3cd2e43ccb7424ba62882489947" => :big_sur
+    sha256 "88a5d4653d7062e0ac6d9913d35390126c1739fe04f0f458624f0199046d0fcd" => :catalina
+    sha256 "18c0460162e7dcb98d499fb8622a471162897a91f4f844fe46f42a52182cc69e" => :mojave
+    sha256 "a0623fd31e458f82217956bd98e72964634f5d632025336386e824a27fe654ae" => :high_sierra
   end
 
   def install
@@ -19,7 +18,7 @@ class When < Formula
   end
 
   test do
-    (testpath/".when/preferences").write <<-EOS.undent
+    (testpath/".when/preferences").write <<~EOS
       calendar = #{testpath}/calendar
     EOS
 

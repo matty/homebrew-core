@@ -1,19 +1,23 @@
 class Hevea < Formula
   desc "LaTeX-to-HTML translator"
   homepage "http://hevea.inria.fr/"
-  url "http://hevea.inria.fr/old/hevea-2.28.tar.gz"
-  sha256 "cde2000e4642f3f88d73a317aec54e8b6036e29e81a00262daf15aca47d0d691"
+  url "http://hevea.inria.fr/old/hevea-2.34.tar.gz"
+  sha256 "3ad08a0dce6675df3caa912ec1497d8019ce10733263092bbb7482c4fbd7fedf"
 
-  bottle do
-    sha256 "efeffbf5b155e15de0501e9810f295a2d95f2d112784aa9df21e515fed88dfbe" => :sierra
-    sha256 "10e296d23ed1c0fea468cc9f3aeece0d79f69a2c67a76c854d54a1391907d326" => :el_capitan
-    sha256 "ea7d096a0541ffa6b79161e38defcd733425766ac692d059645c318331fa586a" => :yosemite
-    sha256 "4944a42656a2ca467e3e4a4b76bb8805337639408a374184a0d67a1cdf21af6a" => :mavericks
+  livecheck do
+    url "http://hevea.inria.fr/old/"
+    regex(/href=.*?hevea[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "ocaml"
+  bottle do
+    sha256 "7bcea50f197e11b68f945adb9f0e9a0fb9603a8f1fb07269c3ab03f012693023" => :big_sur
+    sha256 "34fd968c75f335330d256da9ad1b3e39b65b4286deb36810f898a6a729794b41" => :catalina
+    sha256 "780ecfdaaac0985d9d9a6ef2b92c966d101144637bb65c41880f9b71c27c3c13" => :mojave
+    sha256 "851ce38d9468eee9b2548f303e1e9d029e863dadcf90caa68039b8615b5acf07" => :high_sierra
+  end
+
   depends_on "ocamlbuild" => :build
-  depends_on "ghostscript" => :optional
+  depends_on "ocaml"
 
   def install
     ENV["PREFIX"] = prefix
@@ -22,7 +26,7 @@ class Hevea < Formula
   end
 
   test do
-    (testpath/"test.tex").write <<-EOS.undent
+    (testpath/"test.tex").write <<~EOS
       \\documentclass{article}
       \\begin{document}
       \\end{document}

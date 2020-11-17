@@ -1,40 +1,33 @@
 class Armor < Formula
-  desc "Uncomplicated HTTP server, supports HTTP/2 and auto TLS"
+  desc "Uncomplicated, modern HTTP server"
   homepage "https://github.com/labstack/armor"
-  url "https://github.com/labstack/armor/archive/v0.2.7.tar.gz"
-  sha256 "7b3381de4d25af2be4a152989e99add75e80b152acae09494b84c8ef4e925015"
+  url "https://github.com/labstack/armor/archive/v0.4.14.tar.gz"
+  sha256 "bcaee0eaa1ef29ef439d5235b955516871c88d67c3ec5191e3421f65e364e4b8"
+  license "MIT"
   head "https://github.com/labstack/armor.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5d4c3e3041bf225097b6cc8de8fd2502e967214d4c91ed1d4103c8c95ff1750d" => :sierra
-    sha256 "6fa112c60b91352852abdc97af4f162502eb0db8f31f0f6b8db698b38dd4871c" => :el_capitan
-    sha256 "9840e0a9f42aba0469dbf3a7eb2fb48c9446eb320112302b8f6aaae5c2f034dc" => :yosemite
+    rebuild 1
+    sha256 "06a9bcd5cee3c858cb616f2165ca3dfb0b9e6d5f9811297a260f909791ade865" => :big_sur
+    sha256 "d0bbf39148c0dabb28f777b951492814a708dc64610106587b1315fcd6a08559" => :catalina
+    sha256 "538f2c340ec151aa7c22847a61d3c8e1d255d121a2b2a75fe2fe7d22f5067347" => :mojave
+    sha256 "8fc3b2ebb6d8bc978f6dd04c92e2a43573b052e51d69398deb4f5a2b04e0f87d" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    armorpath = buildpath/"src/github.com/labstack/armor"
-    armorpath.install buildpath.children
-
-    cd armorpath do
-      system "go", "build", "-o", bin/"armor", "cmd/armor/main.go"
-      prefix.install_metafiles
-    end
+    system "go", "build", *std_go_args, "-ldflags", "-s -w", "cmd/armor/main.go"
+    prefix.install_metafiles
   end
 
   test do
-    begin
-      pid = fork do
-        exec "#{bin}/armor"
-      end
-      sleep 1
-      output = shell_output("curl -sI http://localhost:8080")
-      assert_match /200 OK/m, output
-    ensure
-      Process.kill("HUP", pid)
+    port = free_port
+    fork do
+      exec "#{bin}/armor --port #{port}"
     end
+    sleep 1
+    assert_match /200 OK/, shell_output("curl -sI http://localhost:#{port}")
   end
 end

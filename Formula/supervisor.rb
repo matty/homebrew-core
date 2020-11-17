@@ -3,23 +3,19 @@ class Supervisor < Formula
 
   desc "Process Control System"
   homepage "http://supervisord.org/"
-  url "https://github.com/Supervisor/supervisor/archive/3.3.1.tar.gz"
-  sha256 "454f532fae5a54363838fba42bc568f7b2fd0fd71d946b8c39d848a225d0da0f"
+  url "https://github.com/Supervisor/supervisor/archive/4.2.0.tar.gz"
+  sha256 "05031f36ad15cad47fb56f01d8e075f952ae39ba8ce492ea790ebb310e3f0368"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f5dfbd7f65cc792d05dbe7f4ae4d4eb2378c3572ee88434990c6d88eaaf96c20" => :sierra
-    sha256 "920599306afc192e6c0dd6a2b5357ad04adf141d617b7279e1aa70497e79a6c9" => :el_capitan
-    sha256 "3de17d476d3b0eb0ccefb3b6ead1ed12a973e0b98dd489f6250f06d5f0552cb2" => :yosemite
-    sha256 "128cffecdcff84b578905be655dbbeeb82f1b0e3a49fafeab833b97b8fb58f83" => :mavericks
+    sha256 "8f9afc2ab25e747431c943912f26199416222ade9f884947cb42c04fa22d59d4" => :big_sur
+    sha256 "bd9a26f19bc257abded6138d2c0ae208252d6c780ae2daa85b7d093c47234eb1" => :catalina
+    sha256 "484eeb4bd246381f6c629023f126515d960a564fd3de4788e3eace9085cf698d" => :mojave
+    sha256 "cca1a2525646a0aaeb2bae9c5885bca7757737415bbfe54f12cb1b2367548bb3" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
-
-  resource "meld3" do
-    url "https://pypi.python.org/packages/source/m/meld3/meld3-1.0.2.tar.gz"
-    sha256 "f7b754a0fde7a4429b2ebe49409db240b5699385a572501bb0d5627d299f9558"
-  end
+  depends_on "python@3.9"
 
   def install
     inreplace buildpath/"supervisor/skel/sample.conf" do |s|
@@ -32,13 +28,25 @@ class Supervisor < Formula
 
     virtualenv_install_with_resources
 
-    etc.install buildpath/"supervisor/skel/sample.conf" => "supervisord.ini"
+    etc.install buildpath/"supervisor/skel/sample.conf" => "supervisord.conf"
   end
 
-  plist_options :manual => "supervisord -c #{HOMEBREW_PREFIX}/etc/supervisord.ini"
+  def post_install
+    (var/"run").mkpath
+    (var/"log").mkpath
+    conf_warn = <<~EOS
+      The default location for supervisor's config file is now:
+        #{etc}/supervisord.conf
+      Please move your config file to this location and restart supervisor.
+    EOS
+    old_conf = etc/"supervisord.ini"
+    opoo conf_warn if old_conf.exist?
+  end
+
+  plist_options manual: "supervisord"
 
   def plist
-    <<-EOS.undent
+    <<~EOS
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
       <plist version="1.0">
@@ -54,7 +62,7 @@ class Supervisor < Formula
           <array>
             <string>#{opt_bin}/supervisord</string>
             <string>-c</string>
-            <string>#{etc}/supervisord.ini</string>
+            <string>#{etc}/supervisord.conf</string>
             <string>--nodaemon</string>
           </array>
         </dict>
@@ -62,13 +70,8 @@ class Supervisor < Formula
     EOS
   end
 
-  def post_install
-    (var/"run").mkpath
-    (var/"log").mkpath
-  end
-
   test do
-    (testpath/"sd.ini").write <<-EOS.undent
+    (testpath/"sd.ini").write <<~EOS
       [unix_http_server]
       file=supervisor.sock
 

@@ -1,40 +1,66 @@
 class Sdl2Mixer < Formula
   desc "Sample multi-channel audio mixer library"
   homepage "https://www.libsdl.org/projects/SDL_mixer/"
-  url "https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1.tar.gz"
-  sha256 "5a24f62a610249d744cbd8d28ee399d8905db7222bf3bdbc8a8b4a76e597695f"
-  head "https://hg.libsdl.org/SDL_mixer", :using => :hg
+  url "https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.tar.gz"
+  sha256 "b4cf5a382c061cd75081cf246c2aa2f9df8db04bdda8dcdc6b6cca55bede2419"
+  head "https://hg.libsdl.org/SDL_mixer", using: :hg
+
+  livecheck do
+    url :homepage
+    regex(/SDL2_mixer[._-]v?(\d+(?:\.\d+)*)/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "04d9e57c8daeede86c1e566d361ed14919898f9fe0e67e7b5c84b35e5b82e4f6" => :sierra
-    sha256 "4c63b972ec35dd92dc7d39a901aca46d2108fb8cfa74b6ff9b244bc2fe21b5a6" => :el_capitan
-    sha256 "ff8cbe8c234afe384813837bda9eabeb93ee488c8114437ad6e8eb0ea3497be4" => :yosemite
-    sha256 "88f7ef2099f2261534cb4f3e33d65132243b36fb4a6efa648fcbba34ec6c0b77" => :mavericks
+    sha256 "5369e47d093aa409b279f9f6acf2126d1dd1c7adf61438b0d0baa2d111c06af7" => :big_sur
+    sha256 "419d988dc795842301df16d2e57f7759417708b0d61466fea7ec1685db77bf1d" => :catalina
+    sha256 "411aebe8a4b960a900879efc9d871575156efc174863beb135359679f3e7a8bf" => :mojave
+    sha256 "af842a740632725bec40acd7418fa21aafcce0bee03d11a283c8c3509a235c78" => :high_sierra
+    sha256 "359d8bd99a88d06f9484eb76b87b021ce48c777ac4583a0301ae0449e693cbf9" => :sierra
   end
 
-  option :universal
-
   depends_on "pkg-config" => :build
+  depends_on "libmodplug"
+  depends_on "libvorbis"
   depends_on "sdl2"
-  depends_on "flac" => :optional
-  depends_on "fluid-synth" => :optional
-  depends_on "smpeg2" => :optional
-  depends_on "libmikmod" => :optional
-  depends_on "libmodplug" => :optional
-  depends_on "libvorbis" => :optional
 
   def install
-    ENV.universal_binary if build.universal?
     inreplace "SDL2_mixer.pc.in", "@prefix@", HOMEBREW_PREFIX
 
-    ENV["SMPEG_CONFIG"] = "#{Formula["smpeg2"].bin}/smpeg2-config" if build.with? "smpeg2"
-
-    args = %W[--prefix=#{prefix} --disable-dependency-tracking]
-    args << "--enable-music-mod-mikmod" if build.with? "libmikmod"
-    args << "--enable-music-mod-modplug" if build.with? "libmodplug"
+    args = %W[
+      --prefix=#{prefix}
+      --disable-dependency-tracking
+      --disable-music-flac
+      --disable-music-flac-shared
+      --disable-music-midi-fluidsynth
+      --disable-music-midi-fluidsynth-shared
+      --disable-music-mod-mikmod-shared
+      --disable-music-mod-modplug-shared
+      --disable-music-mp3-mpg123
+      --disable-music-mp3-mpg123-shared
+      --disable-music-mp3-smpeg
+      --disable-music-ogg-shared
+      --enable-music-mod-mikmod
+      --enable-music-mod-modplug
+      --enable-music-ogg
+    ]
 
     system "./configure", *args
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <SDL2/SDL_mixer.h>
+
+      int main()
+      {
+          int success = Mix_Init(0);
+          Mix_Quit();
+          return success;
+      }
+    EOS
+    system ENV.cc, "-L#{lib}", "-lsdl2_mixer", "test.c", "-o", "test"
+    system "./test"
   end
 end

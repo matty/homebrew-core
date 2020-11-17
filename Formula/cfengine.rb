@@ -1,33 +1,31 @@
 class Cfengine < Formula
   desc "Help manage and understand IT infrastructure"
   homepage "https://cfengine.com/"
-  url "https://cfengine-package-repos.s3.amazonaws.com/tarballs/cfengine-3.9.0.tar.gz"
-  sha256 "32a38aedf1199c2361e1335e0d4a1d98f9efa7cd591bcb647f35c7395bb66f2d"
+  url "https://cfengine-package-repos.s3.amazonaws.com/tarballs/cfengine-3.16.0.tar.gz"
+  sha256 "f4256e6e1ca04776a9fd48f1388a30edfa8d11fdcf870ba62ce5b0ad62a87372"
 
-  bottle do
-    cellar :any
-    rebuild 1
-    sha256 "9e44968c018b2c768a8e06e56f7a7d2d1055e681c7d5ac15f8965d2ccb88e668" => :sierra
-    sha256 "116955921224f5bab1043aec945fec298febb2798758abb559970304b9320bba" => :el_capitan
-    sha256 "6519f4ca5364019cd9239db4433c2b8eda6bfbb8e02e25441530b17805b10105" => :yosemite
+  livecheck do
+    url "https://cfengine.com/release-data/community/releases.json"
+    regex(/"version": ?"(\d+(?:\.\d+)+)"/i)
   end
 
-  depends_on "libxml2" if MacOS.version < :mountain_lion
-  depends_on "pcre"
+  bottle do
+    sha256 "f89f448c20951a96e061ec06cc73682144c15a93a42b93eaf18b8118ec0d03f4" => :big_sur
+    sha256 "0ab2ee4f191720ab6e546f05235449a62c0435c5897a1d9bd271ba5de2d6192b" => :catalina
+    sha256 "11ffdc33ab4a8004aed11a71545dfb230c15c1a07780b73955a7095df223c2e0" => :mojave
+    sha256 "359f56d367aa77a65b089616556c7caf02aff9144fcbfc1eb208b2582d5a1ba5" => :high_sierra
+  end
+
   depends_on "lmdb"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+  depends_on "pcre"
 
   resource "masterfiles" do
-    url "https://cfengine-package-repos.s3.amazonaws.com/tarballs/cfengine-masterfiles-3.9.0.tar.gz"
-    sha256 "63dec2f8649f5f2788cd463dccf47f8dbe941522acfcf3093517f983bbfa0606"
+    url "https://cfengine-package-repos.s3.amazonaws.com/tarballs/cfengine-masterfiles-3.16.0.tar.gz"
+    sha256 "2f63ad1ee2d49af651c0911fc44778cbebb5a1afd33f5f93fa4644e71322a091"
   end
 
   def install
-    # Fix "typedef redefinition with different types"
-    if DevelopmentTools.clang_build_version >= 800
-      ENV["ac_cv_type_clockid_t"] = "yes"
-    end
-
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-workdir=#{var}/cfengine",

@@ -1,14 +1,21 @@
 class Cgdb < Formula
   desc "Curses-based interface to the GNU Debugger"
   homepage "https://cgdb.github.io/"
-  url "https://cgdb.me/files/cgdb-0.6.8.tar.gz"
-  sha256 "be203e29be295097439ab67efe3dc8261f742c55ff3647718d67d52891f4cf41"
-  revision 1
+  url "https://cgdb.me/files/cgdb-0.7.1.tar.gz"
+  sha256 "bb723be58ec68cb59a598b8e24a31d10ef31e0e9c277a4de07b2f457fe7de198"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://cgdb.me/files/"
+    regex(/href=.*?cgdb[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "c438d3998dc56bbc7a1fc575ff7a57642f17a29a9e490ef096ece9b33ce8311c" => :sierra
-    sha256 "c2f4e09bac94c7be9fa3fb5eac9d6291eaf1abd7d966a3db52923fce59bb3e37" => :el_capitan
-    sha256 "5721a405b963337e70d27a400aa76443771ba660df9616c4a2ac918f3430242b" => :yosemite
+    sha256 "dd7a9696d58a5d22b71f0fe2f749f89e6b0d660f0378829de3959a694a0bb007" => :big_sur
+    sha256 "50abc3a292d69a3a121f3ed7d54d72f4528eb1285faa7f842bb96588a463dc88" => :catalina
+    sha256 "8f361fcad59ddf4825f4d42b516a099ba75bfffc0b885d42aeb875dbd1b2a1d4" => :mojave
+    sha256 "9ab4c0a880cb71903094929b04eada3c279a48ddb00b651a8a93d55cd523d380" => :high_sierra
+    sha256 "db6c63b20e2185ecaaf3ddef92d1ff052f0b0322c727f3f0429ef0d38ac9d269" => :sierra
   end
 
   head do
@@ -21,11 +28,17 @@ class Cgdb < Formula
   depends_on "help2man" => :build
   depends_on "readline"
 
+  uses_from_macos "flex" => :build
+
   def install
     system "sh", "autogen.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-readline=#{Formula["readline"].opt_prefix}"
     system "make", "install"
+  end
+
+  test do
+    system "#{bin}/cgdb", "--version"
   end
 end

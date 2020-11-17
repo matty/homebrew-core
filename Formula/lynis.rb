@@ -1,28 +1,34 @@
 class Lynis < Formula
   desc "Security and system auditing tool to harden systems"
   homepage "https://cisofy.com/lynis/"
-  url "https://cisofy.com/files/lynis-2.4.0.tar.gz"
-  sha256 "4bda6fb87674c7f402564351b142fcda6b5397b66d0d7edb6a8f0d46a70de5ab"
+  url "https://github.com/CISOfy/lynis/archive/3.0.1.tar.gz"
+  sha256 "476aa45d6ade0e9624093db13909ecaf670ff8c4f1b372197e400e34f506ce1f"
+  license "GPL-3.0-only"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "f81ec2512dba779215fa850106838ec30b823b7cea031103f904a582463c1cc9" => :sierra
-    sha256 "f81ec2512dba779215fa850106838ec30b823b7cea031103f904a582463c1cc9" => :el_capitan
-    sha256 "f81ec2512dba779215fa850106838ec30b823b7cea031103f904a582463c1cc9" => :yosemite
+  livecheck do
+    url "https://cisofy.com/downloads/lynis/"
+    regex(%r{href=.*?/lynis[._-]v?(\d+(?:\.\d+)+)\.t}i)
   end
+
+  bottle :unneeded
 
   def install
     inreplace "lynis" do |s|
-      s.gsub! 'tINCLUDE_TARGETS="/usr/local/include/lynis /usr/local/lynis/include /usr/share/lynis/include ./include"',
-        %Q(tINCLUDE_TARGETS="#{include}")
-      s.gsub! 'tPLUGIN_TARGETS="/usr/local/lynis/plugins /usr/local/share/lynis/plugins /usr/share/lynis/plugins /etc/lynis/plugins ./plugins"',
-        %Q(tPLUGIN_TARGETS="#{prefix}/plugins")
-      s.gsub! 'tDB_TARGETS="/usr/local/share/lynis/db /usr/local/lynis/db /usr/share/lynis/db ./db"',
-        %Q(tDB_TARGETS="#{prefix}/db")
+      s.gsub! 'tINCLUDE_TARGETS="/usr/local/include/lynis ' \
+              '/usr/local/lynis/include /usr/share/lynis/include ./include"',
+              %Q(tINCLUDE_TARGETS="#{include}")
+      s.gsub! 'tPLUGIN_TARGETS="/usr/local/lynis/plugins ' \
+              "/usr/local/share/lynis/plugins /usr/share/lynis/plugins " \
+              '/etc/lynis/plugins ./plugins"',
+              %Q(tPLUGIN_TARGETS="#{prefix}/plugins")
+      s.gsub! 'tDB_TARGETS="/usr/local/share/lynis/db /usr/local/lynis/db ' \
+              '/usr/share/lynis/db ./db"',
+              %Q(tDB_TARGETS="#{prefix}/db")
     end
     inreplace "include/functions" do |s|
-      s.gsub! 'tPROFILE_TARGETS="/usr/local/etc/lynis /etc/lynis /usr/local/lynis ."',
-        %Q(tPROFILE_TARGETS="#{prefix}")
+      s.gsub! 'tPROFILE_TARGETS="/usr/local/etc/lynis /etc/lynis ' \
+              '/usr/local/lynis ."',
+              %Q(tPROFILE_TARGETS="#{prefix}")
     end
 
     prefix.install "db", "include", "plugins", "default.prf"

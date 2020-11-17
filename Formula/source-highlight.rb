@@ -1,16 +1,21 @@
 class SourceHighlight < Formula
   desc "Source-code syntax highlighter"
   homepage "https://www.gnu.org/software/src-highlite/"
-  url "https://ftpmirror.gnu.org/src-highlite/source-highlight-3.1.8.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/src-highlite/source-highlight-3.1.8.tar.gz"
-  mirror "http://mirror.anl.gov/pub/gnu/src-highlite/source-highlight-3.1.8.tar.gz"
-  sha256 "01336a7ea1d1ccc374201f7b81ffa94d0aecb33afc7d6903ebf9fbf33a55ada3"
-  revision 4
+  url "https://ftp.gnu.org/gnu/src-highlite/source-highlight-3.1.9.tar.gz"
+  mirror "https://ftpmirror.gnu.org/src-highlite/source-highlight-3.1.9.tar.gz"
+  sha256 "3a7fd28378cb5416f8de2c9e77196ec915145d44e30ff4e0ee8beb3fe6211c91"
+  revision 3
+
+  livecheck do
+    url :stable
+    regex(/href=.*?source-highlight[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "99041869797cbf5abc97ca931612aa9d6e5da412de9c9c10f4434331ad73a23b" => :sierra
-    sha256 "6d6a839197b5c952c4a427bf7c952f5d145082acc6c67be985eb9add39103d9c" => :el_capitan
-    sha256 "0742b7c8388d074507f2aec1f8fd8d69f83e6beb46b874327f624192a8fbfc4e" => :yosemite
+    sha256 "e2adc58909aabadad02e5d02ca5ff6ff754bbee2fd0cb604c0900a32117b92fd" => :big_sur
+    sha256 "e11d0a5ba8039635b7462ad70b6b01b9c8f44ba52ed50d0a1e07b4cbdb0f7695" => :catalina
+    sha256 "655ff057f0faa1c048e123eb593264fd3060e70e10b311fe11b34252372acde5" => :mojave
+    sha256 "0a4b58f6b35335861e29d6f662d87076fb68c20a78599389fec6406ceab295de" => :high_sierra
   end
 
   depends_on "boost"
@@ -18,7 +23,7 @@ class SourceHighlight < Formula
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--with-boost=#{HOMEBREW_PREFIX}"
+                          "--with-boost=#{Formula["boost"].opt_prefix}"
     system "make", "install"
 
     bash_completion.install "completion/source-highlight"

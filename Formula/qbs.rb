@@ -1,42 +1,43 @@
 class Qbs < Formula
-  desc "Build tool for developing projects across multiple platforms."
+  desc "Build tool for developing projects across multiple platforms"
   homepage "https://wiki.qt.io/Qbs"
-  url "https://download.qt.io/official_releases/qbs/1.7.1/qbs-src-1.7.1.tar.gz"
-  sha256 "e4f5627ffcdba4d74a432f89215e7df1c1657f5416b61612467a7a9267cd4851"
-  head "https://code.qt.io/qt-labs/qbs.git"
+  url "https://download.qt.io/official_releases/qbs/1.17.0/qbs-src-1.17.0.tar.gz"
+  sha256 "03470d0b9447fafc70b8edb6e7486887245f1b43b746db7ccf6fbfcd594e8631"
+  head "https://code.qt.io/qbs/qbs.git"
 
   bottle do
     cellar :any
-    sha256 "7a4d01712b9a633448c81545a9ee2ed38ad45da8909e830b245675bcd8668f3e" => :sierra
-    sha256 "7a4d01712b9a633448c81545a9ee2ed38ad45da8909e830b245675bcd8668f3e" => :el_capitan
-    sha256 "12c129763729d5e94789f47d0cb0b057ca38fe15b7d065a896ce15679d108e5d" => :yosemite
+    sha256 "c310533a55b77a648ca1fd2f7934df6deb0a67db339e21fa6800de8cc675b5c8" => :big_sur
+    sha256 "50301f8b2764bf22f993d9d4a5b4e2d3e1747a17445c2c685042d9ec3671d465" => :catalina
+    sha256 "98afdec76371d446d067c2976534c2d85afcb760d43fe2f497a2f91386a01eac" => :mojave
+    sha256 "6885e386eefa2f4ea74785b30e528652ccf49a1b0877d4f2ec9f945937384f23" => :high_sierra
   end
 
-  depends_on "qt5"
+  depends_on "qt"
 
   def install
-    system "qmake", "qbs.pro", "-r", "QBS_INSTALL_PREFIX=/"
-    system "make", "install", "INSTALL_ROOT=#{prefix}"
+    system "qmake", "qbs.pro", "QBS_INSTALL_PREFIX=#{prefix}", "CONFIG+=qbs_disable_rpath"
+    system "make"
+    system "make", "install", "INSTALL_ROOT=/"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       int main() {
         return 0;
       }
     EOS
 
-    (testpath/"test.qbp").write <<-EOS.undent
+    (testpath/"test.qbs").write <<~EOS
       import qbs
 
       CppApplication {
         name: "test"
-        files: "test.c"
+        files: ["test.c"]
         consoleApplication: true
       }
     EOS
 
-    system "#{bin}/qbs", "setup-toolchains", "--detect", "--settings-dir", testpath
-    system "#{bin}/qbs", "run", "--settings-dir", testpath, "-f", "test.qbp", "profile:clang"
+    system "#{bin}/qbs", "run", "-f", "test.qbs"
   end
 end

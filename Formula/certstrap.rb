@@ -1,24 +1,24 @@
 class Certstrap < Formula
   desc "Tools to bootstrap CAs, certificate requests, and signed certificates"
   homepage "https://github.com/square/certstrap"
-  url "https://github.com/square/certstrap.git",
-    :tag => "v1.0.1",
-    :revision => "c66ef6751a6e5a900c6d96cbdd0e3ee9b18792d8"
+  url "https://github.com/square/certstrap/archive/v1.2.0.tar.gz"
+  sha256 "0eebcc515ca1a3e945d0460386829c0cdd61e67c536ec858baa07986cb5e64f8"
+  license "Apache-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "46889a81451253666a9e53824da5bd423141dbfd20a72b7e8aa93fd85775b5b9" => :sierra
-    sha256 "5772fab8033d5550b1abac449ba0f41a2cf15ce5ed4de6d85857a8c86accef5a" => :el_capitan
-    sha256 "d6cba517c38934484bdd754a3934ceccffb759ca5e87f19ca120a0d00d84ec85" => :yosemite
-    sha256 "d0070d92e962492cf582f371b6ec803a1ee9b8ae4a05172b3e06b242155704da" => :mavericks
+    rebuild 1
+    sha256 "44b1d5f60f4dccbe495c53006a828784dcacca1f63dd008ec93d8a502ed8fb46" => :big_sur
+    sha256 "52e68d4bcd2256bb1026aafefc9aef39c0e7945e1f26c06b3e09f3b7e7d9ab14" => :catalina
+    sha256 "8f7fb0f6d8b559ee4d30972a68d5d76117a86c07233abc49237c516f45f07277" => :mojave
+    sha256 "12fdf1f518c3f2944d30f4289813a82aa56580b844fc2cc1ad3383d8675c9882" => :high_sierra
   end
 
   depends_on "go" => :build
-  depends_on "godep" => :build
 
   def install
-    system "./build"
-    bin.install "bin/certstrap"
+    system "go", "build", "-ldflags", "-s -w -X main.version=#{version}", "-trimpath", "-o", bin/"certstrap"
+    prefix.install_metafiles
   end
 
   test do

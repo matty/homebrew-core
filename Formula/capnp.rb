@@ -1,37 +1,27 @@
 class Capnp < Formula
   desc "Data interchange format and capability-based RPC system"
   homepage "https://capnproto.org/"
-  url "https://capnproto.org/capnproto-c++-0.5.3.tar.gz"
-  sha256 "cdb17c792493bdcd4a24bcd196eb09f70ee64c83a3eccb0bc6534ff560536afb"
+  url "https://capnproto.org/capnproto-c++-0.8.0.tar.gz"
+  sha256 "d1f40e47574c65700f0ec98bf66729378efabe3c72bc0cda795037498541c10d"
+  license "MIT"
+  head "https://github.com/capnproto/capnproto.git"
+
+  livecheck do
+    url "https://capnproto.org/install.html"
+    regex(/href=.*?capnproto-c\+\+[._-]v?(\d+(\.\d+)*)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "89cb0dc5e300839a09763747a94aa209154571b18cdcf2fe775637c15baeeb56" => :sierra
-    sha256 "77178087af402f1d40503abc7f5f66ee2ac9e29d2b745cdf0b636b520a0daeb3" => :el_capitan
-    sha256 "27ebfa295ab31cbbeedcc259a9de1600245aedfb1f14c2d885a5a40514a62331" => :yosemite
+    sha256 "d82d41c9039868bd86a5a3bff42307fea589ffcbc5629d95238e579dec65cbc2" => :big_sur
+    sha256 "741c2079361cdb5881a60684190bc4aa98ff9cc6f8d29aa46880e809ac1b06c3" => :catalina
+    sha256 "f389012b8211b70af4fa7d2eed8db8ad399ef2bdc98e286fb57a4b1beb93dfe4" => :mojave
+    sha256 "9c3beb8d8db3b372e4d2fd07d99a553fde6ff53824c6cfec82c3db41e212bc5b" => :high_sierra
   end
 
-  needs :cxx11
   depends_on "cmake" => :build
 
-  resource "gtest" do
-    url "https://github.com/google/googletest/archive/release-1.7.0.tar.gz"
-    sha256 "f73a6546fdf9fce9ff93a5015e0333a8af3062a152a9ad6bcb772c96687016cc"
-  end
-
   def install
-    ENV.cxx11
-
-    gtest = resource("gtest")
-    gtest.verify_download_integrity(gtest.fetch)
-    inreplace "src/CMakeLists.txt" do |s|
-      s.gsub! "http://googletest.googlecode.com/files/gtest-1.7.0.zip",
-              gtest.cached_download
-      s.gsub! "URL_MD5 2d6ec8ccdf5c46b05ba54a9fd1d130d7",
-              "URL_HASH SHA256=#{gtest.checksum}"
-    end
-
     mkdir "build" do
       system "cmake", "..", *std_cmake_args
       system "make", "install"
@@ -39,6 +29,11 @@ class Capnp < Formula
   end
 
   test do
-    system "#{bin}/capnp", "--version"
+    file = testpath/"test.capnp"
+    text = "\"Is a happy little duck\""
+
+    file.write shell_output("#{bin}/capnp id").chomp + ";\n"
+    file.append_lines "const dave :Text = #{text};"
+    assert_match text, shell_output("#{bin}/capnp eval #{file} dave")
   end
 end

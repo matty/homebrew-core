@@ -1,22 +1,32 @@
 class Readosm < Formula
   desc "Extract valid data from an Open Street Map input file"
   homepage "https://www.gaia-gis.it/fossil/readosm/index"
-  url "https://www.gaia-gis.it/gaia-sins/readosm-1.0.0e.tar.gz"
-  sha256 "1fd839e05b411db6ba1ca6199bf3334ab9425550a58e129c07ad3c6d39299acf"
+  url "https://www.gaia-gis.it/gaia-sins/readosm-sources/readosm-1.1.0.tar.gz"
+  sha256 "c508cde9c49b955613d9a30dcf622fa264a5c0e01f58074e93351ea39abd40ec"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?readosm[._-]v?(\d+(?:\.\d+)+[a-z]?)\.t/i)
+  end
 
   bottle do
     cellar :any
     rebuild 1
-    sha256 "1c05e54fa7f490244443566a5d705152575511de1dfb7b8acf437b8483bedb79" => :sierra
-    sha256 "039504a7e57854871753465a0a0a99c0ed12a3001c63a8cb8b075df7c9646778" => :el_capitan
-    sha256 "36f2069bbc99e2cdd86749bfb2b6dee52ababbadd1d3b78f150787747e79578f" => :yosemite
-    sha256 "de44f9c6d2e6a8cf7f5e27bcd7e8215c70b219a5d1d289fcb06f79ef9f2db54f" => :mavericks
+    sha256 "ce08bf7cc440be683acc113a26dd0808c65c8139f0ea634c0655d6254ceb097e" => :big_sur
+    sha256 "670c17d0b04569c8723b6bfab5440f3e23d60f31b891489619b760e4df1ccdf4" => :catalina
+    sha256 "15d9f661d1d775dc76755db099d986c23002dc97edd65c675289f32129a8fd9c" => :mojave
   end
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+
+    # Remove references to the Homebrew shims dir.
+    %w[Makefile test_osm1 test_osm2 test_osm3].each do |file|
+      inreplace "examples/#{file}", "#{HOMEBREW_SHIMS_PATH}/mac/super/", "/usr/bin/"
+    end
+
     doc.install "examples"
   end
 

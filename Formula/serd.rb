@@ -1,14 +1,16 @@
 class Serd < Formula
   desc "C library for RDF syntax"
   homepage "https://drobilla.net/software/serd/"
-  url "https://download.drobilla.net/serd-0.26.0.tar.bz2"
-  sha256 "e3e44a88f90a9971d55e6cbd59a7b9cfa97cfc17c512fed7166a4252d5209298"
+  url "https://download.drobilla.net/serd-0.30.4.tar.bz2"
+  sha256 "0c95616a6587bee5e728e026190f4acd5ab6e2400e8890d5c2a93031eab01999"
+  license "ISC"
 
   bottle do
     cellar :any
-    sha256 "8ad52906db138cc480a3d75c1f9b6f245456a80c47de220c83acf7778bb55c48" => :sierra
-    sha256 "dfd1ede14146b8222cf65e39c7dafe368a4abd474b2c5babddcd883a9f112743" => :el_capitan
-    sha256 "654ac6e9843657faad3ec005d476f8812f9630e4ad56878c24bf93c17f66fa64" => :yosemite
+    sha256 "1e37820a695b8146fd21d544816b2e413cf93d7865ccabfd96d562ae4e006ee4" => :big_sur
+    sha256 "3361f452fbde6a02d8dfe77fdd53c6c5ff99e0bcb9df4504526674641cc4b24e" => :catalina
+    sha256 "e511ee4c7bb634cef312c139535c537aaafd70bbf2c62900a2b2950901f9eebf" => :mojave
+    sha256 "6d5a775d35f00fca2fb98c9177616322e3a868204c2c3f93614102e5ece3237f" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
@@ -17,5 +19,9 @@ class Serd < Formula
     system "./waf", "configure", "--prefix=#{prefix}"
     system "./waf"
     system "./waf", "install"
+  end
+
+  test do
+    pipe_output("serdi -", "() a <http://example.org/List> .", 0)
   end
 end

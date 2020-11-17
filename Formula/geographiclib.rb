@@ -1,14 +1,20 @@
 class Geographiclib < Formula
   desc "C++ geography library"
   homepage "https://geographiclib.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/geographiclib/distrib/GeographicLib-1.47.tar.gz"
-  sha256 "b5b032a88bae4c4b02041abdf63f27701eef2e325f2b05617628842cb581f85b"
+  url "https://downloads.sourceforge.net/project/geographiclib/distrib/GeographicLib-1.50.1.tar.gz"
+  sha256 "d1765009e068b8cc5e76957e5d6be45ce6cff08c4aad8e5995e84a28354385f1"
+  license "MIT"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "770c42edeb45da2841521537e1ee7fd2d3eca43357cf3abdad370cc98176bdc7" => :sierra
-    sha256 "b268720abdb507078ddbb8a524db8e2c66c9eddea06d34949408481de59ffe0c" => :el_capitan
-    sha256 "ce513ba1d5ca82caaf734d858bdd101214cbc7d2dc9d76dd2bd1a3fbeee08652" => :yosemite
+    sha256 "cbc227a439fb670fb3d4ad471d8e2053a215cb29ac8e7cf5c6722effadf2a3e0" => :big_sur
+    sha256 "02ab2c5d659b1a1a2feb99cdf37635a20abc6747aadb25c5849dcb2f41563274" => :catalina
+    sha256 "3ae437ffb71cebfb80137603de10c69c33ba9ea9ba820fb00a1c136b66c158dc" => :mojave
+    sha256 "aeaf0148b41ba77b5f91221f0058326e6ca6be3de569966fe2d593e1200b451a" => :high_sierra
   end
 
   depends_on "cmake" => :build

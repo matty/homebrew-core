@@ -1,27 +1,25 @@
 class Rust < Formula
   desc "Safe, concurrent, practical language"
   homepage "https://www.rust-lang.org/"
+  license any_of: ["Apache-2.0", "MIT"]
 
   stable do
-    url "https://static.rust-lang.org/dist/rustc-1.15.1-src.tar.gz"
-    sha256 "2e7daad418a830b45b977cd7ecf181b65f30f73df63ff36e124ea5fe5d1af327"
+    url "https://static.rust-lang.org/dist/rustc-1.47.0-src.tar.gz"
+    sha256 "3185df064c4747f2c8b9bb8c4468edd58ff4ad6d07880c879ac1b173b768d81d"
 
     resource "cargo" do
       url "https://github.com/rust-lang/cargo.git",
-          :tag => "0.16.0",
-          :revision => "6e0c18cccc8b0c06fba8a8d76486f81a792fb420"
-    end
-
-    resource "racer" do
-      url "https://github.com/phildawes/racer/archive/2.0.5.tar.gz"
-      sha256 "370e8e2661b379185667001884b51bdc4b414abdc27bb9671513c1912ad8be25"
+          tag:      "0.47.0",
+          revision: "149022b1d8f382e69c1616f6a46b69ebf59e2dea"
     end
   end
 
   bottle do
-    sha256 "a5c361784abba10df9ed3a2b5ed134a39f8be6f2926b486d968adca9424640a3" => :sierra
-    sha256 "87725ad98040703c079fd3ac146e88bc7f69bdb919e55808036db4f89a7d70f2" => :el_capitan
-    sha256 "55858abd573c239140535a6d33991dc443f107e1af74ef49b93ce46b9ea64602" => :yosemite
+    cellar :any
+    sha256 "9658dfa0ecf5f57b14223b56d60c4d303db1939174ae3bd9c3aea2918c3fafb6" => :big_sur
+    sha256 "643cb64baa823b8db5e7a4848ec157f45811db9891a641569a3963b0a6d75c6d" => :catalina
+    sha256 "5d24baae2f6e47a826849f61b7ac370dcfd3616802617b41a82501cc576e9e3f" => :mojave
+    sha256 "eba5a173f9a7db88af4999c3ba1743cf564d31f367a5c941147306cb39797ae2" => :high_sierra
   end
 
   head do
@@ -32,36 +30,50 @@ class Rust < Formula
     end
   end
 
-  option "with-llvm", "Build with brewed LLVM. By default, Rust's LLVM will be used."
-  option "with-racer", "Build Racer code completion tool, and retain Rust sources."
-
   depends_on "cmake" => :build
-  depends_on "pkg-config" => :run
-  depends_on "llvm" => :optional
-  depends_on "openssl"
+  depends_on "python@3.9" => :build
   depends_on "libssh2"
+  depends_on "openssl@1.1"
+  depends_on "pkg-config"
 
-  conflicts_with "multirust", :because => "both install rustc, rustdoc, cargo, rust-lldb, rust-gdb"
-
-  # According to the official readme, GCC 4.7+ is required
-  fails_with :gcc_4_0
-  fails_with :gcc
-  ("4.3".."4.6").each do |n|
-    fails_with :gcc => n
-  end
+  uses_from_macos "curl"
+  uses_from_macos "zlib"
 
   resource "cargobootstrap" do
-    url "https://s3.amazonaws.com/rust-lang-ci/cargo-builds/fbeea902d2c9a5be6d99cc35681565d8f7832592/cargo-nightly-x86_64-apple-darwin.tar.gz"
-    version "2016-12-15"
-    sha256 "ad6c31b41fef1d68e4523eb7d090fe8103848f30eb5ac8cba5128b7c11ed23fc"
+    on_macos do
+      # From https://github.com/rust-lang/rust/blob/#{version}/src/stage0.txt
+      url "https://static.rust-lang.org/dist/2020-08-27/cargo-0.47.0-x86_64-apple-darwin.tar.gz"
+      sha256 "6e8f3319069dd14e1ef756906fa0ef3799816f1aba439bdeea9d18681c353ad6"
+    end
+
+    on_linux do
+      # From: https://github.com/rust-lang/rust/blob/#{version}/src/stage0.txt
+      url "https://static.rust-lang.org/dist/2020-08-27/cargo-0.47.0-x86_64-unknown-linux-gnu.tar.gz"
+      sha256 "30e494f3848d0335870698e438eaa22388d3226c9786aa282e4fd41fb9cd164d"
+    end
   end
 
   def install
+    ENV.prepend_path "PATH", Formula["python@3.9"].opt_libexec/"bin"
+
+    # Fix build failure for compiler_builtins "error: invalid deployment target
+    # for -stdlib=libc++ (requires OS X 10.7 or later)"
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
+
+    # Ensure that the `openssl` crate picks up the intended library.
+    # https://crates.io/crates/openssl#manual-configuration
+    ENV["OPENSSL_DIR"] = Formula["openssl@1.1"].opt_prefix
+
+    # Fix build failure for cmake v0.1.24 "error: internal compiler error:
+    # src/librustc/ty/subst.rs:127: impossible case reached" on 10.11, and for
+    # libgit2-sys-0.6.12 "fatal error: 'os/availability.h' file not found
+    # #include <os/availability.h>" on 10.11 and "SecTrust.h:170:67: error:
+    # expected ';' after top level declarator" among other errors on 10.12
+    ENV["SDKROOT"] = MacOS.sdk_path
+
     args = ["--prefix=#{prefix}"]
-    args << "--disable-rpath" if build.head?
-    args << "--enable-clang" if ENV.compiler == :clang
-    args << "--llvm-root=#{Formula["llvm"].opt_prefix}" if build.with? "llvm"
     if build.head?
+      args << "--disable-rpath"
       args << "--release-channel=nightly"
     else
       args << "--release-channel=stable"
@@ -76,37 +88,32 @@ class Rust < Formula
     ENV.prepend_path "PATH", buildpath/"cargobootstrap/bin"
 
     resource("cargo").stage do
-      system "./configure", "--prefix=#{prefix}", "--local-rust-root=#{prefix}",
-                            "--enable-optimize"
-      system "make"
-      system "make", "install"
-    end
-
-    if build.with? "racer"
-      resource("racer").stage do
-        ENV.prepend_path "PATH", bin
-        cargo_home = buildpath/"cargo_home"
-        cargo_home.mkpath
-        ENV["CARGO_HOME"] = cargo_home
-        system bin/"cargo", "build", "--release", "--verbose"
-        (libexec/"bin").install "target/release/racer"
-        (bin/"racer").write_env_script(libexec/"bin/racer", :RUST_SRC_PATH => pkgshare/"rust_src")
-      end
-      # Remove any binary files; as Homebrew will run ranlib on them and barf.
-      rm_rf Dir["src/{llvm,test,librustdoc,etc/snapshot.pyc}"]
-      (pkgshare/"rust_src").install Dir["src/*"]
+      ENV["RUSTC"] = bin/"rustc"
+      args = %W[--root #{prefix} --path . --features curl-sys/force-system-lib-on-osx]
+      system "cargo", "install", *args
+      man1.install Dir["src/etc/man/*.1"]
+      bash_completion.install "src/etc/cargo.bashcomp.sh"
+      zsh_completion.install "src/etc/_cargo"
     end
 
     rm_rf prefix/"lib/rustlib/uninstall.sh"
     rm_rf prefix/"lib/rustlib/install.log"
   end
 
+  def post_install
+    Dir["#{lib}/rustlib/**/*.dylib"].each do |dylib|
+      chmod 0664, dylib
+      MachO::Tools.change_dylib_id(dylib, "@rpath/#{File.basename(dylib)}")
+      chmod 0444, dylib
+    end
+  end
+
   test do
     system "#{bin}/rustdoc", "-h"
-    (testpath/"hello.rs").write <<-EOS.undent
-    fn main() {
-      println!("Hello World!");
-    }
+    (testpath/"hello.rs").write <<~EOS
+      fn main() {
+        println!("Hello World!");
+      }
     EOS
     system "#{bin}/rustc", "hello.rs"
     assert_equal "Hello World!\n", `./hello`

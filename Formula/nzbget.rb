@@ -1,34 +1,30 @@
 class Nzbget < Formula
   desc "Binary newsgrabber for nzb files"
-  homepage "http://nzbget.net/"
-  url "https://github.com/nzbget/nzbget/releases/download/v18.0/nzbget-18.0-src.tar.gz"
-  sha256 "4bc6366286988647d42165b442a62b73a1328d7e5b5067bd0078650e1716f55b"
-  head "https://github.com/nzbget/nzbget.git"
+  homepage "https://nzbget.net/"
+  url "https://github.com/nzbget/nzbget/releases/download/v21.0/nzbget-21.0-src.tar.gz"
+  sha256 "65a5d58eb8f301e62cf086b72212cbf91de72316ffc19182ae45119ddd058d53"
+  license "GPL-2.0"
+  revision 1
+  head "https://github.com/nzbget/nzbget.git", branch: "develop"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    sha256 "4122f1e0e65146db39423ad467b15653aec13000f1e5cbbd226c6c6d5fc539f9" => :sierra
-    sha256 "2ba87471a8ba0b1da2493027bdbf6ced4be0e14e91e4b7e1a457d6f6c4b76565" => :el_capitan
-    sha256 "6044d03c4f60356e89ee108d9d30be764137adec5c300bca2a795d81130821c6" => :yosemite
+    sha256 "f8b38a005fecc058238c9ed9a190061e1e20a149b13210f2f861885e078414e2" => :big_sur
+    sha256 "d44d1a8dbd26f5cdb307c08f3294bd381ca79d51c48f51df98ae10a19272397e" => :catalina
+    sha256 "1d69e26d929d2a1be4824ea8c2134d543033462302bc5527269d5ca7b1b2c575" => :mojave
+    sha256 "862bd9889d1590b8e3f600419f2bbf84f1ea7582ed55c58eccc024382d6db245" => :high_sierra
+    sha256 "2e174f6c4df74ef3cd5decca500963db0c99d71553da624693ec4e9d085a0a56" => :sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "openssl"
-  depends_on "gcc" if MacOS.version <= :mavericks
+  depends_on "openssl@1.1"
 
-  needs :cxx11
-
-  fails_with :clang do
-    build 600
-    cause "No compiler with C++14 support was found"
-  end
-
-  fails_with :clang do
-    build 500
-    cause <<-EOS.undent
-      Clang older than 5.1 requires flexible array members to be POD types.
-      More recent versions require only that they be trivially destructible.
-      EOS
-  end
+  uses_from_macos "libxml2"
+  uses_from_macos "ncurses"
 
   def install
     ENV.cxx11
@@ -56,28 +52,29 @@ class Nzbget < Formula
     etc.install "nzbget.conf"
   end
 
-  plist_options :manual => "nzbget"
+  plist_options manual: "nzbget"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/nzbget</string>
-        <string>-s</string>
-        <string>-o</string>
-        <string>OutputMode=Log</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-    </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/nzbget</string>
+          <string>-s</string>
+          <string>-o</string>
+          <string>OutputMode=Log</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+      </plist>
     EOS
   end
 

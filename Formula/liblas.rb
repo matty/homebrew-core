@@ -1,37 +1,52 @@
 class Liblas < Formula
   desc "C/C++ library for reading and writing the LAS LiDAR format"
-  homepage "http://liblas.org"
-  url "http://download.osgeo.org/liblas/libLAS-1.8.1.tar.bz2"
+  homepage "https://liblas.org/"
+  url "https://download.osgeo.org/liblas/libLAS-1.8.1.tar.bz2"
   sha256 "9adb4a98c63b461ed2bc82e214ae522cbd809cff578f28511122efe6c7ea4e76"
+  license "BSD-3-Clause"
+  revision 3
   head "https://github.com/libLAS/libLAS.git"
 
+  deprecate! date: "2018-01-01", because: :unsupported
+
   bottle do
-    sha256 "b2de49ca32280d43ac3f6d1834efd6e386297afaa070b36ef6ec0d37589e173e" => :sierra
-    sha256 "d7d79cbf775119841245db9794c052a3e39cdf55fecfafcc191cd1cdcd74c61c" => :el_capitan
-    sha256 "0a1c49fe8fdd82e29f2cb04c2cd7a336ad95c88f732656aac1a2bd026c4ae284" => :yosemite
+    sha256 "c63d0d75db5b8e129c13add1de8fe94b2a38d5c15d101b62d6a7f59b796f53a3" => :catalina
+    sha256 "3224d154574e4cd07837dd1d1bd3e336964e8bede4cf4bb34dbaf4a63c75ed11" => :mojave
+    sha256 "b47d0b9c82040703d212e22a436b7e11aff24632f0649db959e2073e0ae48548" => :high_sierra
   end
 
-  option "with-test", "Verify during install with `make test`"
-
   depends_on "cmake" => :build
-  depends_on "libgeotiff"
-  depends_on "gdal"
   depends_on "boost"
-  depends_on "laszip" => :optional
+  depends_on "libgeotiff"
+
+  # Fix build for Xcode 9 with upstream commit
+  # Remove in next version
+  patch do
+    url "https://github.com/libLAS/libLAS/commit/49606470.patch?full_index=1"
+    sha256 "5590aef61a58768160051997ae9753c2ae6fc5b7da8549707dfd9a682ce439c8"
+  end
+
+  # Fix compilation against GDAL 2.3
+  # Remove in next version
+  patch do
+    url "https://github.com/libLAS/libLAS/commit/ec10e274.patch?full_index=1"
+    sha256 "3f8aefa1073aa32de01175cd217773020d93e5fb44a4592d76644a242bb89a3c"
+  end
 
   def install
+    ENV.cxx11
+
     mkdir "macbuild" do
       # CMake finds boost, but variables like this were set in the last
       # version of this formula. Now using the variables listed here:
-      #   http://liblas.org/compilation.html
+      #   https://liblas.org/compilation.html
       ENV["Boost_INCLUDE_DIR"] = "#{HOMEBREW_PREFIX}/include"
       ENV["Boost_LIBRARY_DIRS"] = "#{HOMEBREW_PREFIX}/lib"
-      args = ["-DWITH_GEOTIFF=ON", "-DWITH_GDAL=ON"] + std_cmake_args
-      args << "-DWITH_LASZIP=ON" if build.with? "laszip"
 
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args,
+                            "-DWITH_GDAL=OFF",
+                            "-DWITH_GEOTIFF=ON"
       system "make"
-      system "make", "test" if build.bottle? || build.with?("test")
       system "make", "install"
     end
   end

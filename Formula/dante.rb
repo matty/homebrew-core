@@ -1,25 +1,25 @@
 class Dante < Formula
   desc "SOCKS server and client, implementing RFC 1928 and related standards"
   homepage "https://www.inet.no/dante/"
-  url "https://www.inet.no/dante/files/dante-1.4.1.tar.gz"
-  mirror "http://www.inet.no/dante/files/dante-1.4.1.tar.gz"
-  sha256 "b6d232bd6fefc87d14bf97e447e4fcdeef4b28b16b048d804b50b48f261c4f53"
+  url "https://www.inet.no/dante/files/dante-1.4.2.tar.gz"
+  sha256 "4c97cff23e5c9b00ca1ec8a95ab22972813921d7fbf60fc453e3e06382fc38a7"
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "5430dd125d58a0d237c29eeb4bc34ad2de63d3d958737b3166bfa4b6475a87e7" => :sierra
-    sha256 "317f720310f59b8c3c8b12e5b971829e7c2f8513832bc1782ec01c8d598e529d" => :el_capitan
-    sha256 "610a391e6e28955b31a4f7a288ad446103e745a938c3d68f3082ff5fe1863574" => :yosemite
-    sha256 "66d48707c1e9d1fd7a891a145c4848812f5563c38357434d8dccb195b5bd7b8a" => :mavericks
+    rebuild 2
+    sha256 "1919afe3e3606a31469a0a5443a918d5e8463ce737dbcb3291a5771ae0797016" => :big_sur
+    sha256 "d04be77c7a05eb220c08e161cc017b1029c25fc3aae0a9991d20d3493a57845c" => :catalina
+    sha256 "26eb48c9eda005d8486f2dddee23420047a326f82638b71c5aa2f7d28f3ce402" => :mojave
+    sha256 "6a234a72eb6a8bc9439a9a45129ca2214151dee7b63c1ab76c7b5831bda8d1ea" => :high_sierra
+    sha256 "5d4fb552b729372afc0b5450af162d9b49984c64e28d7f1825fd879b4cf3bdf7" => :sierra
   end
-
-  depends_on "miniupnpc" => :optional
 
   def install
     system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
                           "--disable-silent-rules",
+                          # Enabling dependency tracking disables universal
+                          # build, avoiding a build error on Mojave
+                          "--enable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--sysconfdir=#{etc}/dante"
     system "make", "install"

@@ -1,25 +1,21 @@
 class Gkrellm < Formula
   desc "Extensible GTK system monitoring application"
   homepage "https://billw2.github.io/gkrellm/gkrellm.html"
-  head "http://git.srcbox.net/gkrellm", :using => :git
+  url "http://gkrellm.srcbox.net/releases/gkrellm-2.3.11.tar.bz2"
+  sha256 "1ee0643ed9ed99f88c1504c89d9ccb20780cf29319c904b68e80a8e7c8678c06"
+  revision 2
 
-  stable do
-    url "https://billw2.github.io/gkrellm/gkrellm-2.3.5.tar.bz2"
-    sha256 "702b5b0e9c040eb3af8e157453f38dd6f53e1dcd8b1272d20266cda3d4372c8b"
-
-    # http://git.srcbox.net/gkrellm/commit/?id=207a0519ac73290ba65b6e5f7446549a2a66f5d2
-    # Resolves a NULL value crash. Fixed upstream already but unreleased in stable.
-    patch :p0 do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/8040a52382/gkrellm/nullpointer.patch"
-      sha256 "d005e7ad9b4c46d4930ccb4391481716b72c9a68454b8d8f4dfd2b597bfd77cc"
-    end
+  livecheck do
+    url "http://gkrellm.srcbox.net/releases/"
+    regex(/href=.*?gkrellm[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
   bottle do
-    sha256 "a6024661e26bae0bafe492b249b7fe64e72801d3d50310b36abc5dd05620e7ea" => :sierra
-    sha256 "1b33628604f2b3577d020a32ddf61af1dd4ae3cf7f52fc62617ea2a842e4d842" => :el_capitan
-    sha256 "64e1bf668b44b8a056d3f07d0644012f5778b42654d1d656bcba595f640786c7" => :yosemite
-    sha256 "f4ff4fc7fecd7ec1c057a329789546e7533c6fee7bf59b19901027c777ad9395" => :mavericks
+    sha256 "6571912b0f2df38104a4541d8c7fbedfa30e8d3af55249d9a447874058ef9e9b" => :big_sur
+    sha256 "17b040897e4feebebcca29a8d8f69fdf0cd789f07a3e479b0fe5f5f172436289" => :catalina
+    sha256 "641f4e27054dacd25dd91dc2f6d8d608918321ae06cf06eb17f2d62132125e7a" => :mojave
+    sha256 "71f4e92d308a39b38ac97bf2f06cea12ccee0072cbd27b8443e1d33f11fb7c5b" => :high_sierra
+    sha256 "f90adbb22bdbc169d95c932591d4c5a7c5e869f61c79744bb743c50a4698acc9" => :sierra
   end
 
   depends_on "pkg-config" => :build
@@ -31,17 +27,10 @@ class Gkrellm < Formula
   depends_on "gettext"
   depends_on "glib"
   depends_on "gtk+"
+  depends_on "openssl@1.1"
   depends_on "pango"
-  depends_on "gobject-introspection"
-  depends_on "openssl"
 
   def install
-    # Fixes broken pkg-config call. Without this compile fails on linking errors.
-    # Already fixed upstream but unreleased.
-    if build.stable?
-      inreplace "src/Makefile", "gtk+-2.0 gthread-2.0", "gtk+-2.0 gthread-2.0 gmodule-2.0"
-    end
-
     system "make", "INSTALLROOT=#{prefix}", "macosx"
     system "make", "INSTALLROOT=#{prefix}", "install"
   end
@@ -53,7 +42,7 @@ class Gkrellm < Formula
     sleep 2
 
     begin
-      assert File.exist?("test.pid")
+      assert_predicate testpath/"test.pid", :exist?
     ensure
       Process.kill "SIGINT", pid
       Process.wait pid

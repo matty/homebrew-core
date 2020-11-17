@@ -1,74 +1,43 @@
 class Libgit2Glib < Formula
   desc "Glib wrapper library around libgit2 git access library"
   homepage "https://github.com/GNOME/libgit2-glib"
-  url "https://download.gnome.org/sources/libgit2-glib/0.24/libgit2-glib-0.24.4.tar.xz"
-  sha256 "3a211f756f250042f352b3070e7314a048c88e785dba9d118b851253a7c60220"
-  revision 3
+  url "https://download.gnome.org/sources/libgit2-glib/0.99/libgit2-glib-0.99.0.1.tar.xz"
+  sha256 "e05a75c444d9c8d5991afc4a5a64cd97d731ce21aeb7c1c651ade1a3b465b9de"
+  license "LGPL-2.1"
+  revision 1
+  head "https://github.com/GNOME/libgit2-glib.git"
+
+  livecheck do
+    url :stable
+    regex(/libgit2-glib[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "a3875f6cff1685ada0b599143fc056493fabeed883a7e090a4cc052ba0f112b2" => :sierra
-    sha256 "ac432f38fedea1228635476acbc841e01dd680865f6381d25e67784177f67390" => :el_capitan
-    sha256 "0104b532f15fa9cbd971b047ebcabe198efd01679f6cf2e5ba27debc95b6a1a2" => :yosemite
+    sha256 "40c5f8fa088afdf1d5881885a1bb40cbcc3d63963f1c3475a69f7363630779f7" => :big_sur
+    sha256 "a5297beb6c9ab0602847472ec08fbd2eddad7e91ca3c78db15f4a8175912feea" => :catalina
+    sha256 "ffff80b61a3dd453796abdd059803d887c6de603d501c65a153571a0c04be5ce" => :mojave
+    sha256 "74b08631fc92b096f3034c512ea9f62889edc92c49c6581043fbf56256306ad4" => :high_sierra
   end
 
-  head do
-    url "https://github.com/GNOME/libgit2-glib.git"
-
-    depends_on "libtool" => :build
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "gnome-common" => :build
-    depends_on "gtk-doc" => :build
-  end
-
-  depends_on "cmake" => :build # for libgit2
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
+  depends_on "vala" => :build
   depends_on "gettext"
-  depends_on "libssh2" # for libgit2
-  depends_on "gobject-introspection"
   depends_on "glib"
-  depends_on "vala" => :optional
-  depends_on :python => :optional
-
-  # Re-evaluate when > 0.24.4 is released
-  # Vendor libgit2 0.24.x since libgit2-glib isn't compatible with 0.25.x yet
-  # Reported 28 Dec 2016 https://bugzilla.gnome.org/show_bug.cgi?id=776506
-  resource "libgit2" do
-    url "https://github.com/libgit2/libgit2/archive/v0.24.6.tar.gz"
-    sha256 "7b441a96967ff525e790f8b66859faba5c6be4c347124011f536ae9075ebc30c"
-  end
+  depends_on "libgit2"
 
   def install
-    resource("libgit2").stage do
-      args = std_cmake_args - ["-DCMAKE_INSTALL_PREFIX=#{prefix}"]
-      args << "-DCMAKE_INSTALL_PREFIX=#{libexec}/libgit2"
-      args << "-DBUILD_CLAR=NO" # Don't build the tests
-
-      mkdir "build" do
-        system "cmake", "..", *args
-        system "make", "install"
-      end
-
-      # Prevent "dyld: Library not loaded: libgit2.24.dylib"
-      MachO::Tools.change_dylib_id("#{libexec}/libgit2/lib/libgit2.dylib",
-                                   "#{libexec}/libgit2/lib/libgit2.dylib")
+    mkdir "build" do
+      system "meson", *std_meson_args,
+                      "-Dpython=false",
+                      "-Dvapi=true",
+                      ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+      libexec.install Dir["examples/*"]
     end
-    ENV.prepend_path "PKG_CONFIG_PATH", libexec/"libgit2/lib/pkgconfig"
-
-    args = %W[
-      --prefix=#{prefix}
-      --disable-silent-rules
-      --disable-dependency-tracking
-    ]
-
-    args << "--enable-python=no" if build.without? "python"
-    args << "--enable-vala=no" if build.without? "vala"
-
-    system "./autogen.sh", *args if build.head?
-    system "./configure", *args if build.stable?
-    system "make", "install"
-
-    libexec.install "examples/.libs", "examples/clone", "examples/general", "examples/walk"
   end
 
   test do

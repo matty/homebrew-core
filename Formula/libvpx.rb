@@ -1,40 +1,33 @@
 class Libvpx < Formula
-  desc "VP8 video codec"
+  desc "VP8/VP9 video codec"
   homepage "https://www.webmproject.org/code/"
-  url "https://github.com/webmproject/libvpx/archive/v1.6.1.tar.gz"
-  sha256 "cda8bb6f0e4848c018177d3a576fa83ed96d762554d7010fe4cfb9d70c22e588"
-  head "https://chromium.googlesource.com/webm/libvpx", :using => :git
+  url "https://github.com/webmproject/libvpx/archive/v1.9.0.tar.gz"
+  sha256 "d279c10e4b9316bf11a570ba16c3d55791e1ad6faa4404c67422eb631782c80a"
+  license "BSD-3-Clause"
+  head "https://chromium.googlesource.com/webm/libvpx.git"
 
   bottle do
-    sha256 "fe46c1d9fc5e1ea1176791f9e4a85d896eb311d094be77c7c44c2b24facc4300" => :sierra
-    sha256 "100634d26cac4b4e69f1a5eea21b98ae577e3a1364169fe483bc4cc9c29f6047" => :el_capitan
-    sha256 "68b90c8901f765d0a50ea89a030b40f53e0fc7c2e4bb554859f6ae9fc2a2c4f2" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "9fb33bbcc029287ea3b368a3242d7ae215951a63e3809c71268380f2a41a763b" => :big_sur
+    sha256 "19a684e5b0a2109b40a6c412517ad8639200c76d8bd527e98fc24d9589bb1c4e" => :catalina
+    sha256 "c813698920d7e5144ae45f9922477cc30ed4f7ee81463977b01d50af43e0be19" => :mojave
+    sha256 "13e231eb9c8158e84df24a58c8b96f3f57e9202ad680b4be3bbaf7e67f40aaac" => :high_sierra
   end
 
-  option "with-gcov", "Enable code coverage"
-  option "with-visualizer", "Enable post processing visualizer"
-  option "with-examples", "Build examples (vpxdec/vpxenc)"
-
-  deprecated_option "gcov" => "with-gcov"
-  deprecated_option "visualizer" => "with-visualizer"
-
   depends_on "yasm" => :build
-
-  # configure misdetects 32-bit 10.6
-  # https://code.google.com/p/webm/issues/detail?id=401
-  depends_on :macos => :lion
 
   def install
     args = %W[
       --prefix=#{prefix}
       --disable-dependency-tracking
-      --enable-pic
+      --disable-examples
       --disable-unit-tests
+      --enable-pic
+      --enable-vp9-highbitdepth
     ]
 
-    args << (build.with?("examples") ? "--enable-examples" : "--disable-examples")
-    args << "--enable-gcov" if !ENV.compiler == :clang && build.with?("gcov")
-    args << "--enable-postproc" << "--enable-postproc-visualizer" if build.with? "visualizer"
+    # https://bugs.chromium.org/p/webm/issues/detail?id=1475
+    args << "--disable-avx512" if MacOS.version <= :el_capitan
 
     mkdir "macbuild" do
       system "../configure", *args

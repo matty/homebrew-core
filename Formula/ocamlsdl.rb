@@ -3,23 +3,27 @@ class Ocamlsdl < Formula
   homepage "https://ocamlsdl.sourceforge.io/"
   url "https://downloads.sourceforge.net/project/ocamlsdl/OCamlSDL/ocamlsdl-0.9.1/ocamlsdl-0.9.1.tar.gz"
   sha256 "abfb295b263dc11e97fffdd88ea1a28b46df8cc2b196777093e4fe7f509e4f8f"
-  revision 4
+  license "LGPL-2.1-or-later"
+  revision 13
+
+  disable! because: :unmaintained
 
   bottle do
     cellar :any
-    sha256 "cad75622c767f4e08cb367cffec7e4ad4e3ebdad501807c27c893a28e0adf81e" => :sierra
-    sha256 "63e481cde43f1c8cd108627513a59c31d1d97a42077573d6de9b53ec1909117c" => :el_capitan
-    sha256 "99d9e398a1f74a9b653fe304605258cc8b6e41d553ce83e9a0e2e26e0a16edde" => :yosemite
+    sha256 "8ccd0c9f59b9fad6fe084e57e726cd20d0f26497e71e4be94ff7f603512cbef8" => :catalina
+    sha256 "6cd21f03d8a557368499d9cd61233dab4bab11fcd99c312036d58d660598c539" => :mojave
+    sha256 "6ae2abcf123aef7ce6cc2c5aad0d912bc459fdd9e7e2abfa99135d672767ddb7" => :high_sierra
   end
 
-  depends_on "sdl"
   depends_on "ocaml"
-  depends_on "sdl_mixer" => :recommended
-  depends_on "sdl_image" => :recommended
-  depends_on "sdl_gfx" => :recommended
-  depends_on "sdl_ttf" => :recommended
+  depends_on "sdl"
+  depends_on "sdl_gfx"
+  depends_on "sdl_image"
+  depends_on "sdl_mixer"
+  depends_on "sdl_ttf"
 
   def install
+    ENV["OCAMLPARAM"] = "safe-string=0,_" # OCaml 4.06.0 compat
     system "./configure", "--prefix=#{prefix}",
                           "OCAMLLIB=#{lib}/ocaml"
     system "make"
@@ -27,7 +31,7 @@ class Ocamlsdl < Formula
   end
 
   test do
-    (testpath/"test.ml").write <<-EOS.undent
+    (testpath/"test.ml").write <<~EOS
       let main () =
         Sdl.init [`VIDEO];
         Sdl.quit ()

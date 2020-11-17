@@ -1,18 +1,25 @@
 class Wandio < Formula
-  desc "LibWandio I/O performance will be improved by doing any compression"
-  homepage "http://research.wand.net.nz/software/libwandio.php"
-  url "http://research.wand.net.nz/software/wandio/wandio-1.0.4.tar.gz"
-  sha256 "0fe4ae99ad7224f11a9c988be151cbdc12c6dc15872b67f101764d6f3fc70629"
+  desc "Transparently read from and write to zip, bzip2, lzma or zstd archives"
+  homepage "https://research.wand.net.nz/software/libwandio.php"
+  url "https://research.wand.net.nz/software/wandio/wandio-4.2.3.tar.gz"
+  sha256 "78c781ce2c3783b85d894e29005b7e98fc246b33f94616047de3bb4d11d4d823"
+  license "GPL-3.0"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?wandio[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "18377dd9738246878e3357ea95e0164e7ec2f66eab9708b662a5961678355873" => :sierra
-    sha256 "a05a9f0b56ccb80fd8de1cd2d3921a08599b88bcd9e9770df81a5fddf2163d24" => :el_capitan
+    sha256 "d22ac83e77d52b6ea039e2fe4a8b888a17fb9ee91a933d0149fac081ae0b783c" => :big_sur
+    sha256 "028d07a97370b37fc28a2f2045bf3e4a9241d9c49f5eea2e635960ced7b6453c" => :catalina
+    sha256 "a16a370f4bd6d2acd415f305fb99b2bfba1b86f666c68877d01bd90ddcb7522b" => :mojave
+    sha256 "29602aec2851811108e97397e6310f091f5e5fe0844f9cfcd6657193d9c53ff4" => :high_sierra
   end
 
   def install
-    system "./configure", "--disable-debug",
-                          "--with-http",
+    system "./configure", "--with-http",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
@@ -20,6 +27,8 @@ class Wandio < Formula
   end
 
   test do
-    system "#{bin}/wandiocat", "-h"
+    system "#{bin}/wandiocat", "-z", "9", "-Z", "gzip", "-o", "test.gz",
+      test_fixtures("test.png"), test_fixtures("test.pdf")
+    assert_predicate testpath/"test.gz", :exist?
   end
 end

@@ -1,25 +1,34 @@
 class Gl2ps < Formula
   desc "OpenGL to PostScript printing library"
-  homepage "http://www.geuz.org/gl2ps/"
-  url "http://geuz.org/gl2ps/src/gl2ps-1.3.9.tgz"
-  sha256 "8a680bff120df8bcd78afac276cdc38041fed617f2721bade01213362bcc3640"
-  revision 2
+  homepage "https://www.geuz.org/gl2ps/"
+  url "https://geuz.org/gl2ps/src/gl2ps-1.4.2.tgz"
+  sha256 "8d1c00c1018f96b4b97655482e57dcb0ce42ae2f1d349cd6d4191e7848d9ffe9"
+  license "GL2PS"
+
+  livecheck do
+    url "https://geuz.org/gl2ps/src/"
+    regex(/href=.*?gl2ps[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "25fb8bd7307cdf695208e95f40870186f336f690b1138f97774607b38c2fbe0e" => :sierra
-    sha256 "f98527a92984dcb172b803c0a5503a06a3fec0c7ff980f1921adc0d77fda19c3" => :el_capitan
-    sha256 "884f489b6106f81cfe2821230065333e36894e9316fa90b9af4ef84a1d7af749" => :yosemite
-    sha256 "22504f9aa0239aa8395bb6a9c48b374885b7fb20603da15e28d730cf97a2990d" => :mavericks
+    sha256 "4ad3d5fcf0a8393e77881e4ea73c160200f6573aa05f6db84e452d920a5f7185" => :big_sur
+    sha256 "dbdfe5d8458e1224941d6e5707b725ab6872333112dc408dbf35202eddbc8d15" => :catalina
+    sha256 "bc857ec44c73448acf748dea7a699e1018a874196dec19659a63aa70a7b5e970" => :mojave
+    sha256 "6c36dc780b0579f44057cadddb9e1a2e369e2ba9205b68d6c81ebd79defc45b4" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "libpng"
 
+  on_linux do
+    depends_on "freeglut"
+  end
+
   def install
     # Prevent linking against X11's libglut.dylib when it's present
     # Reported to upstream's mailing list gl2ps@geuz.org (1st April 2016)
-    # http://www.geuz.org/pipermail/gl2ps/2016/000433.html
+    # https://www.geuz.org/pipermail/gl2ps/2016/000433.html
     # Reported to cmake's bug tracker, as well (1st April 2016)
     # https://public.kitware.com/Bug/view.php?id=16045
     system "cmake", ".", "-DGLUT_glut_LIBRARY=/System/Library/Frameworks/GLUT.framework", *std_cmake_args
@@ -27,7 +36,7 @@ class Gl2ps < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <GLUT/glut.h>
       #include <gl2ps.h>
 
@@ -57,8 +66,10 @@ class Gl2ps < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "-lgl2ps", "-framework", "OpenGL", "-framework", "GLUT", "-framework", "Cocoa", "test.c", "-o", "test"
+    system ENV.cc, "-L#{lib}", "-lgl2ps", "-framework", "OpenGL", "-framework", "GLUT",
+                   "-framework", "Cocoa", "test.c", "-o", "test"
     system "./test"
-    assert File.exist?("test.eps") && File.size("test.eps") > 0
+    assert_predicate testpath/"test.eps", :exist?
+    assert_predicate File.size("test.eps"), :positive?
   end
 end

@@ -3,11 +3,20 @@ class Djview4 < Formula
   homepage "https://djvu.sourceforge.io/djview4.html"
   url "https://downloads.sourceforge.net/project/djvu/DjView/4.10/djview-4.10.6.tar.gz"
   sha256 "8446f3cd692238421a342f12baa365528445637bffb96899f319fe762fda7c21"
+  revision 1
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/djview[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    sha256 "d2672b78d0e74e619030d0ebf4b2ab0b85fd63ae394c7258177ea2f357269449" => :sierra
-    sha256 "1868bc87f83e5e480fbb057beff8fbeedfe6c0f7b05150fcef5eb2deb1b23082" => :el_capitan
-    sha256 "f15753fce1533b948848a673ba36a201872c257fbabe2e4acf82ee42fc265e49" => :yosemite
+    cellar :any
+    rebuild 1
+    sha256 "ba219f74f4e84ffdc69208eeebbd03a5148e0f03ff92e69cafd4d106fee6c284" => :big_sur
+    sha256 "11c318b224adb9e2575c754c1a3ad6a4c5f4e2febe4dd0a81d63e6ee748af765" => :catalina
+    sha256 "f8e5afe939077fd62f6c946323e9f857572ba8c696dd6f1caccb33fbe84dd328" => :mojave
+    sha256 "a9c95fcc6bf1dec71109b4bf32f827db003375682b522efe20743f6cb2e8a800" => :high_sierra
   end
 
   depends_on "autoconf" => :build
@@ -15,7 +24,7 @@ class Djview4 < Formula
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
   depends_on "djvulibre"
-  depends_on "qt5"
+  depends_on "qt"
 
   def install
     inreplace "src/djview.pro", "10.6", MacOS.version
@@ -29,7 +38,7 @@ class Djview4 < Formula
     system "make", "CC=#{ENV.cc}", "CXX=#{ENV.cxx}"
 
     # From the djview4.8 README:
-    # Note3: Do not use command "make install".
+    # NOTE: Do not use command "make install".
     # Simply copy the application bundle where you want it.
     prefix.install "src/djview.app"
   end

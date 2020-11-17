@@ -1,39 +1,49 @@
 class Geeqie < Formula
   desc "Lightweight Gtk+ based image viewer"
   homepage "http://www.geeqie.org/"
-  url "http://www.geeqie.org/geeqie-1.3.tar.xz"
-  sha256 "4b6f566dd1a8badac68c4353c7dd0f4de17f8627b85a7a70d5eb1ae3b540ec3f"
+  url "http://www.geeqie.org/geeqie-1.5.1.tar.xz"
+  sha256 "4854d5d323c31f8f4068fd73ab2c454ff91e826c4ca4d37b22c246ad14dea10a"
+  license "GPL-2.0"
+  revision 1
 
-  bottle do
-    sha256 "81d37ee2270c7c7f0b0c38042ee06bdbf3ec1ca4465b75e9687b033a77a8aa94" => :sierra
-    sha256 "1eaf69673392f31b14190f6c8430e75a6621e0cad74ad79d3df130da1586e27b" => :el_capitan
-    sha256 "b0855a3824ee1d7606c7c7a79b879360536ade7b355b76da57ff3d2a81271d6a" => :yosemite
+  livecheck do
+    url :homepage
+    regex(/href=.*?geeqie[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "a501e8d8c8c16f456fd3febeee883b37b329286b828f1799070691d99a52d66d" => :big_sur
+    sha256 "5d344202876e8d095f69c10241a7018a97d4033f1e6c5fabc8db0f8152dc4d1c" => :catalina
+    sha256 "80074bcd449427974fafe01f1292d3d77111bb380eac0b94f91797a4802a2108" => :mojave
+    sha256 "bb5923d1d1a922ea077796653061d98b571bb96a89bb16d555ed5bf91770e79c" => :high_sierra
+  end
+
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "intltool" => :build
-  depends_on "gettext"
-  depends_on "gtk+3"
-  depends_on "gdk-pixbuf"
-  depends_on "pango"
-  depends_on "cairo"
-  depends_on "libtiff"
-  depends_on "jpeg"
+  depends_on "pkg-config" => :build
+  depends_on "adwaita-icon-theme"
   depends_on "atk"
-  depends_on "glib"
-  depends_on "imagemagick"
+  depends_on "cairo"
   depends_on "exiv2"
+  depends_on "gdk-pixbuf"
+  depends_on "gettext"
+  depends_on "glib"
+  depends_on "gtk+3"
+  depends_on "imagemagick"
+  depends_on "jpeg"
+  depends_on "libtiff"
   depends_on "little-cms2"
+  depends_on "pango"
 
   def install
     ENV["NOCONFIGURE"] = "yes"
-    system "./autogen.sh"
+    system "./autogen.sh" # Seems to struggle to find GTK headers without this
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-glibtest",
-                          "--disable-gtktest"
+                          "--disable-gtktest",
+                          "--enable-gtk3"
     system "make", "install"
   end
 

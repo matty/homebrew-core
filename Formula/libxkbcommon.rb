@@ -1,53 +1,51 @@
 class Libxkbcommon < Formula
   desc "Keyboard handling library"
   homepage "https://xkbcommon.org/"
-  url "https://xkbcommon.org/download/libxkbcommon-0.7.1.tar.xz"
-  sha256 "ba59305d2e19e47c27ea065c2e0df96ebac6a3c6e97e28ae5620073b6084e68b"
+  url "https://xkbcommon.org/download/libxkbcommon-1.0.1.tar.xz"
+  sha256 "ab68b25341c99f2218d7cf3dad459c1827f411219901ade05bbccbdb856b6c8d"
+  license "MIT"
+  revision 1
+  head "https://github.com/xkbcommon/libxkbcommon.git"
 
   bottle do
-    sha256 "f315b5f0587687bfe2a859fc2440980820031a8d984c0b707f468f886953ab0c" => :sierra
-    sha256 "b28c61c01bf2b30c2d9250ef4ba8650d3a4040802e2184f1c3673ba717f09ea0" => :el_capitan
-    sha256 "87d2bf3128550c3fd80f8d91908c888aa8c19361a189c59a9478af925668710b" => :yosemite
+    sha256 "eba7e1822c399b6a0e71e91b6a17248817f0a8f205cb6498068c971980546769" => :big_sur
+    sha256 "bf2346f444e3c8dcf1b34a08abeb5142eb07019a14c1513638df8e4b60c7acef" => :catalina
+    sha256 "57e4659ca526ee0b579a35f4eb7ab4a97d56631ec17f5320cd662d3379c92521" => :mojave
+    sha256 "01e3b905b6e11da0fd02674ae5e659659a2019bc4a99c8d874ceb2dc3daa7610" => :high_sierra
   end
 
-  head do
-    url "https://github.com/xkbcommon/libxkbcommon.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
-
-  depends_on :x11
   depends_on "bison" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
+  depends_on "libx11"
+  depends_on "libxcb"
+  depends_on "xkeyboardconfig"
+
+  uses_from_macos "libxml2"
 
   def install
-    system "./autogen.sh" if build.head?
-    inreplace "configure" do |s|
-      s.gsub! "-version-script $output_objdir/$libname.ver", ""
-      s.gsub! "$wl-version-script", ""
+    args = %W[
+      -Denable-wayland=false
+      -Denable-docs=false
+      -Dxkb-config-root=#{HOMEBREW_PREFIX}/share/X11/xkb
+      -Dxkb-config-root=#{HOMEBREW_PREFIX}/share/X11/locale
+    ]
+    mkdir "build" do
+      system "meson", *std_meson_args, *args, ".."
+      system "ninja", "install", "-v"
     end
-    inreplace %w[Makefile.in Makefile.am] do |s|
-      s.gsub! "-Wl,--version-script=${srcdir}/xkbcommon.map", ""
-      s.gsub! "-Wl,--version-script=${srcdir}/xkbcommon-x11.map", ""
-    end
-
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
-    #include <stdlib.h>
-    #include <xkbcommon/xkbcommon.h>
-    int main() {
-      return (xkb_context_new(XKB_CONTEXT_NO_FLAGS) == NULL)
-        ? EXIT_FAILURE
-        : EXIT_SUCCESS;
-    }
+    (testpath/"test.c").write <<~EOS
+      #include <stdlib.h>
+      #include <xkbcommon/xkbcommon.h>
+      int main() {
+        return (xkb_context_new(XKB_CONTEXT_NO_FLAGS) == NULL)
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS;
+      }
     EOS
     system ENV.cc, "test.c", "-I#{include}", "-L#{lib}", "-lxkbcommon",
                    "-o", "test"

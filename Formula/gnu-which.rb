@@ -2,32 +2,53 @@ class GnuWhich < Formula
   desc "GNU implementation of which utility"
   # Previous homepage is dead. Have linked to the GNU Projects page for now.
   homepage "https://savannah.gnu.org/projects/which/"
-  url "https://ftpmirror.gnu.org/which/which-2.21.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/which/which-2.21.tar.gz"
+  url "https://ftp.gnu.org/gnu/which/which-2.21.tar.gz"
+  mirror "https://ftpmirror.gnu.org/which/which-2.21.tar.gz"
   sha256 "f4a245b94124b377d8b49646bf421f9155d36aa7614b6ebf83705d3ffc76eaad"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ad546f7de7825dfbadcfbadd27a493d8acdb44c4a7a6855d02473ef96fb2f716" => :sierra
-    sha256 "c7ed10cf7ef215ef098e2e340d1f491037080acac59a38ade51088ebc09e71c4" => :el_capitan
-    sha256 "469d61be66afe0da2758838d1bde62544a661691568eaa30bc4f5abc16402efc" => :yosemite
-    sha256 "b2649bbc23e1b180e3a7b9d4f88765d674696468904b246d253a7ca39106af61" => :mavericks
-    sha256 "5f9dc6704dbc7599c299c6e0dd186efe19d2cdf6680651010c7a9c3b377a983e" => :mountain_lion
+    rebuild 3
+    sha256 "eeb493d3cc6252da45b29cf1d2a1d6daca630a6cd467ae690c3979673ea9a589" => :big_sur
+    sha256 "f9e6512591096a9f53067ea4a0b5b9f8516515b49fd5bdabfc6e31c1c0c876f2" => :catalina
+    sha256 "170008e80a4cc5f1e45b3445f9fb6f099d7700aa6dd825602f6d32316c27735b" => :mojave
+    sha256 "66446416b0dc367076ab38cfc9775d8c201fc571b1a2cd2fc0197daa6b83882a" => :high_sierra
+    sha256 "68ea3522ec318c9b25d711ce4405b4cd6a41edca20b7df008adc499ab794c4fa" => :sierra
   end
 
-  deprecated_option "default-names" => "with-default-names"
-
-  option "with-default-names", "Do not prepend 'g' to the binary"
-
   def install
-    args = ["--prefix=#{prefix}", "--disable-dependency-tracking"]
-    args << "--program-prefix=g" if build.without? "default-names"
+    args = %W[
+      --prefix=#{prefix}
+      --disable-dependency-tracking
+      --program-prefix=g
+    ]
 
     system "./configure", *args
     system "make", "install"
+
+    (libexec/"gnubin").install_symlink bin/"gwhich" => "which"
+    (libexec/"gnuman/man1").install_symlink man1/"gwhich.1" => "which.1"
+
+    libexec.install_symlink "gnuman" => "man"
+  end
+
+  def caveats
+    <<~EOS
+      GNU "which" has been installed as "gwhich".
+      If you need to use it as "which", you can add a "gnubin" directory
+      to your PATH from your bashrc like:
+
+          PATH="#{opt_libexec}/gnubin:$PATH"
+    EOS
   end
 
   test do
     system "#{bin}/gwhich", "gcc"
+    system "#{opt_libexec}/gnubin/which", "gcc"
   end
 end

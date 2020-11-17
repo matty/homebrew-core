@@ -1,49 +1,40 @@
 class OpenalSoft < Formula
   desc "Implementation of the OpenAL 3D audio API"
-  homepage "http://kcat.strangesoft.net/openal.html"
-  url "http://kcat.strangesoft.net/openal-releases/openal-soft-1.17.2.tar.bz2"
-  sha256 "a341f8542f1f0b8c65241a17da13d073f18ec06658e1a1606a8ecc8bbc2b3314"
-  head "http://repo.or.cz/openal-soft.git"
+  homepage "https://openal-soft.org/"
+  url "https://openal-soft.org/openal-releases/openal-soft-1.21.0.tar.bz2"
+  sha256 "2916b4fc24e23b0271ce0b3468832ad8b6d8441b1830215b28cc4fee6cc89297"
+  license "LGPL-2.0-or-later"
+  head "https://github.com/kcat/openal-soft.git"
 
   bottle do
     cellar :any
-    sha256 "7c0761d8e3bf7dab54956908b2d08a2781ef418e77db499f6b57f8193530734b" => :sierra
-    sha256 "915bd92597553f3f005071fa85e08e2947fd545a4af4b5dcf514ea79320d7a99" => :el_capitan
-    sha256 "643cd46bc9aa8fdf9c85aaa374d71d2dd6d18abeb674445f49d829f61dc82c4e" => :yosemite
-    sha256 "819886eab2909ebcff2edb16c39ede1800ec987e193b0fdfce8d4047636fff17" => :mavericks
+    sha256 "4bc86ddf78328c9b229e9200b0ff0f35f2c968931558d0471f9d8ef276c9feb2" => :big_sur
+    sha256 "2f288bddf5b23b868e7ee2773877eeeab70dce4bc3ba7e95fd106753be7e361d" => :catalina
+    sha256 "a6fac3b7778cba045106631a61b7f9cf58c189cc27ca210983b3f7c73c48301e" => :mojave
+    sha256 "c1f4cf0e42e75b583ff7a78dad6850b6ed8874bb6aeb7734b8116366a5b6697e" => :high_sierra
   end
 
-  keg_only :provided_by_osx, "macOS provides OpenAL.framework."
+  keg_only :shadowed_by_macos, "macOS provides OpenAL.framework"
 
-  option :universal
-
-  depends_on "pkg-config" => :build
   depends_on "cmake" => :build
-  depends_on "portaudio" => :optional
-  depends_on "pulseaudio" => :optional
-  depends_on "fluid-synth" => :optional
-
-  # clang 4.2's support for alignas is incomplete
-  fails_with(:clang) { build 425 }
+  depends_on "pkg-config" => :build
 
   def install
-    ENV.universal_binary if build.universal?
-
     # Please don't reenable example building. See:
     # https://github.com/Homebrew/homebrew/issues/38274
-    args = std_cmake_args
-    args << "-DALSOFT_EXAMPLES=OFF"
-
-    args << "-DALSOFT_BACKEND_PORTAUDIO=OFF" if build.without? "portaudio"
-    args << "-DALSOFT_BACKEND_PULSEAUDIO=OFF" if build.without? "pulseaudio"
-    args << "-DALSOFT_MIDI_FLUIDSYNTH=OFF" if build.without? "fluid-synth"
+    args = std_cmake_args + %w[
+      -DALSOFT_BACKEND_PORTAUDIO=OFF
+      -DALSOFT_BACKEND_PULSEAUDIO=OFF
+      -DALSOFT_EXAMPLES=OFF
+      -DALSOFT_MIDI_FLUIDSYNTH=OFF
+    ]
 
     system "cmake", ".", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include "AL/al.h"
       #include "AL/alc.h"
       int main() {

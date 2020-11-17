@@ -2,16 +2,22 @@ require "language/node"
 
 class Typescript < Formula
   desc "Language for application scale JavaScript development"
-  homepage "http://typescriptlang.org/"
-  url "https://registry.npmjs.org/typescript/-/typescript-2.1.5.tgz"
-  sha256 "ce5532a3bc58cfe756a7f7299d82588de80db13774751d6be6a48f8447d2caf7"
+  homepage "https://www.typescriptlang.org/"
+  url "https://registry.npmjs.org/typescript/-/typescript-4.0.5.tgz"
+  sha256 "52bbbcc4f16cd5ea797d30b9daaf0650ee6d7b024189d00b2e193142cd79d00e"
+  license "Apache-2.0"
   head "https://github.com/Microsoft/TypeScript.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "84ad2d1e73d2d4c8ba9af3b4b9737d98ba4b13a1297c3abf3c262bb239c5907f" => :sierra
-    sha256 "374a0e8adce7a370f294657b154b7df86e108787db1e6d07d3568d51dc5ac672" => :el_capitan
-    sha256 "59e66ec04ff2490454f79a70127d9642c7e8dcece8b68eac4217c35ef29d88b3" => :yosemite
+    sha256 "c93abdaa34e0c3ced956b288e62ece8e799c67ff9d0d88727cd4f6b0307a4c05" => :big_sur
+    sha256 "056891ea503aebf06fdf9c54c1f6de5c58153b734155818e3718ecf9019e1cdf" => :catalina
+    sha256 "753648f277368246cff33aff097f300fbe34c366f650aa3fa7f1359c19e5bb9d" => :mojave
+    sha256 "438d7476dcf8bbf3a754f4d29c06bf7acdeb2abe1e5f89d768a54b0e6b9f3aca" => :high_sierra
   end
 
   depends_on "node"
@@ -22,7 +28,7 @@ class Typescript < Formula
   end
 
   test do
-    (testpath/"test.ts").write <<-EOS.undent
+    (testpath/"test.ts").write <<~EOS
       class Test {
         greet() {
           return "Hello, world!";
@@ -33,6 +39,6 @@ class Typescript < Formula
     EOS
 
     system bin/"tsc", "test.ts"
-    assert File.exist?("test.js"), "test.js was not generated"
+    assert_predicate testpath/"test.js", :exist?, "test.js was not generated"
   end
 end

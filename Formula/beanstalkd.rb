@@ -1,48 +1,54 @@
 class Beanstalkd < Formula
   desc "Generic work queue originally designed to reduce web latency"
-  homepage "https://kr.github.io/beanstalkd/"
-  url "https://github.com/kr/beanstalkd/archive/v1.10.tar.gz"
-  sha256 "923b1e195e168c2a91adcc75371231c26dcf23868ed3e0403cd4b1d662a52d59"
+  homepage "https://beanstalkd.github.io/"
+  url "https://github.com/beanstalkd/beanstalkd/archive/v1.12.tar.gz"
+  sha256 "f43a7ea7f71db896338224b32f5e534951a976f13b7ef7a4fb5f5aed9f57883f"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "95a75ad2e7f06dfff9881762bddeb1fb06319a411165cba0114e4b7c9b1a4103" => :sierra
-    sha256 "6665ec5a9a493341134eca920517547340b672513f96317620c5095db3db9499" => :el_capitan
-    sha256 "1772e0af60fe42a471437285f29a9c03b52cd8ddd805eaf3339a9d644c4d1bb5" => :yosemite
-    sha256 "3d0c54d751784dd7ecfe1b482f30067ade6e7f99ec21d1e87e8f850fe2582f37" => :mavericks
+    sha256 "8d2a2ae37dc5914fc8f9a81973e056d5d310a12e87ab089a97f47d0fa8a6168b" => :big_sur
+    sha256 "eb308ce225c6f335a5a27518b63f8ce70caa263e94afbb7d9c2bb9000c12d974" => :catalina
+    sha256 "da06f9b4142a163f26de89e5d67c729fd4edd9fbd2dcf3ada91507f92f45ec93" => :mojave
+    sha256 "d57a1db5de295181c1f5596951160cc65b7f27645806fb35834f6409cbc57a6e" => :high_sierra
   end
 
   def install
     system "make", "install", "PREFIX=#{prefix}"
   end
 
-  plist_options :manual => "beanstalkd"
+  plist_options manual: "beanstalkd"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
-        <true/>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/beanstalkd</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <true/>
-        <key>WorkingDirectory</key>
-        <string>#{var}</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/beanstalkd.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/beanstalkd.log</string>
-      </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>KeepAlive</key>
+          <true/>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/beanstalkd</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <true/>
+          <key>WorkingDirectory</key>
+          <string>#{var}</string>
+          <key>StandardErrorPath</key>
+          <string>#{var}/log/beanstalkd.log</string>
+          <key>StandardOutPath</key>
+          <string>#{var}/log/beanstalkd.log</string>
+        </dict>
+      </plist>
     EOS
+  end
+
+  test do
+    system "#{bin}/beanstalkd", "-v"
   end
 end

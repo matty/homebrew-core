@@ -1,86 +1,66 @@
 class Mpv < Formula
   desc "Media player based on MPlayer and mplayer2"
   homepage "https://mpv.io"
-  url "https://github.com/mpv-player/mpv/archive/v0.24.0.tar.gz"
-  sha256 "a41854fa0ac35b9c309ad692aaee67c8d4495c3546f11cb4cdd0a124195d3f15"
+  url "https://github.com/mpv-player/mpv/archive/v0.32.0.tar.gz"
+  sha256 "9163f64832226d22e24bbc4874ebd6ac02372cd717bef15c28a0aa858c5fe592"
+  license :cannot_represent
+  revision 8
   head "https://github.com/mpv-player/mpv.git"
 
   bottle do
-    sha256 "fe7fcfdc3965763ac620c0ad00ee0e99c076dacab470466a445dd14f6cbe0ae4" => :sierra
-    sha256 "ca3f5dca5481d98201f7afa06833f01e76c69d8a0db3377c8f982b7c37d62ff4" => :el_capitan
-    sha256 "584dc380a019bbeebdc7ece2ce5485418bcfbac8de6203932863aee276d6d26b" => :yosemite
+    sha256 "1d8421615662ec78b6a39b05a5f5e0866201d6d366a841d491f0e86275e7b6ef" => :catalina
+    sha256 "24534b1b00aaae1fa95f1769163d7f39323fb44815917f055422435c30783973" => :mojave
+    sha256 "5b1646ef721f695917c07796cc4070a7cf553b0348eb37d6e52c5026c835e4d0" => :high_sierra
   end
 
-  option "with-bundle", "Enable compilation of the .app bundle."
-
+  depends_on "docutils" => :build
   depends_on "pkg-config" => :build
-  depends_on :python3 => :build
+  depends_on "python@3.9" => :build
+  depends_on xcode: :build
 
-  depends_on "libass"
   depends_on "ffmpeg"
-
-  depends_on "jpeg" => :recommended
-  depends_on "little-cms2" => :recommended
-  depends_on "lua" => :recommended
-  depends_on "youtube-dl" => :recommended
-
-  depends_on "jack" => :optional
-  depends_on "libaacs" => :optional
-  depends_on "libarchive" => :optional
-  depends_on "libbluray" => :optional
-  depends_on "libcaca" => :optional
-  depends_on "libdvdnav" => :optional
-  depends_on "libdvdread" => :optional
-  depends_on "pulseaudio" => :optional
-  depends_on "rubberband" => :optional
-  depends_on "uchardet" => :optional
-  depends_on "vapoursynth" => :optional
-  depends_on :x11 => :optional
-
-  depends_on :macos => :mountain_lion
-
-  resource "docutils" do
-    url "https://files.pythonhosted.org/packages/05/25/7b5484aca5d46915493f1fd4ecb63c38c333bd32aa9ad6e19da8d08895ae/docutils-0.13.1.tar.gz"
-    sha256 "718c0f5fb677be0f34b781e04241c4067cbd9327b66bdd8e763201130f5175be"
-  end
+  depends_on "jpeg"
+  depends_on "libarchive"
+  depends_on "libass"
+  depends_on "little-cms2"
+  depends_on "lua@5.1"
+  depends_on "mujs"
+  depends_on "uchardet"
+  depends_on "vapoursynth"
+  depends_on "youtube-dl"
 
   def install
-    # LANG is unset by default on osx and causes issues when calling getlocale
+    # LANG is unset by default on macOS and causes issues when calling getlocale
     # or getdefaultlocale in docutils. Force the default c/posix locale since
     # that's good enough for building the manpage.
     ENV["LC_ALL"] = "C"
 
-    ENV.prepend_create_path "PYTHONPATH", buildpath/"vendor/lib/python2.7/site-packages"
-    resource("docutils").stage do
-      system "python", *Language::Python.setup_install_args(buildpath/"vendor")
-    end
-    ENV.prepend_path "PATH", buildpath/"vendor/bin"
+    # libarchive is keg-only
+    ENV.prepend_path "PKG_CONFIG_PATH", Formula["libarchive"].opt_lib/"pkgconfig"
 
     args = %W[
       --prefix=#{prefix}
-      --enable-zsh-comp
-      --enable-libmpv-shared
       --enable-html-build
+      --enable-javascript
+      --enable-libmpv-shared
+      --enable-lua
+      --enable-libarchive
+      --enable-uchardet
       --confdir=#{etc}/mpv
       --datadir=#{pkgshare}
       --mandir=#{man}
       --docdir=#{doc}
       --zshdir=#{zsh_completion}
+      --lua=51deb
     ]
-    args << "--enable-libarchive" if build.with? "libarchive"
-    args << "--enable-pulse" if build.with? "pulseaudio"
 
-    system "./bootstrap.py"
-    system "python3", "waf", "configure", *args
-    system "python3", "waf", "install"
-
-    if build.with? "bundle"
-      system "python3", "TOOLS/osxbundle.py", "build/mpv"
-      prefix.install "build/mpv.app"
-    end
+    system Formula["python@3.9"].opt_bin/"python3", "bootstrap.py"
+    system Formula["python@3.9"].opt_bin/"python3", "waf", "configure", *args
+    system Formula["python@3.9"].opt_bin/"python3", "waf", "install"
   end
 
   test do
     system bin/"mpv", "--ao=null", test_fixtures("test.wav")
+    assert_match "vapoursynth", shell_output(bin/"mpv --vf=help")
   end
 end

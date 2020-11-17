@@ -1,41 +1,36 @@
 class Liblo < Formula
   desc "Lightweight Open Sound Control implementation"
   homepage "https://liblo.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/liblo/liblo/0.28/liblo-0.28.tar.gz"
-  sha256 "da94a9b67b93625354dd89ff7fe31e5297fc9400b6eaf7378c82ee1caf7db909"
+  url "https://downloads.sourceforge.net/project/liblo/liblo/0.31/liblo-0.31.tar.gz"
+  sha256 "2b4f446e1220dcd624ecd8405248b08b7601e9a0d87a0b94730c2907dbccc750"
+  license "LGPL-2.1"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "3e974c53259293996ce8b2293413aa5bc17986f773a40d067be7eef2b6461737" => :sierra
-    sha256 "d81d8b215a608d3bc9d5c125a04243372e9ac8c5b1b627045a30c728f89c1c7a" => :el_capitan
-    sha256 "e56f28e422f08467b0db99b6db4771a36cd6dba6f4880e57f993f84c41ee1df9" => :yosemite
-    sha256 "26f814026942763e874c480f35f0a3345c2267633d7fbc63cdeef4704dd991a4" => :mavericks
+    sha256 "19eef0619f05faa15a7d5368973dcd3e5ed2e44291b56cc6ff72825fe8879845" => :big_sur
+    sha256 "aac4280d5e147a6baab53c252bbf7cda296fe5bdeceb26d7aa60acb10ecc5444" => :catalina
+    sha256 "3310110ec91fb412b8d5c727bda03454aebec087d78ebada20bb53ad9582088e" => :mojave
+    sha256 "034eaec236ee4df490d16db9998ec7a4d88223d929b333c8b08ade641bc74bcb" => :high_sierra
   end
 
   head do
-    url "git://liblo.git.sourceforge.net/gitroot/liblo/liblo"
+    url "https://git.code.sf.net/p/liblo/git.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option :universal
-  option "with-ipv6", "Compile with support for ipv6"
-
-  deprecated_option "enable-ipv6" => "with-ipv6"
-
   def install
-    ENV.universal_binary if build.universal?
-
     args = %W[
       --disable-debug
       --disable-dependency-tracking
       --prefix=#{prefix}
     ]
-
-    args << "--enable-ipv6" if build.with? "ipv6"
 
     if build.head?
       system "./autogen.sh", *args
@@ -44,5 +39,21 @@ class Liblo < Formula
     end
 
     system "make", "install"
+  end
+
+  test do
+    (testpath/"lo_version.c").write <<~EOS
+      #include <stdio.h>
+      #include "lo/lo.h"
+      int main() {
+        char version[6];
+        lo_version(version, 6, 0, 0, 0, 0, 0, 0, 0);
+        printf("%s", version);
+        return 0;
+      }
+    EOS
+    system ENV.cc, "lo_version.c", "-I#{include}", "-L#{lib}", "-llo", "-o", "lo_version"
+    lo_version = `./lo_version`
+    assert_equal version.to_str, lo_version
   end
 end

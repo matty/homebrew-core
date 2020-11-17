@@ -1,20 +1,26 @@
 class ClosureCompiler < Formula
   desc "JavaScript optimizing compiler"
   homepage "https://github.com/google/closure-compiler"
-  url "https://search.maven.org/remotecontent?filepath=com/google/javascript/closure-compiler/v20170124/closure-compiler-v20170124.jar"
-  sha256 "44a5ce9aac2d0d8509991f85d3c11e2633fd1c3e2de12d901b2d82c05a742b3b"
+  url "https://search.maven.org/remotecontent?filepath=com/google/javascript/closure-compiler/v20201102/closure-compiler-v20201102.jar"
+  sha256 "1cbe593d76ab0939999df96d6bad8f700444cc7ae39fc20320c75fd1498eb293"
+  license "Apache-2.0"
+
+  livecheck do
+    url "https://search.maven.org/remotecontent?filepath=com/google/javascript/closure-compiler/"
+    regex(/href=.*?v?(\d{8})/i)
+  end
 
   bottle :unneeded
 
-  depends_on :java => "1.7+"
+  depends_on "openjdk"
 
   def install
     libexec.install Dir["*"]
-    bin.write_jar_script libexec.children.first, "closure-compiler"
+    bin.write_jar_script libexec/"closure-compiler-v#{version}.jar", "closure-compiler"
   end
 
   test do
-    (testpath/"test.js").write <<-EOS.undent
+    (testpath/"test.js").write <<~EOS
       (function(){
         var t = true;
         return t;

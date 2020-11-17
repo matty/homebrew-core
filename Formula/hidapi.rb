@@ -1,28 +1,17 @@
 class Hidapi < Formula
   desc "Library for communicating with USB and Bluetooth HID devices"
-  homepage "https://github.com/signal11/hidapi"
-  url "https://github.com/signal11/hidapi/archive/hidapi-0.8.0-rc1.tar.gz"
-  sha256 "3c147200bf48a04c1e927cd81589c5ddceff61e6dac137a605f6ac9793f4af61"
-  head "https://github.com/signal11/hidapi.git"
-
-  # This patch addresses a bug discovered in the HidApi IOHidManager back-end
-  # that is being used with Macs.
-  # The bug was dramatically changing the behaviour of the function
-  # "hid_get_feature_report". As a consequence, many applications working
-  # with HidApi were not behaving correctly on OSX.
-  # pull request on Hidapi's repo: https://github.com/signal11/hidapi/pull/219
-  patch do
-    url "https://github.com/signal11/hidapi/pull/219.patch"
-    sha256 "d0a21a150425629a8388320df86818109e33d3230f6b0780c60524c9d15030ee"
-  end
+  homepage "https://github.com/libusb/hidapi"
+  url "https://github.com/libusb/hidapi/archive/hidapi-0.10.0.tar.gz"
+  sha256 "68febd416cb6e6e6e205c9dd46a6f86f0d5a9808b7cd8c112906cd229889b8e1"
+  license "GPL-3.0"
+  head "https://github.com/libusb/hidapi.git"
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "2c16239b99b23f5fee3992391f8450a317b3c421d61efd248ad69c063cb7ffef" => :sierra
-    sha256 "cea4750ae62177a9b399b43d463eec41852161f691a148b03d7b7f91789932fc" => :el_capitan
-    sha256 "06daf7b3080f0c87c46b3f69c869ce3b88de5ce1187db2435cd8e3a1db2e9871" => :yosemite
-    sha256 "6821097f8a0bb55df7697aa26fc7bea3e79914e76932eb69e03b4346a22309dc" => :mavericks
+    sha256 "eefba549787906747456fddfed47c306b3c5157db9da0926e919aba420166e3b" => :big_sur
+    sha256 "72dfa16cd42bbd13962305d59632f144110c647dd575407fedf4596e18bd1ddb" => :catalina
+    sha256 "71d043045302a15cdb18ec3180f798dda312ee5a0f56ea269c5aabfc67c8119d" => :mojave
+    sha256 "0b5108af3c48a0d208b74f7f970dd73cda8d5b9dd6e7baed7424efc439bca8bf" => :high_sierra
   end
 
   depends_on "autoconf" => :build
@@ -38,7 +27,7 @@ class Hidapi < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include "hidapi.h"
       int main(void)
       {

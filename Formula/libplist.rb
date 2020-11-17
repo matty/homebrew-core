@@ -1,58 +1,59 @@
 class Libplist < Formula
   desc "Library for Apple Binary- and XML-Property Lists"
-  homepage "http://www.libimobiledevice.org"
-  url "http://www.libimobiledevice.org/downloads/libplist-1.12.tar.bz2"
-  sha256 "0effdedcb3de128c4930d8c03a3854c74c426c16728b8ab5f0a5b6bdc0b644be"
+  homepage "https://www.libimobiledevice.org/"
+  url "https://github.com/libimobiledevice/libplist/archive/2.2.0.tar.gz"
+  sha256 "7e654bdd5d8b96f03240227ed09057377f06ebad08e1c37d0cfa2abe6ba0cee2"
+  license "LGPL-2.1"
 
   bottle do
     cellar :any
-    sha256 "17e002302e49764d8433d7103e54b6269201f1b3ad1d8c699a280edb3e23db93" => :sierra
-    sha256 "44d4da500ed4448656ce335d43ff89c8df8bfc7fd7d78515e9e111e32673e645" => :el_capitan
-    sha256 "c6f8dbc8fc0431d41e73c8f7da6a1292ec7d26358208540d99f775ad9af900ca" => :yosemite
-    sha256 "5bfb26555e67a5a8b144ea187e32ba4b287901e4b7358e9b617aad2ddc82f9eb" => :mavericks
-    sha256 "251e34405ba2111cb2f30e0857b81072b92563ebd9efa77e240214daf106560f" => :mountain_lion
+    sha256 "1ac05ef69cc02f4663fbb1c3d6d6e964c70a5ba0743d7e9e242da06864a63a70" => :big_sur
+    sha256 "20faf60d286c8ceed790a9b6e34245acf7bafacc7fcbcb390d6b62e194b323e6" => :catalina
+    sha256 "768453f8710ec1c3e074ad0ebc7723da88c2b8575e5de6962ca6f1d4a85cb61d" => :mojave
+    sha256 "02291f2f28099a73de8fa37b49962fe575a434be63af356cceff9200c6d73f37" => :high_sierra
   end
 
   head do
-    url "http://git.sukimashita.com/libplist.git"
-
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "libtool" => :build
+    url "https://git.sukimashita.com/libplist.git"
   end
 
-  option "with-python", "Enable Cython Python bindings"
-
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on "libxml2"
-  depends_on :python => :optional
-
-  resource "cython" do
-    url "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz#md5=890b494a12951f1d6228c416a5789554"
-    sha256 "84808fda00508757928e1feadcf41c9f78e9a9b7167b6649ab0933b76f75e7b9"
-  end
 
   def install
     ENV.deparallelize
+
     args = %W[
       --disable-dependency-tracking
       --disable-silent-rules
       --prefix=#{prefix}
+      --without-cython
     ]
 
-    if build.with? "python"
-      resource("cython").stage do
-        ENV.prepend_create_path "PYTHONPATH", buildpath+"lib/python2.7/site-packages"
-        system "python", "setup.py", "build", "install", "--prefix=#{buildpath}",
-                 "--single-version-externally-managed", "--record=installed.txt"
-      end
-      ENV.prepend_path "PATH", "#{buildpath}/bin"
-    else
-      args << "--without-cython"
-    end
-
-    system "./autogen.sh" if build.head?
-    system "./configure", *args
+    system "./autogen.sh", *args
+    system "make"
     system "make", "install", "PYTHON_LDFLAGS=-undefined dynamic_lookup"
+  end
+
+  test do
+    (testpath/"test.plist").write <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>test</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>/bin/echo</string>
+        </array>
+      </dict>
+      </plist>
+    EOS
+    system bin/"plistutil", "-i", "test.plist", "-o", "test_binary.plist"
+    assert_predicate testpath/"test_binary.plist", :exist?,
+                     "Failed to create converted plist!"
   end
 end

@@ -1,38 +1,65 @@
 class OpenMpi < Formula
   desc "High performance message passing library"
   homepage "https://www.open-mpi.org/"
-  url "https://www.open-mpi.org/software/ompi/v2.0/downloads/openmpi-2.0.2.tar.bz2"
-  sha256 "cae396e643f9f91f0a795f8d8694adf7bacfb16f967c22fb39e9e28d477730d3"
+  url "https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.5.tar.bz2"
+  sha256 "c58f3863b61d944231077f344fe6b4b8fbb83f3d1bc93ab74640bf3e5acac009"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url :homepage
+    regex(/MPI v?(\d+(?:\.\d+)+) release/i)
+  end
 
   bottle do
-    sha256 "ad5cbb66ea4b959ccc008121cb986e0d5cd005c6f1996b8c18b7b804ab2c15d1" => :sierra
-    sha256 "8563da814527ebad9a22b307ac68f66d7c752711cb784196444419cb66e09844" => :el_capitan
-    sha256 "9fb3b972058e1331e0443233e5e924c82ff8bdd8e33af60daec6b285658e3c2f" => :yosemite
+    sha256 "2afe47eb2c9664599a1bf8687d0244a9b9067bc96e3de184cdee8e3110fa8012" => :big_sur
+    sha256 "fd21d8d449c7fee6126f11994b6e0d12178b1eab55cbb17f99056d535cb1ace4" => :catalina
+    sha256 "f3a7dca683792a4fe866b62004351b1dae6acf2376609cf36bdc771d9e9104ef" => :mojave
+    sha256 "33d3cd119f7f7d7d3154d758cc0ad68ad513624c9a648c9b87d732ea6a8e6068" => :high_sierra
   end
 
   head do
     url "https://github.com/open-mpi/ompi.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option "with-mpi-thread-multiple", "Enable MPI_THREAD_MULTIPLE"
-  option "with-cxx-bindings", "Enable C++ MPI bindings (deprecated as of MPI-3.0)"
-  option :cxx11
+  # Regenerate for Big Sur due to configure issues
+  # https://github.com/open-mpi/ompi/issues/8218
+  if MacOS.version >= :big_sur
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
+  end
 
-  deprecated_option "disable-fortran" => "without-fortran"
-  deprecated_option "enable-mpi-thread-multiple" => "with-mpi-thread-multiple"
-
-  depends_on :fortran => :recommended
-  depends_on :java => :optional
+  depends_on "gcc"
+  depends_on "hwloc"
   depends_on "libevent"
 
-  conflicts_with "mpich", :because => "both install mpi__ compiler wrappers"
-  conflicts_with "lcdf-typetools", :because => "both install same set of binaries."
+  conflicts_with "mpich", because: "both install MPI compiler wrappers"
 
   def install
-    ENV.cxx11 if build.cxx11?
+    # otherwise libmpi_usempi_ignore_tkr gets built as a static library
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
+
+    # Avoid references to the Homebrew shims directory
+    %w[
+      ompi/tools/ompi_info/param.c
+      orte/tools/orte-info/param.c
+      oshmem/tools/oshmem_info/param.c
+      opal/mca/pmix/pmix3x/pmix/src/tools/pmix_info/support.c
+    ].each do |fname|
+      inreplace fname, /(OPAL|PMIX)_CC_ABSOLUTE/, "\"#{ENV.cc}\""
+    end
+
+    %w[
+      ompi/tools/ompi_info/param.c
+      oshmem/tools/oshmem_info/param.c
+    ].each do |fname|
+      inreplace fname, "OMPI_CXX_ABSOLUTE", "\"#{ENV.cxx}\""
+    end
+
+    ENV.cxx11
 
     args = %W[
       --prefix=#{prefix}
@@ -43,26 +70,20 @@ class OpenMpi < Formula
       --with-sge
     ]
     args << "--with-platform-optimized" if build.head?
-    args << "--disable-mpi-fortran" if build.without? "fortran"
-    args << "--enable-mpi-thread-multiple" if build.with? "mpi-thread-multiple"
-    args << "--enable-mpi-java" if build.with? "java"
-    args << "--enable-mpi-cxx" if build.with? "cxx-bindings"
 
-    system "./autogen.pl" if build.head?
+    system "./autogen.pl", "--force" if build.head? || MacOS.version >= :big_sur
     system "./configure", *args
     system "make", "all"
     system "make", "check"
     system "make", "install"
 
-    # If Fortran bindings were built, there will be stray `.mod` files
-    # (Fortran header) in `lib` that need to be moved to `include`.
-    if build.with? "fortran"
-      include.install Dir["#{lib}/*.mod"]
-    end
+    # Fortran bindings install stray `.mod` files (Fortran modules) in `lib`
+    # that need to be moved to `include`.
+    include.install Dir["#{lib}/*.mod"]
   end
 
   test do
-    (testpath/"hello.c").write <<-EOS.undent
+    (testpath/"hello.c").write <<~EOS
       #include <mpi.h>
       #include <stdio.h>
 
@@ -81,8 +102,8 @@ class OpenMpi < Formula
     EOS
     system bin/"mpicc", "hello.c", "-o", "hello"
     system "./hello"
-    system bin/"mpirun", "-np", "4", "./hello"
-    (testpath/"hellof.f90").write <<-EOS.undent
+    system bin/"mpirun", "./hello"
+    (testpath/"hellof.f90").write <<~EOS
       program hello
       include 'mpif.h'
       integer rank, size, ierror, tag, status(MPI_STATUS_SIZE)
@@ -95,6 +116,6 @@ class OpenMpi < Formula
     EOS
     system bin/"mpif90", "hellof.f90", "-o", "hellof"
     system "./hellof"
-    system bin/"mpirun", "-np", "4", "./hellof"
+    system bin/"mpirun", "./hellof"
   end
 end

@@ -1,57 +1,59 @@
 class WlaDx < Formula
   desc "Yet another crossassembler package"
   homepage "https://github.com/vhelin/wla-dx"
-  url "https://github.com/vhelin/wla-dx/archive/v9.6.tar.gz"
-  sha256 "d368f4fb7d8a394f65730682dba6fddfe75b3c6119756799cdb3cd5e1ae78e0d"
-  head "https://github.com/vhelin/wla-dx.git"
+  url "https://github.com/vhelin/wla-dx/archive/v9.11-fix-fix-fix.tar.gz"
+  sha256 "7ac29b50492ece1d3d47db040219488a120f6cd613110b1e4c5d5d79790b1139"
+  license "GPL-2.0"
+  revision 1
+
+  livecheck do
+    url "https://github.com/vhelin/wla-dx/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)(?:-fix)*["' >]}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "1f55a4e132ec1fb82ad09334af83dbf08d1c30ad2ba828392c42fc54f5899cc7" => :sierra
-    sha256 "80c729c545582ba83294b3a4cadd23ef378f4e71daa49220812ab149aa66f49b" => :el_capitan
-    sha256 "4c192ebb6538da0313496f6927a52f7a64782dbeedbf454b0004e203ddb2109e" => :yosemite
-    sha256 "2b8cf1da40e1ce9fedbbf41277ee44955fa99712d46c2fb8d6140c8452b74445" => :mavericks
-    sha256 "a78744385e31896de6b34ae3426c6081ada2f28b997f0c5c15555e10bd03d53e" => :mountain_lion
+    sha256 "8f0d4747eb9ef0885ddf6c08b3d4ac980bd2b6dbaaa9f5048ea7aa4bc6f681b8" => :catalina
+    sha256 "b515cc9b31fd4d978143c518555b02873fabff5ef390d369575c3d3e99606326" => :mojave
+    sha256 "0ed73304d947e4ea44431c06df38bb6887a7551f575ade25a6b63ce7b27187c7" => :high_sierra
   end
 
-  def install
-    %w[CFLAGS CXXFLAGS CPPFLAGS].each { |e| ENV.delete(e) }
-    ENV.append_to_cflags "-c -O3 -ansi -pedantic -Wall"
+  depends_on "cmake" => :build
 
-    chmod 0755, "unix.sh"
-    system "./unix.sh", ENV.make_jobs
-    bin.install Dir["./binaries/*"]
+  def install
+    system "cmake", ".", *std_cmake_args
+    system "make", "install"
   end
 
   test do
-    (testpath/"test-gb-asm.s").write <<-EOS.undent
-     .MEMORYMAP
-      DEFAULTSLOT 1.01
-      SLOT 0.001 $0000 $2000
-      SLOT 1.2 STArT $2000 sIzE $6000
-      .ENDME
+    (testpath/"test-gb-asm.s").write <<~EOS
+      .MEMORYMAP
+       DEFAULTSLOT 1.01
+       SLOT 0.001 $0000 $2000
+       SLOT 1.2 STArT $2000 sIzE $6000
+       .ENDME
 
-      .ROMBANKMAP
-      BANKSTOTAL 2
-      BANKSIZE $2000
-      BANKS 1
-      BANKSIZE $6000
-      BANKS 1
-      .ENDRO
+       .ROMBANKMAP
+       BANKSTOTAL 2
+       BANKSIZE $2000
+       BANKS 1
+       BANKSIZE $6000
+       BANKS 1
+       .ENDRO
 
-      .BANK 1 SLOT 1
+       .BANK 1 SLOT 1
 
-      .ORGA $2000
+       .ORGA $2000
 
 
-      ld hl, sp+127
-      ld hl, sp-128
-      add sp, -128
-      add sp, 127
-      adc 200
-      jr -128
-      jr 127
-      jr nc, 127
+       ld hl, sp+127
+       ld hl, sp-128
+       add sp, -128
+       add sp, 127
+       adc 200
+       jr -128
+       jr 127
+       jr nc, 127
     EOS
     system bin/"wla-gb", "-o", testpath/"test-gb-asm.s"
   end

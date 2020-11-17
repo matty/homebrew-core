@@ -1,15 +1,17 @@
 class SimpleTiles < Formula
   desc "Image generation library for spatial data"
-  homepage "https://propublica.github.io/simple-tiles/"
+  homepage "https://github.com/propublica/simple-tiles"
   url "https://github.com/propublica/simple-tiles/archive/v0.6.1.tar.gz"
   sha256 "2391b2f727855de28adfea9fc95d8c7cbaca63c5b86c7286990d8cbbcd640d6f"
+  license "MIT"
+  revision 9
   head "https://github.com/propublica/simple-tiles.git"
 
   bottle do
     cellar :any
-    sha256 "2d3092fc48d4bc3fd7eb3679f09506bae62c6509756a55fbf6f9a3f18dd5e738" => :sierra
-    sha256 "acbf4fd455b3351d3e5188361694cba78a98dec6f91ce70862e9a7a57b3d387b" => :el_capitan
-    sha256 "42c5936f5beb15090b5199c1e97295ecf442c11ce52fe38876f2a992ffbcb160" => :yosemite
+    sha256 "67877ff99089d483f2b3bb515d3e680fa926cf7de384e8a5bbfa6925fef92e4c" => :catalina
+    sha256 "ccc6df1dbcb3f0385b599fc30624d8fecb16bd9164391b104d17633b5d78f3e1" => :mojave
+    sha256 "a8197a9dbc2b26296c88f7ebad0ece48e128a1194ffb7053dcf93d1718786ff4" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
@@ -23,7 +25,7 @@ class SimpleTiles < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <simple-tiles/simple_tiles.h>
 
       int main(){
@@ -37,6 +39,7 @@ class SimpleTiles < Formula
            "-I#{Formula["gdal"].opt_include}",
            "-I#{Formula["glib"].opt_include}/glib-2.0",
            "-I#{Formula["glib"].opt_lib}/glib-2.0/include",
+           "-I#{Formula["harfbuzz"].opt_include}/harfbuzz",
            "-I#{Formula["pango"].opt_include}/pango-1.0",
            "test.c", "-o", "test"
     system testpath/"test"

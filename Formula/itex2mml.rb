@@ -7,15 +7,19 @@
 class Itex2mml < Formula
   desc "Text filter to convert itex equations to MathML"
   homepage "https://golem.ph.utexas.edu/~distler/blog/itex2MML.html"
-  url "https://golem.ph.utexas.edu/~distler/blog/files/itexToMML-1.5.1.tar.gz"
-  sha256 "09f39f9db83d2693c9c80288644a8121cd268e956e44684722d29cd6343f524c"
+  url "https://golem.ph.utexas.edu/~distler/blog/files/itexToMML-1.6.0.tar.gz"
+  sha256 "5b85b7d77da36af6aba1a56588ce9209b2309d1e99a1b3e6ae8a6d602c30efbb"
+
+  livecheck do
+    url "https://golem.ph.utexas.edu/~distler/code/itexToMML/view/head:/itex-src/itex2MML.h"
+    regex(/#define ITEX2MML_VERSION &quot;v?(\d+(?:\.\d+)+)&quot;/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "d7fe6994fee7a0088fb9539ed116af2f47a27622698e235b64f1e2b0c4fea120" => :sierra
-    sha256 "2fac6420289da65bf725409fff047eb99b5aef6e13b495e7ebe5e9e5bc3d2def" => :el_capitan
-    sha256 "af798ea3f8d4f0128dbccef9d26857f472caa76bde9f601f5ab9cdcb315ee31f" => :yosemite
-    sha256 "f1767334c2aa53a666064e28a298b75e734f671cd6b6ca60ca9b3af91e40cc90" => :mavericks
+    sha256 "61a85ab2e9536209e49b3225f98fc55c0fae709683d0f2662be459f99718bbef" => :catalina
+    sha256 "df578788807a4ee50d332c710ad96c174e570362fd8c2dab01f1da328b53ba96" => :mojave
+    sha256 "95e76b0109c7bc8407c32f12ef1d7f43e62c6c09363840e7b8fee35a56520312" => :high_sierra
   end
 
   def install

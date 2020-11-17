@@ -2,44 +2,36 @@ class Flake8 < Formula
   include Language::Python::Virtualenv
 
   desc "Lint your Python code for style and logical errors"
-  homepage "http://flake8.pycqa.org/"
-  url "https://files.pythonhosted.org/packages/51/70/af1b3130cd051f2f79854b14079b3bcbad84b8bac31a7dffc63ef57f8a7a/flake8-3.2.1.tar.gz"
-  sha256 "c7c460b5aff3a2063c798a77af18ec70af3941d35a22e2e76965e3c0e0b36055"
-
-  head "https://gitlab.com/PyCQA/flake8.git", :shallow => false
+  homepage "https://flake8.pycqa.org/"
+  url "https://gitlab.com/pycqa/flake8/-/archive/3.8.4/flake8-3.8.4.tar.bz2"
+  sha256 "66f65cf5614a24f813a76ab6388507ad8def068dcee859568a3c32a49a5d597b"
+  license "MIT"
+  revision 1
+  head "https://gitlab.com/PyCQA/flake8.git", shallow: false
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4a77d3bae9077de0de12db93cdc041259fc9c29829ccbdbcd1067f493f1ffae0" => :sierra
-    sha256 "12ffb789323a3afcab35a62e9a9b3a94dfe81d7ea0193bb9848529990850a0c0" => :el_capitan
-    sha256 "3c4ebf5880732f8cd9a34577b27c5c99af3173345b4a55b893378aacc3cfbed7" => :yosemite
+    sha256 "ce66a824939beabb82ad0bf5423428db8744d9699557fb929312aae10e4ee393" => :big_sur
+    sha256 "77549fc69b29277ab03f89a5d0f266163fa3989f15c6bc69a3ed822e124c21a8" => :catalina
+    sha256 "6e6ed9e932cbf0bb54700d6e0e8d8433254b6fa250951f2b7ea27cdf53e6a32e" => :mojave
+    sha256 "57fef973e58c0e8bb0ac0030844c3cba24001fd3676c2f2c95d76ea74c460897" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
+
+  resource "mccabe" do
+    url "https://files.pythonhosted.org/packages/06/18/fa675aa501e11d6d6ca0ae73a101b2f3571a565e0f7d38e062eec18a91ee/mccabe-0.6.1.tar.gz"
+    sha256 "dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"
+  end
 
   resource "pycodestyle" do
-    url "https://files.pythonhosted.org/packages/43/9f/56e824b197398582b0c1aaaa2272560bc51f395fe3e45e1dd88de4bb24dc/pycodestyle-2.2.0.tar.gz"
-    sha256 "df81dc3293e0123e2e8d1f2aaf819600e4ae287d8b3af8b72181af50257e5d9a"
+    url "https://files.pythonhosted.org/packages/bb/82/0df047a5347d607be504ad5faa255caa7919562962b934f9372b157e8a70/pycodestyle-2.6.0.tar.gz"
+    sha256 "c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e"
   end
 
   resource "pyflakes" do
-    url "https://files.pythonhosted.org/packages/9f/48/927b1bf3e15d3dadfcfafb505177a62cdabcb78cf7eac4f31f180d5b1e26/pyflakes-1.3.0.tar.gz"
-    sha256 "a4f93317c97a9d9ed71d6ecfe08b68e3de9fea3f4d94dcd1d9d83ccbf929bc31"
-  end
-
-  resource "mccabe" do
-    url "https://files.pythonhosted.org/packages/f1/b7/ff36d1a163079688633a776e1717b5459caccbb68973afab2aa8345ac40f/mccabe-0.5.2.tar.gz"
-    sha256 "3473f06c8b757bbb5cdf295099bf64032e5f7d6fe0ec2f97ee9b23cb0a435aff"
-  end
-
-  resource "configparser" do
-    url "https://files.pythonhosted.org/packages/7c/69/c2ce7e91c89dc073eb1aa74c0621c3eefbffe8216b3f9af9d3885265c01c/configparser-3.5.0.tar.gz"
-    sha256 "5308b47021bc2340965c371f0f058cc6971a04502638d4244225c49d80db273a"
-  end
-
-  resource "enum34" do
-    url "https://files.pythonhosted.org/packages/bf/3e/31d502c25302814a7c2f1d3959d2a3b3f78e509002ba91aea64993936876/enum34-1.1.6.tar.gz"
-    sha256 "8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
+    url "https://files.pythonhosted.org/packages/f1/e2/e02fc89959619590eec0c35f366902535ade2728479fc3082c8af8840013/pyflakes-2.2.0.tar.gz"
+    sha256 "35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8"
   end
 
   def install
@@ -47,6 +39,10 @@ class Flake8 < Formula
   end
 
   test do
-    system "#{bin}/flake8", "#{libexec}/lib/python2.7/site-packages/flake8"
+    (testpath/"test.py").write <<~EOS
+      print("Hello World!")
+    EOS
+
+    system "#{bin}/flake8", "test.py"
   end
 end

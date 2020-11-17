@@ -1,19 +1,42 @@
 class MmCommon < Formula
-  desc "C++ interfaces for GTK+ and GNOME"
+  desc "Build utilities for C++ interfaces of GTK+ and GNOME packages"
   homepage "https://www.gtkmm.org/"
-  url "https://download.gnome.org/sources/mm-common/0.9/mm-common-0.9.10.tar.xz"
-  sha256 "16c0e2bc196b67fbc145edaecb5dbe5818386504fe5703de27002d77140fa217"
+  url "https://download.gnome.org/sources/mm-common/1.0/mm-common-1.0.2.tar.xz"
+  sha256 "a2a99f3fa943cf662f189163ed39a2cfc19a428d906dd4f92b387d3659d1641d"
+  license "GPL-2.0-or-later"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3132dff9a5c9270dd72d2ffdfbd8b0e53c2c7bede33bb1c87a9dde2b4ba95abc" => :sierra
-    sha256 "8f34165d9e854d0d3cf261775c53191115537c343d65771a458ed827357f05a2" => :el_capitan
-    sha256 "8b131b53a8ace806b0b6a3c75be145312377b0f25d92ea578ba07e27809fa852" => :yosemite
-    sha256 "d04a14c639c497aea15e39ab5c70fb6753d3a7983528cb8b18a7e309babedbde" => :mavericks
+    sha256 "0848953327bb61223c30f3fc08c3cf8845c8e7387cafeaca31001967e990c2ae" => :catalina
+    sha256 "82e99d77f2e543ebda262f6bf98cef0cfde5142a95a09a2374358f9ba7d3c781" => :mojave
+    sha256 "292ce8133ff860d6083d049fa2e6d1cb357e8ce9c41453894fbba742ea7bdc20" => :high_sierra
   end
 
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+  depends_on "python@3.9"
+
   def install
-    system "./configure", "--disable-silent-rules", "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja"
+      system "ninja", "install"
+    end
+  end
+
+  test do
+    mkdir testpath/"test"
+    touch testpath/"test/a"
+
+    system bin/"mm-common-prepare", "-c", testpath/"test/a"
+    assert_predicate testpath/"test/compile-binding.am", :exist?
+    assert_predicate testpath/"test/dist-changelog.am", :exist?
+    assert_predicate testpath/"test/doc-reference.am", :exist?
+    assert_predicate testpath/"test/generate-binding.am", :exist?
   end
 end

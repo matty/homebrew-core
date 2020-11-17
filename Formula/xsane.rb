@@ -1,15 +1,21 @@
 class Xsane < Formula
   desc "Graphical scanning frontend"
-  homepage "http://www.xsane.org"
-  url "http://www.xsane.org/download/xsane-0.999.tar.gz"
+  homepage "https://wiki.ubuntuusers.de/XSane/"
+  url "https://ftp.osuosl.org/pub/blfs/conglomeration/xsane/xsane-0.999.tar.gz"
+  mirror "https://fossies.org/linux/misc/xsane-0.999.tar.gz"
   sha256 "5782d23e67dc961c81eef13a87b17eb0144cae3d1ffc5cf7e0322da751482b4b"
-  revision 1
+  revision 4
+
+  livecheck do
+    url "https://ftp.osuosl.org/pub/blfs/conglomeration/xsane/"
+    regex(/href=.*?xsane[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "d8986e38bfaee594922515ca9406213ddabb52c39d8567b997fe3008acc504e6" => :sierra
-    sha256 "7608ab59dd7e21a4c6bff5ccb29e682fd9dbcff9be876516e85fcacff10719f6" => :el_capitan
-    sha256 "df7b1492a1b526a7883fc810cffc2a974e297f0f287be44047f6795a7ae5e8f0" => :yosemite
-    sha256 "64b437736bc0f0c16d0c5bec06facb010939709c4a6923835337e4a5ee63b096" => :mavericks
+    sha256 "1b87500430dca49d717fa39d92214da59f08d4f7ec63ea477056bc5b2b920de4" => :catalina
+    sha256 "93064b6ec70657f6815a0aba5d52c8b7e54e9ef6f223c608351b790887c62b92" => :mojave
+    sha256 "4242d28d56f5ed634f7f8632d41e441e1cbeaf60a362628796a436ba2f8eac11" => :high_sierra
+    sha256 "f247067d49d44f8c0662cd64c99524f13c4b3a18ef7e49a19dd377bb449c859d" => :sierra
   end
 
   depends_on "pkg-config" => :build

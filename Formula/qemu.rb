@@ -1,55 +1,41 @@
 class Qemu < Formula
-  desc "x86 and PowerPC Emulator"
-  homepage "http://wiki.qemu.org"
-  url "http://wiki.qemu-project.org/download/qemu-2.8.0.tar.bz2"
-  sha256 "dafd5d7f649907b6b617b822692f4c82e60cf29bc0fc58bc2036219b591e5e62"
-
-  head "git://git.qemu-project.org/qemu.git"
+  desc "Emulator for x86 and PowerPC"
+  homepage "https://www.qemu.org/"
+  url "https://download.qemu.org/qemu-5.1.0.tar.xz"
+  sha256 "c9174eb5933d9eb5e61f541cd6d1184cd3118dfe4c5c4955bc1bdc4d390fa4e5"
+  license "GPL-2.0-only"
+  head "https://git.qemu.org/git/qemu.git"
 
   bottle do
-    sha256 "9b14fea7d0151fd7a150678b4328d05fb74d75e66613733ba5dca6b1cbb2c1e3" => :sierra
-    sha256 "5d828daa16ec27a62509bae002f35ffd6135905dff5ade78de81479e6dada346" => :el_capitan
-    sha256 "d6229727ed1d48b67b8308d093c4238b3cd3e5e56e4e0994794be7b7168b0b62" => :yosemite
+    sha256 "6d66e4689bda9dc9c43bd3924e49e4722586bb611073ced182c79c6d7f995cb0" => :big_sur
+    sha256 "9659d7d483d014be6366a0480de364cc983e1f9e24e9c42e09f0fa19e216d5d1" => :catalina
+    sha256 "dc0d52fc6839c7800ec0dc38c78c8ccb862357149141aee669ec29449cb3b810" => :mojave
+    sha256 "9a30c423617ebd3dbfc8e67afada9a17f7534a7bba16b3c13189301f53458f36" => :high_sierra
   end
 
-  depends_on "pkg-config" => :build
   depends_on "libtool" => :build
-  depends_on "jpeg"
-  depends_on "libpng" => :recommended
-  depends_on "gnutls"
+  depends_on "pkg-config" => :build
   depends_on "glib"
+  depends_on "gnutls"
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libssh"
+  depends_on "libusb"
+  depends_on "lzo"
+  depends_on "ncurses"
+  depends_on "nettle"
   depends_on "pixman"
-  depends_on "vde" => :optional
-  depends_on "sdl2" => :optional
-  depends_on "gtk+" => :optional
-  depends_on "libssh2" => :optional
+  depends_on "snappy"
+  depends_on "vde"
 
-  deprecated_option "with-sdl" => "with-sdl2"
-
-  fails_with :gcc_4_0 do
-    cause "qemu requires a compiler with support for the __thread specifier"
-  end
-
-  fails_with :gcc do
-    cause "qemu requires a compiler with support for the __thread specifier"
-  end
-
-  # 3.2MB working disc-image file hosted on upstream's servers for people to use to test qemu functionality.
-  resource "armtest" do
-    url "http://wiki.qemu.org/download/arm-test-0.2.tar.gz"
-    sha256 "4b4c2dce4c055f0a2adb93d571987a3d40c96c6cbfd9244d19b9708ce5aea454"
+  # 820KB floppy disk image file of FreeDOS 1.2, used to test QEMU
+  resource "test-image" do
+    url "https://dl.bintray.com/homebrew/mirror/FD12FLOPPY.zip"
+    sha256 "81237c7b42dc0ffc8b32a2f5734e3480a3f9a470c50c14a9c4576a2561a35807"
   end
 
   def install
     ENV["LIBTOOL"] = "glibtool"
-
-    # Fixes "dyld: lazy symbol binding failed: Symbol not found: _clock_gettime"
-    if MacOS.version == "10.11" && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
-      inreplace %w[hw/i386/kvm/i8254.c include/qemu/timer.h linux-user/strace.c
-                   roms/skiboot/external/pflash/progress.c
-                   roms/u-boot/arch/sandbox/cpu/os.c ui/spice-display.c
-                   util/qemu-timer-common.c], "CLOCK_MONOTONIC", "NOT_A_SYMBOL"
-    end
 
     args = %W[
       --prefix=#{prefix}
@@ -57,27 +43,60 @@ class Qemu < Formula
       --host-cc=#{ENV.cc}
       --disable-bsd-user
       --disable-guest-agent
+      --enable-curses
+      --enable-libssh
+      --enable-vde
+      --extra-cflags=-DNCURSES_WIDECHAR=1
+      --enable-cocoa
+      --disable-sdl
+      --disable-gtk
     ]
-
-    # Cocoa and SDL2/GTK+ UIs cannot both be enabled at once.
-    if build.with?("sdl2") || build.with?("gtk+")
-      args << "--disable-cocoa"
-    else
-      args << "--enable-cocoa"
-    end
-
-    args << (build.with?("vde") ? "--enable-vde" : "--disable-vde")
-    args << (build.with?("sdl2") ? "--enable-sdl" : "--disable-sdl")
-    args << (build.with?("gtk+") ? "--enable-gtk" : "--disable-gtk")
-    args << (build.with?("libssh2") ? "--enable-libssh2" : "--disable-libssh2")
+    # Sharing Samba directories in QEMU requires the samba.org smbd which is
+    # incompatible with the macOS-provided version. This will lead to
+    # silent runtime failures, so we set it to a Homebrew path in order to
+    # obtain sensible runtime errors. This will also be compatible with
+    # Samba installations from external taps.
+    args << "--smbd=#{HOMEBREW_PREFIX}/sbin/samba-dot-org-smbd"
 
     system "./configure", *args
     system "make", "V=1", "install"
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/qemu-system-i386 --version")
-    resource("armtest").stage testpath
-    assert_match "file format: raw", shell_output("#{bin}/qemu-img info arm_root.img")
+    expected = build.stable? ? version.to_s : "QEMU Project"
+    assert_match expected, shell_output("#{bin}/qemu-system-aarch64 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-alpha --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-arm --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-cris --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-hppa --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-i386 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-lm32 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-m68k --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-microblaze --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-microblazeel --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-mips --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-mips64 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-mips64el --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-mipsel --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-moxie --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-nios2 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-or1k --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-ppc --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-ppc64 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-riscv32 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-riscv64 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-rx --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-s390x --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-sh4 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-sh4eb --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-sparc --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-sparc64 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-tricore --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-unicore32 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-x86_64 --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-xtensa --version")
+    assert_match expected, shell_output("#{bin}/qemu-system-xtensaeb --version")
+    resource("test-image").stage testpath
+    assert_match "file format: raw", shell_output("#{bin}/qemu-img info FLOPPY.img")
   end
 end

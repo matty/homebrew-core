@@ -1,26 +1,44 @@
 class Vgmstream < Formula
   desc "Library for playing streamed audio formats from video games"
   homepage "https://hcs64.com/vgmstream.html"
-  url "http://svn.code.sf.net/p/vgmstream/code", :revision => 1040
-  version "r1040"
+  url "https://github.com/losnoco/vgmstream.git",
+      tag:      "r1050-3312-g70d20924",
+      revision: "70d20924341e1df3e4f76b4c4a6e414981950f8e"
+  version "r1050-3312-g70d20924"
+  license "ISC"
+  revision 2
+  version_scheme 1
+  head "https://github.com/losnoco/vgmstream.git"
+
+  livecheck do
+    url "https://github.com/losnoco/vgmstream/releases/latest"
+    regex(%r{href=.*?/tag/([^"' >]+)["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "07ad639f6e945432b54af4fe9e3e88a7f35ac5a426203666e2f7187d8ed1f37c" => :sierra
-    sha256 "8fedd0653375a376ec978739f24abc7a1dc24857a832be983ecd8978dd310043" => :el_capitan
-    sha256 "314ab31528d85117117a4610a1f023b22686a565997357df92ceff52e4085013" => :yosemite
-    sha256 "65522c757a6ce8392496e71279fa553074dc2b765d56a80b1709b58d1a56e704" => :mavericks
-    sha256 "8e9771faf488616e96a159ee3d3681549f58ee240385c55f8a13be507e8a5a6a" => :mountain_lion
+    sha256 "4b3e15c64a21031f2c48fafb4cdddb1525bcf8e3f28301cc67fd489b5808b115" => :big_sur
+    sha256 "9d606f0b0e89d554ffcf3f1b83d38274fd83d9141ccff3cfad0b49e26d8df8ad" => :catalina
+    sha256 "eff6d36e01d617fb43cd05f8fc62829d3f49eb4fef4c7039e3c2e875ff124a38" => :mojave
+    sha256 "4b2865fda21b44d92cb2fa13b1c179a962c5ddacaac8b1089bdb5b3294de5f09" => :high_sierra
   end
 
-  depends_on "mpg123"
+  depends_on "cmake" => :build
+  depends_on "ffmpeg"
+  depends_on "libao"
   depends_on "libvorbis"
+  depends_on "mpg123"
 
   def install
-    cd "test" do
-      system "make"
-      bin.install "test" => "vgmstream"
-      lib.install "../src/libvgmstream.a"
-    end
+    system "cmake", "-DBUILD_AUDACIOUS:BOOL=OFF", *std_cmake_args, "."
+    system "cmake", "--build", ".", "--config", "Release", "--target", "vgmstream_cli", "vgmstream123"
+    bin.install "cli/vgmstream_cli"
+    bin.install_symlink "vgmstream_cli" => "vgmstream-cli"
+    bin.install "cli/vgmstream123"
+    lib.install "src/liblibvgmstream.a"
+  end
+
+  test do
+    assert_match "decode", shell_output("#{bin}/vgmstream-cli 2>&1", 1)
   end
 end

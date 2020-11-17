@@ -1,50 +1,60 @@
 class CucumberCpp < Formula
   desc "Support for writing Cucumber step definitions in C++"
   homepage "https://cucumber.io"
-  url "https://github.com/cucumber/cucumber-cpp/archive/v0.3.1.tar.gz"
-  sha256 "442c3fc3020c709f5609e33b76e25c3c9fc9166911e74f590590f794f24f8a9b"
-  revision 3
+  url "https://github.com/cucumber/cucumber-cpp/archive/v0.5.tar.gz"
+  sha256 "9e1b5546187290b265e43f47f67d4ce7bf817ae86ee2bc5fb338115b533f8438"
+  license "MIT"
+  revision 7
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6d9ed526b8f6d66b29add16c09f07f2298f3ec26f62c3105caaa832ba57d89d9" => :sierra
-    sha256 "5900c7c70fc4814f069ba98a1712c14131e90533410462e68775a6eea36501c5" => :el_capitan
-    sha256 "a1ddac23ff567418aa17e2d829d93c2e702d3a9b8b0217079dc330bfd5f02c95" => :yosemite
+    sha256 "278bdf3528a7b8bac8ec0ea20e1a57a16eaba54929ce4c544cbe4ce1c8a5279f" => :catalina
+    sha256 "5c1dede434bdd00e19cbd82e42236c18fa1ce5f7cf172fce972185249f94ddc7" => :mojave
+    sha256 "d12e60f17d95446ccc80dffdb74c77b554121b9d1ce58beabec041f9232a891c" => :high_sierra
   end
 
   depends_on "cmake" => :build
+  depends_on "ruby" => :test if MacOS.version <= :sierra
   depends_on "boost"
 
   def install
-    args = std_cmake_args
-    args << "-DCUKE_DISABLE_GTEST=on"
-    args << "-DCUKE_DISABLE_CPPSPEC=on"
-    args << "-DCUKE_DISABLE_FUNCTIONAL=on"
-    args << "-DCUKE_DISABLE_BOOST_TEST=on"
+    args = std_cmake_args + %w[
+      -DCUKE_DISABLE_GTEST=on
+      -DCUKE_DISABLE_CPPSPEC=on
+      -DCUKE_DISABLE_FUNCTIONAL=on
+      -DCUKE_DISABLE_BOOST_TEST=on
+    ]
+
     system "cmake", ".", *args
     system "cmake", "--build", "."
-    include.install "include/cucumber-cpp"
-    lib.install Dir["src/*.a"]
+    system "make", "install"
   end
 
   test do
     ENV["GEM_HOME"] = testpath
     ENV["BUNDLE_PATH"] = testpath
-    system "gem", "install", "cucumber"
+    if MacOS.version >= :mojave && MacOS::CLT.installed?
+      ENV.delete("CPATH")
+      ENV["SDKROOT"] = MacOS::CLT.sdk_path(MacOS.version)
+    elsif MacOS.version == :high_sierra
+      ENV.delete("CPATH")
+      ENV.delete("SDKROOT")
+    end
+    system "gem", "install", "cucumber", "-v", "3.0.0"
 
-    (testpath/"features/test.feature").write <<-EOS.undent
+    (testpath/"features/test.feature").write <<~EOS
       Feature: Test
         Scenario: Just for test
           Given A given statement
           When A when statement
           Then A then statement
     EOS
-    (testpath/"features/step_definitions/cucumber.wire").write <<-EOS.undent
+    (testpath/"features/step_definitions/cucumber.wire").write <<~EOS
       host: localhost
       port: 3902
     EOS
-    (testpath/"test.cpp").write <<-EOS.undent
-      #include <cucumber-cpp/defs.hpp>
+    (testpath/"test.cpp").write <<~EOS
+      #include <cucumber-cpp/generic.hpp>
       GIVEN("^A given statement$") {
       }
       WHEN("^A when statement$") {
@@ -52,11 +62,13 @@ class CucumberCpp < Formula
       THEN("^A then statement$") {
       }
     EOS
-    system ENV.cxx, "test.cpp", "-L#{lib}", "-lcucumber-cpp", "-o", "test",
-      "-lboost_regex", "-lboost_system", "-lboost_program_options"
+    system ENV.cxx, "test.cpp", "-o", "test", "-I#{include}", "-L#{lib}",
+           "-lcucumber-cpp", "-I#{Formula["boost"].opt_include}",
+           "-L#{Formula["boost"].opt_lib}", "-lboost_regex", "-lboost_system",
+           "-lboost_program_options", "-lboost_filesystem", "-lboost_chrono"
     begin
       pid = fork { exec "./test" }
-      expected = <<-EOS.undent
+      expected = <<~EOS
         Feature: Test
 
           Scenario: Just for test   # features\/test.feature:2

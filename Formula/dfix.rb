@@ -1,23 +1,30 @@
 class Dfix < Formula
   desc "Auto-upgrade tool for D source code"
-  homepage "https://github.com/Hackerpilot/dfix"
-  url "https://github.com/Hackerpilot/dfix.git",
-      :tag => "v0.3.1",
-      :revision => "d796fb0d04882dc31862a808e2cff03ff829b56a"
-  head "https://github.com/Hackerpilot/dfix.git", :shallow => false
+  homepage "https://github.com/dlang-community/dfix"
+  url "https://github.com/dlang-community/dfix.git",
+      tag:      "v0.3.5",
+      revision: "5265a8db4b0fdc54a3d0837a7ddf520ee94579c4"
+  license "BSL-1.0"
+  head "https://github.com/dlang-community/dfix.git", shallow: false
+
+  livecheck do
+    url "https://code.dlang.org/packages/dfix"
+    regex(%r{"badge">v?(\d+(?:\.\d+)+)</strong>}i)
+  end
 
   bottle do
-    sha256 "58c2e5ee2f3fe572a0b07797af26de4d44e9194bf65a2eef89cf46d8d2dc7da4" => :sierra
-    sha256 "6b19da6a3db617b0dcce69a9c19b6b212e6f64adaacfe0e7296328c74aa8f398" => :el_capitan
-    sha256 "28db097fe0facaa42f4b1a441f89237e1ad2480ecb7d81f56dd6937d586e1974" => :yosemite
-    sha256 "186aaedeb0b223858a5cb16e133ef03886fe81ece596e376c111342251842c5e" => :mavericks
+    cellar :any_skip_relocation
+    rebuild 1
+    sha256 "bb047ac32131d3ec25b60ca86e77959f7b9625ad469d9e0a1ada3fefe8525d9d" => :big_sur
+    sha256 "ff3b76977bcbfb5b7a04bbebb53a794cc522b64987f724fe5f8a8236812eb1f8" => :catalina
+    sha256 "24d234e206efa754f8bd900102720280d8efb1af6ec93059a467589acddca3ee" => :mojave
+    sha256 "13a2621737c198bd0540f507293a9b015a0ebe36cd3373589a69ec834a863d8d" => :high_sierra
   end
 
   depends_on "dmd" => :build
 
   def install
     system "make"
-    system "make", "test"
     bin.install "bin/dfix"
     pkgshare.install "test/testfile_expected.d", "test/testfile_master.d"
   end

@@ -1,17 +1,27 @@
 class Libowfat < Formula
   desc "Reimplements libdjb"
   homepage "https://www.fefe.de/libowfat/"
-  url "https://dl.fefe.de/libowfat-0.29.tar.bz2"
-  sha256 "4badbdeed6bef4337f1edd6b86fb7154c5592509c272dcdc09c693161cbc6427"
-  head ":pserver:cvs:@cvs.fefe.de:/cvs", :using => :cvs
+  url "https://www.fefe.de/libowfat/libowfat-0.32.tar.xz"
+  sha256 "f4b9b3d9922dc25bc93adedf9e9ff8ddbebaf623f14c8e7a5f2301bfef7998c1"
+  license "GPL-2.0"
+  head ":pserver:cvs:@cvs.fefe.de:/cvs", using: :cvs
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?libowfat[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 2
-    sha256 "07d058c654a42d34821399ff800dfa22e928a64bcba4f465443197fe4168e97a" => :sierra
-    sha256 "b8f9b6f14ef4ca9e703ef458659604738f2f6b11899fb9546d8764dde47de4c0" => :el_capitan
-    sha256 "f84024088302c6452f32f2398d0c39a59ee7f2a2eda117e516608e0299763dda" => :yosemite
-    sha256 "a05b57c64730e4780012a06b61224a63e492173e3d6fa191516e408e9578a105" => :mavericks
+    sha256 "1a08648fa8307771ae1d5c45da0ddefdfdc20d58b89091a614df74371eebbc59" => :big_sur
+    sha256 "2424abb2cccd7f41582ea49ccbee60dbecc436c843d9531c0e7c68c35b9330a4" => :catalina
+    sha256 "08041ad3f0edd4b20e6ed1f6c768414aa7241940a14386c1dffd04caa5ef70ca" => :mojave
+    sha256 "4740574a0e5184f8b371b1a7571304810b4fb29a92d60cf54979387dab3448c5" => :high_sierra
+  end
+
+  patch do
+    url "https://github.com/mistydemeo/libowfat/commit/278a675a6984e5c202eee9f7e36cda2ae5da658d.patch?full_index=1"
+    sha256 "32eab2348f495f483f7cd34ffd7543bd619f312b7094a4b55be9436af89dd341"
   end
 
   def install

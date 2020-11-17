@@ -1,17 +1,19 @@
 class Shmux < Formula
   desc "Execute the same command on many hosts in parallel"
-  homepage "http://web.taranis.org/shmux/"
-  url "http://web.taranis.org/shmux/dist/shmux-1.0.2.tgz"
-  sha256 "0886aaca4936926d526988d85df403fa1679a60c355f1be8432bb4bc1e36580f"
+  homepage "https://github.com/shmux/shmux"
+  url "https://github.com/shmux/shmux/archive/v1.0.3.tar.gz"
+  sha256 "c9f8863e2550e23e633cf5fc7a9c4c52d287059f424ef78aba6ecd98390fb9ab"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4567e06552f5e4f489f7d5de2814c83ba4a82b8d9bbbcba266fab5bd1f1ded71" => :sierra
-    sha256 "87424e1fd8b33691a0b87b35deb8c74a09308264bf8da87a933880491a62cd78" => :el_capitan
-    sha256 "c12d7d72b94ac69fe7fa5db7247228a555c2071cce5ebb84c7bc9046fef55bb4" => :yosemite
-    sha256 "88a7a017cc820f2508bb12796dbfd84f35f3c1b6a64a1867e7e89861b2420418" => :mavericks
-    sha256 "27099056d50aa5f23d9e4dbb1307abf2dbecea031c2af5b085229e3d063dff4c" => :mountain_lion
+    sha256 "6781e9876911d4d44080b069dd3295c86520699ae24b3385980d51a53bc4d2f3" => :catalina
+    sha256 "e433bd14622d3f77a35042649d0d73e888b164ab4f04431864fb68c9ec64b62c" => :mojave
+    sha256 "bc38ad3a6feddd116edd9d3ab00ac18bc6663d08b9d111414975bdd1543d1b79" => :high_sierra
+    sha256 "13f8831248e646784dd3cefd82707c45966ea05528e0c836156dea98b9c8c870" => :sierra
   end
+
+  uses_from_macos "ncurses"
 
   def install
     system "./configure", "--prefix=#{prefix}"

@@ -1,24 +1,29 @@
 class Eprover < Formula
   desc "Theorem prover for full first-order logic with equality"
-  homepage "http://eprover.org"
-  url "https://wwwlehre.dhbw-stuttgart.de/~sschulz/WORK/E_DOWNLOAD/V_1.9/E.tgz"
-  version "1.9"
-  sha256 "c4365661a6a4519b21b895fafe60c6b39b8acadf77a3c42e4d638027f155376e"
+  homepage "https://eprover.org/"
+  url "https://wwwlehre.dhbw-stuttgart.de/~sschulz/WORK/E_DOWNLOAD/V_2.5/E.tgz"
+  sha256 "3a72cb5bcf24899134c84cb6c797c699d8d7ddfad0de7b5b654581bb17b3c814"
+
+  livecheck do
+    url "https://wwwlehre.dhbw-stuttgart.de/~sschulz/WORK/E_DOWNLOAD/"
+    regex(%r{href=.*?V?[._-]?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "28c7ee291eeb3860eb5dd1ec6cad9a33317b94588d4a90add58df12ea5f00dae" => :sierra
-    sha256 "396ff4a7c412a5aa773f4df990611e27bd7d7ad5e4b297f9da3afa29cc2271ba" => :el_capitan
-    sha256 "f698ea516f874623f22a6a87335b0881b0014e8bd1811f213b81a2bdd32f6f14" => :yosemite
-    sha256 "0a5a1d15a59ec5921c3416de25df8e9fd518604e761396df3612bd587cdc00cf" => :mavericks
+    sha256 "224dffbf0f507dd756b45f8ab9f06ec65e963ecfeeea69dcf72e76cc95bf760d" => :catalina
+    sha256 "598fb6477f28822a593fe6c0fb218b4e70140ba44f6cd21feb6c0381c0b64641" => :mojave
+    sha256 "9b2ece8fa609748d06a102d398c7315ab09c0da9af2d8b17daff11cb634767f6" => :high_sierra
   end
 
   def install
-    system "./configure", "--bindir=#{bin}", "--man-prefix=#{man}"
+    system "./configure", "--prefix=#{prefix}",
+                          "--man-prefix=#{man1}"
+    system "make"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/eproof"
+    system "#{bin}/eprover", "--help"
   end
 end

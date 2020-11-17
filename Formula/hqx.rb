@@ -1,21 +1,28 @@
 class Hqx < Formula
   desc "Magnification filter designed for pixel art"
-  homepage "https://code.google.com/archive/p/hqx/"
-  url "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/hqx/hqx-1.1.tar.gz"
-  sha256 "cc18f571fb4bc325317892e39ecd5711c4901831926bc93296de9ebb7b2f317b"
-  revision 2
+  homepage "https://github.com/grom358/hqx"
+  url "https://github.com/grom358/hqx.git",
+      tag:      "v1.2",
+      revision: "124c9399fa136fb0f743417ca27dfa2ca2860c2d"
+  license "LGPL-2.1"
 
   bottle do
     cellar :any
-    sha256 "7e58bc40ff9214f1b074595ac85c842ebafe676c6f3db42e3e0712c77c3377f4" => :sierra
-    sha256 "6bf8b3b1b203ae43cc833480c8b395776d1369a38bb78fe2b47034ff8a8a0645" => :el_capitan
-    sha256 "82f3574ae2e08ed7312d22b751b94be4783eccb2166fc1e45cc25ae90a7e5046" => :yosemite
+    sha256 "14a68ef6155118b80a663827075e5a98a9f889f0edbe0fac77905ea69be9b334" => :catalina
+    sha256 "557085364f580e05f98df85ba471d686563820c1cf4b890c8c577ea1a1ac6e27" => :mojave
+    sha256 "efdbc80364955ad0c66fe7729d298affb7644a72ee780012ad99f506088aedf9" => :high_sierra
+    sha256 "2925d0405549e466e967124d8192e88a27a83b8b4619e88e9b5b1a109eb4e7ac" => :sierra
   end
 
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
   depends_on "devil"
 
   def install
     ENV.deparallelize
+    system "autoreconf", "-iv"
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
@@ -24,17 +31,17 @@ class Hqx < Formula
   test do
     system bin/"hqx", test_fixtures("test.jpg"), "out.jpg"
     output = pipe_output("php -r \"print_r(getimagesize(\'file://#{testpath}/out.jpg\'));\"")
-    assert_equal <<-EOS.undent, output
-    \tArray
-    \t(
-    \t    [0] => 4
-    \t    [1] => 4
-    \t    [2] => 2
-    \t    [3] => width="4" height="4"
-    \t    [bits] => 8
-    \t    [channels] => 3
-    \t    [mime] => image/jpeg
-    \t)
+    assert_equal <<~EOS, output
+      Array
+      (
+          [0] => 4
+          [1] => 4
+          [2] => 2
+          [3] => width="4" height="4"
+          [bits] => 8
+          [channels] => 3
+          [mime] => image/jpeg
+      )
     EOS
   end
 end

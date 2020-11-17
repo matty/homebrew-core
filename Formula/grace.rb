@@ -1,25 +1,40 @@
 class Grace < Formula
   desc "WYSIWYG 2D plotting tool for X11"
-  homepage "http://plasma-gate.weizmann.ac.il/Grace/"
-  url "https://mirrors.kernel.org/debian/pool/main/g/grace/grace_5.1.25.orig.tar.gz"
+  homepage "https://plasma-gate.weizmann.ac.il/Grace/"
+  url "https://deb.debian.org/debian/pool/main/g/grace/grace_5.1.25.orig.tar.gz"
   sha256 "751ab9917ed0f6232073c193aba74046037e185d73b77bab0f5af3e3ff1da2ac"
-  revision 1
+  license "GPL-2.0-only"
+  revision 3
 
-  bottle do
-    sha256 "c3a3a4047612f704f3d66b67abfd8786414bc008a593db862b01373561af9d85" => :sierra
-    sha256 "27a34f15e0d9898a82556b0f5972dfef6fe3fdd7ef4d331f4e851177cb7eeed4" => :el_capitan
-    sha256 "0721efb822050b87437e8ce49faa405a0bb83006453f35e9f6abce89ff4e7a7e" => :yosemite
+  livecheck do
+    url "https://deb.debian.org/debian/pool/main/g/grace/"
+    regex(/href=.*?grace[._-]v?(\d+(?:\.\d+)+)\.orig\.t/i)
   end
 
-  depends_on :x11
-  depends_on "pdflib-lite"
-  depends_on "jpeg"
+  bottle do
+    sha256 "f428d5a0f0607ed81db8a68559d733212a328a08614eb47e4e18768de84e6673" => :big_sur
+    sha256 "ba476c55bdee47b52c7b0a1f5cc6fb54ceac945cc25b45095643afca91243f68" => :catalina
+    sha256 "7f9b574dd0e37c2f15a0c87df07959c7a634d1a7ec959305ce9a036ed4efdb9c" => :mojave
+    sha256 "b75a7e4b3abf5d83878cb5b5cd8d3eed30a17119af95fcac6e9852856a049ce1" => :high_sierra
+  end
+
   depends_on "fftw"
-  depends_on "openmotif"
+  depends_on "jpeg"
+  depends_on "libice"
   depends_on "libpng"
+  depends_on "libsm"
+  depends_on "libx11"
+  depends_on "libxext"
+  depends_on "libxmu"
+  depends_on "libxp"
+  depends_on "libxpm"
+  depends_on "libxt"
+  depends_on "openmotif"
+  depends_on "pdflib-lite"
 
   def install
     ENV.O1 # https://github.com/Homebrew/homebrew/issues/27840#issuecomment-38536704
+    ENV.append "CFLAGS", "-Wno-implicit-function-declaration"
     system "./configure", "--disable-debug",
                           "--prefix=#{prefix}",
                           "--enable-grace-home=#{prefix}"

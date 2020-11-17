@@ -1,22 +1,40 @@
 class Lasso < Formula
   desc "Library for Liberty Alliance and SAML protocols"
-  homepage "http://lasso.entrouvert.org"
-  url "https://dev.entrouvert.org/releases/lasso/lasso-2.5.1.tar.gz"
-  sha256 "be105c8d400ddeb798419eafa9522101d0f63dc42b79b7131b6010c4a5fc2058"
+  homepage "https://lasso.entrouvert.org/"
+  url "https://dev.entrouvert.org/releases/lasso/lasso-2.6.1.tar.gz"
+  sha256 "f8a8dbce238802f6bb9c3b8bd528b4dce2a1dc44e2d34d8d839aa54fbc8ed1de"
+  license "GPL-2.0"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "f2e0bc889badb79e430b35c19e8aaf26d23370fb4113c1c1a96d81d0d6296480" => :sierra
-    sha256 "b36834a1ad4134e0ea4c20f93ea48eba5cbe27daa8f4f74df10bf279c34e41f5" => :el_capitan
-    sha256 "5d088dabb95573f5b018ef9338ac1cdf0263e8a6178bda2f519b2c684df6d1c1" => :yosemite
+    sha256 "83fa7671b9b8635dbf79c5db616d72c0f8d53ca543a508effd4bf628f46af26e" => :big_sur
+    sha256 "bc1f4dc6fccff1c5631d37b4539d2d9a657357445488ce892756feccf98f660b" => :catalina
+    sha256 "d4bfe838fe8fd0b32ff7e19a4601c85a3b98a49ed8e1f05dc796ed5adf89005b" => :mojave
+    sha256 "8256178a39f08386db515226b334a93f895cb8d96c043acfe1a8d420efbb668f" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libxmlsec1"
+  depends_on "python@3.9" => :build
   depends_on "glib"
-  depends_on "openssl"
+  depends_on "libxmlsec1"
+  depends_on "openssl@1.1"
+
+  resource "six" do
+    url "https://files.pythonhosted.org/packages/21/9f/b251f7f8a76dec1d6651be194dfba8fb8d7781d10ab3987190de8391d08e/six-1.14.0.tar.gz"
+    sha256 "236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a"
+  end
 
   def install
+    xy = Language::Python.major_minor_version "python3"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python#{xy}/site-packages"
+    resources.each do |r|
+      r.stage do
+        system "python3", *Language::Python.setup_install_args(libexec/"vendor")
+      end
+    end
+
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{xy}/site-packages"
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--disable-java",
@@ -29,7 +47,7 @@ class Lasso < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <lasso/lasso.h>
 
       int main() {

@@ -1,17 +1,24 @@
 class Npth < Formula
   desc "New GNU portable threads library"
   homepage "https://gnupg.org/"
-  url "https://gnupg.org/ftp/gcrypt/npth/npth-1.2.tar.bz2"
-  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/npth/npth-1.2.tar.bz2"
-  sha256 "6ddbdddb2cf49a4723f9d1ad6563c480d6760dcb63cb7726b8fc3bc2e1b6c08a"
+  url "https://gnupg.org/ftp/gcrypt/npth/npth-1.6.tar.bz2"
+  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/npth/npth-1.6.tar.bz2"
+  sha256 "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1"
+  license "LGPL-2.1"
+
+  livecheck do
+    url "https://gnupg.org/ftp/gcrypt/npth/"
+    regex(/href=.*?npth[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "e7ea90bcf31139dbdbbb496039d19f733a27296a99a968bd2decd9e5500c8eb4" => :sierra
-    sha256 "e0383072b47031a5ca5b129447fe7b0d90a161c78c0dcd91f3d398067262d469" => :el_capitan
-    sha256 "ed46e1fed9a33a4961b32fe2de844d8bbeff8f44d4863a3f2da364bb292ffa59" => :yosemite
-    sha256 "cc6148b47d88580a4d18efc4140ea423189333c564e11c61b8a4764a182ac766" => :mavericks
-    sha256 "277c3d694bda25fa805241d6c6799aaede32bf56393e7f0912a0e1e05940a4e5" => :mountain_lion
+    sha256 "dde67b8b6f6ad244e560de1d041864a7f35a89c252447a5b9aedec52ac6ba3ac" => :big_sur
+    sha256 "ecb35292b1cbcf24e42f9dd0691dc9030345e8b8b1b7f9c9a865fca2fb25932c" => :catalina
+    sha256 "bb0232908eedb717f98d636b910478ef4ce044866545725344ecae0b85251e1d" => :mojave
+    sha256 "51a68f02a29f9b1a596048894be6425696872ddbbc928b372c07a5e256df8ba8" => :high_sierra
+    sha256 "930defbdfa6136f82abdaa7efea0328390079d13f284798756997217eb31427d" => :sierra
+    sha256 "8b2591ec804a0e410e8bf8657487f2d26248307e7cf74b2e49906037618ebc03" => :el_capitan
   end
 
   def install

@@ -1,37 +1,37 @@
 class Parrot < Formula
   desc "Open source virtual machine (for Perl6, et al.)"
   homepage "http://www.parrot.org/"
+  license "Artistic-2.0"
   head "https://github.com/parrot/parrot.git"
 
   stable do
-    url "ftp://ftp.parrot.org/pub/parrot/releases/supported/8.1.0/parrot-8.1.0.tar.bz2"
+    url "http://ftp.parrot.org/releases/supported/8.1.0/parrot-8.1.0.tar.bz2"
+    mirror "https://ftp.osuosl.org/pub/parrot/releases/supported/8.1.0/parrot-8.1.0.tar.bz2"
     sha256 "caf356acab64f4ea50595a846808e81d0be8ada8267afbbeb66ddb3c93cb81d3"
 
     # remove at 8.2.0, already in HEAD
     patch do
-      url "https://github.com/parrot/parrot/commit/7524bf5384ddebbb3ba06a040f8acf972aa0a3ba.diff"
-      sha256 "170f63df33fa2dc870902bd703c371bb6d601b515618f5830ab921bffa22e87b"
+      url "https://github.com/parrot/parrot/commit/7524bf5384ddebbb3ba06a040f8acf972aa0a3ba.patch?full_index=1"
+      sha256 "1357090247b856416b23792a2859ae4860ed1336b05dddc1ee00793b6dc3d78a"
     end
 
     # remove at 8.2.0, already in HEAD
     patch do
-      url "https://github.com/parrot/parrot/commit/854aec65d6de8eaf5282995ab92100a2446f0cde.diff"
-      sha256 "dfe8b5e26b104f8fb2c1efe0a8316ffcba399463bd164c22e7cf2327fac2540e"
+      url "https://github.com/parrot/parrot/commit/854aec65d6de8eaf5282995ab92100a2446f0cde.patch?full_index=1"
+      sha256 "4e068c3a9243f350a3e862991a1042a06a03a625361f9f01cc445a31df906c6e"
     end
   end
 
   bottle do
+    sha256 "6953bdfac9ada389705bb8368d2223bb2e22640802a6e643446e018c16024e06" => :big_sur
+    sha256 "5ffc3252e0454d3d69689e8fa260011079d5684d568f5bb4a5d7d3f60368414f" => :catalina
+    sha256 "91a463baca8872dbd12183a61326c78c8ac0e05a01bd1a0421578cb0f6e58427" => :mojave
+    sha256 "c3ce1d1fe24e6f5172629cd092cc03db16b957649865af052ee6a72d75fa10e6" => :high_sierra
     sha256 "e8c50fee6a2111412b5f6ac31292f3ff7d3e4dd2be9a02cc94a890026588ae63" => :sierra
     sha256 "3b78be029276ca642cb2bc705888ed0cd7745c0398cf90bf67031190191c76a8" => :el_capitan
     sha256 "37a9ad2396bcf355d6d7ae2d432489e316d3290528947a6f1a30e753fed59902" => :yosemite
     sha256 "ff4125f633f43c19134e2520c0964025f4ea14efd5ce826d0cd905c550fbb24a" => :mavericks
   end
-
-  depends_on "gmp" => :optional
-  depends_on "icu4c" => :optional
-  depends_on "pcre" => :optional
-  depends_on "readline" => :optional
-  depends_on "libffi" => :optional
 
   conflicts_with "rakudo-star"
 
@@ -49,7 +49,7 @@ class Parrot < Formula
 
   test do
     path = testpath/"test.pir"
-    path.write <<-EOS.undent
+    path.write <<~EOS
       .sub _main
         .local int i
         i = 0
@@ -62,6 +62,6 @@ class Parrot < Formula
 
     out = `#{bin}/parrot #{path}`
     assert_equal "0123456789", out
-    assert_equal 0, $?.exitstatus
+    assert_equal 0, $CHILD_STATUS.exitstatus
   end
 end

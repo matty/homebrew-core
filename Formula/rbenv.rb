@@ -1,25 +1,28 @@
 class Rbenv < Formula
   desc "Ruby version manager"
   homepage "https://github.com/rbenv/rbenv#readme"
-  url "https://github.com/rbenv/rbenv/archive/v1.1.0.tar.gz"
-  sha256 "070835ccb4a295a49712ded936be306433442129d5a8411dddf2f52e6732ce59"
+  url "https://github.com/rbenv/rbenv/archive/v1.1.2.tar.gz"
+  sha256 "80ad89ffe04c0b481503bd375f05c212bbc7d44ef5f5e649e0acdf25eba86736"
+  license "MIT"
   head "https://github.com/rbenv/rbenv.git"
 
   bottle do
     cellar :any
-    sha256 "c9d34dee07b2a04d24aa1a8da30b0b5663529d69d7a46b29d979ceba79c81e67" => :sierra
-    sha256 "2bdafe7927a69de0aedad237694431fddaa7cd2167855094a3c7caeeccc0a347" => :el_capitan
-    sha256 "f829928b4796a022a60f10ab89c48f050ad8c69e40a74aa5fd3ba9b1b721769c" => :yosemite
+    sha256 "60b045c8843745c45d01616ee3f71b91f6a16ee09c47e23a7817a3edabeaccfd" => :big_sur
+    sha256 "503ed6d818502f00f031b9f49461934e252b9bfba2876e90a326fc27bb1052d6" => :catalina
+    sha256 "d1019098dee8d037587069398e5ad04e6d736f834dc44ae73943bec46b10b260" => :mojave
+    sha256 "b5984102794a9d39388ca1f6ec77965aeea29b971cc00cb5af8ede8ee6c926d6" => :high_sierra
+    sha256 "873175a851e5aa4f5b3438072030b945c252f08a9a07760c64dc045e2cce4724" => :sierra
   end
 
-  depends_on "ruby-build" => :recommended
+  depends_on "ruby-build"
+
+  uses_from_macos "ruby" => :test
 
   def install
     inreplace "libexec/rbenv" do |s|
       s.gsub! '"${BASH_SOURCE%/*}"/../libexec', libexec
-      if HOMEBREW_PREFIX.to_s != "/usr/local"
-        s.gsub! ":/usr/local/etc/rbenv.d", ":#{HOMEBREW_PREFIX}/etc/rbenv.d\\0"
-      end
+      s.gsub! ":/usr/local/etc/rbenv.d", ":#{HOMEBREW_PREFIX}/etc/rbenv.d\\0" if HOMEBREW_PREFIX.to_s != "/usr/local"
     end
 
     # Compile optional bash extension.

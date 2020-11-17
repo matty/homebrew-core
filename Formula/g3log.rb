@@ -1,31 +1,28 @@
 class G3log < Formula
-  desc 'asynchronous, "crash safe", logger that is easy to use.'
+  desc "Asynchronous, 'crash safe', logger that is easy to use"
   homepage "https://github.com/KjellKod/g3log"
-  url "https://github.com/KjellKod/g3log/archive/1.2.tar.gz"
-  sha256 "6fd73ac5d07356b3acdde73ad06f2f40cfc1de11b1864a17375c1177b557c1be"
+  url "https://github.com/KjellKod/g3log/archive/1.3.3.tar.gz"
+  sha256 "d8cae14e1508490145d710f10178b2da9b86ce03fb2428a684fff35576fe5d5c"
+  license "Unlicense"
 
   bottle do
     cellar :any
-    sha256 "1f0e767cd049f5e6ce968e56162314bb5facb5190918cecbe6317aeccf76bd8f" => :sierra
-    sha256 "6b805ad262286f904a399909d9bcd679a3f7ffb149ce3e54b3ff58569f874236" => :el_capitan
-    sha256 "e10a687eeae95b3c6b9ad2d0b1bfbfc7f9c25432e09be7cca2440a31deef34e5" => :yosemite
-    sha256 "d23c1c572f56876de3d2b3fa1af8db3820c3eb958b3f9cf5f7386e530af91fe7" => :mavericks
+    sha256 "733e3a8e675dfb858f309648bb5e7f47d9757da43d37be2042dcc0e4e1313fe3" => :big_sur
+    sha256 "b819589f20ba980113593517ca9d54109a9a7cec22f756126021e2276a56bca4" => :catalina
+    sha256 "1b95598a1e31c627a40d9a2b67edd10a35209dc1c426849163ee297ca05e2bc6" => :mojave
+    sha256 "ac0ea62242bf04f640a7bd2cdd56a0ab585cef139748e47fe4d3ec118510dfd0" => :high_sierra
   end
 
   depends_on "cmake" => :build
+  depends_on macos: :el_capitan # needs thread-local storage
 
   def install
     system "cmake", ".", *std_cmake_args
-    system "make"
-
-    # No install target yet: https://github.com/KjellKod/g3log/issues/49
-    include.install "src/g3log"
-    lib.install "libg3logger.a", "libg3logger.dylib"
-    MachO::Tools.change_dylib_id("#{lib}/libg3logger.dylib", "#{lib}/libg3logger.dylib")
+    system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent.gsub(/TESTDIR/, testpath)
+    (testpath/"test.cpp").write <<~EOS.gsub(/TESTDIR/, testpath)
       #include <g3log/g3log.hpp>
       #include <g3log/logworker.hpp>
       int main()
@@ -38,7 +35,7 @@ class G3log < Formula
         return 0;
       }
     EOS
-    system ENV.cxx, "-std=c++11", "test.cpp", "-L#{lib}", "-lg3logger", "-o", "test"
+    system ENV.cxx, "-std=c++14", "test.cpp", "-L#{lib}", "-lg3logger", "-o", "test"
     system "./test"
     Dir.glob(testpath/"test.g3log.*.log").any?
   end

@@ -1,16 +1,19 @@
 class Pgpdump < Formula
   desc "PGP packet visualizer"
-  homepage "http://www.mew.org/~kazu/proj/pgpdump/en/"
-  url "https://github.com/kazu-yamamoto/pgpdump/archive/v0.31.tar.gz"
-  sha256 "7abf04a530c902cfb1f1a81c6b5fb88bd2c12b5f3c37dceb1245bfe28f2a7c0b"
+  homepage "https://www.mew.org/~kazu/proj/pgpdump/en/"
+  url "https://github.com/kazu-yamamoto/pgpdump/archive/v0.33.tar.gz"
+  sha256 "fe580ef43f651da59816c70f38f177ea4fa769d64e3d6883a9d1f661bb0a6952"
+  license "BSD-3-Clause"
   head "https://github.com/kazu-yamamoto/pgpdump.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8925b858ba5c77df3c982d318a047936c211578b05c9c6140f11f869f4ef1c3f" => :sierra
-    sha256 "78e39ebbde35347ccdf9f552cba605593b4a76511ef25dc147fdf63f57ff96b6" => :el_capitan
-    sha256 "e526cce3b8ac5cc687f5a87feb2f3d8828255f4e63cf8f225e56439df549a25e" => :yosemite
-    sha256 "27a463ac9a015d1484508f2d625d1e5f4349e79b8331f8e9f78c647f4964da9e" => :mavericks
+    sha256 "c87222c16b88f4f1a34504d503eb7bebd6559da8029cd4cd374d27bb694cbc88" => :big_sur
+    sha256 "60bbe481621cc653edc834b9d54b910deb3c1634cc7155dd1e9aca9e3f207ca4" => :catalina
+    sha256 "8141ac85359c7be7ac5ef51075823612582ecd0e02f0048cace4b4bae2217771" => :mojave
+    sha256 "2d5ad982f29c20cad30f5a90d4fcd8af3d369432e2c4ab4f35fcfa3b31712a1f" => :high_sierra
+    sha256 "9c2ed5f4eb7e0c833a90d53fc8d96d613b781b36c3524959fa102ae62a4d167e" => :sierra
+    sha256 "1cfd7cb5b0cdbc7e70031841d7efb1196ddbbd6f11f5af3cce4b38b6f7358ae2" => :el_capitan
   end
 
   def install
@@ -19,7 +22,7 @@ class Pgpdump < Formula
   end
 
   test do
-    (testpath/"sig.pgp").write <<-EOS.undent
+    (testpath/"sig.pgp").write <<~EOS
       -----BEGIN PGP MESSAGE-----
       Version: GnuPG v1.2.6 (NetBSD)
       Comment: For info see https://www.gnupg.org

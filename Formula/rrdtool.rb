@@ -1,30 +1,28 @@
 class Rrdtool < Formula
   desc "Round Robin Database"
   homepage "https://oss.oetiker.ch/rrdtool/index.en.html"
-  url "https://github.com/oetiker/rrdtool-1.x/releases/download/v1.6.0/rrdtool-1.6.0.tar.gz"
-  sha256 "cd948e89cd2d8825fab4a6fb0323f810948d934af7d92c9ee8b5e9e1350e52d7"
+  url "https://github.com/oetiker/rrdtool-1.x/releases/download/v1.7.2/rrdtool-1.7.2.tar.gz"
+  sha256 "a199faeb7eff7cafc46fac253e682d833d08932f3db93a550a4a5af180ca58db"
+  license "GPL-2.0"
+  revision 1
 
   bottle do
-    sha256 "328ea9b56ce467ee468df5bda24f3673fcad99d84d35b3d2366a2ad7b42ee54a" => :sierra
-    sha256 "9647245353e70af2aa0f352374e998811151121f7b471e7ea0cadb865727bb38" => :el_capitan
-    sha256 "76f4843dd99e86cf07b2ef100deff5b2178541013cb978b3d77940e1b7bb34b5" => :yosemite
-    sha256 "1bcde0f4b65abdcb032903bbc986df86f3d8813b93c1581bd752b03e57e9f3fe" => :mavericks
+    sha256 "9d4f04228051780a37f8351c79773e3ed7492d5989b75e403e307d819163f35a" => :big_sur
+    sha256 "ce57cda576f452e7790e091d645887231d4aa5b691e2c33b4ea93b3dd92d7757" => :catalina
+    sha256 "fae6691230b527c93670d1d00b266e43497744fc09df06c9977265e578b529fc" => :mojave
+    sha256 "858013744cfc3d31a47b7e3629198922d1994f20d0d44c11f6c921ce6f2b9942" => :high_sierra
   end
 
   head do
     url "https://github.com/oetiker/rrdtool-1.x.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
   depends_on "pkg-config" => :build
   depends_on "glib"
   depends_on "pango"
-  depends_on "lua" => :optional
-
-  # Ha-ha, but sleeping is annoying when running configure a lot
-  patch :DATA
 
   def install
     # fatal error: 'ruby/config.h' file not found
@@ -39,14 +37,12 @@ class Rrdtool < Formula
       --disable-ruby-site-install
     ]
 
+    inreplace "configure", /^sleep 1$/, "#sleep 1"
+
     system "./bootstrap" if build.head?
     system "./configure", *args
 
-    # Needed to build proper Ruby bundle
-    ENV["ARCHFLAGS"] = "-arch #{MacOS.preferred_arch}"
-
     system "make", "CC=#{ENV.cc}", "CXX=#{ENV.cxx}", "install"
-    prefix.install "bindings/ruby/test.rb"
   end
 
   test do
@@ -56,28 +52,3 @@ class Rrdtool < Formula
     system "#{bin}/rrdtool", "dump", "temperature.rrd"
   end
 end
-
-__END__
-diff --git a/configure b/configure
-index 266754d..d21ab33 100755
---- a/configure
-+++ b/configure
-@@ -23868,18 +23868,6 @@ $as_echo_n "checking in... " >&6; }
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: and out again" >&5
- $as_echo "and out again" >&6; }
-
--echo $ECHO_N "ordering CD from http://tobi.oetiker.ch/wish $ECHO_C" 1>&6
--sleep 1
--echo $ECHO_N ".$ECHO_C" 1>&6
--sleep 1
--echo $ECHO_N ".$ECHO_C" 1>&6
--sleep 1
--echo $ECHO_N ".$ECHO_C" 1>&6
--sleep 1
--echo $ECHO_N ".$ECHO_C" 1>&6
--sleep 1
--{ $as_echo "$as_me:${as_lineno-$LINENO}: result:  just kidding ;-)" >&5
--$as_echo " just kidding ;-)" >&6; }
- echo
- echo "----------------------------------------------------------------"
- echo "Config is DONE!"

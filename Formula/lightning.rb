@@ -1,37 +1,35 @@
 class Lightning < Formula
   desc "Generates assembly language code at run-time"
   homepage "https://www.gnu.org/software/lightning/"
-  url "https://ftpmirror.gnu.org/lightning/lightning-2.1.0.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/lightning/lightning-2.1.0.tar.gz"
-  sha256 "1fa3a2421852598b3162d6765645bb3cd0fccb5f0c105d0800c64c8428b749a6"
+  url "https://ftp.gnu.org/gnu/lightning/lightning-2.1.3.tar.gz"
+  mirror "https://ftpmirror.gnu.org/lightning/lightning-2.1.3.tar.gz"
+  sha256 "ed856b866dc6f68678dc1151579118fab1c65fad687cf847fc2d94ca045efdc9"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "0f8883b4b47ad82796587ec62285c371144d733cbe795db4e9b7c09872a6ebad" => :sierra
-    sha256 "34f86d2f39e14f17aaf7fe51e84351f86f23ce4898b1e200694917f24ac7db55" => :el_capitan
-    sha256 "985f3b7ba1060b88eb98698dd912d24c11a874dc949b9ffc221bff310a98736f" => :yosemite
-    sha256 "816ac38c2ef65ba50247b9c31ad310f610ef26c490be12cb3fb03f4ef5418b6e" => :mavericks
+    sha256 "c8ad303b50ada5ebc3ba4b054f935a08b4aa7b70b2508ea94fe90733f07771b4" => :big_sur
+    sha256 "543bb685d72b8e9b10b14f3dcd615d38f8f499d10e1d27e40604240fc3f65ac3" => :catalina
+    sha256 "c767959e901e6f47f9bbfe243e629508edbdb138376443d7943c4c4a5a52d4f2" => :mojave
+    sha256 "da42166b5dd858cad42eeb7fc69a9ef870d23b67da6fa978d4bc58d3a464a0d4" => :high_sierra
   end
 
-  depends_on "binutils" => [:build, :optional]
+  depends_on "binutils" => :build
 
   def install
-    args = [
-      "--disable-dependency-tracking",
-      "--disable-silent-rules",
-      "--prefix=#{prefix}",
-    ]
-    args << "--disable-disassembler" if build.without? "binutils"
-
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules", "--prefix=#{prefix}"
     system "make", "check", "-j1"
     system "make", "install"
   end
 
   test do
     # from https://www.gnu.org/software/lightning/manual/lightning.html#incr
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <lightning.h>
       static jit_state_t *_jit;

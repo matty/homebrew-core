@@ -1,29 +1,28 @@
 class Tig < Formula
   desc "Text interface for Git repositories"
-  homepage "http://jonas.nitro.dk/tig/"
-  url "https://github.com/jonas/tig/releases/download/tig-2.2.1/tig-2.2.1.tar.gz"
-  sha256 "0b48080896de59179c45c980080b4b414bb235df65ad08d661a9c9e169c3fa71"
+  homepage "https://jonas.github.io/tig/"
+  url "https://github.com/jonas/tig/releases/download/tig-2.5.1/tig-2.5.1.tar.gz"
+  sha256 "500d5d34524f6b856edd5cae01f1404d14f3b51a9a53fd7357f4cebb3d4c9e64"
+  license "GPL-2.0"
 
   bottle do
-    sha256 "36d1536868965daeb4ea5da6ae9c8a55bb51fd7600a76511e1314195ac712b35" => :sierra
-    sha256 "cf7b1e6835270fbbf9ff54a2f38a019d56d0b0dfbc535e7edf96b64cad5551d6" => :el_capitan
-    sha256 "345a5950fc9b3e34087fca3aeff94abc94a6ede44321523a26ab9a0a8a75ffce" => :yosemite
+    cellar :any
+    sha256 "5a7ab3c18f11a0a2e0517648ab884ae245483f095c8397d67550cec98b661d37" => :big_sur
+    sha256 "e3dd84d1883ca04013d72311c248f623a3e55fa8fa31456f5fe956ae19ccd4de" => :catalina
+    sha256 "0fbc0ae28aed58f73b1e798cbe75c8d131762c91371bd00e5a257c3a6fda7f85" => :mojave
+    sha256 "9f6983f67cbbe6d551c8ab39131ca1e91e9f3e57ffe1f1791e6c182fd017fbf8" => :high_sierra
   end
 
   head do
     url "https://github.com/jonas/tig.git"
+
+    depends_on "asciidoc" => :build
     depends_on "autoconf" => :build
     depends_on "automake" => :build
+    depends_on "xmlto" => :build
   end
 
-  option "with-docs", "Build man pages using asciidoc and xmlto"
-
-  if build.with? "docs"
-    depends_on "asciidoc"
-    depends_on "xmlto"
-  end
-
-  depends_on "readline" => :recommended
+  depends_on "readline"
 
   def install
     system "./autogen.sh" if build.head?
@@ -32,17 +31,18 @@ class Tig < Formula
     # Ensure the configured `sysconfdir` is used during runtime by
     # installing in a separate step.
     system "make", "install", "sysconfdir=#{pkgshare}/examples"
-    system "make", "install-doc-man" if build.with? "docs"
+    system "make", "install-doc-man"
     bash_completion.install "contrib/tig-completion.bash"
     zsh_completion.install "contrib/tig-completion.zsh" => "_tig"
     cp "#{bash_completion}/tig-completion.bash", zsh_completion
   end
 
-  def caveats; <<-EOS.undent
-    A sample of the default configuration has been installed to:
-      #{opt_pkgshare}/examples/tigrc
-    to override the system-wide default configuration, copy the sample to:
-      #{etc}/tigrc
+  def caveats
+    <<~EOS
+      A sample of the default configuration has been installed to:
+        #{opt_pkgshare}/examples/tigrc
+      to override the system-wide default configuration, copy the sample to:
+        #{etc}/tigrc
     EOS
   end
 

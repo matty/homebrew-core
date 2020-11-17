@@ -1,30 +1,33 @@
 class Cnats < Formula
   desc "C client for the NATS messaging system"
-  homepage "https://github.com/nats-io/cnats"
-  url "https://github.com/nats-io/cnats/archive/v1.4.4.tar.gz"
-  sha256 "fea8c510d6b2ec3df1a9b92b78863780dd0e0fb536070000ed384dc2e05d13a5"
+  homepage "https://github.com/nats-io/nats.c"
+  url "https://github.com/nats-io/nats.c/archive/v2.3.0.tar.gz"
+  sha256 "2251e3804f5c492f9b98834fea66b161f1a6f7e39a193636760b028171725022"
+  license "Apache-2.0"
 
   bottle do
     cellar :any
-    sha256 "5519a5385a4459cd68a72eae9732e48ca1bcac95fe6e067f5719c984d749744e" => :sierra
-    sha256 "b2b3f93ddb948782066b2504e4f07e3cebe6d95819354394a3113518d87e4ee8" => :el_capitan
-    sha256 "77f3d37ac8fffce4a8853f2faadb6cdd7b7e753dd8d038986f45a7695b641a89" => :yosemite
+    sha256 "04fd440ce60e1f83343c47698a5f3fc9b8b3581bcb59d198b7af129089d93441" => :big_sur
+    sha256 "874dae9b5751b247f322df936983238c37fb25e4907b57258a8cbdbec7863802" => :catalina
+    sha256 "cdce55913e70d44003278835ead106710f3221593ac4d47ff525c5f29c510d1c" => :mojave
+    sha256 "885c923403383be453e7d200eb085b1238636c9b96213064d36c2fa71b709a55" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "libevent" => :optional
-  depends_on "libuv" => :optional
-  depends_on "openssl"
+  depends_on "libevent"
+  depends_on "libuv"
+  depends_on "openssl@1.1"
+  depends_on "protobuf-c"
 
   def install
-    local_cmake_args = ["-DNATS_INSTALL_PREFIX=#{prefix}", "-DBUILD_TESTING=OFF"]
-    system "cmake", ".", *local_cmake_args, *std_cmake_args
+    system "cmake", ".", "-DCMAKE_INSTALL_PREFIX=#{prefix}",
+                         "-DBUILD_TESTING=OFF", *std_cmake_args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
-      #include <nats.h>
+    (testpath/"test.c").write <<~EOS
+      #include <nats/nats.h>
       #include <stdio.h>
       int main() {
         printf("%s\\n", nats_GetVersion());
@@ -32,7 +35,6 @@ class Cnats < Formula
       }
     EOS
     system ENV.cc, "test.c", "-L#{lib}", "-lnats", "-o", "test"
-    test_version = shell_output "./test", 0
-    assert_equal version, test_version.strip
+    assert_equal version, shell_output("./test").strip
   end
 end

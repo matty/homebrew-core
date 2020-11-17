@@ -2,9 +2,9 @@ class FabricCompletion < Formula
   desc "Bash completion for Fabric"
   homepage "https://github.com/kbakulin/fabric-completion"
   url "https://github.com/kbakulin/fabric-completion.git",
-    :revision => "5b5910492046e6335af0e88550176d2583d9a510"
+    revision: "5b5910492046e6335af0e88550176d2583d9a510"
   version "1"
-  head "https://raw.githubusercontent.com/kbakulin/fabric-completion.git"
+  head "https://github.com/kbakulin/fabric-completion.git"
 
   bottle :unneeded
 
@@ -12,7 +12,8 @@ class FabricCompletion < Formula
     bash_completion.install "fabric-completion.bash" => "fabric"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats
+    <<~EOS
       All available tasks are cached in special file to speed up the response.
       Therefore, Add .fab_tasks~ to your ".gitignore".
 

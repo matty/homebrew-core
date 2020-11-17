@@ -1,40 +1,40 @@
 class Libevent < Formula
   desc "Asynchronous event library"
-  homepage "http://libevent.org"
-  url "https://github.com/libevent/libevent/archive/release-2.1.8-stable.tar.gz"
-  sha256 "316ddb401745ac5d222d7c529ef1eada12f58f6376a66c1118eee803cb70f83d"
+  homepage "https://libevent.org/"
+  url "https://github.com/libevent/libevent/archive/release-2.1.12-stable.tar.gz"
+  sha256 "7180a979aaa7000e1264da484f712d403fcf7679b1e9212c4e3d09f5c93efc24"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url :homepage
+    regex(/libevent[._-]v?(\d+(?:\.\d+)+)-stable/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "cdd11d67b5f49b94cf3fbfd24753f84082957e3d55680e2b5979eec19091e694" => :sierra
-    sha256 "136a93a91c3724d0403b0d43d0b9a4bf6b857278c4ebb7c7585ef70a19b0964c" => :el_capitan
-    sha256 "ef703db1b4cbdab35b89aabe80c225dd9b7a2c3ea14b1eae681478c5b9df15fe" => :yosemite
+    sha256 "45758b448d82b82b6bea52bc9a72593ef22f04ebdaa4b4230cadf12768252e22" => :big_sur
+    sha256 "b5f5e7607d76b9b41ecac6df72ab5797079a9367055bb305514917595e63a323" => :catalina
+    sha256 "c52ad284f2bbdd512cd0ddd9fe19dd1b7092f7b967f593a7784098f5a1cdd254" => :mojave
+    sha256 "bad1dc570cc96e2ed5654159d3dd382d94fbbda00ca26e6f5a5ddd7ce6cb6ed9" => :high_sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "doxygen" => :build
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on "openssl"
-
-  conflicts_with "pincaster",
-    :because => "both install `event_rpcgen.py` binaries"
+  depends_on "openssl@1.1"
 
   def install
-    inreplace "Doxyfile", /GENERATE_MAN\s*=\s*NO/, "GENERATE_MAN = YES"
     system "./autogen.sh"
     system "./configure", "--disable-dependency-tracking",
                           "--disable-debug-mode",
                           "--prefix=#{prefix}"
     system "make"
     system "make", "install"
-    system "make", "doxygen"
-    man3.install Dir["doxygen/man/man3/*.3"]
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <event2/event.h>
 
       int main()
@@ -45,7 +45,7 @@ class Libevent < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-levent", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-levent", "-o", "test"
     system "./test"
   end
 end

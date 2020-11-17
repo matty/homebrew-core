@@ -1,32 +1,52 @@
 class GnuUnits < Formula
   desc "GNU unit conversion tool"
   homepage "https://www.gnu.org/software/units/"
-  url "https://ftpmirror.gnu.org/units/units-2.13.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/units/units-2.13.tar.gz"
-  sha256 "0ba5403111f8e5ea22be7d51ab74c8ccb576dc30ddfbf18a46cb51f9139790ab"
-  revision 1
+  url "https://ftp.gnu.org/gnu/units/units-2.20.tar.gz"
+  mirror "https://ftpmirror.gnu.org/units/units-2.20.tar.gz"
+  sha256 "c5e298c87516711f3bedb9315583bad0965c5d3d0bb587f9837a9af12a50fadc"
+  license "GPL-3.0-or-later"
 
-  bottle do
-    sha256 "699fbab4137b66d9ace24f214ba3cd0aa63182a40118b372452fb82ba33f249b" => :sierra
-    sha256 "892045f56500951d7c109c20a103cb05ed37859bffdcf0fea959c269731e49d5" => :el_capitan
-    sha256 "0e634f131a2985299248f35a7bffc4b4854e4cd5c704e295c9fb7bed80d63279" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  deprecated_option "default-names" => "with-default-names"
-
-  option "with-default-names", "Do not prepend 'g' to the binary"
+  bottle do
+    sha256 "31caa8a266a1565f9ded8df385aa85395ee442e310cd5e483dfa87fb05c692d4" => :big_sur
+    sha256 "8349a1d519d546b0e900099d654225f8b722549687a61b34101caddff8ea1c19" => :catalina
+    sha256 "b00474fcb014e19244ad5dee6152164c02dba0a15892cf3e7d8b7d4b3e8faecb" => :mojave
+    sha256 "eda9851ba0da4b3facfeb56f6997d075915f8b55a468c0bfaa3571839e91c750" => :high_sierra
+  end
 
   depends_on "readline"
 
   def install
-    args = ["--prefix=#{prefix}", "--with-installed-readline"]
-    args << "--program-prefix=g" if build.without? "default-names"
+    args = %W[
+      --prefix=#{prefix}
+      --with-installed-readline
+      --program-prefix=g
+    ]
 
     system "./configure", *args
     system "make", "install"
+
+    (libexec/"gnubin").install_symlink bin/"gunits" => "units"
+    (libexec/"gnubin").install_symlink bin/"gunits_cur" => "units_cur"
+    (libexec/"gnuman/man1").install_symlink man1/"gunits.1" => "units.1"
+
+    libexec.install_symlink "gnuman" => "man"
+  end
+
+  def caveats
+    <<~EOS
+      All commands have been installed with the prefix "g".
+      If you need to use these commands with their normal names, you
+      can add a "gnubin" directory to your PATH from your bashrc like:
+        PATH="#{opt_libexec}/gnubin:$PATH"
+    EOS
   end
 
   test do
     assert_equal "* 18288", shell_output("#{bin}/gunits '600 feet' 'cm' -1").strip
+    assert_equal "* 18288", shell_output("#{opt_libexec}/gnubin/units '600 feet' 'cm' -1").strip
   end
 end

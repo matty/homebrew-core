@@ -1,78 +1,36 @@
-require "language/go"
-
 class Packer < Formula
   desc "Tool for creating identical machine images for multiple platforms"
   homepage "https://packer.io"
-  url "https://github.com/mitchellh/packer.git",
-      :tag => "v0.12.2",
-      :revision => "f25949eb2dd5cafb8661048ef4a97b68e7186e8b"
+  url "https://github.com/hashicorp/packer.git",
+      tag:      "v1.6.5",
+      revision: "945908fd74adc3d63687b96caaf55749b44b5625"
+  license "MPL-2.0"
+  head "https://github.com/hashicorp/packer.git"
+
+  livecheck do
+    url "https://releases.hashicorp.com/packer/"
+    regex(%r{href=.*?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
-    sha256 "ed99cef7cc09a7523287c87ade35abdc07116ed2c240076a2b592adcfe402c8a" => :sierra
-    sha256 "f175b7824326e1e24691b74726a6c40531e2aeaab27924fe6d569defc2f27811" => :el_capitan
-    sha256 "6522cd3014af1f425fea7e21b0e74fd6cc49b092ed9ae2d0e48d43e9912927eb" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "3a7145af46f765f9c29f3d9019f174f34ecdf0f38ff7c343cbe247721e7c78cd" => :big_sur
+    sha256 "b112017e8bf0c69756c17849b1a5b17a4820f705d4a88cfeaa584e95e7a6a7de" => :catalina
+    sha256 "4be1290b8d4e4e3fdf34b75535b4136e24355a8a165ccdf08d5fa58e801ac1b8" => :mojave
+    sha256 "1205b8daec00af365f36d44b6a9343cb9ba0a2e8e5534520199f0f3f656c9dbc" => :high_sierra
   end
 
-  depends_on :hg => :build
   depends_on "go" => :build
-  depends_on "govendor" => :build
-
-  go_resource "github.com/mitchellh/gox" do
-    url "https://github.com/mitchellh/gox.git",
-        :revision => "c9740af9c6574448fd48eb30a71f964014c7a837"
-  end
-
-  go_resource "github.com/mitchellh/iochan" do
-    url "https://github.com/mitchellh/iochan.git",
-        :revision => "87b45ffd0e9581375c491fef3d32130bb15c5bd7"
-  end
-
-  go_resource "golang.org/x/tools" do
-    url "https://go.googlesource.com/tools.git",
-        :revision => "fcfba28e23c7bbd8474b355ca7d6a9d88afcca00"
-  end
 
   def install
-    ENV["XC_OS"] = "darwin"
-    ENV["XC_ARCH"] = MacOS.prefer_64_bit? ? "amd64" : "386"
-    ENV["GOPATH"] = buildpath
-    # For the gox buildtool used by packer, which
-    # doesn't need to be installed permanently.
-    ENV.append_path "PATH", buildpath
-
-    packerpath = buildpath/"src/github.com/mitchellh/packer"
-    packerpath.install Dir["{*,.git}"]
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    cd "src/github.com/mitchellh/gox" do
-      system "go", "build"
-      buildpath.install "gox"
-    end
-
-    cd "src/golang.org/x/tools/cmd/stringer" do
-      system "go", "build"
-      buildpath.install "stringer"
-    end
-
-    cd "src/github.com/mitchellh/packer" do
-      # We handle this step above. Don't repeat it.
-      inreplace "Makefile" do |s|
-        s.gsub! "go get github.com/mitchellh/gox", ""
-        s.gsub! "go get golang.org/x/tools/cmd/stringer", ""
-        s.gsub! "go get github.com/kardianos/govendor", ""
-      end
-
-      (buildpath/"bin").mkpath
-      system "make", "releasebin"
-      bin.install buildpath/"bin/packer"
-      zsh_completion.install "contrib/zsh-completion/_packer"
-      prefix.install_metafiles
-    end
+    system "go", "build", *std_go_args
+    zsh_completion.install "contrib/zsh-completion/_packer"
+    prefix.install_metafiles
   end
 
   test do
     minimal = testpath/"minimal.json"
-    minimal.write <<-EOS.undent
+    minimal.write <<~EOS
       {
         "builders": [{
           "type": "amazon-ebs",
@@ -91,6 +49,6 @@ class Packer < Formula
         }]
       }
     EOS
-    system "#{bin}/packer", "validate", minimal
+    system "#{bin}/packer", "validate", "-syntax-only", minimal
   end
 end

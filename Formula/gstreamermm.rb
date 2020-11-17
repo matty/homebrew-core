@@ -1,29 +1,27 @@
 class Gstreamermm < Formula
   desc "GStreamer C++ bindings"
   homepage "https://gstreamer.freedesktop.org/bindings/cplusplus.html"
-  url "https://download.gnome.org/sources/gstreamermm/1.8/gstreamermm-1.8.0.tar.xz"
-  sha256 "3ee3c1457ea2c32c1e17b784faa828f414ba27a9731532bf26d137a2ad999a44"
+  url "https://download.gnome.org/sources/gstreamermm/1.10/gstreamermm-1.10.0.tar.xz"
+  sha256 "be58fe9ef7d7e392568ec85e80a84f4730adbf91fb0355ff7d7c616675ea8d60"
+  revision 4
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "8c8a85ba30fdb18c432fdb8d3141a03643aea32d6411203851e04de2d92ca26b" => :sierra
-    sha256 "3da2522d9ba6d07d78d4758154aa4cbd11cd8be8202e505939a6d0d54625b7a1" => :el_capitan
-    sha256 "e544cbc13b7f95854d8a042bc67efc0d39807d5635a96259739f98b4d567e06c" => :yosemite
+    sha256 "cf9874106de695f12a568ac2088edd696c99487d0ac886344bb162a92c594831" => :big_sur
+    sha256 "2cd58f367c293ee4b19caddbc97ffb3be2fffb0382e0c0908bd4c2e604912ad7" => :catalina
+    sha256 "8249cddb44016172a38348a0d1f1092d07fe3848b0bbb0f2b964213305bc6be4" => :mojave
+    sha256 "fee76c2e868cd7f21a0953a53144ef5ee8a07960a1873cb0db84933baa471cfd" => :high_sierra
+    sha256 "c1fcf19c49b4cb0674bfb7deeb51c403093b53d0a03c5f3819d7905131f64a4e" => :sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "gstreamer"
   depends_on "glibmm"
   depends_on "gst-plugins-base"
-
-  needs :cxx11
-
-  # Compilation error due to missing header
-  # Upstream issue 9 Oct 2016 https://bugzilla.gnome.org/show_bug.cgi?id=772645
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/10887881c9f2859ca90ee8e781f0d10dae02b7a5/gstreamermm/caps.h.patch"
-    sha256 "1ec6f9c977c1fc5282c491b5d3867df35e31f00ddf696adf7a9185f47da86627"
-  end
+  depends_on "gstreamer"
 
   def install
     ENV.cxx11
@@ -34,7 +32,7 @@ class Gstreamermm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gstreamermm.h>
 
       int main(int argc, char *argv[]) {
@@ -48,7 +46,7 @@ class Gstreamermm < Formula
     glibmm = Formula["glibmm"]
     gst_plugins_base = Formula["gst-plugins-base"]
     gstreamer = Formula["gstreamer"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
@@ -92,9 +90,11 @@ class Gstreamermm < Formula
       -lgstsdp-1.0
       -lgsttag-1.0
       -lgstvideo-1.0
-      -lintl
       -lsigc-2.0
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cxx, "-std=c++11", "test.cpp", "-o", "test", *flags
     system "./test"
   end

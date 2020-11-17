@@ -1,27 +1,35 @@
 class Libspectrum < Formula
   desc "Support library for ZX Spectrum emulator"
   homepage "https://fuse-emulator.sourceforge.io/libspectrum.php"
-  url "https://downloads.sourceforge.net/project/fuse-emulator/libspectrum/1.3.2/libspectrum-1.3.2.tar.gz"
-  sha256 "c7d7580097116a7afd90f1e3d000e4b7a66b20178503f11e03b3a95180208c3f"
+  url "https://downloads.sourceforge.net/project/fuse-emulator/libspectrum/1.4.4/libspectrum-1.4.4.tar.gz"
+  sha256 "fdfb2b2bad17bcfc98c098deaebf2a9811824b08d525172436d5eb134c9780b1"
+  revision 1
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/libspectrum[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "a953f5601490b156d17a325c5a9c802c920d0ec660e6f3a841e5c694e0fa9246" => :sierra
-    sha256 "29573007d0467e7f9219e6cca7e85746785fcd24e907340abaa2a4afa51b8fcc" => :el_capitan
-    sha256 "b1c1e2ffcccabd27c2a43fc8036952bcb5d46a915e64a6e8d1e0f86265455e20" => :yosemite
+    rebuild 1
+    sha256 "223d156e3594667291fbc123051e41843087681276e8d1966231005cb0e2af72" => :big_sur
+    sha256 "25edb4f26816ec6bfb7f1437c9a17fb2621c1bb81b93a48e22960aabf89d3a1d" => :catalina
+    sha256 "29b40b473d7db763d376b1ac1949db8887b3d0a08016d84370add76524c0c377" => :mojave
+    sha256 "b4ee40ecf01a16826994e74d31ca1dbc34baeeee0287908f4e1e4a11365f6b4b" => :high_sierra
   end
 
   head do
-    url "http://svn.code.sf.net/p/fuse-emulator/code/trunk/libspectrum"
-    depends_on "automake" => :build
+    url "https://svn.code.sf.net/p/fuse-emulator/code/trunk/libspectrum"
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libgcrypt" => :recommended
-  depends_on "glib" => :recommended
-  depends_on "audiofile" => :recommended
+  depends_on "audiofile"
+  depends_on "glib"
+  depends_on "libgcrypt"
 
   def install
     system "./autogen.sh" if build.head?
@@ -30,7 +38,7 @@ class Libspectrum < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include "libspectrum.h"
       #include <assert.h>
 

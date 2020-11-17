@@ -1,48 +1,41 @@
-require "language/go"
-
 class Gauge < Formula
   desc "Test automation tool that supports executable documentation"
-  homepage "http://getgauge.io"
-  url "https://github.com/getgauge/gauge/archive/v0.8.0.1.tar.gz"
-  sha256 "40ce96c975220a4218bab25600d6db9f9b5a8387ee3f28b154504f8f150ba856"
+  homepage "https://gauge.org"
+  url "https://github.com/getgauge/gauge/archive/v1.1.5.tar.gz"
+  sha256 "b11767c95b03a6a59bb6570e4b9c210979d40c560ac65de009b60cdc4742eda9"
+  license "Apache-2.0"
   head "https://github.com/getgauge/gauge.git"
 
   bottle do
-    sha256 "ccaa3021a301fbe7fee1ec991e1215d5ff6865b358a1c668db5b334ed4b0bc08" => :sierra
-    sha256 "d39c1df161f871c3cff8261aca33b6f588fba581afaa8be7202cb712801ac293" => :el_capitan
-    sha256 "6f5d0b52104472e34aaa230dcc6921d39b3645ad65104744066efd7456e2cb40" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "d1305b11432745324f0dc743477fa2ebf3de1b65d4b8991428efcee7c87bc53a" => :big_sur
+    sha256 "f395799bcee7d019db8c425efac14197da0627d8fa776a1a9c3341ce3944c76b" => :catalina
+    sha256 "179ea1f964d984ae8a4bce8a281a0cbebbdebda62040242bb1782487fd8e78f8" => :mojave
+    sha256 "18a8e818061258898ab408e2711339d7559e1ac948f02f2901736e4e1e587348" => :high_sierra
   end
 
   depends_on "go" => :build
-  depends_on "godep" => :build
-
-  go_resource "github.com/getgauge/gauge_screenshot" do
-    url "https://github.com/getgauge/gauge_screenshot.git",
-        :revision => "23dd83ae2eeed5be12edc9aa34bb34246cebe866"
-  end
 
   def install
-    ENV["GOPATH"] = buildpath
-    ENV["GOROOT"] = Formula["go"].opt_libexec
-
-    # Avoid executing `go get`
-    inreplace "build/make.go", /\tgetGaugeScreenshot\(\)\n/, ""
-
-    dir = buildpath/"src/github.com/getgauge/gauge"
-    dir.install buildpath.children
-    ln_s buildpath/"src", dir
-
-    Language::Go.stage_deps resources, buildpath/"src"
-    ln_s "gauge_screenshot", "src/github.com/getgauge/screenshot"
-
-    cd dir do
-      system "godep", "restore"
-      system "go", "run", "build/make.go"
-      system "go", "run", "build/make.go", "--install", "--prefix", prefix
-    end
+    system "go", "run", "build/make.go"
+    system "go", "run", "build/make.go", "--install", "--prefix", prefix
   end
 
   test do
-    assert_match version.to_s[0, 5], shell_output("#{bin}/gauge -v")
+    (testpath/"manifest.json").write <<~EOS
+      {
+        "Plugins": [
+          "html-report"
+        ]
+      }
+    EOS
+
+    system("#{bin}/gauge", "install")
+    assert_predicate testpath/".gauge/plugins", :exist?
+
+    system("#{bin}/gauge", "config", "check_updates", "false")
+    assert_match "false", shell_output("#{bin}/gauge config check_updates")
+
+    assert_match version.to_s, shell_output("#{bin}/gauge -v 2>&1")
   end
 end

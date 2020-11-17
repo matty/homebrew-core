@@ -1,45 +1,44 @@
 class Modules < Formula
   desc "Dynamic modification of a user's environment via modulefiles"
   homepage "https://modules.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/modules/Modules/modules-3.2.10/modules-3.2.10.tar.bz2"
-  sha256 "e8403492a8d57ace6485813ad6cdaafe0a735b7d93b9435553a8d11d3fdd29a2"
+  url "https://downloads.sourceforge.net/project/modules/Modules/modules-4.6.0/modules-4.6.0.tar.bz2"
+  sha256 "616f994384adf4faf91df7d8b7ae2dab5bad20d642509c1a8e189e159968f911"
 
-  bottle do
-    sha256 "828fb83b2dd8da143e64c87e7c93455c93a8cdc5ee8357b442cb20ab64ac6951" => :sierra
-    sha256 "a33a62060774cb6bf433653771cd5069a308ba6fe86daceeee044f4e5dd6a745" => :el_capitan
-    sha256 "62203b2abd9c20f31dd3e29da16bc0c27bc404b68beaa8f0bdce491c6f261e89" => :yosemite
-    sha256 "d46c87889814f42b07e22b634061a899baac9a49191cb049c8eb3c91ad3650bc" => :mavericks
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/modules[._-]v?(\d+(?:\.\d+)+)\.t}i)
   end
 
-  depends_on :x11 => :optional
+  bottle do
+    cellar :any
+    sha256 "d424799ee3a971d0330ac8247782fd8a3c2fc6ddbf40c743249d643128bf8c9e" => :catalina
+    sha256 "fbe7043ec34d578b42ab10dba769b594d19c9d5665b1f27060fdd3a8982cefcd" => :mojave
+    sha256 "688cc5ba060e509134a35d057077c022b2e9d5451e988b46c239dde24934e5f7" => :high_sierra
+  end
 
   def install
-    # -DUSE_INTERP_ERRORLINE fixes
-    # error: no member named 'errorLine' in 'struct Tcl_Interp'
     args = %W[
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-silent-rules
       --prefix=#{prefix}
       --datarootdir=#{share}
-      --disable-versioning
-      CPPFLAGS=-DUSE_INTERP_ERRORLINE
+      --with-tcl=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework
+      --without-x
     ]
-    args << "--without-x" if build.without? "x11"
     system "./configure", *args
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    To activate modules, add the following at the end of your .zshrc:
-      source #{opt_prefix}/Modules/init/zsh
-    You will also need to reload your .zshrc:
-      source ~/.zshrc
+  def caveats
+    <<~EOS
+      To activate modules, add the following at the end of your .zshrc:
+        source #{opt_prefix}/init/zsh
+      You will also need to reload your .zshrc:
+        source ~/.zshrc
     EOS
   end
 
   test do
-    system "#{prefix}/Modules/bin/modulecmd", "--version"
-    system "zsh", "-c", "source #{prefix}/Modules/init/zsh; module"
+    assert_match "restore", shell_output("#{bin}/envml --help")
+    output = shell_output("zsh -c 'source #{prefix}/init/zsh; module' 2>&1")
+    assert_match version.to_s, output
   end
 end

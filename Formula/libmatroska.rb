@@ -1,43 +1,26 @@
 class Libmatroska < Formula
   desc "Extensible, open standard container format for audio/video"
   homepage "https://www.matroska.org/"
-  url "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.4.5.tar.bz2"
-  mirror "https://www.bunkus.org/videotools/mkvtoolnix/sources/libmatroska-1.4.5.tar.bz2"
-  sha256 "79023fa46901e5562b27d93a9dd168278fa101361d7fd11a35e84e58e11557bc"
+  url "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.6.2.tar.xz"
+  sha256 "bc4479aa8422ab07643df6a1fa5a19e4bed4badfd41ca77e081628620d1e1990"
+  license "LGPL-2.1"
+  head "https://github.com/Matroska-Org/libmatroska.git"
 
   bottle do
     cellar :any
-    sha256 "56deeccf102a2f275d19976d6874fb9a9e031af41a485c09137b681f7e9ed048" => :sierra
-    sha256 "1f5fae2fa53865b2604565422a8d2a2c05f2a3704f7ff89f1e2edf1a0ea98bff" => :el_capitan
-    sha256 "0970585e51b2ce6918660216a1f3f86e097738705b1943c80b2b30e9bc90ca78" => :yosemite
-    sha256 "c91f48f96377c6002da12767f4ddbec4cec71001137d378af1eb18f862088544" => :mavericks
+    sha256 "331296e946c397f6f94caa8520d7c2a91d4bd5e06996d729f279011eed7a699a" => :big_sur
+    sha256 "78373c5516fdadee736e360c5e94a80ca3e3092ab9ca44fd88f31c2a08f8fc5a" => :catalina
+    sha256 "a1c46ddc10694208aae53738cd9927674e076b805180149a1104b4a04bdc19b0" => :mojave
+    sha256 "74faf2d3e6539e847538cfbd9f7a86abacb7272d83cfa1d36094f9295f66727f" => :high_sierra
   end
 
-  head do
-    url "https://github.com/Matroska-Org/libmatroska.git"
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "libtool" => :build
-  end
-
-  option :cxx11
-
-  if build.cxx11?
-    depends_on "libebml" => "c++11"
-  else
-    depends_on "libebml"
-  end
-
-  depends_on "pkg-config" => :build
+  depends_on "cmake" => :build
+  depends_on "libebml"
 
   def install
-    ENV.cxx11 if build.cxx11?
-
-    system "autoreconf", "-fi" if build.head?
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", "-DBUILD_SHARED_LIBS=YES", *std_cmake_args
+      system "make", "install"
+    end
   end
 end

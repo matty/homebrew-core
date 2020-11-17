@@ -1,19 +1,25 @@
 class Libprotoident < Formula
   desc "Performs application layer protocol identification for flows"
-  homepage "http://research.wand.net.nz/software/libprotoident.php"
-  url "http://research.wand.net.nz/software/libprotoident/libprotoident-2.0.10.tar.gz"
-  sha256 "a5ef504967c34fa07ed967b3a629a9df2768eb9da799858ceecd8026ca1efceb"
+  homepage "https://research.wand.net.nz/software/libprotoident.php"
+  url "https://research.wand.net.nz/software/libprotoident/libprotoident-2.0.13.tar.gz"
+  sha256 "8ca7ccd95b3f23457c3f9eff480364565b553bbcab9b39969f964910738e5672"
   revision 1
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?libprotoident[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "a3f30f045066ca4b054a23a696be4b7ff083fc9895cc1e13b220d522351a6864" => :sierra
-    sha256 "3f81b44c4ed331a9d3e1bda531bf4d3a38f3bbe29d266a7d6a49608b80b52a5b" => :el_capitan
-    sha256 "efbc7daba7362f5339c477a314d428189b4b7db05352086b9fd3737134e96b8a" => :yosemite
+    sha256 "5150fd5fc726b744ffd474d2c9b6407014df45a2080cb034d82156c3f20c3d9b" => :big_sur
+    sha256 "f7bdcc25564854f28b3a0c308bcad5d17f71f186c05b8ab356752c9d0d11f31b" => :catalina
+    sha256 "47e13c727609ab739bb59a74232870ba82ddb2ce8c4e5b145f3e92fc3383edd6" => :mojave
+    sha256 "2be3c3bcd3b921e264a9bf8ff730d95af2d3a8aee252d849aba1b88d30d49892" => :high_sierra
   end
 
-  depends_on "libtrace"
   depends_on "libflowmanager"
+  depends_on "libtrace"
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -23,7 +29,7 @@ class Libprotoident < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libprotoident.h>
 
       int main() {

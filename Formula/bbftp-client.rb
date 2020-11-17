@@ -1,28 +1,33 @@
 class BbftpClient < Formula
   desc "Secure file transfer software, optimized for large files"
-  homepage "http://doc.in2p3.fr/bbftp/"
-  url "http://doc.in2p3.fr/bbftp/dist/bbftp-client-3.2.1.tar.gz"
+  homepage "https://software.in2p3.fr/bbftp/"
+  url "https://software.in2p3.fr/bbftp/dist/bbftp-client-3.2.1.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/bbftp-client-3.2.1.tar.gz"
   sha256 "4000009804d90926ad3c0e770099874084fb49013e8b0770b82678462304456d"
-  revision 1
+  revision 3
 
-  bottle do
-    sha256 "027138bf779c95260fe90d543c9c5767c32c8f7c1afeb4c6ad872ecfdffc0a9b" => :sierra
-    sha256 "d813b37a04edcd071198dacd750fbac54fa3cd692fb7dda774aae88c5b8a2d9f" => :el_capitan
-    sha256 "d1b3299d2308aac2881b5049e55e912e871e98fe44a4d3586ad6afc4a565d2e6" => :yosemite
-    sha256 "8619a2f08f735d7e2387ba67ca53bf6f503f37835db08b127033d5c66019688d" => :mavericks
-    sha256 "613133ffd2d9eb3d064a7ecfd12939655362d9d6f7c951f93260c0a47ddd835c" => :mountain_lion
+  livecheck do
+    url "https://software.in2p3.fr/bbftp/download.html"
+    regex(/href=.*?bbftp-client[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "openssl"
-
-  # Dirty patch to fix ntohll errors on Yosemite.
-  # Reported upstream on 14/01/2015.
-  patch :DATA if MacOS.version >= :yosemite
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "3adb6837d00aae2dd6425d06aa6ccf9450e8d6eaac66d4be597a7d97866d30a2" => :catalina
+    sha256 "bbb282078bb4f4390bf219a319a1d20020a76e14fb853afc473e7f59f3f71a01" => :mojave
+    sha256 "33ccc8c932f462488401f3963c1c5aff2ab489e16c1df067c619c5b6a791ced7" => :high_sierra
+    sha256 "535b7b8db22c9ef92ba7ecf8fea093c3d0c9bc5c01d99277fb2ff04d9272b843" => :sierra
+  end
 
   def install
+    # Fix ntohll errors; reported 14 Jan 2015.
+    ENV.append_to_cflags "-DHAVE_NTOHLL" if MacOS.version >= :yosemite
+
     cd "bbftpc" do
-      system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                            "--with-ssl=#{Formula["openssl"].opt_prefix}", "--prefix=#{prefix}"
+      system "./configure", "--disable-debug",
+                            "--disable-dependency-tracking",
+                            "--without-ssl",
+                            "--prefix=#{prefix}"
       system "make", "install"
     end
   end
@@ -31,81 +36,3 @@ class BbftpClient < Formula
     system "#{bin}/bbftp", "-v"
   end
 end
-
-__END__
-
-diff --git a/bbftpc/bbftp_get.c b/bbftpc/bbftp_get.c
-index 96c8d35..b1cd2e3 100644
---- a/bbftpc/bbftp_get.c
-+++ b/bbftpc/bbftp_get.c
-@@ -94,9 +94,9 @@ extern  int     nbport ;
- extern  int     state ;
- extern  int     protocol ;
-
--#ifndef HAVE_NTOHLL
--my64_t ntohll(my64_t v) ;
--#endif
-+// #ifndef HAVE_NTOHLL
-+// my64_t ntohll(my64_t v) ;
-+// #endif
-
- int bbftp_get(char *remotefilename,int  *errcode)
- {
-
-diff --git a/bbftpc/bbftp_put.c b/bbftpc/bbftp_put.c
-index 53c9919..b633ceb 100644
---- a/bbftpc/bbftp_put.c
-+++ b/bbftpc/bbftp_put.c
-@@ -96,9 +96,9 @@ extern  int     state ;
- extern  int     simulation_mode ;
- extern  int     protocol ;
-
--#ifndef HAVE_NTOHLL
--my64_t ntohll(my64_t v) ;
--#endif
-+// #ifndef HAVE_NTOHLL
-+// my64_t ntohll(my64_t v) ;
-+// #endif
-
- int bbftp_put(char *remotefilename,int  *errcode)
- {
-
-diff --git a/bbftpc/bbftp_utils.c b/bbftpc/bbftp_utils.c
-index 40d5f9e..7143903 100644
---- a/bbftpc/bbftp_utils.c
-+++ b/bbftpc/bbftp_utils.c
-@@ -82,20 +82,20 @@ my64_t convertlong(my64_t v) {
-     return tmp64 ;
- }
-
--#ifndef HAVE_NTOHLL
--my64_t ntohll(my64_t v) {
--#ifdef HAVE_BYTESWAP_H
--    return bswap_64(v);
--#else
--    long lo = v & 0xffffffff;
--    long hi = v >> 32U;
--    lo = ntohl(lo);
--    hi = ntohl(hi);
--    return ((my64_t) lo) << 32U | hi;
--#endif
--}
--#define htonll ntohll
--#endif
-+// #ifndef HAVE_NTOHLL
-+// my64_t ntohll(my64_t v) {
-+// #ifdef HAVE_BYTESWAP_H
-+//    return bswap_64(v);
-+// #else
-+//    long lo = v & 0xffffffff;
-+//    long hi = v >> 32U;
-+//    lo = ntohl(lo);
-+//    hi = ntohl(hi);
-+//    return ((my64_t) lo) << 32U | hi;
-+// #endif
-+// }
-+// #define htonll ntohll
-+// #endif
-
- void printmessage(FILE *strm , int flag, int errcode, int tok, char *fmt, ...)
- {

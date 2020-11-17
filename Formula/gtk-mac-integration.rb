@@ -1,22 +1,39 @@
 class GtkMacIntegration < Formula
-  desc "API to integrate GTK macOS applications with the Mac desktop"
+  desc "Integrates GTK macOS applications with the Mac desktop"
   homepage "https://wiki.gnome.org/Projects/GTK+/OSX/Integration"
-  url "https://download.gnome.org/sources/gtk-mac-integration/2.0/gtk-mac-integration-2.0.8.tar.xz"
-  sha256 "74fce9dbc5efe4e3d07a20b24796be1b1d6c3ac10a0ee6b1f1d685c809071b79"
+  url "https://download.gnome.org/sources/gtk-mac-integration/2.1/gtk-mac-integration-2.1.3.tar.xz"
+  sha256 "d5f72302daad1f517932194d72967a32e72ed8177cfa38aaf64f0a80564ce454"
+  license "LGPL-2.1"
+  revision 4
 
-  bottle do
-    sha256 "d9b084e082123087f7d18c296149f6ede769e0307bfc503da57147f0093373de" => :sierra
-    sha256 "8f4ea7e3555ad822b049846440746ac785c94c97aea7bd36b12a51e22878644c" => :el_capitan
-    sha256 "d12a21fddf5ed6e18ea4025ebe480fd5b99929c234423cf29c634f4925d14156" => :yosemite
-    sha256 "40bdabc52178c159b9a0e2e35f74525cf36d20c7d59a28f71d8312a5518e97f8" => :mavericks
-    sha256 "8c8fb5c90fb42ee5ff1f646daacb0bc571d86f35b149df4da42d9e3e4ee74edd" => :mountain_lion
+  # We use a common regex because gtk-mac-integration doesn't use GNOME's
+  # "even-numbered minor is stable" version scheme.
+  livecheck do
+    url :stable
+    regex(/gtk-mac-integration[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
+  bottle do
+    sha256 "6c0cabeaa79c10746d8174026235f81065166215d9eea3841256b175f33b0029" => :big_sur
+    sha256 "f3aa06585602da10d89507059ece018889dbb0054118791015d22c65fec76cde" => :catalina
+    sha256 "a49e16175a868344c82613a7e23755bc6fc5da89c12e8ee6385c94c02da477cc" => :mojave
+    sha256 "61e69c71c4443999c5b0f53fcbcf1e5e775e7f0078117b54b5fe451dafeabc5f" => :high_sierra
+  end
+
+  head do
+    url "https://github.com/jralls/gtk-mac-integration.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "gtk-doc" => :build
+    depends_on "libtool" => :build
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "pkg-config" => :build
+  depends_on "gettext"
   depends_on "gtk+"
-  depends_on "gtk+3" => :recommended
-  depends_on "gobject-introspection"
-  depends_on "pygtk"
+  depends_on "gtk+3"
 
   def install
     args = %W[
@@ -24,17 +41,21 @@ class GtkMacIntegration < Formula
       --disable-silent-rules
       --prefix=#{prefix}
       --with-gtk2
-      --enable-python=yes
+      --with-gtk3
       --enable-introspection=yes
+      --enable-python=no
     ]
 
-    args << ((build.without? "gtk+3") ? "--without-gtk3" : "--with-gtk3")
-    system "./configure", *args
+    if build.head?
+      system "./autogen.sh", *args
+    else
+      system "./configure", *args
+    end
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gtkosxapplication.h>
 
       int main(int argc, char *argv[]) {
@@ -50,6 +71,7 @@ class GtkMacIntegration < Formula
     gettext = Formula["gettext"]
     glib = Formula["glib"]
     gtkx = Formula["gtk+"]
+    harfbuzz = Formula["harfbuzz"]
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
@@ -64,6 +86,7 @@ class GtkMacIntegration < Formula
       -I#{glib.opt_lib}/glib-2.0/include
       -I#{gtkx.opt_include}/gtk-2.0
       -I#{gtkx.opt_lib}/gtk-2.0/include
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/gtkmacintegration
       -I#{libpng.opt_include}/libpng16
       -I#{pango.opt_include}/pango-1.0

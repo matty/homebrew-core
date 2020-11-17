@@ -1,124 +1,60 @@
 class Wxmac < Formula
-  desc "wxWidgets, a cross-platform C++ GUI toolkit (for macOS)"
+  desc "Cross-platform C++ GUI toolkit (wxWidgets for macOS)"
   homepage "https://www.wxwidgets.org"
-  revision 4
-
+  url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.5.1/wxWidgets-3.0.5.1.tar.bz2"
+  sha256 "440f6e73cf5afb2cbf9af10cec8da6cdd3d3998d527598a53db87099524ac807"
+  license "wxWindows"
+  revision 1
   head "https://github.com/wxWidgets/wxWidgets.git"
 
-  stable do
-    url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.2/wxWidgets-3.0.2.tar.bz2"
-    sha256 "346879dc554f3ab8d6da2704f651ecb504a22e9d31c17ef5449b129ed711585d"
-
-    # Patch for wxOSXPrintData, custom paper not applied
-    # http://trac.wxwidgets.org/ticket/16959
-    patch do
-      url "http://trac.wxwidgets.org/raw-attachment/ticket/16959/wxPaperCustomPatch.patch"
-      sha256 "391b5c05caa3843de1579294a62918d9e00b2311313ee2ce1c1943cd5a8494b3"
-    end
-
-    # Various fixes related to Yosemite. Revisit in next stable release.
-    # Please keep an eye on http://trac.wxwidgets.org/ticket/16329 as well
-    # Theoretically the above linked patch should still be needed, but it isn't.
-    # Try to find out why.
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/bbf4995/wxmac/patch-yosemite.diff"
-      sha256 "02ab6d044ceab85127cad11f2eba2164e7f3fe5c95d6a863e8231a57d1f87d6f"
-    end
-
-    # Remove uncenessary <QuickTime/QuickTime.h> includes
-    # Fixes building against Xcode 8 with macOS 10.12 SDK
-    # http://trac.wxwidgets.org/changeset/f6a2d1caef5c6d412c84aa900cb0d3990b350938/git-wxWidgets
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/bbf4995/wxmac/patch-quicktime-removal.diff"
-      sha256 "ebddf09877b053a6fafbf61ac52e4a7b511489dc8437110f80f00d5d2b5ff885"
-    end
+  livecheck do
+    url "https://github.com/wxWidgets/wxWidgets/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
   bottle do
     cellar :any
-    sha256 "a5efe8ecbcfebf941096b9a5fdeb3321be2906bbe530d0a3af7ce7dacb20c0a7" => :sierra
-    sha256 "148b27f56a089b435842087450efa57a701851378648a32a8f1d3fbc988d9b9f" => :el_capitan
-    sha256 "b29cf28e87e89b86ad601efdbdb38840b4810b2bf6e49f6b4c42c4530da36100" => :yosemite
+    sha256 "95b66fefa42f869430da0597abb27500d551d5f99662e285c4f0d3a9e2800bdf" => :big_sur
+    sha256 "110aa0b2134d8bff1647de0cd8500f160133794b347f789bba3e1894b991b788" => :catalina
+    sha256 "5f703423fc3f1e36d647a2d8be2d271a92f5d60f49ceba8e3478391bbd4f5303" => :mojave
+    sha256 "1de8aa03e1c50af387888ffa51cfa4e0c99d158f25edb0acbf312e10c629a31d" => :high_sierra
   end
-
-  devel do
-    url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.0/wxWidgets-3.1.0.tar.bz2"
-    sha256 "e082460fb6bf14b7dd6e8ac142598d1d3d0b08a7b5ba402fdbf8711da7e66da8"
-
-    # Fix Issue: Creating wxComboCtrl without wxTE_PROCESS_ENTER style results in an assert.
-    patch do
-      url "https://github.com/wxWidgets/wxWidgets/commit/cee3188c1abaa5b222c57b87cc94064e56921db8.patch"
-      sha256 "c6503ba36a166c031426be4554b033bae5b0d9da6fabd33c10ffbcb8672a0c2d"
-    end
-
-    # Fix Issue: Building under macOS in C++11 mode for i386 architecture (but not amd64) results in an error about narrowing conversion.
-    patch do
-      url "https://github.com/wxWidgets/wxWidgets/commit/ee486dba32d02c744ae4007940f41a5b24b8c574.patch"
-      sha256 "88ef4c5ec0422d00ae01aff18143216d1e20608f37090be7f18e924c631ab678"
-    end
-
-    # Fix Issue: Building under macOS in C++11 results in several -Winconsistent-missing-override warnings.
-    patch do
-      url "https://github.com/wxWidgets/wxWidgets/commit/173ecd77c4280e48541c33bdfe499985852935ba.patch"
-      sha256 "018fdb6abda38f5d017cffae5925fa4ae8afa9c84912c61e0afd26cd4f7b5473"
-    end
-  end
-
-  option :universal
-  option "with-stl", "use standard C++ classes for everything"
-  option "with-static", "build static libraries"
 
   depends_on "jpeg"
   depends_on "libpng"
   depends_on "libtiff"
 
+  on_linux do
+    depends_on "pkg-config" => :build
+  end
+
   def install
     args = [
       "--prefix=#{prefix}",
-      "--enable-unicode",
-      "--enable-std_string",
-      "--enable-display",
-      "--with-opengl",
-      "--with-osx_cocoa",
-      "--with-libjpeg",
-      "--with-libtiff",
-      # Otherwise, even in superenv, the internal libtiff can pick
-      # up on a nonuniversal xz and fail
-      # https://github.com/Homebrew/legacy-homebrew/issues/22732
-      "--without-liblzma",
-      "--with-libpng",
-      "--with-zlib",
-      "--enable-dnd",
       "--enable-clipboard",
-      "--enable-webkit",
-      "--enable-svg",
-      # On 64-bit, enabling mediactrl leads to wxconfig trying to pull
-      # in a non-existent 64 bit QuickTime framework. This is submitted
-      # upstream and will eventually be fixed, but for now...
-      MacOS.prefer_64_bit? ? "--disable-mediactrl" : "--enable-mediactrl",
-      "--enable-graphics_ctx",
       "--enable-controls",
       "--enable-dataviewctrl",
+      "--enable-display",
+      "--enable-dnd",
+      "--enable-graphics_ctx",
+      "--enable-std_string",
+      "--enable-svg",
+      "--enable-unicode",
+      "--enable-webkit",
+      "--enable-webview",
       "--with-expat",
+      "--with-libjpeg",
+      "--with-libpng",
+      "--with-libtiff",
+      "--with-opengl",
+      "--with-osx_cocoa",
+      "--with-zlib",
       "--disable-precomp-headers",
-      # need to set with-macosx-version-min to avoid configure defaulting to 10.5
-      "--with-macosx-version-min=#{MacOS.version}",
       # This is the default option, but be explicit
       "--disable-monolithic",
+      # Set with-macosx-version-min to avoid configure defaulting to 10.5
+      "--with-macosx-version-min=#{MacOS.version}",
     ]
-
-    if build.universal?
-      ENV.universal_binary
-      args << "--enable-universal_binary=#{Hardware::CPU.universal_archs.join(",")}"
-    end
-
-    args << "--enable-stl" if build.with? "stl"
-
-    if build.with? "static"
-      args << "--disable-shared"
-    else
-      args << "--enable-shared"
-    end
 
     system "./configure", *args
     system "make", "install"

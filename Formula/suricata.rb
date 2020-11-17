@@ -1,52 +1,63 @@
 class Suricata < Formula
   desc "Network IDS, IPS, and security monitoring engine"
   homepage "https://suricata-ids.org/"
-  url "https://www.openinfosecfoundation.org/download/suricata-3.2.1.tar.gz"
-  sha256 "0e0b0cf49016804bb2fb1fc4327341617e76a67902f4e03e0ef6d16c1d7d3994"
+  url "https://www.openinfosecfoundation.org/download/suricata-6.0.0.tar.gz"
+  sha256 "3c175a6dee9071141391f64828502cfb6e48dc1a20833e1411fb45be5368923b"
+  license "GPL-2.0-only"
+  revision 1
 
-  bottle do
-    sha256 "b99cf91adf35b491fdfa2c4421c918a6fbe619cac5bdc2382d692abb4afca15a" => :sierra
-    sha256 "a7ae9bbda83bcce4ffef56961305164802994930118f307b07fe7fef028e852f" => :el_capitan
-    sha256 "5fdf576e4d3d4558879493e2875d13a9200ab71d33c68711259e3aa46e384b86" => :yosemite
+  livecheck do
+    url "https://suricata-ids.org/download/"
+    regex(/href=.*?suricata[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  bottle do
+    sha256 "1ea262ba672f76134a1f03b5807fe51b2a9836be5aa425195403933ca7d41ace" => :big_sur
+    sha256 "357f14c8a5904953453139e1d9363388d1f5779fa21ab413357a4b476eff6c24" => :catalina
+    sha256 "aa86c75ad788ab24ccd6b3dcf47e21e2766bcf018a302d67bfa569289da59edb" => :mojave
+    sha256 "5d885e9492f79dcc5cb039f3a5012dc8eb3549ccbf91695c563e73ffd205a329" => :high_sierra
+  end
+
   depends_on "pkg-config" => :build
+  depends_on "rust" => :build
+  depends_on "jansson"
   depends_on "libmagic"
   depends_on "libnet"
   depends_on "libyaml"
-  depends_on "pcre"
-  depends_on "nss"
+  depends_on "lz4"
   depends_on "nspr"
-  depends_on "geoip" => :optional
-  depends_on "lua" => :optional
-  depends_on "luajit" => :optional
-  depends_on "jansson" => :optional
-  depends_on "hiredis" => :optional
+  depends_on "nss"
+  depends_on "pcre"
+  depends_on "python@3.9"
 
   resource "argparse" do
-    url "https://pypi.python.org/packages/source/a/argparse/argparse-1.3.0.tar.gz"
-    sha256 "b3a79a23d37b5a02faa550b92cbbbebeb4aa1d77e649c3eb39c19abf5262da04"
+    url "https://files.pythonhosted.org/packages/18/dd/e617cfc3f6210ae183374cd9f6a26b20514bbb5a792af97949c5aacddf0f/argparse-1.4.0.tar.gz"
+    sha256 "62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4"
+  end
+
+  resource "PyYAML" do
+    url "https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz"
+    sha256 "b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d"
   end
 
   resource "simplejson" do
-    url "https://pypi.python.org/packages/source/s/simplejson/simplejson-3.6.5.tar.gz"
-    sha256 "2a3189f79d1c7b8a2149a0e783c0b4217fad9b30a6e7d60450f2553dc2c0e57e"
+    url "https://files.pythonhosted.org/packages/98/87/a7b98aa9256c8843f92878966dc3d8d914c14aad97e2c5ce4798d5743e07/simplejson-3.17.0.tar.gz"
+    sha256 "2b4b2b738b3b99819a17feaf118265d0753d5536049ea570b3c43b51c4701e81"
   end
 
   def install
-    # bug raised https://redmine.openinfosecfoundation.org/issues/1470
-    ENV.deparallelize
-
-    libnet = Formula["libnet"]
-    libmagic = Formula["libmagic"]
-
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
+    python3 = Formula["python@3.9"].opt_bin/"python3"
+    xy = Language::Python.major_minor_version python3
+    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python#{xy}/site-packages"
     resources.each do |r|
       r.stage do
-        system "python", *Language::Python.setup_install_args(libexec/"vendor")
+        system python3, *Language::Python.setup_install_args(libexec/"vendor")
       end
     end
+
+    jansson = Formula["jansson"]
+    libmagic = Formula["libmagic"]
+    libnet = Formula["libnet"]
 
     args = %W[
       --disable-dependency-tracking
@@ -54,38 +65,19 @@ class Suricata < Formula
       --prefix=#{prefix}
       --sysconfdir=#{etc}
       --localstatedir=#{var}
-      --with-libnet-includes=#{libnet.opt_include}
-      --with-libnet-libs=#{libnet.opt_lib}
+      --with-libjansson-includes=#{jansson.opt_include}
+      --with-libjansson-libraries=#{jansson.opt_lib}
       --with-libmagic-includes=#{libmagic.opt_include}
       --with-libmagic-libraries=#{libmagic.opt_lib}
+      --with-libnet-includes=#{libnet.opt_include}
+      --with-libnet-libraries=#{libnet.opt_lib}
+      --enable-ipfw
     ]
 
-    args << "--enable-lua" if build.with? "lua"
-    args << "--enable-luajit" if build.with? "luajit"
-
-    if build.with? "geoip"
-      geoip = Formula["geoip"]
-      args << "--enable-geoip"
-      args << "--with-libgeoip-includes=#{geoip.opt_include}"
-      args << "--with-libgeoip-libs=#{geoip.opt_lib}"
-    end
-
-    if build.with? "jansson"
-      jansson = Formula["jansson"]
-      args << "--with-libjansson-includes=#{jansson.opt_include}"
-      args << "--with-libjansson-libraries=#{jansson.opt_lib}"
-    end
-
-    if build.with? "hiredis"
-      hiredis = Formula["hiredis"]
-      args << "--enable-hiredis"
-      args << "--with-libjansson-includes=#{hiredis.opt_include}"
-      args << "--with-libhiredis-libraries=#{hiredis.opt_lib}"
-    end
     system "./configure", *args
     system "make", "install-full"
 
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
 
     # Leave the magic-file: prefix in otherwise it overrides a commented out line rather than intended line.
     inreplace etc/"suricata/suricata.yaml", %r{magic-file: /.+/magic}, "magic-file: #{libmagic.opt_share}/misc/magic"

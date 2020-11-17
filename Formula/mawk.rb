@@ -1,14 +1,21 @@
 class Mawk < Formula
   desc "Interpreter for the AWK Programming Language"
-  homepage "http://invisible-island.net/mawk/"
-  url "ftp://invisible-island.net/pub/mawk/mawk-1.3.4-20161120.tgz"
-  sha256 "361ec1bb4968c1f1f3b91b77493cf11b31c73ff8516f95db30e4dc28de180c1e"
+  homepage "https://invisible-island.net/mawk/"
+  url "https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20200120.tgz"
+  sha256 "7fd4cd1e1fae9290fe089171181bbc6291dfd9bca939ca804f0ddb851c8b8237"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://invisible-mirror.net/archives/mawk/?C=M&O=D"
+    regex(/href=.*?mawk[._-]v?(\d+(?:\.\d+)+(?:-\d+)?)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "52d61963ba6494674cdea5d3fd95e9551b8277b9bc5e189f93b1126d5ae3dd27" => :sierra
-    sha256 "d39e71dfe41cdf2e480a5858938918509e2a00e6b5dcb181d14fc5cdedd91b24" => :el_capitan
-    sha256 "8ef45e294dbab1b4c4615861b6eee4fdd179649072fe41eb554e6bc93f2f5a42" => :yosemite
+    sha256 "a669698248dacc35f2d82547a846e9ba3fd47dc56c8176c407f73cb24156c775" => :big_sur
+    sha256 "03f9aa87a079b35b6f93813e4016e85d102c578d8b65f2f967b0b7c5c5d869ad" => :catalina
+    sha256 "802b3592430ca644c6590acad265f45ac892fe47fb37732e678afac13f8cf1f0" => :mojave
+    sha256 "d113f78e1c20c8bf86fcf5ce083e206aeca58ee857e7d0a3acb0158d2b01fb45" => :high_sierra
   end
 
   def install

@@ -1,14 +1,17 @@
 class Yank < Formula
   desc "Copy terminal output to clipboard"
   homepage "https://github.com/mptre/yank"
-  url "https://github.com/mptre/yank/archive/v0.8.2.tar.gz"
-  sha256 "27678a82c5e5415902bc6c4186adadf860c1730822c3ef08b21132ca46331ce5"
+  url "https://github.com/mptre/yank/archive/v1.2.0.tar.gz"
+  sha256 "c4a2f854f9e49e1df61491d3fab29ea595c7e3307394acb15f32b6d415840bce"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "d2213f36ca308b83ab401b16892af5e06b2d6730fac83677231c2a0c05bb6bd5" => :sierra
-    sha256 "d6ee61b46c20470fd9f89643697d1fbe83ac2b0f009aa97203b1cdeda9d9eb19" => :el_capitan
-    sha256 "6868dbd03b5260ca4e2fb87bad8821475893ccf9f41a2fcd4e1ec9029eefb755" => :yosemite
+    sha256 "df2425ac44c54c3e55aaf835a40d2ac74663193550ea32a09f88f23490e1f7d9" => :big_sur
+    sha256 "ef4da54ce9a56a1767b44dd88df6616c147730d74f390d5a661910dddf8785a7" => :catalina
+    sha256 "60431f02c576c640597975986ce62f9d157c49f160d7d6e23f917dc321ca8bac" => :mojave
+    sha256 "b87461e809f0bebd615d4da69c31509109de8f86d07d280dab07326293cc851f" => :high_sierra
+    sha256 "70a5de45249c1656653733fea8d7a92c2496b9ba8e7540eef86b3f805d0e933a" => :sierra
   end
 
   def install
@@ -16,7 +19,7 @@ class Yank < Formula
   end
 
   test do
-    (testpath/"test.exp").write <<-EOS.undent
+    (testpath/"test.exp").write <<~EOS
       spawn sh
       set timeout 1
       send "echo key=value | #{bin}/yank -d = | cat"

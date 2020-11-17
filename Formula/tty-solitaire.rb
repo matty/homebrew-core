@@ -1,14 +1,15 @@
 class TtySolitaire < Formula
   desc "Ncurses-based klondike solitaire game"
   homepage "https://github.com/mpereira/tty-solitaire"
-  url "https://github.com/mpereira/tty-solitaire/archive/v1.0.0.tar.gz"
-  sha256 "d3512beb8844ffb295cbea03bb3515fec12851bce38692e05cd55494beb2cc1f"
+  url "https://github.com/mpereira/tty-solitaire/archive/v1.3.0.tar.gz"
+  sha256 "a270ee639e911a89add6a3c765b0548c9d762e0388c323807708d2509cfa64a0"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "bb97b8bb71cd6dd62c521fa58d8f1c977ebce6332553451cb06c724c841d35e0" => :sierra
-    sha256 "eb74b5769e856283690e9b5421190146e6136c7f53368c8516dc4e5ac71e3c20" => :el_capitan
-    sha256 "9c14a3abeb56ec86f4c1bb4ad4cae849f7b333a1e0eabe0dc75ac61fe0b9b755" => :yosemite
+    sha256 "8a9b3d7d5b62d5a82b3e37920d76bdd02902c4705d81d2b158b8eb605232b91f" => :catalina
+    sha256 "ad68372ed5eb8f98d1175fd9b014fb0881a6615fe05e21811ed4327ded9aa066" => :mojave
+    sha256 "d35722d89335ba81284acdde82cdb5f370860441950f3acd7290a8e821382147" => :high_sierra
   end
 
   def install

@@ -2,14 +2,16 @@ class SourceToImage < Formula
   desc "Tool for building source and injecting into docker images"
   homepage "https://github.com/openshift/source-to-image"
   url "https://github.com/openshift/source-to-image.git",
-    :tag => "v1.1.4",
-    :revision => "870b2730357b2664598b47672a4840e3ebd31338"
+      tag:      "v1.3.1",
+      revision: "a5a771479f73be6be4207aadc730351e515aedfb"
+  license "Apache-2.0"
   head "https://github.com/openshift/source-to-image.git"
 
   bottle do
-    sha256 "32f2456dba8758ffc4041903b129f38446ef5dc2916c70f1001a94849af77c43" => :sierra
-    sha256 "e88c854a0dad4612e469940f0a09566aef5317b0c416eb0dcb09b73349332024" => :el_capitan
-    sha256 "785d3a1d1301ef2d59af28cf32648c1de2ee2f8241bc9d65501693222badf8b2" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "3fbf3469cf68fa605bbac9b3cb726ffc5c1f485d27dcacd4b9310e24e8d165e4" => :catalina
+    sha256 "c576266fcc9e09cfae7ea91d9bc6f76b4aad025d087cf11acfe94218cdfe1774" => :mojave
+    sha256 "29fb2fc7a031e904e743264878f9a4010e7c5d6aa0a3091ea0ec1038f312a5ca" => :high_sierra
   end
 
   depends_on "go" => :build
@@ -21,6 +23,6 @@ class SourceToImage < Formula
 
   test do
     system "#{bin}/s2i", "create", "testimage", testpath
-    assert (testpath/"Dockerfile").exist?, "s2i did not create the files."
+    assert_predicate testpath/"Dockerfile", :exist?, "s2i did not create the files."
   end
 end

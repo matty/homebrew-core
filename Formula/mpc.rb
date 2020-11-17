@@ -1,22 +1,39 @@
 class Mpc < Formula
   desc "Command-line music player client for mpd"
   homepage "https://www.musicpd.org/clients/mpc/"
-  url "https://www.musicpd.org/download/mpc/0/mpc-0.28.tar.gz"
-  sha256 "53385c2d9af0a0025943045b46cb2079b300c1224d615ac98f7ff140e968600d"
+  url "https://www.musicpd.org/download/mpc/0/mpc-0.33.tar.xz"
+  sha256 "4f40ccbe18f5095437283cfc525a97815e983cbfd3a29e48ff610fa4f1bf1296"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://www.musicpd.org/download/mpc/0/"
+    regex(/href=.*?mpc[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "26f8fd128483fa5ce7b3543f4152c1f1ee49ea6e2ec8f5e59874991d84627e96" => :sierra
-    sha256 "40b5cd34fd7b212a4d83476f0511bdd50bdc7533450665fc1ca5f0f008d510b7" => :el_capitan
-    sha256 "b521e1e20acbe6b1cfb0bc52cd810e8fc8c5b8ae69441964122606c81bfc0dea" => :yosemite
-    sha256 "8e96cbd74506a8d2b86e3fab070bdb36a30fe2fba987d928053d160e5b036f6f" => :mavericks
+    sha256 "cc01508026db65016ee6e2ec1f6663921a5c5ace5c76ea51ffbd1b0b7ade5e63" => :big_sur
+    sha256 "341a4c3cef23004a47f37fa299047e63baedceb07405813d6fc112c9ad7d4ff2" => :catalina
+    sha256 "29742180fafe0fffeba3fc09c3d355395084ef3d063004347a96bc37c72682db" => :mojave
+    sha256 "84bd2c475a7880bf1f36c560a5696c12c27ff6cdb5cd907082d14ffd094b1081" => :high_sierra
   end
 
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "libmpdclient"
 
   def install
-    system "./configure", "--prefix=#{prefix}", "--disable-debug", "--disable-dependency-tracking"
-    system "make", "install"
+    system "meson", *std_meson_args, ".", "output"
+    system "ninja", "-C", "output"
+    system "ninja", "-C", "output", "install"
+
+    bash_completion.install "contrib/mpc-completion.bash" => "mpc"
+    rm share/"doc/mpc/contrib/mpc-completion.bash"
+  end
+
+  test do
+    assert_match "query", shell_output("#{bin}/mpc list 2>&1", 1)
+    assert_match "-F _mpc", shell_output("source #{bash_completion}/mpc && complete -p mpc")
   end
 end

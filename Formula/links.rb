@@ -1,22 +1,28 @@
 class Links < Formula
   desc "Lynx-like WWW browser that supports tables, menus, etc."
   homepage "http://links.twibright.com/"
-  url "http://links.twibright.com/download/links-2.14.tar.bz2"
-  sha256 "f70d0678ef1c5550953bdc27b12e72d5de86e53b05dd59b0fc7f07c507f244b8"
+  url "http://links.twibright.com/download/links-2.21.tar.bz2"
+  sha256 "285eed8591c7781ec26213df82786665aaa1b9286782e8a7a1a7e2a6e1630d63"
+  license "GPL-2.0"
+
+  livecheck do
+    url "http://links.twibright.com/download.php"
+    regex(/Current version is v?(\d+(?:\.\d+)+)\. /i)
+  end
 
   bottle do
     cellar :any
-    sha256 "dce0530efd47157b5ab5e96ffe91324134fa5dc957ed1343e38dd04de209a5d9" => :sierra
-    sha256 "334ae37d4e41f8bfcf86e8a4ec543db97a357f315cf4778b41c8039e2ce78a3c" => :el_capitan
-    sha256 "61690764c8f0b3f4246b8099e0b1216a2585f70c97c53d5dbd8d2fd04efb19c9" => :yosemite
+    sha256 "4e8063e73e66dc0650d28ea07dea15e4a05659664185e96c26c716263e29cf2b" => :big_sur
+    sha256 "c43cf180508872a2e5461af4c3c80a58d2d8824d1bb8b0c1a7d0f890aa12ef49" => :catalina
+    sha256 "aef8fa60ec4bdc8adca1cab129a2a8fd0a44888d867e7b468a1ed7672f7c7550" => :mojave
+    sha256 "6660756b8d9ac4a433212c44067fd1627e96c3bcf7996f4a51da1affe39e29e5" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "openssl" => :recommended
-  depends_on "libtiff" => :optional
-  depends_on "jpeg" => :optional
-  depends_on "librsvg" => :optional
-  depends_on :x11 => :optional
+  depends_on "jpeg"
+  depends_on "librsvg"
+  depends_on "libtiff"
+  depends_on "openssl@1.1"
 
   def install
     args = %W[
@@ -24,13 +30,9 @@ class Links < Formula
       --disable-dependency-tracking
       --prefix=#{prefix}
       --mandir=#{man}
-      --with-ssl=#{Formula["openssl"].opt_prefix}
+      --with-ssl=#{Formula["openssl@1.1"].opt_prefix}
+      --without-lzma
     ]
-
-    args << "--enable-graphics" if build.with? "x11"
-    args << "--without-libtiff" if build.without? "libtiff"
-    args << "--without-libjpeg" if build.without? "jpeg"
-    args << "--without-librsvg" if build.without? "librsvg"
 
     system "./configure", *args
     system "make", "install"

@@ -3,33 +3,25 @@ class Portmidi < Formula
   homepage "https://sourceforge.net/projects/portmedia/"
   url "https://downloads.sourceforge.net/project/portmedia/portmidi/217/portmidi-src-217.zip"
   sha256 "08e9a892bd80bdb1115213fb72dc29a7bf2ff108b378180586aa65f3cfd42e0f"
+  revision 2
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/portmidi-src[._-]v?(\d+)\.}i)
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "755cc50ba616dc4b10228a792f63af6e280cc85a641ed19f10df3092e5e65a13" => :sierra
-    sha256 "bafccc31f658c6803e95f982564b463dab81402428843393db20283fd78c2821" => :el_capitan
-    sha256 "e349d8556d5699fc3a1599917f8f575c76cd43f437b8371cd8d003ef7a875810" => :yosemite
+    rebuild 1
+    sha256 "66b8773aa12201f7fa2bf44044ab32bdab1cdf763db870fde3f0bd7254c5d877" => :catalina
+    sha256 "2a6258da2f83b668c2ba85edd9e49313114af5bfb288ebc681bd4cde221279c6" => :mojave
+    sha256 "61f9a94aaca3f317c50e643b06617804d37798e32dd1cfcc1c24aecdc24aec75" => :high_sierra
   end
-
-  option "with-java", "Build Java-based app and bindings."
-  option :universal
 
   depends_on "cmake" => :build
-  depends_on :python => :optional
-  depends_on :java => :optional
-
-  # Avoid that the Makefile.osx builds the java app and fails because: fatal error: 'jni.h' file not found
-  # Since 217 the Makefile.osx includes pm_common/CMakeLists.txt wich builds the Java app
-  patch :DATA if build.without? "java"
-
-  resource "Cython" do
-    url "https://files.pythonhosted.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
-    sha256 "84808fda00508757928e1feadcf41c9f78e9a9b7167b6649ab0933b76f75e7b9"
-  end
 
   def install
-    ENV.universal_binary if build.universal?
+    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra || MacOS.version == :el_capitan
 
     inreplace "pm_mac/Makefile.osx", "PF=/usr/local", "PF=#{prefix}"
 
@@ -45,47 +37,5 @@ class Portmidi < Formula
 
     system "make", "-f", "pm_mac/Makefile.osx"
     system "make", "-f", "pm_mac/Makefile.osx", "install"
-
-    if build.with? "python"
-      ENV.prepend_create_path "PYTHONPATH", buildpath/"cython/lib/python2.7/site-packages"
-      resource("Cython").stage do
-        system "python", *Language::Python.setup_install_args(buildpath/"cython")
-      end
-      ENV.prepend_path "PATH", buildpath/"cython/bin"
-
-      cd "pm_python" do
-        # There is no longer a CHANGES.txt or TODO.txt.
-        inreplace "setup.py" do |s|
-          s.gsub! "CHANGES = open('CHANGES.txt').read()", 'CHANGES = ""'
-          s.gsub! "TODO = open('TODO.txt').read()", 'TODO = ""'
-        end
-        # Provide correct dirs (that point into the Cellar)
-        ENV.append "CFLAGS", "-I#{include}"
-        ENV.append "LDFLAGS", "-L#{lib}"
-        system "python", *Language::Python.setup_install_args(prefix)
-      end
-    end
   end
 end
-
-__END__
-diff --git a/pm_common/CMakeLists.txt b/pm_common/CMakeLists.txt
-index e171047..b010c35 100644
---- a/pm_common/CMakeLists.txt
-+++ b/pm_common/CMakeLists.txt
-@@ -112,14 +112,9 @@ target_link_libraries(portmidi-static ${PM_NEEDED_LIBS})
- # define the jni library
- include_directories(${JAVA_INCLUDE_PATHS})
-
--set(JNISRC ${LIBSRC} ../pm_java/pmjni/pmjni.c)
--add_library(pmjni SHARED ${JNISRC})
--target_link_libraries(pmjni ${JNI_EXTRA_LIBS})
--set_target_properties(pmjni PROPERTIES EXECUTABLE_EXTENSION "jnilib")
--
- # install the libraries (Linux and Mac OS X command line)
- if(UNIX)
--  INSTALL(TARGETS portmidi-static pmjni
-+  INSTALL(TARGETS portmidi-static
-     LIBRARY DESTINATION /usr/local/lib
-     ARCHIVE DESTINATION /usr/local/lib)
- # .h files installed by pm_dylib/CMakeLists.txt, so don't need them here

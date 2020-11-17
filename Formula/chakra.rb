@@ -1,34 +1,38 @@
 class Chakra < Formula
-  desc "The core part of the Chakra JavaScript engine that powers Microsoft Edge"
+  desc "Core part of the JavaScript engine that powers Microsoft Edge"
   homepage "https://github.com/Microsoft/ChakraCore"
-  url "https://github.com/Microsoft/ChakraCore/archive/v1.4.1.tar.gz"
-  sha256 "80b3cae99475562dd740c470e4398e0649509eeb31c42dccc09dde19330d83e6"
+  url "https://github.com/microsoft/ChakraCore/archive/v1.11.23.tar.gz"
+  sha256 "b5ee89079e2f943a8df9ec1b3bd49432b030881bbae833ad6f2e34cefab53401"
+  license "MIT"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "b6f92ab77539f0b307dcc94153be7689dfe050f07ce54b706f1f3d3e8c6865d2" => :sierra
-    sha256 "50f4f12db16d4b737a1658f73f538935b8725079cba890bf8e942eb1835f6d67" => :el_capitan
-    sha256 "e9b2936b97338308eff93d708b58f0d8b2a9ec42aaa22936878265cc6513ac5b" => :yosemite
+    cellar :any
+    sha256 "027ab48bc0f22c7fbf27bdf3a2cf5b78f4d4413827a84938f4f907e0453de691" => :big_sur
+    sha256 "4ebad6a8d8e47a4a8cccc50d732a37e599f611159a5c1b8862e2950478b5590d" => :catalina
+    sha256 "9c5adf858fb4b0ca2d1965176d4e9d2f73849457fbd69e2b9110798b73235130" => :mojave
+    sha256 "f20f76e4e0c66d9ae70c241d3fcc49eb48518820eabd50a51f29f640a4c67305" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "icu4c" => :optional
+  depends_on "icu4c"
 
   def install
-    # Build fails with -Os default
-    # Upstream issue from 26 Jan 2016 https://github.com/Microsoft/ChakraCore/issues/2417
-    # Fixed in master https://github.com/obastemur/ChakraCore/commit/cda81f4
-    ENV.O3
+    args = [
+      "--lto-thin",
+      "--icu=#{Formula["icu4c"].opt_include}",
+      "--extra-defines=U_USING_ICU_NAMESPACE=1", # icu4c 61.1 compatability
+      "-j=#{ENV.make_jobs}",
+      "-y",
+    ]
 
-    args = ["--static"]
-    if build.with? "icu4c"
-      args << "--icu=#{Formula["icu4c"].opt_include}"
-    else
-      args << "--no-icu"
-    end
+    # Build dynamically for the shared library
     system "./build.sh", *args
+    # Then statically to get a usable binary
+    system "./build.sh", "--static", *args
 
-    bin.install "BuildLinux/Release/ch" => "chakra"
+    bin.install "out/Release/ch" => "chakra"
+    include.install Dir["out/Release/include/*"]
+    lib.install "out/Release/libChakraCore.dylib"
   end
 
   test do

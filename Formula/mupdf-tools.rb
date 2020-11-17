@@ -1,24 +1,32 @@
 class MupdfTools < Formula
   desc "Lightweight PDF and XPS viewer"
-  homepage "http://mupdf.com"
-  url "http://mupdf.com/downloads/archive/mupdf-1.10a-source.tar.gz"
-  sha256 "aacc1f36b9180f562022ef1ab3439b009369d944364f3cff8a2a898834e3a836"
-  head "git://git.ghostscript.com/mupdf.git"
+  homepage "https://mupdf.com/"
+  url "https://mupdf.com/downloads/archive/mupdf-1.18.0-source.tar.xz"
+  sha256 "592d4f6c0fba41bb954eb1a41616661b62b134d5b383e33bd45a081af5d4a59a"
+  license "AGPL-3.0"
+  head "https://git.ghostscript.com/mupdf.git"
+
+  livecheck do
+    url "https://mupdf.com/downloads/archive/?C=M&O=D"
+    regex(/href=.*?mupdf[._-]v?(\d+(?:\.\d+)+)-source\.(?:t|zip)/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "78c316d6d9abf1c780020ea47400e194c088fe5d169bc24900a57df73df2338a" => :sierra
-    sha256 "35827daa262f98d2f8678e8c75efebb90aed82c671a0355e70654b086c98ed5a" => :el_capitan
-    sha256 "99172765ae5dc646bae6bd67e6dabd5e7203b30d8d75b68022d3db10a2dc929e" => :yosemite
+    sha256 "e985551872925ed4b66ce995c551fda59152c1e7f9cf2bdbd205ab749e867e17" => :catalina
+    sha256 "50f1628c7c396fdfd65eb5ce84541a5b9a695bc6fe003cc7abc732e212762bc3" => :mojave
+    sha256 "2a7a4799ca7e75e948331ce00f5799ae8cb6ae2f23e1143955b9d03d8eccbcd9" => :high_sierra
   end
 
-  depends_on :macos => :snow_leopard
+  conflicts_with "mupdf",
+    because: "mupdf and mupdf-tools install the same binaries"
 
   def install
     system "make", "install",
            "build=release",
            "verbose=yes",
            "HAVE_X11=no",
+           "HAVE_GLUT=no",
            "CC=#{ENV.cc}",
            "prefix=#{prefix}"
 
@@ -28,7 +36,6 @@ class MupdfTools < Formula
   end
 
   test do
-    pdf = test_fixtures("test.pdf")
-    assert_match "Homebrew test", shell_output("#{bin}/mutool draw -F txt #{pdf}")
+    assert_match "Homebrew test", shell_output("#{bin}/mudraw -F txt #{test_fixtures("test.pdf")}")
   end
 end

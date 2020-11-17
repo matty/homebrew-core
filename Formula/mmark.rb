@@ -1,44 +1,34 @@
-require "language/go"
-
 class Mmark < Formula
   desc "Powerful markdown processor in Go geared towards the IETF"
-  homepage "https://github.com/miekg/mmark"
-  url "https://github.com/miekg/mmark/archive/v1.3.4.tar.gz"
-  sha256 "e03744da8d16cc742423685e2ad7cb1af61bf6dc5364c6875057b7c28ab26bb8"
+  homepage "https://mmark.miek.nl/"
+  url "https://github.com/mmarkdown/mmark/archive/v2.2.10.tar.gz"
+  sha256 "1fc9d26b4c2910e72c7ee94c80d2fb1707aaae2d278204c68557ccd1802a2c08"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f77cf57d876dcefefb4e7405b43423e03b59f014cbfaecce1cd6d4c640fcaf1c" => :sierra
-    sha256 "7e24b299282e0649411e3e664035edcffc33ff1b111eb921a04726653ecf9419" => :el_capitan
-    sha256 "e06f3c226006f9241659fb33d24da96d35e2c4fcb746c53a871acb16c5daab18" => :yosemite
+    sha256 "0c8b1e5790cf95425c1b929177150c9fe9859146e14670fc0b2e80b3a6d67020" => :big_sur
+    sha256 "30e4ee4ae7c5c24cb7a0aa4380a9bb6c0757bd8ab501b5137beaf645c71c101f" => :catalina
+    sha256 "e874bd258951d5df18a3b059007ada27d8e43be623077f2b11900cdbf37f0b7c" => :mojave
+    sha256 "d48a18e114f676ff7f7676fce7ca7d4bf6c1dcce7c9949e9161348d536a4aec1" => :high_sierra
   end
 
   depends_on "go" => :build
 
-  go_resource "github.com/BurntSushi/toml" do
-    url "https://github.com/BurntSushi/toml.git",
-    :revision => "443a628bc233f634a75bcbdd71fe5350789f1afa"
-  end
-
   resource "test" do
-    url "https://raw.githubusercontent.com/miekg/mmark/master/rfc/rfc1149.md"
-    sha256 "f4227951dc7a6ac3a579a44957d8c78080d01838bb78d4e0416f45bf5d99b626"
+    url "https://raw.githubusercontent.com/mmarkdown/mmark/master/rfc/2100.md"
+    sha256 "0b5383917a0fbc0d2a4ef009d6ccd787444ce2e80c1ea06088cb96269ecf11f0"
   end
 
   def install
-    ENV["GOPATH"] = buildpath
-    mkdir_p buildpath/"src/github.com/miekg/"
-    ln_sf buildpath, buildpath/"src/github.com/miekg/mmark"
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    cd "mmark" do
-      system "go", "build", "-o", bin/"mmark"
-    end
+    system "go", "build", "-ldflags", "-s -w", "-trimpath", "-o", bin/"mmark"
+    man1.install "mmark.1"
+    prefix.install_metafiles
   end
 
   test do
     resource("test").stage do
-      system "#{bin}/mmark", "-xml2", "-page", "rfc1149.md"
+      assert_match "The Naming of Hosts", shell_output("#{bin}/mmark -ast 2100.md")
     end
   end
 end

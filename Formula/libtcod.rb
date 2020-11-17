@@ -1,34 +1,64 @@
 class Libtcod < Formula
-  desc "API for roguelike developpers"
-  homepage "http://roguecentral.org/doryen/libtcod/"
-  url "https://bitbucket.org/libtcod/libtcod/get/1.5.1.tar.bz2"
-  sha256 "290145f760371881bcc6aa3fda256a2927f9210acc3f0a7230c5dfd57d9052d0"
+  desc "API for roguelike developers"
+  homepage "https://github.com/libtcod/libtcod"
+  url "https://github.com/libtcod/libtcod/archive/1.15.1.tar.gz"
+  sha256 "2713d8719be53db7a529cbf53064e5bc9f3adf009db339d3a81b50d471bc306f"
+  license "BSD-3-Clause"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "ccad47287c9a34afcffa48d6b8f469cb729a1133f95f44be0fe7a1506723980f" => :sierra
-    sha256 "65cf5860b8325fe352f497ad287303c4a725e623d1a64c45c879463a36603f51" => :el_capitan
-    sha256 "de169860f67c2be9d4ed7770f682700b31642030da1b50583b26b53e5e514bfe" => :yosemite
+    sha256 "2157f600b4f6f0a909586bdb8b1d7f29fa3b15a1655c7d2c37097c6e8143f50c" => :big_sur
+    sha256 "43fbc8c1bce1fd6449708062819110313390f5ec35d33b972caca174adf63ecb" => :catalina
+    sha256 "e76bbc1cbaeb412f1fc2650e75098bf1f4883ffbb1d94b0c362aa01242f370a7" => :mojave
+    sha256 "5aabc34c7e623f0b5bb8dce24f6c673b5e288c3956fed7880b2b75a0eff2130d" => :high_sierra
   end
 
-  depends_on "cmake" => :build
-  depends_on "sdl"
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "python@3.9" => :build
+  depends_on :macos # Due to Python 2
+  depends_on "sdl2"
 
   def install
-    # Remove unnecessary X11 check - our SDL doesn't use X11
-    inreplace "CMakelists.txt" do |s|
-      s.gsub! "find_package(X11 REQUIRED)", ""
-      s.gsub! "${X11_INCLUDE_DIRS}", ""
+    cd "buildsys/autotools" do
+      system "autoreconf", "-fiv"
+      system "./configure"
+      system "make"
+      lib.install Dir[".libs/*{.a,.dylib}"]
     end
-
-    system "cmake", ".", *std_cmake_args
-    system "make"
-
-    # cmake produces an install target, but it installs nothing
-    lib.install "src/libtcod.dylib"
-    lib.install "src/libtcod-gui.dylib"
-    include.install Dir["include/*"]
+    Dir.chdir("src") do
+      Dir.glob("libtcod/**/*.{h,hpp}") do |f|
+        (include/File.dirname(f)).install f
+      end
+    end
     # don't yet know what this is for
     libexec.install "data"
+  end
+
+  test do
+    (testpath/"version-c.c").write <<~EOS
+      #include <libtcod/libtcod.h>
+      #include <stdio.h>
+      int main()
+      {
+        puts(TCOD_STRVERSION);
+        return 0;
+      }
+    EOS
+    system ENV.cc, "-I#{include}", "-L#{lib}", "-ltcod", "version-c.c", "-o", "version-c"
+    assert_equal "#{version}\n", `./version-c`
+    (testpath/"version-cc.cc").write <<~EOS
+      #include <libtcod/libtcod.hpp>
+      int main()
+      {
+        std::cout << TCOD_STRVERSION << std::endl;
+        return 0;
+      }
+    EOS
+    system ENV.cxx, "-std=c++14", "-I#{include}", "-L#{lib}", "-ltcod", "version-cc.cc", "-o", "version-cc"
+    assert_equal "#{version}\n", `./version-cc`
   end
 end

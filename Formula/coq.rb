@@ -1,46 +1,33 @@
-class Camlp5TransitionalModeRequirement < Requirement
-  fatal true
-
-  satisfy(:build_env => false) { !Tab.for_name("camlp5").with?("strict") }
-
-  def message; <<-EOS.undent
-    camlp5 must be compiled in transitional mode (instead of --strict mode):
-      brew install camlp5
-    EOS
-  end
-end
-
 class Coq < Formula
   desc "Proof assistant for higher-order logic"
   homepage "https://coq.inria.fr/"
-  url "https://coq.inria.fr/distrib/V8.6/files/coq-8.6.tar.gz"
-  sha256 "6e3c3cf5c8e2b0b760dc52738e2e849f3a8c630869659ecc0cf41413fcee81df"
-  head "git://scm.gforge.inria.fr/coq/coq.git", :branch => "trunk"
+  url "https://github.com/coq/coq/archive/V8.12.1.tar.gz"
+  sha256 "dabad911239c69ecf79931b513cb427101c2f15f0451af056fbf181df526f8a5"
+  license "LGPL-2.1-only"
+  head "https://github.com/coq/coq.git"
 
-  bottle do
-    sha256 "2de7aac122e38d25d09f85e367c5f7541ef9db6588bc4dd2fc05d5ba740eda9e" => :sierra
-    sha256 "a6db94a34cc5d56f9b094b6b28104be5a86f5f1052c0abeb497f5f58a470acff" => :el_capitan
-    sha256 "e9c282b008dd5030895f16e7fc68249eca3c3eaecaa4c1c7fb258670242374de" => :yosemite
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
-  depends_on "opam" => :build
-  depends_on Camlp5TransitionalModeRequirement
-  depends_on "camlp5"
+  bottle do
+    sha256 "a48a662668ade325781a8ce65da3de1dc37f97a4fe28839d7dc6b410ea766331" => :big_sur
+    sha256 "829b50bb3170e75c5f03f5f2a6260ab6a4fb15d924eae46b510d6e0e1f21fbef" => :catalina
+    sha256 "7de6bce7d480b06cb46ebbee170d3c723fd93373e2903573d2e286b96319c5c9" => :mojave
+    sha256 "e411c3338f14185e41269693fd481db3e37ed7115038a0ccbdda3589381abce6" => :high_sierra
+  end
+
+  depends_on "ocaml-findlib" => :build
   depends_on "ocaml"
+  depends_on "ocaml-num"
+
+  uses_from_macos "m4" => :build
+  uses_from_macos "unzip" => :build
 
   def install
-    ENV["OPAMYES"] = "1"
-    ENV["OPAMROOT"] = Pathname.pwd/"opamroot"
-    (Pathname.pwd/"opamroot").mkpath
-    system "opam", "init", "--no-setup"
-    system "opam", "install", "ocamlfind"
-
-    camlp5_lib = Formula["camlp5"].opt_lib/"ocaml/camlp5"
-    system "opam", "config", "exec", "--",
-           "./configure", "-prefix", prefix,
+    system "./configure", "-prefix", prefix,
                           "-mandir", man,
-                          "-camlp5dir", camlp5_lib,
-                          "-emacslib", elisp,
                           "-coqdocdir", "#{pkgshare}/latex",
                           "-coqide", "no",
                           "-with-doc", "no"
@@ -49,7 +36,10 @@ class Coq < Formula
   end
 
   test do
-    (testpath/"testing.v").write <<-EOS.undent
+    (testpath/"testing.v").write <<~EOS
+      Require Coq.omega.Omega.
+      Require Coq.ZArith.ZArith.
+
       Inductive nat : Set :=
       | O : nat
       | S : nat -> nat.
@@ -59,7 +49,16 @@ class Coq < Formula
         | S n' => S (add n' m)
         end.
       Lemma add_O_r : forall (n: nat), add n O = n.
+      Proof.
       intros n; induction n; simpl; auto; rewrite IHn; auto.
+      Qed.
+
+      Import Coq.omega.Omega.
+      Import Coq.ZArith.ZArith.
+      Open Scope Z.
+      Lemma add_O_r_Z : forall (n: Z), n + 0 = n.
+      Proof.
+      intros; omega.
       Qed.
     EOS
     system("#{bin}/coqc", "#{testpath}/testing.v")

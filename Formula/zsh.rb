@@ -1,70 +1,63 @@
 class Zsh < Formula
   desc "UNIX shell (command interpreter)"
   homepage "https://www.zsh.org/"
+  url "https://downloads.sourceforge.net/project/zsh/zsh/5.8/zsh-5.8.tar.xz"
+  mirror "https://www.zsh.org/pub/zsh-5.8.tar.xz"
+  sha256 "dcc4b54cc5565670a65581760261c163d720991f0d06486da61f8d839b52de27"
+  revision 1
 
-  stable do
-    url "https://downloads.sourceforge.net/project/zsh/zsh/5.3.1/zsh-5.3.1.tar.gz"
-    mirror "https://www.zsh.org/pub/zsh-5.3.1.tar.gz"
-    sha256 "3d94a590ff3c562ecf387da78ac356d6bea79b050a9ef81e3ecb9f8ee513040e"
-
-    # We cannot build HTML doc on HEAD, because yodl which is required for
-    # building zsh.texi is not available.
-    option "with-texi2html", "Build HTML documentation"
-    depends_on "texi2html" => [:build, :optional]
+  livecheck do
+    url :stable
   end
 
   bottle do
-    sha256 "054988ed570c911f1758f08b71777707154101b180570577d1d4a4380043a041" => :sierra
-    sha256 "8fb846fbfb27744a50b4e5cff2767f6fca49016f356bd6273dedfc8e2abdd919" => :el_capitan
-    sha256 "4ca1f10d588cedb061826c6a6aa0bbde233627cf86188deed0bd07321f91d739" => :yosemite
+    sha256 "a93717bcbb1a41829ac7549f7dea0e2be4bb11985be734f03801150338d6b8e6" => :big_sur
+    sha256 "aaf19f69f79ac2ef80ff31d3b2f0017f400bf40022f8626d5ae046990961a5f5" => :catalina
+    sha256 "a40a54e4b686eb75f04e7dcc57391245a4f6b08a39825f7f6ebc9f76ebcbff46" => :mojave
+    sha256 "edfbc09a9571fadf351e0f94e545a88aa33763518a3330c0bae497a6a259d63f" => :high_sierra
   end
 
   head do
-    url "git://git.code.sf.net/p/zsh/code"
+    url "https://git.code.sf.net/p/zsh/code.git"
     depends_on "autoconf" => :build
-
-    option "with-unicode9", "Build with Unicode 9 character width support"
   end
 
-  option "without-etcdir", "Disable the reading of Zsh rc files in /etc"
-  option "with-unicode9", "Build with Unicode 9 character width support"
-
-  deprecated_option "disable-etcdir" => "without-etcdir"
-
-  depends_on "gdbm"
+  depends_on "ncurses"
   depends_on "pcre"
 
+  resource "htmldoc" do
+    url "https://downloads.sourceforge.net/project/zsh/zsh-doc/5.8/zsh-5.8-doc.tar.xz"
+    mirror "https://www.zsh.org/pub/zsh-5.8-doc.tar.xz"
+    sha256 "9b4e939593cb5a76564d2be2e2bfbb6242509c0c56fd9ba52f5dba6cf06fdcc4"
+  end
+
   def install
+    # Work around configure issues with Xcode 12
+    # https://www.zsh.org/mla/workers/2020/index.html
+    # https://github.com/Homebrew/homebrew-core/issues/64921
+    ENV.append "CFLAGS", "-Wno-implicit-function-declaration"
+
     system "Util/preconfig" if build.head?
 
-    args = %W[
-      --prefix=#{prefix}
-      --enable-fndir=#{pkgshare}/functions
-      --enable-scriptdir=#{pkgshare}/scripts
-      --enable-site-fndir=#{HOMEBREW_PREFIX}/share/zsh/site-functions
-      --enable-site-scriptdir=#{HOMEBREW_PREFIX}/share/zsh/site-scripts
-      --enable-runhelpdir=#{pkgshare}/help
-      --enable-cap
-      --enable-maildir-support
-      --enable-multibyte
-      --enable-pcre
-      --enable-zsh-secure-free
-      --with-tcsetpgrp
-    ]
-
-    args << "--enable-unicode9" if build.with? "unicode9"
-
-    if build.without? "etcdir"
-      args << "--disable-etcdir"
-    else
-      args << "--enable-etcdir=/etc"
-    end
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+           "--enable-fndir=#{pkgshare}/functions",
+           "--enable-scriptdir=#{pkgshare}/scripts",
+           "--enable-site-fndir=#{HOMEBREW_PREFIX}/share/zsh/site-functions",
+           "--enable-site-scriptdir=#{HOMEBREW_PREFIX}/share/zsh/site-scripts",
+           "--enable-runhelpdir=#{pkgshare}/help",
+           "--enable-cap",
+           "--enable-maildir-support",
+           "--enable-multibyte",
+           "--enable-pcre",
+           "--enable-zsh-secure-free",
+           "--enable-unicode9",
+           "--enable-etcdir=/etc",
+           "--with-tcsetpgrp",
+           "DL_EXT=bundle"
 
     # Do not version installation directories.
     inreplace ["Makefile", "Src/Makefile"],
-      "$(libdir)/$(tzsh)/$(VERSION)", "$(libdir)"
+              "$(libdir)/$(tzsh)/$(VERSION)", "$(libdir)"
 
     if build.head?
       # disable target install.man, because the required yodl comes neither with macOS nor Homebrew
@@ -73,18 +66,15 @@ class Zsh < Formula
     else
       system "make", "install"
       system "make", "install.info"
-      system "make", "install.html" if build.with? "texi2html"
+
+      resource("htmldoc").stage do
+        (pkgshare/"htmldoc").install Dir["Doc/*.html"]
+      end
     end
   end
 
-  def caveats; <<-EOS.undent
-    In order to use this build of zsh as your login shell,
-    it must be added to /etc/shells.
-    EOS
-  end
-
   test do
-    assert_equal "homebrew\n",
-      shell_output("#{bin}/zsh -c 'echo homebrew'")
+    assert_equal "homebrew", shell_output("#{bin}/zsh -c 'echo homebrew'").chomp
+    system bin/"zsh", "-c", "printf -v hello -- '%s'"
   end
 end

@@ -1,25 +1,28 @@
 class Ktmpl < Formula
-  desc "Parameterized templates for Kubernetes manifests."
-  homepage "https://github.com/InQuicker/ktmpl"
-  url "https://github.com/InQuicker/ktmpl/archive/0.5.0.tar.gz"
-  sha256 "36924798cb88ddc98f43fea33aff894297cf4068a00157e08bf53373a79bb12c"
-  head "https://github.com/InQuicker/ktmpl.git"
+  desc "Parameterized templates for Kubernetes manifests"
+  homepage "https://github.com/jimmycuadra/ktmpl"
+  url "https://github.com/jimmycuadra/ktmpl/archive/0.9.0.tar.gz"
+  sha256 "b2f05ae4b36f31f6801f4dcd2f5aec31d7b53b8b6dea6ddf974b22c88d8bc62b"
+  license "MIT"
+  head "https://github.com/jimmycuadra/ktmpl.git"
 
   bottle do
-    sha256 "68cf4712f2b536268caebf3023c0c79449da626880e13d522a066394ef28ecf7" => :sierra
-    sha256 "f6ba509072e175d269ecf5f22dcd51f6164ed701a25da2e5efc028b68cef35cc" => :el_capitan
-    sha256 "17cced6dbed0e08c56f42c5871aa9882e89caf55e447091044a1ce56d3bd3795" => :yosemite
+    cellar :any_skip_relocation
+    rebuild 1
+    sha256 "3bd2b7dcd24cfdf57ea6bffdbbd9c9380a084e4df9ffcd6231a4af8089781b59" => :big_sur
+    sha256 "d8c1e6fd18fc96f615e119c64cd7df67940cb0a9b3113450e49f567b9875c9ee" => :catalina
+    sha256 "7c91c4a9674effc29e0ef187fc05163500a81ac5a7c0502552b12098c72633dd" => :mojave
+    sha256 "2cc0b69a68bbd12cfd02e17d079363f773006a7bd07b77588cf83d7207950b3f" => :high_sierra
   end
 
   depends_on "rust" => :build
 
   def install
-    system "cargo", "build", "--release"
-    bin.install "target/release/ktmpl"
+    system "cargo", "install", *std_cargo_args
   end
 
   test do
-    (testpath/"test.yml").write <<-EOS.undent
+    (testpath/"test.yml").write <<~EOS
       ---
       kind: "Template"
       apiVersion: "v1"

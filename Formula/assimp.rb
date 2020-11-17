@@ -1,22 +1,22 @@
 class Assimp < Formula
   desc "Portable library for importing many well-known 3D model formats"
-  homepage "http://www.assimp.org"
-  url "https://github.com/assimp/assimp/archive/v3.3.1.tar.gz"
-  sha256 "d385c3f90876241343f09e45f4e5033a6a05861b971c63d1f6d512371ffdc7bf"
+  homepage "https://www.assimp.org/"
+  url "https://github.com/assimp/assimp/archive/v5.0.1.tar.gz"
+  sha256 "11310ec1f2ad2cd46b95ba88faca8f7aaa1efe9aa12605c55e3de2b977b3dbfc"
+  license "LGPL-3.0"
   head "https://github.com/assimp/assimp.git"
 
   bottle do
     cellar :any
-    sha256 "8893501dc3e5c712089d73a0b1ede41f39da7055490e00e80e1535f74dc15577" => :sierra
-    sha256 "369a938fd09b266261be1ea9dbcbccf4f14117b3fd5d8943d4d54423c486d759" => :el_capitan
-    sha256 "5f1100de213334b15b640ab15ef063cace602607ca637a8b9b8e426238ca63a9" => :yosemite
-    sha256 "73fa896885b3fae3812ef5b0db1c8d3ac68d72cb33a13b3715454f52b09d5588" => :mavericks
+    sha256 "b2c52877c720f1d99f5393eb9e8ce7fbbb68cdff8256bbb821ca74a55ac47e69" => :big_sur
+    sha256 "f049baf0e3bc3941e8449dbfbc997d0448b0a1722bfdceadb69b2eacc48e3464" => :catalina
+    sha256 "620f5f399783c487ae78077da65b65f6a0c81dce23768ae56eb1edd383a57daa" => :mojave
+    sha256 "6dffc67ca984f5870bdc09a1c0adbb3c0d2209c7fb8169e2204c4c2d2d44aebe" => :high_sierra
   end
 
-  option "without-boost", "Compile without thread safe logging or multithreaded computation if boost isn't installed"
-
   depends_on "cmake" => :build
-  depends_on "boost" => [:recommended, :build]
+
+  uses_from_macos "zlib"
 
   def install
     args = std_cmake_args
@@ -27,18 +27,18 @@ class Assimp < Formula
 
   test do
     # Library test.
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <assimp/Importer.hpp>
       int main() {
         Assimp::Importer importer;
         return 0;
       }
     EOS
-    system ENV.cc, "test.cpp", "-L#{lib}", "-lassimp", "-o", "test"
+    system ENV.cc, "-std=c++11", "test.cpp", "-L#{lib}", "-lassimp", "-o", "test"
     system "./test"
 
     # Application test.
-    (testpath/"test.obj").write <<-EOS.undent
+    (testpath/"test.obj").write <<~EOS
       # WaveFront .obj file - a single square based pyramid
 
       # Start a new group:

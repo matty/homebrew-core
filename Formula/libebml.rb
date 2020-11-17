@@ -1,34 +1,25 @@
 class Libebml < Formula
   desc "Sort of a sbinary version of XML"
   homepage "https://www.matroska.org/"
-  url "https://dl.matroska.org/downloads/libebml/libebml-1.3.4.tar.bz2"
-  mirror "https://www.bunkus.org/videotools/mkvtoolnix/sources/libebml-1.3.4.tar.bz2"
-  sha256 "c50d3ecf133742c6549c0669c3873f968e11a365a5ba17b2f4dc339bbe51f387"
+  url "https://dl.matroska.org/downloads/libebml/libebml-1.4.0.tar.xz"
+  sha256 "80abc9a82549615018798ee704997270a39b43de9a6e7e0d23b62f8ce682c4b3"
+  license "LGPL-2.1"
+  head "https://github.com/Matroska-Org/libebml.git"
 
   bottle do
     cellar :any
-    sha256 "953d50863d804b564e80a60efc0ef8c13b1ad2763d17dfd06131b125039764ad" => :sierra
-    sha256 "102b5fa493597b2b3fffbf5b08f3dabf280fe113f180a5261c38457aef922e5b" => :el_capitan
-    sha256 "cac2465703dfe3b956e9d7b6cdeda3f61bbca6c31c7acd59fd11d88c1f55dd3d" => :yosemite
-    sha256 "645dc73f0462264c280368c1de64119e5b2ff895998dee8dc74d32a94b922581" => :mavericks
+    sha256 "9eade4a983de4668765edfeadde9708bfb548607d3ad267a6a3720694821df3e" => :big_sur
+    sha256 "141c96c12242fb7db7e292f487b9e45be1c4c84a4e7d94f0eab2ccb0d72d8285" => :catalina
+    sha256 "010e20e9b1779db7e69666a10c93bfb6a87c06e513ed80c89ea319c674eb215d" => :mojave
+    sha256 "505546edc98c4e9a382c35d17e299023f2ca91b2641f71691993dc99690f79b0" => :high_sierra
   end
 
-  head do
-    url "https://github.com/Matroska-Org/libebml.git"
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "libtool" => :build
-  end
-
-  option :cxx11
+  depends_on "cmake" => :build
 
   def install
-    ENV.cxx11 if build.cxx11?
-    system "autoreconf", "-fi" if build.head?
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", "-DBUILD_SHARED_LIBS=ON", *std_cmake_args
+      system "make", "install"
+    end
   end
 end

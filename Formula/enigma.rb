@@ -1,12 +1,21 @@
 class Enigma < Formula
   desc "Puzzle game inspired by Oxyd and Rock'n'Roll"
-  homepage "http://www.nongnu.org/enigma/"
+  homepage "https://www.nongnu.org/enigma/"
   url "https://downloads.sourceforge.net/project/enigma-game/Release%201.21/enigma-1.21.tar.gz"
   sha256 "d872cf067d8eb560d3bb1cb17245814bc56ac3953ae1f12e2229c8eb6f82ce01"
+  license "GPL-2.0"
+  revision 4
+
+  livecheck do
+    url :stable
+  end
+
   bottle do
-    sha256 "dc9fe571d7f6f73e11aa0032359e87ae627b3204e6b7bbeaa2a6d76533467c98" => :sierra
-    sha256 "5b18efbeb88722813ee28b0e9936edaec5b176d24184e0d0fb76ba31c5c0aae2" => :el_capitan
-    sha256 "49fcfb95078058b520d5de211301a693b7f04375ab8f576919a7f4218fd80e90" => :yosemite
+    cellar :any
+    sha256 "38e4eb761c8c03ec2ff3221d576335d60c60ecb5f369e69098d34740118d48e4" => :catalina
+    sha256 "8011aae1fa4e166dd9fb406844b1efcb246eb26ecc4e29c67dec71a3f8a7b231" => :mojave
+    sha256 "9eeb7a516f7188b38bc1a9e9ea2450db22391e65401d1377028881c11acbcc15" => :high_sierra
+    sha256 "cdca7a198f3decfc3d387d590f84a7c3125adb06185469afa737eb5d61c150b3" => :sierra
   end
 
   head do
@@ -16,25 +25,33 @@ class Enigma < Formula
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "pkg-config" => :build
   depends_on "imagemagick" => :build
+  depends_on "pkg-config" => :build
+  depends_on "enet"
+  depends_on "freetype"
+  depends_on "gettext"
+  depends_on "libpng"
   depends_on "sdl"
   depends_on "sdl_image"
-  depends_on "sdl_mixer" => ["with-libvorbis", "with-libmikmod"]
+  depends_on "sdl_mixer"
   depends_on "sdl_ttf"
-  depends_on "freetype"
-  depends_on "libpng"
   depends_on "xerces-c"
-  depends_on "gettext"
-  depends_on "enet"
+
+  # See https://github.com/Enigma-Game/Enigma/pull/8
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/4d337833ef2e10c1f06a72170f22b1cafe2b6a78/enigma/c%2B%2B11.patch"
+    sha256 "5870bb761dbba508e998fc653b7b05a130f9afe84180fa21667e7c2271ccb677"
+  end
 
   def install
+    ENV.cxx11
+
     system "./autogen.sh" if build.head?
 
     inreplace "configure" do |s|
       s.gsub! /-framework (SDL(_(mixer|image|ttf))?)/, '-l\1'
-      s.gsub! %r{\${\w+//\\"/}/lib(freetype|png|xerces-c)\.a}, '-l\1'
-      s.gsub! %r{(LIBINTL)="\${with_libintl_prefix}/lib/lib(intl)\.a"}, '\1=-l\2'
+      s.gsub! %r{\$\{\w+//\\"/\}/lib(freetype|png|xerces-c)\.a}, '-l\1'
+      s.gsub! %r{(LIBINTL)="\$\{with_libintl_prefix\}/lib/lib(intl)\.a"}, '\1=-l\2'
       s.gsub! /^\s+LIBENET_CFLAGS\n.*LIBENET.*\n\s+LIBENET_LIBS\n.*LIBENET.*$/, ""
     end
     inreplace "src/Makefile.in" do |s|

@@ -1,21 +1,20 @@
 class Libmxml < Formula
   desc "Mini-XML library"
-  homepage "http://www.minixml.org/"
-  url "https://www.msweet.org/files/project3/mxml-2.9.tar.gz"
-  sha256 "cded54653c584b24c4a78a7fa1b3b4377d49ac4f451ddf170ebbc8161d85ff92"
-
-  head "http://svn.msweet.org/mxml/"
+  homepage "https://michaelrsweet.github.io/mxml/"
+  url "https://github.com/michaelrsweet/mxml/releases/download/v3.2/mxml-3.2.tar.gz"
+  sha256 "b894f6c64964f2e77902564c17ba00f5d077a7a24054e7c1937903b0bd42c974"
+  license "Apache-2.0"
+  head "https://github.com/michaelrsweet/mxml.git"
 
   bottle do
     cellar :any
-    sha256 "09996d5f7f65b41706c42092a5a55e81b387a30f932741ebc3cab7afe27d72f3" => :sierra
-    sha256 "9cb1dd58ac3f4e3ec51a78bce4ca142eafb12cfc6a890fd3eef7f4613ef70aba" => :el_capitan
-    sha256 "804da1287c900a1938f8360bf5df961fa85de040ea85fd0ad6490b7f30373af1" => :yosemite
-    sha256 "d92c245dcf1edb8c4d218f7506748cced58a5c5a7b7cefb9632ef22958ae7abc" => :mavericks
-    sha256 "df203c2e058d9e4d7980c1bfef686a2033f3ad84e3b405ef2d698dbffbdc3919" => :mountain_lion
+    sha256 "70c41d09f15c8de8f93df010b73fe51211d262a86c69a25c0ea1028440267c01" => :big_sur
+    sha256 "680142115002908ad936e6cc27b507056d10b91a4c6d5ca250480090be71e21b" => :catalina
+    sha256 "a8d373d3bef6a43d40ef8aed433257fbdc6ba7566b454565dcdeeb3b21290edc" => :mojave
+    sha256 "6717fbc8fb911a1a3b076c1cb1d80ab9ea010456810d14995346973543cdc2f4" => :high_sierra
   end
 
-  depends_on :xcode => :build # for docsetutil
+  depends_on xcode: :build # for docsetutil
 
   def install
     system "./configure", "--disable-debug",
@@ -26,12 +25,27 @@ class Libmxml < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
-      int testfunc(char *string)
+    (testpath/"test.c").write <<~EOS
+      #include <mxml.h>
+
+      int main()
       {
-        return string ? string[0] : 0;
+        FILE *fp;
+        mxml_node_t *tree;
+
+        fp = fopen("test.xml", "r");
+        tree = mxmlLoadFile(NULL, fp, MXML_OPAQUE_CALLBACK);
+        fclose(fp);
       }
     EOS
-    assert_match /testfunc/, shell_output("#{bin}/mxmldoc test.c")
+
+    (testpath/"test.xml").write <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <test>
+        <text>I'm an XML document.</text>
+      </test>
+    EOS
+    system ENV.cc, "test.c", "-I#{include}", "-L#{lib}", "-lmxml", "-o", "test"
+    system "./test"
   end
 end

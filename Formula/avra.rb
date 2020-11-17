@@ -1,30 +1,23 @@
 class Avra < Formula
   desc "Assember for the Atmel AVR microcontroller family"
-  homepage "https://avra.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/avra/1.3.0/avra-1.3.0.tar.bz2"
-  sha256 "a62cbf8662caf9cc4e75da6c634efce402778639202a65eb2d149002c1049712"
+  homepage "https://github.com/hsoft/avra"
+  url "https://github.com/hsoft/avra/archive/1.4.2.tar.gz"
+  sha256 "cc56837be973d1a102dc6936a0b7235a1d716c0f7cd053bf77e0620577cff986"
+  license "GPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "5c80f99bf03f251c6ca038931549259c2e703d16cf331c43a6ef34a7faaf6d52" => :sierra
-    sha256 "2269beb5581fec707e544f281ae7e5b21250fd0975ee10daed45212aabb31413" => :el_capitan
-    sha256 "8a382baf62c225aef1730ff1c53dd81257cea6da6c43f227b3405b673968e363" => :yosemite
-    sha256 "2e208cec5f270c91c9afc0349236a9abb0622e1e8208c67d25c90f017fcecf65" => :mavericks
+    sha256 "b1b6077185e775675dfd538ee67fab94c5e24219dd8cd76b1dbc962748572513" => :big_sur
+    sha256 "752edb7e9140387d4b763229ff05cdf973056a70c5a4799b63cce83c2ff18be5" => :catalina
+    sha256 "cedf5547712134c47d3659e1cddde7d506643448eca98fb428734165fbb5afc7" => :mojave
+    sha256 "f380ed5ddc18ece7b83f4c32290f56dfcc8a27065cc1a39423debfc482d369d2" => :high_sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
 
   def install
-    # build fails if these don't exist
-    touch "NEWS"
-    touch "ChangeLog"
-    cd "src" do
-      system "./bootstrap"
-      system "./configure", "--prefix=#{prefix}"
-      system "make", "install"
-    end
+    system "make", "install", "PREFIX=#{prefix}", "OS=osx"
     pkgshare.install Dir["includes/*"]
   end
 
@@ -32,7 +25,7 @@ class Avra < Formula
     (testpath/"test.asm").write " .device attiny10\n ldi r16,0x42\n"
     output = shell_output("#{bin}/avra -l test.lst test.asm")
     assert_match "Assembly complete with no errors.", output
-    assert File.exist?("test.hex")
+    assert_predicate testpath/"test.hex", :exist?
     assert_match "ldi r16,0x42", File.read("test.lst")
   end
 end

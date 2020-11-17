@@ -3,19 +3,21 @@ class Libao < Formula
   homepage "https://www.xiph.org/ao/"
   url "https://github.com/xiph/libao/archive/1.2.2.tar.gz"
   sha256 "df8a6d0e238feeccb26a783e778716fb41a801536fe7b6fce068e313c0e2bf4d"
-  head "https://git.xiph.org/libao.git"
+  license "GPL-2.0"
+  head "https://gitlab.xiph.org/xiph/libao.git"
 
   bottle do
-    sha256 "91469bf8242cf3115d65f6bf39caa77226fc21840309ee5f3fad009379a6fbec" => :sierra
-    sha256 "d1e17337705d098d76e4bfd4b71f2bb01278a85a87d58ad0711636a2050c9049" => :el_capitan
-    sha256 "a44490fce22700be3b09bc6c75de39d90f7860e2486723bb1fa655e22c0a2771" => :yosemite
+    rebuild 2
+    sha256 "32055ce76b17a9f7410574c27b314905f3e9c42f979cc72bbbca060194ba9d9d" => :big_sur
+    sha256 "703bfcae17a364ad0e526d5556b3583d1864c6db4c52ba85ef64dc0600039372" => :catalina
+    sha256 "932b3a41565e678489471dae66b29fea1ca2de6013c2559f9c34cc5e9bd5a33f" => :mojave
+    sha256 "d7144edd6dc64b987d9a9d584799fe20a76ed92f2b1b18c074a6846926f23169" => :high_sierra
   end
 
-  depends_on "automake" => :build
   depends_on "autoconf" => :build
+  depends_on "automake" => :build
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on "pulseaudio" => :optional
 
   def install
     ENV["AUTOMAKE_FLAGS"] = "--include-deps"
@@ -27,14 +29,12 @@ class Libao < Formula
       --enable-static
     ]
 
-    args << "--enable-pulse" if build.with? "pulseaudio"
-
     system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <ao/ao.h>
       int main() {
         ao_initialize();

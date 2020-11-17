@@ -1,48 +1,31 @@
 class Qscintilla2 < Formula
   desc "Port to Qt of the Scintilla editing component"
   homepage "https://www.riverbankcomputing.com/software/qscintilla/intro"
-  url "https://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-2.9.4/QScintilla_gpl-2.9.4.tar.gz"
-  sha256 "8b3a23023e9f0573caed6f9cee86f898d87b768ee15b8c211a423783a4cfa4e6"
+  url "https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.5/QScintilla-2.11.5.tar.gz"
+  sha256 "9361e26fd7fb7b5819a7eb92c5c1880a18de9bd3ed9dd2eb008e57388696716b"
+  license "GPL-3.0"
   revision 1
 
+  livecheck do
+    url "https://www.riverbankcomputing.com/software/qscintilla/download"
+    regex(/href=.*?QScintilla(?:.gpl)?[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
+
   bottle do
-    sha256 "f741f29edab4493e2f3c716b2804252bc4d5b1258384ea5a81ed90c63f455824" => :sierra
-    sha256 "75b6da54da59c22a06051941d4f85a866355f0dabda0f0e25fe20de87d403217" => :el_capitan
-    sha256 "4761b0c353545ae85acecc80d0bdf209d439e3687b0fbbf0ab05014e501ac96f" => :yosemite
+    cellar :any
+    sha256 "5433e9b49aeb3fb21f0f3b9bb38704c93546fadb4f2f918049673b49d760daa6" => :big_sur
+    sha256 "24fdd9ba205c8ae725ff19af75ab7f5effe304bca32360320f4237f7a5205f12" => :catalina
+    sha256 "80767f8eacf428235b22662838696fc824ee178f5e7e725939f5a8c632bba69a" => :mojave
+    sha256 "390d65518706dc7100d52c794d7de67a5b8891c6f6fa019bb0259190cd8a04f5" => :high_sierra
   end
 
-  option "with-plugin", "Build the Qt Designer plugin"
-  option "with-python", "Build Python bindings"
-  option "without-python3", "Do not build Python3 bindings"
-
-  depends_on "qt@5.7"
-  depends_on :python3 => :recommended
-  depends_on :python => :optional
-
-  if build.with?("python") && build.with?("python3")
-    depends_on "sip" => "with-python3"
-    depends_on "pyqt5" => "with-python"
-  elsif build.with?("python")
-    depends_on "sip"
-    depends_on "pyqt5" => "with-python"
-  elsif build.with?("python3")
-    depends_on "sip" => "with-python3"
-    depends_on "pyqt5"
-  end
-
-  # Fix build with Xcode 8 "error: implicit instantiation of undefined template"
-  # Originally reported 7 Oct 2016 https://www.riverbankcomputing.com/pipermail/qscintilla/2016-October/001160.html
-  # Patch below posted 13 Oct 2016 https://www.riverbankcomputing.com/pipermail/qscintilla/2016-October/001167.html
-  # Same as Alan Garny's OpenCOR commit https://github.com/opencor/opencor/commit/70f3944e36b8b95b3ad92106aeae2f511b3f0e90
-  if DevelopmentTools.clang_build_version >= 800
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/a651d71/qscintilla2/xcode-8.patch"
-      sha256 "1a88309fdfd421f4458550b710a562c622d72d6e6fdd697107e4a43161d69bc9"
-    end
-  end
+  depends_on "pyqt"
+  depends_on "python@3.9"
+  depends_on "qt"
+  depends_on "sip"
 
   def install
-    spec = ENV.compiler == :clang && MacOS.version >= :mavericks ? "macx-clang" : "macx-g++"
+    spec = (ENV.compiler == :clang) ? "macx-clang" : "macx-g++"
     args = %W[-config release -spec #{spec}]
 
     cd "Qt4Qt5" do
@@ -67,49 +50,34 @@ class Qscintilla2 < Formula
     # Add qscintilla2 features search path, since it is not installed in Qt keg's mkspecs/features/
     ENV["QMAKEFEATURES"] = prefix/"data/mkspecs/features"
 
-    if build.with?("python") || build.with?("python3")
-      cd "Python" do
-        Language::Python.each_python(build) do |python, version|
-          (share/"sip").mkpath
-          system python, "configure.py", "-o", lib, "-n", include,
-                           "--apidir=#{prefix}/qsci",
-                           "--destdir=#{lib}/python#{version}/site-packages/PyQt5",
-                           "--stubsdir=#{lib}/python#{version}/site-packages/PyQt5",
-                           "--qsci-sipdir=#{share}/sip",
-                           "--qsci-incdir=#{include}",
-                           "--qsci-libdir=#{lib}",
-                           "--pyqt=PyQt5",
-                           "--pyqt-sipdir=#{Formula["pyqt5"].opt_share}/sip/Qt5",
-                           "--sip-incdir=#{Formula["sip"].opt_include}",
-                           "--spec=#{spec}"
-          system "make"
-          system "make", "install"
-          system "make", "clean"
-        end
-      end
-    end
-
-    if build.with? "plugin"
-      mkpath prefix/"plugins/designer"
-      cd "designer-Qt4Qt5" do
-        inreplace "designer.pro" do |s|
-          s.sub! "$$[QT_INSTALL_PLUGINS]", "#{lib}/qt5/plugins"
-          s.sub! "$$[QT_INSTALL_LIBS]", lib
-        end
-        system "qmake", "designer.pro", *args
-        system "make"
-        system "make", "install"
-      end
+    cd "Python" do
+      (share/"sip").mkpath
+      version = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+      pydir = "#{lib}/python#{version}/site-packages/PyQt5"
+      system Formula["python@3.9"].opt_bin/"python3", "configure.py", "-o", lib, "-n", include,
+                        "--apidir=#{prefix}/qsci",
+                        "--destdir=#{pydir}",
+                        "--stubsdir=#{pydir}",
+                        "--qsci-sipdir=#{share}/sip",
+                        "--qsci-incdir=#{include}",
+                        "--qsci-libdir=#{lib}",
+                        "--pyqt=PyQt5",
+                        "--pyqt-sipdir=#{Formula["pyqt"].opt_share}/sip/Qt5",
+                        "--sip-incdir=#{Formula["sip"].opt_include}",
+                        "--spec=#{spec}",
+                        "--no-dist-info"
+      system "make"
+      system "make", "install"
+      system "make", "clean"
     end
   end
 
   test do
-    (testpath/"test.py").write <<-EOS.undent
+    (testpath/"test.py").write <<~EOS
       import PyQt5.Qsci
       assert("QsciLexer" in dir(PyQt5.Qsci))
     EOS
-    Language::Python.each_python(build) do |python, _version|
-      system python, "test.py"
-    end
+
+    system Formula["python@3.9"].opt_bin/"python3", "test.py"
   end
 end

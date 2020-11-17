@@ -1,15 +1,17 @@
 class Buildapp < Formula
   desc "Creates executables with SBCL"
-  homepage "http://www.xach.com/lisp/buildapp/"
+  homepage "https://www.xach.com/lisp/buildapp/"
   url "https://github.com/xach/buildapp/archive/release-1.5.6.tar.gz"
   sha256 "d77fb6c151605da660b909af058206f7fe7d9faf972e2c30876d42cb03d6a3ed"
+  license "BSD-2-Clause"
+  revision 2
   head "https://github.com/xach/buildapp.git"
 
   bottle do
-    sha256 "aaf2429a3c32deb2f8d0d07271b9a94a67c6cdf674b6b402d7f2de55c57be825" => :sierra
-    sha256 "672cce34c7c3d0ce4ed2a434fc4c3933a3ba06e07ddff80f0aad24e92ce5ed51" => :el_capitan
-    sha256 "353795727bd0ef56e9597de4a6e5d3352e4e07f8d8d61d0610a68810aac90bf1" => :yosemite
-    sha256 "6e7ad94bb743298d8fe8fa64c73d70a156e5aae829c48aef9e0ac300fac97488" => :mavericks
+    sha256 "afe8b36fb0028cc1ed5d8ff32d9d54496bd8ab52c196794155489160335452a4" => :big_sur
+    sha256 "a0177161f65808315986f1eaab3305ffcf9ca03fff434687f6354d0711e7c9ef" => :catalina
+    sha256 "d4721d62fb334d49ac7730a4110826efeac3b0b8db25671a20ce20258ff303a3" => :mojave
+    sha256 "87758d9045461b6b9cf23dd9b75e328a8b817a0e12703a696b93dd574396cd72" => :high_sierra
   end
 
   depends_on "sbcl"

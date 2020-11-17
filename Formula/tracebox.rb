@@ -1,26 +1,23 @@
 class Tracebox < Formula
   desc "Middlebox detection tool"
-  homepage "http://www.tracebox.org/"
-  url "https://github.com/tracebox/tracebox.git", :tag => "v0.3.1",
-                                                  :revision => "aec062dcf7198c8b8f3b90ee4216e929ebf0ffcb"
+  homepage "https://www.tracebox.org/"
+  url "https://github.com/tracebox/tracebox.git",
+      tag:      "v0.4.4",
+      revision: "4fc12b2e330e52d340ecd64b3a33dbc34c160390"
+  license "GPL-2.0"
+  revision 2
   head "https://github.com/tracebox/tracebox.git"
 
   bottle do
     cellar :any
-    sha256 "48b7de6c88b5c79ea9c6b18d637a12633bb08db31d80cf6877b9a698c4c1c953" => :sierra
-    sha256 "e516720d9bd9e928f8f876b4520aac901449ece1bead0b8af561c3ab22a2d584" => :el_capitan
-    sha256 "4a8348264f1b28160c41f8d2f723c3a866ba2d430d9ee0388e61d6b15599ce64" => :yosemite
-    sha256 "3cf26c9f63b463048eea103b7eac1faeea873dd85391673f590161f4dc0e9416" => :mavericks
-    sha256 "03ce10b37ac2bcb7cad32594899fe650fc49cf47ed2f4336e300a18e6f30f12d" => :mountain_lion
+    sha256 "427833bcd91fe0ab0b0e05b68bd2a34043020687a57509fc034dc29088942faf" => :high_sierra
   end
-
-  needs :cxx11
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "lua"
   depends_on "json-c"
+  depends_on "lua"
 
   def install
     ENV.libcxx
@@ -33,11 +30,16 @@ class Tracebox < Formula
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    Tracebox requires superuser privileges e.g. run with sudo.
+  def caveats
+    <<~EOS
+      Tracebox requires superuser privileges e.g. run with sudo.
 
-    You should be certain that you trust any software you are executing with
-    elevated privileges.
+      You should be certain that you trust any software you are executing with
+      elevated privileges.
     EOS
+  end
+
+  test do
+    system bin/"tracebox", "-v"
   end
 end

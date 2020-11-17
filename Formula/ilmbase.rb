@@ -1,31 +1,44 @@
 class Ilmbase < Formula
   desc "OpenEXR ILM Base libraries (high dynamic-range image file format)"
-  homepage "http://www.openexr.com/"
-  url "https://savannah.nongnu.org/download/openexr/ilmbase-2.2.0.tar.gz"
-  mirror "https://mirrorservice.org/sites/download.savannah.gnu.org/releases/openexr/ilmbase-2.2.0.tar.gz"
-  sha256 "ecf815b60695555c1fbc73679e84c7c9902f4e8faa6e8000d2f905b8b86cedc7"
+  homepage "https://www.openexr.com/"
+  url "https://github.com/openexr/openexr/archive/v2.5.3.tar.gz"
+  sha256 "6a6525e6e3907715c6a55887716d7e42d09b54d2457323fcee35a0376960bebf"
+  license "BSD-3-Clause"
 
   bottle do
-    rebuild 2
-    sha256 "486b1207a66286e6a1bd4aebeef5a249c0cae6daf4c28265b4c4dfef422dce65" => :sierra
-    sha256 "4153f054e5c819ce35ccf70c6142b5d7059e84c9c0b446a9c83d8f590d7434c7" => :el_capitan
-    sha256 "2bfd8bef08f89e6c84d6f9da5f5b3db38b787d33a3c6e6bb9751a9c43bbea2de" => :yosemite
+    sha256 "2d5ac295eca0406b65a50fba2ffe68b3ac4d384b1b10fbd0ec6ec61cd0b67491" => :big_sur
+    sha256 "06a9f5b4582372750cf8fb6ba67d65284b00c6c338fc037a363ef9d550c5a9d2" => :catalina
+    sha256 "5cb7f4e1e07f02aba93615d1ef1ec6785a5d868cad642460b2d2871cde3fc08a" => :mojave
+    sha256 "30cea2bd30d5fd3baae5188b0e98d065f78070b741b367b2cdd22b7a7e0269be" => :high_sierra
   end
 
-  option :universal
+  depends_on "cmake" => :build
 
   def install
-    ENV.universal_binary if build.universal?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
-    (share/"ilmbase").install %w[Half HalfTest Iex IexMath IexTest IlmThread Imath ImathTest]
+    cd "IlmBase" do
+      system "cmake", ".", *std_cmake_args, "-DBUILD_TESTING=OFF"
+      system "make", "install"
+    end
   end
 
   test do
-    cd share/"ilmbase/IexTest" do
-      system ENV.cxx, "-I#{include}/OpenEXR", "-I./", "-c",
-             "testBaseExc.cpp", "-o", testpath/"test"
-    end
+    (testpath/"test.cpp").write <<~'EOS'
+      #include <ImathRoots.h>
+      #include <algorithm>
+      #include <iostream>
+
+      int main(int argc, char *argv[])
+      {
+        double x[2] = {0.0, 0.0};
+        int n = IMATH_NAMESPACE::solveQuadratic(1.0, 3.0, 2.0, x);
+
+        if (x[0] > x[1])
+          std::swap(x[0], x[1]);
+
+        std::cout << n << ", " << x[0] << ", " << x[1] << "\n";
+      }
+    EOS
+    system ENV.cxx, "-I#{include}/OpenEXR", "-o", testpath/"test", "test.cpp"
+    assert_equal "2, -2, -1\n", shell_output("./test")
   end
 end

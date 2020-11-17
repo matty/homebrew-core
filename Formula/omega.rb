@@ -1,15 +1,18 @@
 class Omega < Formula
   desc "Packaged search engine for websites, built on top of Xapian"
   homepage "https://xapian.org/"
-  url "https://oligarchy.co.uk/xapian/1.4.1/xapian-omega-1.4.1.tar.xz"
-  sha256 "d114bb16431adad50f505edadfb4c97aca9657132b239509ff8cf335aff738af"
+  url "https://oligarchy.co.uk/xapian/1.4.16/xapian-omega-1.4.16.tar.xz"
+  sha256 "b4fbeb9922d84af42ba80c0258cd07d103fd7f56c719f147049aa84598557694"
+  license "GPL-2.0"
 
   bottle do
-    sha256 "513cf3679b92be4aa65c3a098323960d53691d0b69f13b846c4e6d0ee762195d" => :sierra
-    sha256 "b6db4104b569317cb9ab1dd8b7a8876f4e8902373567b23433150be6905bf772" => :el_capitan
-    sha256 "f4830534a3a4803142c6ce5b037955c98b0756bd9c483f435314d0a1dcd6d2ec" => :yosemite
+    sha256 "21def29541640883bd956e842a3370d9ac7dde45bd166add19ca83013f86189f" => :catalina
+    sha256 "5625e477813a8c7bd720e17416b6dd80faf959f5d7210c3262031ba30c3e1f6e" => :mojave
+    sha256 "ff44c076ce6ad71238f2293e35ad7c8fed610dfeb5eb15e8a52c0e68d9a0b62d" => :high_sierra
   end
 
+  depends_on "pkg-config" => :build
+  depends_on "libmagic"
   depends_on "pcre"
   depends_on "xapian"
 
@@ -23,6 +26,6 @@ class Omega < Formula
 
   test do
     system "#{bin}/omindex", "--db", "./test", "--url", "/", "#{share}/doc/xapian-omega"
-    assert File.exist?("./test/flintlock")
+    assert_predicate testpath/"./test/flintlock", :exist?
   end
 end

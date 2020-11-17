@@ -1,26 +1,31 @@
 class Aspcud < Formula
   desc "Package dependency solver"
-  homepage "https://potassco.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/potassco/aspcud/1.9.1/aspcud-1.9.1-source.tar.gz"
-  sha256 "e0e917a9a6c5ff080a411ff25d1174e0d4118bb6759c3fe976e2e3cca15e5827"
+  homepage "https://potassco.org/aspcud/"
+  url "https://github.com/potassco/aspcud/archive/v1.9.4.tar.gz"
+  sha256 "3645f08b079e1cc80e24cd2d7ae5172a52476d84e3ec5e6a6c0034492a6ea885"
+  license "MIT"
+  revision 1
 
   bottle do
-    rebuild 2
-    sha256 "bc47e294ca6710839f222334031cbb78eb28f6398f6b1266f040f05e7def4349" => :sierra
-    sha256 "c57e7a8e2edfd0ae49daa6a02edf5215d26d56756fca3f4e1e2f0848f28fb99d" => :el_capitan
-    sha256 "4c8eca79deb4972b2e90222a63cdcab8e84d5dae1dcc02fd700a85a04a66d971" => :yosemite
+    rebuild 1
+    sha256 "5696aa5e1520bbdb4d6c279944325ab6b2bc0e0b109e648037bbec0aad880938" => :big_sur
+    sha256 "3271ff048eea3fb3bbf5b22b8f59bce767362cf2b5e15935be0b407fba8914fd" => :catalina
+    sha256 "3363c5cfa7f9ad4dd35ddb172c5eb878a504000bae59a477e5ea9246fe27680a" => :mojave
   end
 
   depends_on "boost" => :build
   depends_on "cmake" => :build
   depends_on "re2c" => :build
-  depends_on "gringo"
-  depends_on "clasp"
+  depends_on "clingo"
+
+  # Fix for compatibility with Boost >= 1.74
+  # https://github.com/potassco/aspcud/issues/7
+  patch :DATA
 
   def install
     args = std_cmake_args
-    args << "-DGRINGO_LOC=#{Formula["gringo"].opt_bin}/gringo"
-    args << "-DCLASP_LOC=#{Formula["clasp"].opt_bin}/clasp"
+    args << "-DASPCUD_GRINGO_PATH=#{Formula["clingo"].opt_bin}/gringo"
+    args << "-DASPCUD_CLASP_PATH=#{Formula["clingo"].opt_bin}/clasp"
 
     mkdir "build" do
       system "cmake", "..", *args
@@ -30,14 +35,25 @@ class Aspcud < Formula
   end
 
   test do
-    fixture = <<-EOS.undent
+    (testpath/"in.cudf").write <<~EOS
       package: foo
       version: 1
 
       request: foo >= 1
     EOS
-
-    (testpath/"in.cudf").write(fixture)
     system "#{bin}/aspcud", "in.cudf", "out.cudf"
   end
 end
+__END__
+diff -pur aspcud-1.9.4-old/libcudf/src/dependency.cpp aspcud-1.9.4/libcudf/src/dependency.cpp
+--- aspcud-1.9.4-old/libcudf/src/dependency.cpp	2017-09-19 12:48:41.000000000 +0200
++++ aspcud-1.9.4/libcudf/src/dependency.cpp	2020-11-17 15:39:33.000000000 +0100
+@@ -473,7 +473,7 @@ void ConflictGraph::cliques_(bool verbos
+         }
+         else {
+             PackageList candidates = component, next;
+-            boost::sort(candidates, boost::bind(&ConflictGraph::edgeSort, this, _1, _2));
++            boost::sort(candidates, boost::bind(&ConflictGraph::edgeSort, this, boost::placeholders::_1, boost::placeholders::_2));
+             // TODO: sort by out-going edges
+             do {
+                 cliques.push_back(PackageList());

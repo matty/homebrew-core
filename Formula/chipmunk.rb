@@ -1,19 +1,19 @@
 class Chipmunk < Formula
   desc "2D rigid body physics library written in C"
-  homepage "http://chipmunk-physics.net/"
-  url "http://chipmunk-physics.net/release/Chipmunk-7.x/Chipmunk-7.0.1.tgz"
-  mirror "https://www.mirrorservice.org/sites/distfiles.macports.org/chipmunk/Chipmunk-7.0.1.tgz"
-  sha256 "fe54b464777d89882a9f9d3d6deb17189af8bc5d63833b25bb1a7d16c3e69260"
-
+  homepage "https://chipmunk-physics.net/"
+  url "https://chipmunk-physics.net/release/Chipmunk-7.x/Chipmunk-7.0.3.tgz"
+  mirror "https://www.mirrorservice.org/sites/distfiles.macports.org/chipmunk/Chipmunk-7.0.3.tgz"
+  sha256 "048b0c9eff91c27bab8a54c65ad348cebd5a982ac56978e8f63667afbb63491a"
+  license "MIT"
   head "https://github.com/slembcke/Chipmunk2D.git"
 
   bottle do
     cellar :any
-    sha256 "f6bcf7dae5c57ca130705245adaa09bf4c922539c9b46877ab0895b56e79bc3d" => :sierra
-    sha256 "b102e80b437f3547447919f633e0e247afe5644d545271439a0172777527a442" => :el_capitan
-    sha256 "778a6264346121cce1a36f6cb77c3ee3b4dfea44cb95f381f46b61ba04aa2080" => :yosemite
-    sha256 "638b8122b0ad67cdb134839805e82cd702e9ba4a787b6fbb8b71ff0161a47700" => :mavericks
-    sha256 "694a4ec57d96393397a18f9df95fc272900a1602bd962fcbb45e4e7fc23e16a1" => :mountain_lion
+    sha256 "6f68cb2c7dfecb8ef8b4572257ce7dd86d3de49af8c6073b173996020132902f" => :big_sur
+    sha256 "b71191c2c1e4859cb9d5e77b8684612dec1c191780a0b1d56afc04ada66da036" => :catalina
+    sha256 "16292e5518bae60c6990a6f1565e1416f91ffe1c878ab43b58465bb2a24d3d11" => :mojave
+    sha256 "5370b9d8db489d6b8944c23fd4906768c84d87e22f054ca3381c7ee527233f4d" => :high_sierra
+    sha256 "c92a9c1134a272244ca3936b2c94431df7ed7002a9eec99f6914fe1128adae12" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -26,7 +26,7 @@ class Chipmunk < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <chipmunk.h>
 

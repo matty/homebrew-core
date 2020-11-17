@@ -1,14 +1,18 @@
 class Trafficserver < Formula
   desc "HTTP/1.1 compliant caching proxy server"
   homepage "https://trafficserver.apache.org/"
-  url "https://www.apache.org/dyn/closer.cgi?path=trafficserver/trafficserver-7.0.0.tar.bz2"
-  mirror "https://archive.apache.org/dist/trafficserver/trafficserver-7.0.0.tar.bz2"
-  sha256 "5a7216d3c3862cd254e577bcfbd0d6820ad7a2eab588d5a820f02e2c2f23afab"
+  url "https://www.apache.org/dyn/closer.lua?path=trafficserver/trafficserver-8.1.0.tar.bz2"
+  mirror "https://archive.apache.org/dist/trafficserver/trafficserver-8.1.0.tar.bz2"
+  sha256 "01bcc5d5cc58d5368366e193b6091e2d6af000badc19be3c49db7aa96955bbe2"
+  license "Apache-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "3906717223fdf1e502c07f7af4d7f7a3ec2492569494744783ccc34033d44cde" => :sierra
-    sha256 "43fd2b84c6a39fcc3f063afbd16f1aea5e47a2311e37c5f9a294b19e3885d0a4" => :el_capitan
-    sha256 "0c76643bbcbffc39d6a1c0d4b30f10a87596be00ba7aefbfa57c05e06afb5209" => :yosemite
+    sha256 "d490c5c8fae027a4a6ffcd205b375625e37d3a2f99bb060a5989b33499145a72" => :catalina
+    sha256 "cc6df9c477581b56ce70bb909456a48041f6230b7a432ae1365ed60dd2019904" => :mojave
   end
 
   head do
@@ -17,45 +21,41 @@ class Trafficserver < Formula
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool"  => :build
+
+    fails_with :clang do
+      build 800
+      cause "needs C++17"
+    end
   end
 
-  option "with-experimental-plugins", "Enable experimental plugins"
-
-  depends_on "openssl"
+  depends_on macos: :mojave # `error: call to unavailable member function 'value': introduced in macOS 10.14`
+  depends_on "openssl@1.1"
   depends_on "pcre"
 
-  needs :cxx11
-
   def install
-    ENV.cxx11
+    ENV.cxx11 if build.stable?
 
-    # Needed for OpenSSL headers
-    if MacOS.version <= :lion
-      ENV.append_to_cflags "-Wno-deprecated-declarations"
-    end
+    # Per https://luajit.org/install.html: If MACOSX_DEPLOYMENT_TARGET
+    # is not set then it's forced to 10.4, which breaks compile on Mojave.
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
 
     args = %W[
       --prefix=#{prefix}
       --mandir=#{man}
       --localstatedir=#{var}
       --sysconfdir=#{etc}/trafficserver
-      --with-openssl=#{Formula["openssl"].opt_prefix}
+      --with-openssl=#{Formula["openssl@1.1"].opt_prefix}
+      --with-tcl=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework
       --with-group=admin
       --disable-silent-rules
+      --enable-experimental-plugins
     ]
-
-    args << "--enable-experimental-plugins" if build.with? "experimental-plugins"
 
     system "autoreconf", "-fvi" if build.head?
     system "./configure", *args
 
     # Fix wrong username in the generated startup script for bottles.
     inreplace "rc/trafficserver.in", "@pkgsysuser@", "$USER"
-    if build.with? "experimental-plugins"
-      # Disable mysql_remap plugin due to missing symbol compile error:
-      # https://issues.apache.org/jira/browse/TS-3490
-      inreplace "plugins/experimental/Makefile", " mysql_remap", ""
-    end
 
     inreplace "lib/perl/Makefile",
       "Makefile.PL INSTALLDIRS=$(INSTALLDIRS)",

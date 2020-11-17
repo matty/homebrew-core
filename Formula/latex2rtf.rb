@@ -1,24 +1,41 @@
 class Latex2rtf < Formula
   desc "Translate LaTeX to RTF"
   homepage "https://latex2rtf.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/latex2rtf/latex2rtf-unix/2.3.8/latex2rtf-2.3.8.tar.gz"
-  sha256 "5484530de16e96ce76aedf969c464656a5f8834e748849d9009049e26f8c4143"
+  url "https://downloads.sourceforge.net/project/latex2rtf/latex2rtf-unix/2.3.18/latex2rtf-2.3.18.tar.gz"
+  sha256 "c0b6a9f5877b3b24b1571c5f2c42afd22f0db5448448d4de7379e67d284ca0b1"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "364280e75787811b3769d454a9da4d25f6b79179c89cbfc93ea17518385060f3" => :sierra
-    sha256 "74de3e2c0efab26094f94cedaa085e158b702556301b04d4e664460b96b890c9" => :el_capitan
-    sha256 "22505c79e8806150f2f5ddfd492f648c3b25e7d753816ebd9f13e2d66b54c132" => :yosemite
-    sha256 "34a3fbac89383affaa05f3d3a7d9276dacdf55adc04a926fd7645ab9c983c631" => :mavericks
+    sha256 "be21a155b6d80c651312135de1348e1847ac57b1b1d612bf820e92fe663e9b10" => :catalina
+    sha256 "7c933531921ef07cc2471938266c91380d2364761b01fad8680bc70648812b19" => :mojave
+    sha256 "cf6c89983b5c8593a74f62e86825f4a9e7cc7f31fb83639c8247c51fa4d3975a" => :high_sierra
   end
 
   def install
-    inreplace "Makefile", "cp -p doc/latex2rtf.html $(DESTDIR)$(SUPPORTDIR)", "cp -p doc/web/* $(DESTDIR)$(SUPPORTDIR)"
+    inreplace "Makefile", "cp -p doc/latex2rtf.html $(DESTDIR)$(SUPPORTDIR)",
+                          "cp -p doc/web/* $(DESTDIR)$(SUPPORTDIR)"
     system "make", "DESTDIR=",
                    "BINDIR=#{bin}",
                    "MANDIR=#{man1}",
                    "INFODIR=#{info}",
-                   "SUPPORTDIR=#{share}/latex2rtf",
-                   "CFGDIR=#{share}/latex2rtf/cfg",
+                   "SUPPORTDIR=#{pkgshare}",
+                   "CFGDIR=#{pkgshare}/cfg",
                    "install"
+  end
+
+  test do
+    (testpath/"test.tex").write <<~EOS
+      \\documentclass{article}
+      \\title{LaTeX to RTF}
+      \\begin{document}
+      \\maketitle
+      \\end{document}
+    EOS
+    system bin/"latex2rtf", "test.tex"
+    assert_predicate testpath/"test.rtf", :exist?
+    assert_match "LaTeX to RTF", File.read(testpath/"test.rtf")
   end
 end

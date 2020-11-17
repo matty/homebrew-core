@@ -1,35 +1,38 @@
 class CAres < Formula
   desc "Asynchronous DNS library"
   homepage "https://c-ares.haxx.se/"
-  url "https://c-ares.haxx.se/download/c-ares-1.12.0.tar.gz"
-  mirror "https://launchpad.net/ubuntu/+archive/primary/+files/c-ares_1.12.0.orig.tar.gz"
-  sha256 "8692f9403cdcdf936130e045c84021665118ee9bfea905d1a76f04d4e6f365fb"
+  url "https://c-ares.haxx.se/download/c-ares-1.16.1.tar.gz"
+  sha256 "d08312d0ecc3bd48eee0a4cc0d2137c9f194e0a28de2028928c0f6cae85f86ce"
+  license "MIT"
+  revision 1
+  head "https://github.com/bagder/c-ares.git"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?c-ares[._-](\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "afee9065946f9b593df473247fbc0cea9e91da1c485a614ecfc2252f21fdad03" => :sierra
-    sha256 "fecf1cd2f00321ded561d42f75ccdfaca4051daa23455a617dd347db8f4b493c" => :el_capitan
-    sha256 "a31122fc87f53891cc925fe3371276a7f922234afabc0cc2ae861066b4f1a3a6" => :yosemite
+    sha256 "332c3557151a1fc789f6cd075219271800e01ee97c75dd2c62e8d58e8fa28ae4" => :big_sur
+    sha256 "72a7232d82c7601576bd2af4271157ee34ff478f1cd7febe5c144254ec5e9e07" => :catalina
+    sha256 "cd4a1354a3658e804caf1b24a33a40078948d3f9ed9413cb4f32e56045ef244d" => :mojave
+    sha256 "14b1bbb8bced1bde8b3a8beb5e3e35fcb65a1dec45393c37cc0533f67d41ec8b" => :high_sierra
   end
 
-  head do
-    url "https://github.com/bagder/c-ares.git"
-
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "libtool" => :build
-  end
+  depends_on "cmake" => :build
+  depends_on "ninja" => :build
 
   def install
-    system "./buildconf" if build.head?
-    system "./configure", "--prefix=#{prefix}",
-                          "--disable-dependency-tracking",
-                          "--disable-debug"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", "-GNinja", *std_cmake_args
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <ares.h>
 

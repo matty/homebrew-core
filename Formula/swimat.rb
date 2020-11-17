@@ -1,17 +1,19 @@
 class Swimat < Formula
-  desc "Command Line Tool to help format Swift code"
+  desc "Command-line tool to help format Swift code"
   homepage "https://github.com/Jintin/Swimat"
-  url "https://github.com/Jintin/Swimat/archive/v1.2.1.tar.gz"
-  sha256 "ef2f0fe83ca779698679a1a110ebc6ae9c5a457805b6647af79db32cfed0a018"
+  url "https://github.com/Jintin/Swimat/archive/v1.6.2.tar.gz"
+  sha256 "1e6000dd16857a769070036fe710dd0b2aa6c4436a02ecc60590d829d6228e8b"
+  license "MIT"
   head "https://github.com/Jintin/Swimat.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "afb03ff97abd634eb8d5650fdba20cbdc874b68e40542c2a6c0082afd8a97de1" => :sierra
-    sha256 "b21a2dd90ed13653dd53ddf07c1cb1ee50ac8efa61a42603bf47fc5266614732" => :el_capitan
+    sha256 "f03f021887a387010e733167f87b37afb05a909b8bfa94d69793b43ea0e637c1" => :big_sur
+    sha256 "a94df9efa0aef16df8e593696a3dc3dd1fbe4f8fa59512af713d4915a103843c" => :catalina
+    sha256 "197ba3d1db2bfbee29a10e4735925b4fdac3035c486b7899bc564cea5f019839" => :mojave
   end
 
-  depends_on :xcode => "8.0"
+  depends_on xcode: ["10.2", :build]
 
   def install
     xcodebuild "-target", "CLI",

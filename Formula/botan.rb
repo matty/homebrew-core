@@ -1,81 +1,46 @@
 class Botan < Formula
   desc "Cryptographic algorithms and formats library in C++"
   homepage "https://botan.randombit.net/"
-
-  stable do
-    url "https://botan.randombit.net/releases/Botan-1.10.13.tgz"
-    sha256 "23ec973d4b4a4fe04f490d409e08ac5638afe3aa09acd7f520daaff38ba19b90"
-
-    # upstream ticket: https://bugs.randombit.net/show_bug.cgi?id=267
-    patch :DATA
-  end
+  url "https://botan.randombit.net/releases/Botan-2.17.2.tar.xz"
+  sha256 "ebe27dfe2b55d7e02bf520e926606c48b76b22facb483256b13ab38e018e1e6c"
+  license "BSD-2-Clause"
+  head "https://github.com/randombit/botan.git"
 
   bottle do
-    cellar :any
-    sha256 "b04c99b1028e05ee50e28faa590caa40b0cd3d1603fec0da3e61fb64419b39d6" => :sierra
-    sha256 "21599053348caae11ed972522334247733ea85776ca5c8d309bcf1aea39d28fa" => :el_capitan
-    sha256 "70592ff415e7e30c7a50c2aa46a8b4a0357150c5f98fb1fa11bba5ea48ee978b" => :yosemite
-    sha256 "da4e989fedc710e3e65cb6ec387b9fd865740cc1878f660f371522ba255b307f" => :mavericks
+    sha256 "11a42d9309a1fc2c48abd23d66d68783226ebf5b6306332a5fd7d3499878e2de" => :big_sur
+    sha256 "f922534635d6435cd99fd3ad9125f73dd5fba9f11e0fd1f2c71212663ae17518" => :catalina
+    sha256 "7b3d9f8e516b601561dd465184b7a7e7cc3b0d87d642f9e1fbf7805dbb0677b3" => :mojave
+    sha256 "ff01010ef50266f76310d2219a5266d5cb0b877af342e327e3a2c749b9967da1" => :high_sierra
   end
-
-  devel do
-    url "https://botan.randombit.net/releases/Botan-1.11.31.tgz"
-    sha256 "0e751c9182c84f961e90be51f086b1ec254155c3d056cbb37eebff5f5e39ddee"
-  end
-
-  option "with-debug", "Enable debug build of Botan"
-
-  deprecated_option "enable-debug" => "with-debug"
 
   depends_on "pkg-config" => :build
-  depends_on "openssl"
+  depends_on "python@3.9"
+  depends_on "sqlite"
 
-  needs :cxx11 if build.devel?
+  uses_from_macos "bzip2"
+  uses_from_macos "zlib"
 
   def install
-    ENV.cxx11 if build.devel?
+    ENV.cxx11
 
     args = %W[
       --prefix=#{prefix}
       --docdir=share/doc
-      --cpu=#{MacOS.preferred_arch}
       --cc=#{ENV.compiler}
       --os=darwin
-      --with-openssl
       --with-zlib
       --with-bzip2
+      --with-sqlite3
+      --with-python-versions=3.9
     ]
 
-    args << "--enable-debug" if build.with? "debug"
-
     system "./configure.py", *args
-    # A hack to force them use our CFLAGS. MACH_OPT is empty in the Makefile
-    # but used for each call to cc/ld.
-    system "make", "install", "MACH_OPT=#{ENV.cflags}"
+    system "make", "install"
   end
 
   test do
-    # stable version doesn't have `botan` executable
-    if stable?
-      assert_match "lcrypto", shell_output("#{bin}/botan-config-1.10 --libs")
-    else
-      (testpath/"test.txt").write "Homebrew"
-      (testpath/"testout.txt").write Utils.popen_read("#{bin}/botan base64_enc test.txt")
-      assert_match "Homebrew", shell_output("#{bin}/botan base64_dec testout.txt")
-    end
+    (testpath/"test.txt").write "Homebrew"
+    (testpath/"testout.txt").write shell_output("#{bin}/botan base64_enc test.txt")
+    assert_match "Homebrew", shell_output("#{bin}/botan base64_dec testout.txt")
   end
 end
-
-__END__
---- a/src/build-data/makefile/unix_shr.in
-+++ b/src/build-data/makefile/unix_shr.in
-@@ -57,8 +57,8 @@
- LIBNAME       = %{lib_prefix}libbotan
- STATIC_LIB    = $(LIBNAME)-$(SERIES).a
-
--SONAME        = $(LIBNAME)-$(SERIES).%{so_suffix}.%{so_abi_rev}
--SHARED_LIB    = $(SONAME).%{version_patch}
-+SONAME        = $(LIBNAME)-$(SERIES).%{so_abi_rev}.%{so_suffix}
-+SHARED_LIB    = $(LIBNAME)-$(SERIES).%{so_abi_rev}.%{version_patch}.%{so_suffix}
-
- SYMLINK       = $(LIBNAME)-$(SERIES).%{so_suffix}

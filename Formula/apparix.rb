@@ -1,12 +1,16 @@
 class Apparix < Formula
   desc "File system navigation via bookmarking directories"
-  homepage "http://micans.org/apparix/"
-  url "http://micans.org/apparix/src/apparix-11-062.tar.gz"
+  homepage "https://micans.org/apparix/"
+  url "https://micans.org/apparix/src/apparix-11-062.tar.gz"
   sha256 "211bb5f67b32ba7c3e044a13e4e79eb998ca017538e9f4b06bc92d5953615235"
 
   bottle do
     cellar :any_skip_relocation
     rebuild 1
+    sha256 "a7c4e0d0754712277af33217475b179c898bbd965b5bff85f845658791eda9f8" => :big_sur
+    sha256 "27524421291472bcc5ef8dc6a19d7b6cb7aab1d6a7dffd326c4594a11f3ce4e8" => :catalina
+    sha256 "5b26fe074f048cdf1ba973e21e91bd51eb7f275ba05928ffaaf2e56c15671bbd" => :mojave
+    sha256 "1170198d8bafd2b2a6795257dec1e4c15cb1c92d1af7eea44ee816c0a58ac8a1" => :high_sierra
     sha256 "889da718a73f128fa8baaca4a66ae80316ef6cb00ccc03937ea191c8eb781930" => :sierra
     sha256 "89d7d52f9f2e76f1dd6b91075f407fa71000be0b09bd4548c11a6fd820b87ab3" => :el_capitan
     sha256 "9ff5a4568499ba2ca67b7c1bae689ab25576409da76798642b3c4caee489c878" => :yosemite

@@ -1,30 +1,35 @@
 class Glibmm < Formula
   desc "C++ interface to glib"
   homepage "https://www.gtkmm.org/"
-  url "https://download.gnome.org/sources/glibmm/2.50/glibmm-2.50.0.tar.xz"
-  sha256 "df726e3c6ef42b7621474b03b644a2e40ec4eef94a1c5a932c1e740a78f95e94"
+  url "https://download.gnome.org/sources/glibmm/2.64/glibmm-2.64.2.tar.xz"
+  sha256 "a75282e58d556d9b2bb44262b6f5fb76c824ac46a25a06f527108bec86b8d4ec"
+  license "LGPL-2.1"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "5db8c964d2b7dcd98fe1de642a9ff9f97924373c20e4b011d39386e1d4270504" => :sierra
-    sha256 "bd2aa1af2aa563148c4d913c4a74305e819bfe4661a93b1a33dd8ad2869ae5d8" => :el_capitan
-    sha256 "df9484403c8a3700e6939f497acffc3412817e36b7eb046ca3b5d3f3d368e16a" => :yosemite
+    sha256 "aaff9671885e0337aeeee7bf5c3b18a87c88fd79323bbce01f79c648a0531c87" => :big_sur
+    sha256 "8b39f15570f8ec9281554ec8db93e4011ad2e13a1248047c18c7f8570a548d53" => :catalina
+    sha256 "316a5f0f84491a62cf1c48a12cd4f8d9b7f7de9aa8092f72256f5114aa8730d3" => :mojave
+    sha256 "7d224a2283e08715a1f7f286fcdc3e1c5cc277101bb3e2cc4bce488ec776cc02" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libsigc++"
   depends_on "glib"
-
-  needs :cxx11
+  depends_on "libsigc++@2"
 
   def install
     ENV.cxx11
+
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <glibmm.h>
 
       int main(int argc, char *argv[])
@@ -35,7 +40,7 @@ class Glibmm < Formula
     EOS
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0

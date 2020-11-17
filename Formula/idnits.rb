@@ -1,13 +1,16 @@
 class Idnits < Formula
   desc "Looks for problems in internet draft formatting"
   homepage "https://tools.ietf.org/tools/idnits/"
-  url "https://tools.ietf.org/tools/idnits/idnits-2.14.01.tgz"
-  sha256 "5b49749b0e4dc610fae9c12780c7a4d02723a5f4b701271bdd374d909c186654"
+  url "https://tools.ietf.org/tools/idnits/idnits-2.16.05.tgz"
+  sha256 "9f30827e0cf7cf02245e248266ece9557886d33ec7a90cc704b450e70f2cead5"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?idnits[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle :unneeded
-
-  depends_on "aspell" => :optional
-  depends_on "languagetool" => :optional
 
   resource "test" do
     url "https://tools.ietf.org/id/draft-ietf-tcpm-undeployed-03.txt"

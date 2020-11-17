@@ -1,32 +1,33 @@
 class Onscripter < Formula
   desc "NScripter-compatible visual novel engine"
   homepage "https://onscripter.osdn.jp/"
-  url "https://onscripter.osdn.jp/onscripter-20161102.tar.gz"
-  sha256 "e9a39b1c45cc47c363eb15773a9944da7a29eff74261ccb656ff5ce4b5fdd5d8"
+  url "https://onscripter.osdn.jp/onscripter-20200722.tar.gz"
+  sha256 "12e5f4ac336ae3da46bf166ff1d439840be6336b19401a76c7d788994a9cd35e"
+  license "GPL-2.0"
 
   bottle do
     cellar :any
-    sha256 "6d722b32bb2a3f120b8df06013d5876eb1484b68d40bdc6155bcde2cf88546fb" => :sierra
-    sha256 "b5d74322c46656129c0ac285b8702842ea0611ab3dc8f6ac7a2f385bd348387a" => :el_capitan
-    sha256 "89ec41fe247d1a90ca201a4906cc304480b2c3edc97dd1bf12ff1f0f90c59e02" => :yosemite
+    sha256 "d7f53c83fbbc4cbfb321d535d44d5d8600b43f48eddac8d07eee07b93ea32a74" => :big_sur
+    sha256 "d886def76e269ded54ad9b5c128d6c8d6b40d26814ef7c3a1e46113101e61088" => :catalina
+    sha256 "67ad8935801c205450775f3abb6f8ae318da8110835fa10bf984538b1ef963b3" => :mojave
+    sha256 "27471aca0f4b1bc08721ef8ee650a4fb2b42085c0eba7ecf7d281fa050f64b65" => :high_sierra
   end
 
-  option "with-english", "Build with single-byte character mode"
-
   depends_on "pkg-config" => :build
-  depends_on "sdl"
-  depends_on "sdl_ttf"
-  depends_on "sdl_image"
-  depends_on "sdl_mixer" => "with-libvorbis"
-  depends_on "smpeg"
   depends_on "jpeg"
-  depends_on "lua" => :recommended
+  depends_on "lua"
+  depends_on "sdl"
+  depends_on "sdl_image"
+  depends_on "sdl_mixer"
+  depends_on "sdl_ttf"
+  depends_on "smpeg"
 
   def install
     incs = [
       `pkg-config --cflags sdl SDL_ttf SDL_image SDL_mixer`.chomp,
       `smpeg-config --cflags`.chomp,
       "-I#{Formula["jpeg"].include}",
+      "-I#{Formula["lua"].opt_include}/lua",
     ]
 
     libs = [
@@ -34,31 +35,18 @@ class Onscripter < Formula
       `smpeg-config --libs`.chomp,
       "-ljpeg",
       "-lbz2",
+      "-L#{Formula["lua"].opt_lib} -llua",
     ]
 
     defs = %w[
       -DMACOSX
       -DUSE_CDROM
+      -DUSE_LUA
       -DUTF8_CAPTION
       -DUTF8_FILESYSTEM
     ]
 
-    ext_objs = []
-
-    if build.with? "lua"
-      lua = Formula["lua"]
-      incs << "-I#{lua.include}"
-      libs << "-L#{lua.lib} -llua"
-      defs << "-DUSE_LUA"
-      ext_objs << "LUAHandler.o"
-    end
-
-    if build.with? "english"
-      defs += %w[
-        -DENABLE_1BYTE_CHAR
-        -DFORCE_1BYTE_CHAR
-      ]
-    end
+    ext_objs = ["LUAHandler.o"]
 
     k = %w[INCS LIBS DEFS EXT_OBJS]
     v = [incs, libs, defs, ext_objs].map { |x| x.join(" ") }

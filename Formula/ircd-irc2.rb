@@ -6,6 +6,9 @@ class IrcdIrc2 < Formula
   sha256 "be94051845f9be7da0e558699c4af7963af7e647745d339351985a697eca2c81"
 
   bottle do
+    sha256 "8508a48308449f51d7190eccc640b9351de2d30379b99b4fe0595cb185458204" => :catalina
+    sha256 "81e5c21532c98066b89bddc0ec6285eba22d2fcfb2c620b00ada8a6f4d641c7f" => :mojave
+    sha256 "ebc4e1007b994ae418cd522ecc70fa2c738dbf7eb52a883f775e7dcc9b06892e" => :high_sierra
     sha256 "72b85345931772dc3ac1fe96201906db0c70c24e129e9ee7006253080926bd2f" => :sierra
     sha256 "259ddceb29a5d5e0705c3b0a130368053de98282ecec2036c17d30062bd6f9f4" => :el_capitan
     sha256 "af6c845d852e4a525d64f1cfbd551377c90da201c2ef3e521d48fc1513a58064" => :yosemite
@@ -13,7 +16,7 @@ class IrcdIrc2 < Formula
   end
 
   def default_ircd_conf
-    <<-EOS.undent
+    <<~EOS
       # M-Line
       M:irc.localhost::Darwin ircd default configuration::000A
 
@@ -33,7 +36,7 @@ class IrcdIrc2 < Formula
     EOS
   end
 
-  conflicts_with "ircd-hybrid", :because => "both install `ircd` binaries"
+  conflicts_with "ircd-hybrid", because: "both install `ircd` binaries"
 
   def install
     system "./configure", "--prefix=#{prefix}",
@@ -57,30 +60,31 @@ class IrcdIrc2 < Formula
     (etc/"ircd.conf").write default_ircd_conf
   end
 
-  plist_options :manual => "ircd"
+  plist_options manual: "ircd"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>KeepAlive</key>
-      <false/>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_sbin}/ircd</string>
-        <string>-t</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>WorkingDirectory</key>
-      <string>#{HOMEBREW_PREFIX}</string>
-      <key>StandardErrorPath</key>
-      <string>#{var}/ircd.log</string>
-    </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>KeepAlive</key>
+        <false/>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_sbin}/ircd</string>
+          <string>-t</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+        <key>StandardErrorPath</key>
+        <string>#{var}/ircd.log</string>
+      </dict>
+      </plist>
     EOS
   end
 

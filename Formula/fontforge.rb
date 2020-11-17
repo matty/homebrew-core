@@ -1,95 +1,75 @@
 class Fontforge < Formula
   desc "Command-line outline and bitmap font editor/converter"
   homepage "https://fontforge.github.io"
-  url "https://github.com/fontforge/fontforge/archive/20161012.tar.gz"
-  sha256 "a5f5c2974eb9109b607e24f06e57696d5861aaebb620fc2c132bdbac6e656351"
-  revision 1
-  head "https://github.com/fontforge/fontforge.git"
+  url "https://github.com/fontforge/fontforge/archive/20200314.tar.gz"
+  sha256 "ad0eb017379c6f7489aa8e2d7c160f19140d1ac6351f20df1d9857d9428efcf2"
+  license "GPL-3.0"
+  revision 2
 
   bottle do
-    sha256 "57809a9c61afc72a933fa905464d80de5b8fe59749cadb962e861749698e4453" => :sierra
-    sha256 "8d2501b45449f86695410f21da449aa5a7f80b15efb74fb975e0d40f6eeb8974" => :el_capitan
-    sha256 "77aacdcdc740df564b186c043890f433459122b34b3225bdbe3952172f466dd7" => :yosemite
+    sha256 "9c0a61fe2fc9fa5c387c596b69c6a2e76f8316a1115d2796ae1138af0b9ac319" => :big_sur
+    sha256 "1e71933145235afca40aeb357ff8d0ee6ec9461e5b4f7607b7b935cbbf07c0ae" => :catalina
+    sha256 "621b45bbce2fb407847fa5978eda807561288a8ba793dbc18b9f6cb089fac756" => :mojave
+    sha256 "aeff8baaaadf3bb54734feae6a75e8868291a5cb8441e88e5fd13772a08f5ccf" => :high_sierra
   end
 
-  option "with-giflib", "Build with GIF support"
-  option "with-extra-tools", "Build with additional font tools"
-
-  deprecated_option "with-gif" => "with-giflib"
-
-  # Autotools are required to build from source in all releases.
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
+  depends_on "cmake" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "libtool" => :run
-  depends_on "gettext"
-  depends_on "pango"
   depends_on "cairo"
   depends_on "fontconfig"
+  depends_on "freetype"
+  depends_on "gettext"
+  depends_on "giflib"
+  depends_on "glib"
+  depends_on "jpeg"
   depends_on "libpng"
-  depends_on "jpeg" => :recommended
-  depends_on "libtiff" => :recommended
-  depends_on "giflib" => :optional
-  depends_on "libspiro" => :optional
-  depends_on "libuninameslist" => :optional
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "libspiro"
+  depends_on "libtiff"
+  depends_on "libtool"
+  depends_on "libuninameslist"
+  depends_on "pango"
+  depends_on "python@3.9"
+  depends_on "readline"
 
-  resource "gnulib" do
-    url "git://git.savannah.gnu.org/gnulib.git",
-        :revision => "29ea6d6fe2a699a32edbe29f44fe72e0c253fcee"
+  uses_from_macos "libxml2"
+
+  # Remove with next release (cmake: adjust Python linkage)
+  # Original patchset: https://github.com/fontforge/fontforge/pull/4258
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/99af4b5/fontforge/20200314.patch"
+    sha256 "3deed4d79a1fdf5fb6de2fca7da8ffe14301acbeb015441574a7a28e902561f5"
   end
-
   def install
-    ENV["PYTHON_CFLAGS"] = `python-config --cflags`.chomp
-    ENV["PYTHON_LIBS"] = `python-config --ldflags`.chomp
+    mkdir "build" do
+      system "cmake", "..",
+                      "-GNinja",
+                      "-DENABLE_GUI=OFF",
+                      "-DENABLE_FONTFORGE_EXTRAS=ON",
+                      *std_cmake_args
+      system "ninja"
+      system "ninja", "install"
 
-    args = %W[
-      --prefix=#{prefix}
-      --disable-silent-rules
-      --disable-dependency-tracking
-      --without-x
-    ]
-
-    args << "--without-libjpeg" if build.without? "jpeg"
-    args << "--without-libtiff" if build.without? "libtiff"
-    args << "--without-giflib" if build.without? "giflib"
-    args << "--without-libspiro" if build.without? "libspiro"
-    args << "--without-libuninameslist" if build.without? "libuninameslist"
-
-    # Bootstrap in every build: https://github.com/fontforge/fontforge/issues/1806
-    resource("gnulib").fetch
-    system "./bootstrap",
-           "--gnulib-srcdir=#{resource("gnulib").cached_download}",
-           "--skip-git"
-    system "./configure", *args
-    system "make"
-    system "make", "install"
-
-    # The app here is not functional.
-    # If you want GUI/App support, check the caveats to see how to get it.
-    (pkgshare/"osx/FontForge.app").rmtree
-
-    if build.with? "extra-tools"
-      cd "contrib/fonttools" do
-        system "make"
-        bin.install Dir["*"].select { |f| File.executable? f }
-      end
+      # The "extras" built above don't get installed by default.
+      bin.install Dir["bin/*"].select { |f| File.executable? f }
     end
   end
 
-  def caveats; <<-EOS.undent
-    This formula only installs the command line utilities.
+  def caveats
+    <<~EOS
+      This formula only installs the command line utilities.
 
-    FontForge.app can be downloaded directly from the website:
-      https://fontforge.github.io
+      FontForge.app can be downloaded directly from the website:
+        https://fontforge.github.io
 
-    Alternatively, install with Homebrew-Cask:
-      brew cask install fontforge
+      Alternatively, install with Homebrew Cask:
+        brew cask install fontforge
     EOS
   end
 
   test do
     system bin/"fontforge", "-version"
-    system "python", "-c", "import fontforge"
+    system bin/"fontforge", "-lang=py", "-c", "import fontforge; fontforge.font()"
+    system Formula["python@3.9"].opt_bin/"python3", "-c", "import fontforge; fontforge.font()"
   end
 end

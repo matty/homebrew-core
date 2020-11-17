@@ -1,46 +1,35 @@
 class Pngquant < Formula
   desc "PNG image optimizing utility"
   homepage "https://pngquant.org/"
-  url "https://pngquant.org/pngquant-2.8.2-src.tar.gz"
-  sha256 "e93a400df7514880135171ae105a412e76d76745ce9648647dfeea66c890b9c3"
-  head "https://github.com/pornel/pngquant.git"
+  url "https://pngquant.org/pngquant-2.13.0-src.tar.gz"
+  sha256 "0d1d5dcdb5785961abf64397fb0735f8a29da346b6fee6666e4ef082b516c07e"
+  license :cannot_represent
+  head "https://github.com/kornelski/pngquant.git"
+
+  livecheck do
+    url "https://pngquant.org/releases.html"
+    regex(%r{href=.*?/pngquant[._-]v?(\d+(?:\.\d+)+)-src\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "88a6a0062aa21324c449840d5304789a1feed2309bd9817d83114a0e54a22402" => :sierra
-    sha256 "4a7393976890e0d00d1335410aff6c7dde6b820894262da2b7c27508c2287ee8" => :el_capitan
-    sha256 "1530412b698806c01980dd29917aafcc14cb8dd223725d35e7d45672cbceabe6" => :yosemite
+    sha256 "ac9a63953788be2e15e1215b32f3280dcaa4beaebeae7f239247616d9186f7d8" => :big_sur
+    sha256 "cad350e78adc1912e1895b2f1c4abaf27bd14db902bad179424580934b9e1a05" => :catalina
+    sha256 "60f111e8252d2480df50d6fc77e2938c50480dc03e00207a75033b882cbeb740" => :mojave
+    sha256 "eb2b662bda1612dece961a7809ea5336997a00354fe204a001b4191b5b658fed" => :high_sierra
   end
 
-  option "with-openmp", "Enable OpenMP"
-
   depends_on "pkg-config" => :build
+  depends_on "rust" => :build
   depends_on "libpng"
-  depends_on "little-cms2" => :optional
-
-  needs :openmp if build.with? "openmp"
+  depends_on "little-cms2"
 
   def install
-    ENV.append_to_cflags "-DNDEBUG" # Turn off debug
-
-    args = ["--prefix=#{prefix}"]
-    args << "--with-lcms2" if build.with? "little-cms2"
-
-    if build.with? "openmp"
-      args << "--with-openmp"
-      args << "--without-cocoa"
-    end
-
-    system "./configure", *args
-    system "make", "install", "CC=#{ENV.cc}"
-
-    man1.install "pngquant.1"
-    lib.install "lib/libimagequant.a"
-    include.install "lib/libimagequant.h"
+    system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
     system "#{bin}/pngquant", test_fixtures("test.png"), "-o", "out.png"
-    File.exist? testpath/"out.png"
+    assert_predicate testpath/"out.png", :exist?
   end
 end

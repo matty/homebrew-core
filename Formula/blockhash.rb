@@ -1,20 +1,23 @@
 class Blockhash < Formula
   desc "Perceptual image hash calculation tool"
-  homepage "http://blockhash.io/"
-  url "https://github.com/commonsmachinery/blockhash/archive/0.2.1.tar.gz"
-  sha256 "549e0f52e7a7545bae7eca801c64c79b95cbe9417975718e262fddaf78b00cca"
-  revision 1
+  homepage "https://github.com/commonsmachinery/blockhash"
+  url "https://github.com/commonsmachinery/blockhash/archive/v0.3.1.tar.gz"
+  sha256 "56e8d2fecf2c7658c9f8b32bfb2d29fdd0d0535ddb3082e44b45a5da705aca86"
+  license "MIT"
+  revision 2
   head "https://github.com/commonsmachinery/blockhash.git"
 
   bottle do
     cellar :any
-    sha256 "3c3ba24b64ae845dd8ae24d3e6bd269786fcfb39261ac36a402193109a65241e" => :sierra
-    sha256 "fafedb68fbf6cfb920f4dd67ce87dc364ce4a68c459101a9c85f7b01fc3a8dd4" => :el_capitan
-    sha256 "6aa8c1b762feaa0299219b1bac86fec27261a8c92e9e9968fff4d3a2743fbdda" => :yosemite
+    sha256 "4cc1dfdfa365edd25d95d9188e9b45f03477a7c138ff3e539dce3ff839f7330c" => :big_sur
+    sha256 "3db282d2098b5e52c197a62e977382fe5b192ce22ecb88020599534e07682475" => :catalina
+    sha256 "45c611b516f5a0f53c75588ede65591eab5ec76bc65e05e5400ef232cb367a89" => :mojave
+    sha256 "3b46ba7629e56dc9ef1b5a8a00fe7dc43b81d1f09b8f9efcb8bff49ecf16676e" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "imagemagick"
+  depends_on :macos # Due to Python 2
 
   resource "testdata" do
     url "https://raw.githubusercontent.com/commonsmachinery/blockhash/ce08b465b658c4e886d49ec33361cee767f86db6/testdata/clipper_ship.jpg"
@@ -23,13 +26,16 @@ class Blockhash < Formula
 
   def install
     system "./waf", "configure", "--prefix=#{prefix}"
+    # pkg-config adds -fopenmp flag during configuring
+    # This fails the build on system clang, and OpenMP is not used in blockhash
+    inreplace "build/c4che/_cache.py", "-fopenmp", ""
     system "./waf"
     system "./waf", "install"
   end
 
   test do
     resource("testdata").stage testpath
-    hash = "00007ff07fe07fe07fe67ff07520600077fe601e7f5e000079fd40410001fffe"
+    hash = "00007ff07ff07fe07fe67ff07560600077fe701e7f5e000079fd40410001ffff"
     result = shell_output("#{bin}/blockhash #{testpath}/clipper_ship.jpg")
     assert_match hash, result
   end

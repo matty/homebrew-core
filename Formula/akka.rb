@@ -1,12 +1,17 @@
 class Akka < Formula
   desc "Toolkit for building concurrent, distributed, and fault tolerant apps"
-  homepage "http://akka.io/"
-  url "https://downloads.typesafe.com/akka/akka_2.11-2.4.10.zip"
-  sha256 "2410405a11a943444cf1f574f74722b5cbabf4c9fcf8672eb7880c13dab972d8"
+  homepage "https://github.com/akka/akka"
+  url "https://downloads.typesafe.com/akka/akka_2.11-2.4.20.zip"
+  sha256 "6f6af368672640512f8e0099a5d88277f4ac64de7d4edd151411e6a80cc78d0f"
+  license "Apache-2.0"
+  revision 1
 
   bottle :unneeded
 
-  depends_on :java
+  # https://github.com/akka/akka/issues/25046
+  deprecate! because: "is recommended to use Akka with a build tool"
+
+  depends_on "openjdk"
 
   def install
     # Remove Windows files
@@ -23,12 +28,12 @@ class Akka < Formula
     end
 
     libexec.install Dir["*"]
-    bin.install_symlink libexec/"bin/akka"
-    bin.install_symlink libexec/"bin/akka-cluster"
+    bin.install Dir["#{libexec}/bin/*"]
+    bin.env_script_all_files libexec/"bin", JAVA_HOME: Formula["openjdk"].opt_prefix
   end
 
   test do
-    (testpath/"src/main/java/sample/hello/HelloWorld.java").write <<-EOS.undent
+    (testpath/"src/main/java/sample/hello/HelloWorld.java").write <<~EOS
       package sample.hello;
 
       import akka.actor.Props;
@@ -55,7 +60,7 @@ class Akka < Formula
         }
       }
     EOS
-    (testpath/"src/main/java/sample/hello/Greeter.java").write <<-EOS.undent
+    (testpath/"src/main/java/sample/hello/Greeter.java").write <<~EOS
       package sample.hello;
 
       import akka.actor.UntypedActor;
@@ -77,7 +82,7 @@ class Akka < Formula
 
       }
     EOS
-    (testpath/"src/main/java/sample/hello/Main.java").write <<-EOS.undent
+    (testpath/"src/main/java/sample/hello/Main.java").write <<~EOS
       package sample.hello;
 
       public class Main {
@@ -87,11 +92,11 @@ class Akka < Formula
         }
       }
     EOS
-    system "javac", "-classpath", Dir[libexec/"lib/**/*.jar"].join(":"),
+    system "#{Formula["openjdk"].bin}/javac", "-classpath", Dir[libexec/"lib/**/*.jar"].join(":"),
       testpath/"src/main/java/sample/hello/HelloWorld.java",
       testpath/"src/main/java/sample/hello/Greeter.java",
       testpath/"src/main/java/sample/hello/Main.java"
-    system "java",
+    system "#{Formula["openjdk"].bin}/java",
       "-classpath", (Dir[libexec/"lib/**/*.jar"] + [testpath/"src/main/java"]).join(":"),
       "akka.Main", "sample.hello.HelloWorld"
   end

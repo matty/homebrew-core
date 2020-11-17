@@ -1,28 +1,49 @@
 class AppEngineJava < Formula
   desc "Google App Engine for Java"
   homepage "https://cloud.google.com/appengine/docs/java/"
-  url "https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.48.zip"
-  sha256 "589f1d28e1133a861274f7936b82b4b0156f5001760b3d41884a73a4790de8be"
+  url "https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.83.zip"
+  sha256 "1d585a36303c14f4fa44790bba97d5d8b75a889ad48ffce8187333488511e43e"
+
+  # https://cloud.google.com/appengine/docs/standard/java/sdk-gcloud-migration
+  deprecate! date: "2019-07-30", because: :deprecated_upstream
+
+  # This has received at least one update after the supposed end of life date
+  # (2020-08-30), so there may be value in keeping this check around for a
+  # little while longer. Once it's clear this won't receive any more updates,
+  # this `livecheck` block should be removed, so the formula is skipped due to
+  # being deprecated.
+  livecheck do
+    url "https://cloud.google.com/appengine/docs/standard/java/setting-up-environment"
+    regex(/href=.*?appengine-java-sdk[._-]v?(\d+(?:\.\d+)+)\.zip/i)
+  end
 
   bottle :unneeded
 
-  depends_on :java => "1.7+"
+  depends_on "openjdk@8"
 
   def install
     rm Dir["bin/*.cmd"]
     libexec.install Dir["*"]
-    bin.write_exec_script %w[appcfg.sh dev_appserver.sh endpoints.sh google_sql.sh].map { |fn| libexec/"bin/#{fn}" }
+
+    %w[appcfg.sh dev_appserver.sh endpoints.sh run_java.sh].each do |f|
+      bin.install libexec/"bin/#{f}"
+    end
+
+    bin.env_script_all_files(libexec/"bin", JAVA_HOME: Formula["openjdk@8"].opt_prefix)
   end
 
   test do
     (testpath/"WEB-INF/web.xml").write "<web-app/>"
-    (testpath/"WEB-INF/appengine-web.xml").write "<appengine-web-app><threadsafe>true</threadsafe></appengine-web-app>"
+    (testpath/"WEB-INF/appengine-web.xml").write \
+      "<appengine-web-app><threadsafe>true</threadsafe></appengine-web-app>"
     Process.setsid
     IO.popen("#{bin}/dev_appserver.sh . 2>&1") do |io|
-      assert_not_nil(io.gets, "Dev App Server terminated prematurely") until $_ == "INFO: Dev App Server is now running\n"
+      until $LAST_READ_LINE == "INFO: Dev App Server is now running\n"
+        assert_not_nil io.gets, "Dev App Server terminated prematurely"
+      end
       Signal.trap "INT", "IGNORE"
       Process.kill "INT", 0
     end
-    assert_equal(130, $?.exitstatus, "Dev App Server exited with unexpected status code")
+    assert_equal(130, $CHILD_STATUS.exitstatus, "Dev App Server exited with unexpected status code")
   end
 end

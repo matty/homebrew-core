@@ -3,12 +3,16 @@ class C10t < Formula
   homepage "https://github.com/udoprog/c10t"
   url "https://github.com/udoprog/c10t/archive/1.7.tar.gz"
   sha256 "0e5779d517105bfdd14944c849a395e1a8670bedba5bdab281a0165c3eb077dc"
+  license "BSD-3-Clause"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "81effa3d15bf65343a17befabbab5ddf9e40953336d4dec27b379e62fac98439" => :sierra
-    sha256 "a7e8fa78424c478351d68d8db77577b1d93208da645e975be9dfd5696d0cf851" => :el_capitan
-    sha256 "bcda91a0b11bf1fc75fa5235901ad0c43c22b058846f8b6785daf35fcc10e9af" => :yosemite
+    sha256 "15eb238ecc210202a0aa3034005b3da3637f4d5b5a7c9e6904b151d47ece6d47" => :big_sur
+    sha256 "50bb289bc77fc39bd7fa248be991069cfa63419c8ad74329d3684a965469084d" => :catalina
+    sha256 "1bdc623e16b1854d4865ce29e7fb6e0724262ea2b998111c6ab908b5dbd5af17" => :mojave
+    sha256 "ad850802e7b161e55c19bcb89d2af5a10a536574bf25a1c45a2693299d6182d2" => :high_sierra
+    sha256 "fbfab463dd8a2af17bb3b8d07d448d8411f9393d98b1b35f6862a7dc92da7c82" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -19,8 +23,8 @@ class C10t < Formula
   # Can be removed for the next version of c10t after 1.7
   # See: https://github.com/udoprog/c10t/pull/153
   patch do
-    url "https://github.com/udoprog/c10t/commit/4a392b9f06d08c70290f4c7591e84ecdbc73d902.diff"
-    sha256 "f2d7b1772672f7769adab0eaf081887399de772e72ad1fa53caa0856d50b9a8a"
+    url "https://github.com/udoprog/c10t/commit/4a392b9f06d08c70290f4c7591e84ecdbc73d902.patch?full_index=1"
+    sha256 "7197435e9384bf93f580fab01097be549c8c8f2c54a96ba4e2ae49a5d260e297"
   end
 
   # Fix freetype detection; adapted from this upstream commit:
@@ -32,8 +36,8 @@ class C10t < Formula
 
   # Ensure zlib header is included for libpng; fixed upstream
   patch do
-    url "https://github.com/udoprog/c10t/commit/800977bb23e6b4f9da3ac850ac15dd216ece0cda.diff"
-    sha256 "4c8953bdc46b1b2063abe0d1768e7116b9092d49f16161732e39e4abb5622ec1"
+    url "https://github.com/udoprog/c10t/commit/800977bb23e6b4f9da3ac850ac15dd216ece0cda.patch?full_index=1"
+    sha256 "c7a37f866b42ff352bb58720ad6c672cde940e1b8ab79de4b6fa0be968b97b66"
   end
 
   def install

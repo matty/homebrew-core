@@ -1,37 +1,34 @@
 class Nsd < Formula
   desc "Name server daemon"
   homepage "https://www.nlnetlabs.nl/projects/nsd/"
-  url "https://www.nlnetlabs.nl/downloads/nsd/nsd-4.1.15.tar.gz"
-  sha256 "494a862cfcd26a525a4bf06306eb7ab0387b34678ac6d37767507438e3a23a4b"
+  url "https://www.nlnetlabs.nl/downloads/nsd/nsd-4.3.3.tar.gz"
+  sha256 "5fc6d81a977c0246b741da691acaab5c62830a8b38ce696021c26f372d8eed51"
+  license "BSD-3-Clause"
 
-  bottle do
-    sha256 "a151c4ee34b03883204024d75a8764110f60b27ecd16833565a462dd518aefef" => :sierra
-    sha256 "a88214c56bcecdca5c9e661eb3a98aa72369ecea4d65cfe0729572261d1a2c19" => :el_capitan
-    sha256 "e735828b0cb4220ae7ead4d6d612844ac9901da5f4d1943debdfb53cfeb32144" => :yosemite
+  # We check the GitHub repo tags instead of
+  # https://www.nlnetlabs.nl/downloads/nsd/ since the first-party site has a
+  # tendency to lead to an `execution expired` error.
+  livecheck do
+    url "https://github.com/NLnetLabs/nsd.git"
+    regex(/^NSD[._-]v?(\d+(?:[-_.]\d+)+).REL$/i)
   end
 
-  option "with-root-server", "Allow NSD to run as a root name server"
-  option "with-bind8-stats", "Enable BIND8-like NSTATS & XSTATS"
-  option "with-ratelimit", "Enable rate limiting"
-  option "with-zone-stats", "Enable per-zone statistics"
+  bottle do
+    sha256 "b3eeb6e4a4145b3384982aa2330690834373f547235a659404eefd974163b199" => :big_sur
+    sha256 "d2d0731a5a4a03fff114250debcc1ff5fa6fe15faf77351afda9a2ccc6cdfbd0" => :catalina
+    sha256 "1f0661c9656ab0d0821a9eeb5b990c9eb6a088654e5406318577084296ab8119" => :mojave
+    sha256 "189a5b486bbfdcc0571e89f67d5f4f11474ce1fe2fb9e5ca720ced3662aba054" => :high_sierra
+  end
 
   depends_on "libevent"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --sysconfdir=#{etc}
-      --with-libevent=#{Formula["libevent"].opt_prefix}
-      --with-ssl=#{Formula["openssl"].opt_prefix}
-    ]
-
-    args << "--enable-root-server" if build.with? "root-server"
-    args << "--enable-bind8-stats" if build.with? "bind8-stats"
-    args << "--enable-ratelimit" if build.with? "ratelimit"
-    args << "--enable-zone-stats" if build.with? "zone-stats"
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--sysconfdir=#{etc}",
+                          "--localstatedir=#{var}",
+                          "--with-libevent=#{Formula["libevent"].opt_prefix}",
+                          "--with-ssl=#{Formula["openssl@1.1"].opt_prefix}"
     system "make", "install"
   end
 

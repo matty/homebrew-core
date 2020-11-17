@@ -1,41 +1,33 @@
 class Libpst < Formula
   desc "Utilities for the PST file format"
-  homepage "http://www.five-ten-sg.com/libpst/"
-  url "http://www.five-ten-sg.com/libpst/packages/libpst-0.6.70.tar.gz"
-  sha256 "19981c0661305d093e7df8cf579662c6157ffb38a7873091cfc9e900fb4667d4"
+  homepage "https://www.five-ten-sg.com/libpst/"
+  url "https://www.five-ten-sg.com/libpst/packages/libpst-0.6.75.tar.gz"
+  sha256 "4ca98fed8ba208d902c954d82eaf2bf5e071c609df695ec4eb34af110f719987"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://www.five-ten-sg.com/libpst/packages/"
+    regex(/href=.*?libpst[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "19b8a432c26fc588ae5d14bc289a4d988235b8a5b249b4f92ad0ac42432b360c" => :sierra
-    sha256 "2a33a8240ce33640057d771f9c61e5db9d632a62d316d09ef75282491d2703be" => :el_capitan
-    sha256 "bc19125e7bbb6ffa5226fead3f68cca6eaa48c61b8437ae857bb440eb3e70c21" => :yosemite
+    sha256 "5c106b4d8bab127e674d0d2c8d69b60431b0eda93ef9c6efcd46f3aeb8aabd11" => :catalina
+    sha256 "bdd85c6f92d23eb95c0c0211857e2371dfc2853589b6dbaba4a02fdc28974d36" => :mojave
+    sha256 "77a6520ed29669112fb05cbfcfaccf95ba70522ec2e3f361a176a5570953ae2f" => :high_sierra
   end
 
-  option "with-pst2dii", "Build pst2dii using gd"
-
-  deprecated_option "pst2dii" => "with-pst2dii"
-
-  depends_on :python => :optional
   depends_on "pkg-config" => :build
-  depends_on "gd" if build.with? "pst2dii"
   depends_on "boost"
   depends_on "gettext"
   depends_on "libgsf"
-  depends_on "boost-python" if build.with? "python"
 
   def install
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
+      --disable-python
     ]
-
-    args << "--disable-dii" if build.with? "pst2dii"
-
-    if build.with? "python"
-      args << "--enable-python" << "--with-boost-python=mt"
-    else
-      args << "--disable-python"
-    end
 
     system "./configure", *args
     system "make"

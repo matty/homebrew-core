@@ -1,21 +1,27 @@
 class Voldemort < Formula
   desc "Distributed key-value storage system"
-  homepage "http://www.project-voldemort.com/"
-  url "https://github.com/voldemort/voldemort/archive/release-1.10.23-cutoff.tar.gz"
-  sha256 "650981e1acc25dd043f39bef4af491defefa09987acdd32554d8ee0beed967c7"
+  homepage "https://www.project-voldemort.com/"
+  url "https://github.com/voldemort/voldemort/archive/release-1.10.26-cutoff.tar.gz"
+  sha256 "8bd41b53c3b903615d281e7277d5a9225075c3d00ea56c6e44d73f6327c73d55"
+  license "Apache-2.0"
+  revision 1
+
+  livecheck do
+    url :stable
+    regex(/(?:release-)?v?(\d+(?:\.\d+)+)(?:-cutoff)?/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9d4fe894dafb965550b30e1ab8bbbfed1019fb33be830db3779b596d13212ad4" => :sierra
-    sha256 "fa17ebb844d76054267dba56931e4434328f3c69c1feae1c1f259cf16368baf7" => :el_capitan
-    sha256 "992c7ff4c25d8374de15c28b95cefc2b8f14c28d0d30bd68bc92f342f7c6f7bb" => :yosemite
+    sha256 "0470f59cbc9dadeff4f18bafddc19f09a81f536bbdcf494982f119451d927bc6" => :catalina
+    sha256 "1c6b5439d0223165729b7f036fe7c11892347e600e8f7e1f28e2595121c26c2f" => :mojave
+    sha256 "301c2913a8e95fd9e1971cf56867b30ddeded2be1c43664011fa909b772e58bd" => :high_sierra
   end
 
   depends_on "gradle" => :build
-  depends_on :java => "1.7+"
+  depends_on "openjdk@8"
 
   def install
-    ENV.java_cache
     system "./gradlew", "build", "-x", "test"
     libexec.install %w[lib dist contrib]
     bin.install Dir["bin/*{.sh,.py}"]
@@ -23,8 +29,8 @@ class Voldemort < Formula
     pkgshare.install "config" => "config-examples"
     (etc/"voldemort").mkpath
     env = {
-      :VOLDEMORT_HOME => libexec,
-      :VOLDEMORT_CONFIG_DIR => etc/"voldemort",
+      VOLDEMORT_HOME:       libexec,
+      VOLDEMORT_CONFIG_DIR: etc/"voldemort",
     }
     bin.env_script_all_files(libexec/"bin", env)
   end

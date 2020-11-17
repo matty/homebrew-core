@@ -1,20 +1,26 @@
 class Libwpg < Formula
   desc "Library for reading and parsing Word Perfect Graphics format"
   homepage "https://libwpg.sourceforge.io/"
-  url "http://dev-www.libreoffice.org/src/libwpg-0.3.1.tar.bz2"
-  sha256 "29049b95895914e680390717a243b291448e76e0f82fb4d2479adee5330fbb59"
+  url "https://dev-www.libreoffice.org/src/libwpg-0.3.3.tar.xz"
+  sha256 "99b3f7f8832385748582ab8130fbb9e5607bd5179bebf9751ac1d51a53099d1c"
+
+  livecheck do
+    url "https://dev-www.libreoffice.org/src/"
+    regex(/href=["']?libwpg[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "556eba841e601456afef583cf518dea88ab6dfee13b9cd58babcbee8f3215ce4" => :sierra
-    sha256 "35c9a15742933b472934acaf8c97d1e551485da7325c9cbca5e06e61bb8a3ced" => :el_capitan
-    sha256 "411ca160d35675435a00916c0b489ca4901dbc363ab8d7ad1c77fabfd80a8b10" => :yosemite
-    sha256 "9ac0c4445fe2d1b7645ade070b070740b9ec3b5a0e1cf6908791b3b4649df9d6" => :mavericks
+    sha256 "d550bf02dfa09143d6b6578a541327b2cd59334c46765652162ed98b63e63e83" => :big_sur
+    sha256 "d12ae12e729a2d2e327f07fe927e02dd15151a987b7cab0a19ca94ee15f8cfde" => :catalina
+    sha256 "162171b22e6df4f4f4169634fc6872d40bea9a17a9c49e01dd737e9d74b1d445" => :mojave
+    sha256 "dd0c4dc2a9369d7d6b97f930dd63e6f4ddd9d12d0372c12e13d2a22cf6a0cd06" => :high_sierra
+    sha256 "cf9ab0d990b3fccb101312999f6d0ea5980990edd279ae994cf3c7f9c33a7d55" => :sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libwpd"
   depends_on "librevenge"
+  depends_on "libwpd"
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
@@ -23,15 +29,19 @@ class Libwpg < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libwpg/libwpg.h>
       int main() {
         return libwpg::WPG_AUTODETECT;
       }
     EOS
-    system ENV.cc, "test.cpp", "-o", "test",
-                   "-lrevenge-0.0", "-I#{Formula["librevenge"].include}/librevenge-0.0",
-                   "-lwpg-0.3", "-I#{include}/libwpg-0.3"
+    system ENV.cc, "test.cpp",
+                   "-I#{Formula["librevenge"].opt_include}/librevenge-0.0",
+                   "-I#{include}/libwpg-0.3",
+                   "-L#{Formula["librevenge"].opt_lib}",
+                   "-L#{lib}",
+                   "-lwpg-0.3", "-lrevenge-0.0",
+                   "-o", "test"
     system "./test"
   end
 end

@@ -1,26 +1,37 @@
 class MidnightCommander < Formula
   desc "Terminal-based visual file manager"
   homepage "https://www.midnight-commander.org/"
-  url "https://www.midnight-commander.org/downloads/mc-4.8.18.tar.xz"
-  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/m/mc/mc_4.8.18.orig.tar.xz"
-  sha256 "f7636815c987c1719c4f5de2dcd156a0e7d097b1d10e4466d2bdead343d5bece"
-  head "https://github.com/MidnightCommander/mc.git"
+  url "https://www.midnight-commander.org/downloads/mc-4.8.25.tar.xz"
+  mirror "https://ftp.osuosl.org/pub/midnightcommander/mc-4.8.25.tar.xz"
+  sha256 "ffc19617f20ebb23330acd3998b7fd559a042d172fa55746d53d246697b2548a"
+  license "GPL-3.0"
 
-  bottle do
-    sha256 "17a0c9039bd8f1c862ea282a3305d91b75759a3c6200056e5e1c4ff38ba1e9ff" => :sierra
-    sha256 "7f0bc00fdfa069c8139f3aebff3621824dfa4b5f6c6b4688336162615a2bb4fa" => :el_capitan
-    sha256 "033b658071cefd0af127e1a9a88cf5bddd9bafc50b583df9f6f850f2a457d34d" => :yosemite
+  livecheck do
+    url "https://ftp.osuosl.org/pub/midnightcommander/"
+    regex(/href=.*?mc[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  option "without-nls", "Build without Native Language Support"
+  bottle do
+    sha256 "2c36f252c47b8ecff2fa4afb4191a963af7c3d30a8aeb267a40f967873a01643" => :catalina
+    sha256 "224d6aa6577e51952833ee65888bb99eacb89508dc9ac2f82a0e679b4635d7e3" => :mojave
+    sha256 "79c2208b2097941cf3a792f47ad1f280ddbc3add7bd631084484163b7ba14ae9" => :high_sierra
+  end
+
+  head do
+    url "https://github.com/MidnightCommander/mc.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
+  end
 
   depends_on "pkg-config" => :build
   depends_on "glib"
-  depends_on "openssl"
-  depends_on "s-lang"
   depends_on "libssh2"
+  depends_on "openssl@1.1"
+  depends_on "s-lang"
 
-  conflicts_with "minio-mc", :because => "Both install a `mc` binary"
+  conflicts_with "minio-mc", because: "both install an `mc` binary"
 
   def install
     args = %W[
@@ -33,8 +44,10 @@ class MidnightCommander < Formula
       --enable-vfs-sftp
     ]
 
-    args << "--disable-nls" if build.without? "nls"
-
+    # Fix compilation bug on macOS 10.13 by pretending we don't have utimensat()
+    # https://github.com/MidnightCommander/mc/pull/130
+    ENV["ac_cv_func_utimensat"] = "no" if MacOS.version >= :high_sierra
+    system "./autogen.sh" if build.head?
     system "./configure", *args
     system "make", "install"
   end

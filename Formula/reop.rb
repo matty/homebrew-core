@@ -1,16 +1,16 @@
 class Reop < Formula
   desc "Encrypted keypair management"
-  homepage "http://www.tedunangst.com/flak/post/reop"
-  url "http://www.tedunangst.com/flak/files/reop-2.1.0.tgz"
-  sha256 "e429c7ff47f130bd465eaa0c23a1783b476bc484d32793592b54a568b55e49af"
-  revision 2
+  homepage "https://flak.tedunangst.com/post/reop"
+  url "https://flak.tedunangst.com/files/reop-2.1.1.tgz"
+  mirror "https://bo.mirror.garr.it/OpenBSD/distfiles/reop-2.1.1.tgz"
+  sha256 "fa8ae058c51efec5bde39fab15b4275e6394d9ab1dd2190ffdba3cf9983fdcac"
 
   bottle do
     cellar :any
-    sha256 "0095ee7bce7209fa51368ba36efd50cbbf77580abaf0a299ff3e79a32f78f4b1" => :sierra
-    sha256 "b1075b4d0f121d9f60a1f07ab4488ce225fcd151c1300a5b895bbe26575472a1" => :el_capitan
-    sha256 "024324a71df875f40d2b4a596ce6b97d7e5606496140a72c532d92dca5541125" => :yosemite
-    sha256 "c46860b76c7cef21c71d8dd369911c8c73d846efab659e3ca476bd6bc5730d56" => :mavericks
+    sha256 "9a871be9b2fa42aa2d9e5035712733c4b764c4eb7497958389018f0451a16cd6" => :catalina
+    sha256 "ef7c8dc250f93b18a84fc4b22006f1b5c59b34bf5d3fd3caa07da03184a0cf61" => :mojave
+    sha256 "e0f5cdb5c8b3af4919afa8b442eba703dec9ef9f5b7a25cbe56440e6c646d3b2" => :high_sierra
+    sha256 "1fdb2fd33a36c6cc57971c3399e2536ee2548acfde8761f0536cee33b2f61354" => :sierra
   end
 
   depends_on "libsodium"
@@ -22,7 +22,7 @@ class Reop < Formula
   end
 
   test do
-    (testpath/"pubkey").write <<-EOS.undent
+    (testpath/"pubkey").write <<~EOS
       -----BEGIN REOP PUBLIC KEY-----
       ident:root
       RWRDUxZNDeX4wcynGeCr9Bro6Ic7s1iqi1XHYacEaHoy+7jOP+ZE0yxR+2sfaph2MW15e8eUZvvI
@@ -30,11 +30,11 @@ class Reop < Formula
       -----END REOP PUBLIC KEY-----
     EOS
 
-    (testpath/"msg").write <<-EOS.undent
+    (testpath/"msg").write <<~EOS
       testing one two three four
     EOS
 
-    (testpath/"sig").write <<-EOS.undent
+    (testpath/"sig").write <<~EOS
       -----BEGIN REOP SIGNATURE-----
       ident:root
       RWQWTQ3l+MHMpx8RO/+BX/xxHn0PiSneiJ1Au2GurAmx4L942nZFBRDOVw2xLzvp/RggTVTZ46k+

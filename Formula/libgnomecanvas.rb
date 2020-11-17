@@ -3,23 +3,27 @@ class Libgnomecanvas < Formula
   homepage "https://developer.gnome.org/libgnomecanvas/2.30/"
   url "https://download.gnome.org/sources/libgnomecanvas/2.30/libgnomecanvas-2.30.3.tar.bz2"
   sha256 "859b78e08489fce4d5c15c676fec1cd79782f115f516e8ad8bed6abcb8dedd40"
-  revision 1
+  revision 4
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "bece26f3628d89996c516bcc219f0d2ef8a52c13e562fe42f0a976d0d1cd63c0" => :sierra
-    sha256 "f16e2324c0d9a2f75f4133833230b9e51d9d5ac09132de0565b9556f81c6e301" => :el_capitan
-    sha256 "d92afd4e619d083844ab2eb3f36e8775512fb896c5caa677456c5d527e9d81e6" => :yosemite
-    sha256 "3ba01178cdc04412a402b043cc89fc59269573347c704f9c37281a84bf111988" => :mavericks
-    sha256 "c3aac3d57c825f6634d07130fb868e5325fd405a0e7583ab28756fca4515508d" => :mountain_lion
+    sha256 "b039344fb1a268478cc71fea25dad2f815157fa02a1041bec01d2c95dabe94c2" => :big_sur
+    sha256 "775379b446e5fd6bcb13863e5c5d3993b382d84b8e68b4f06fdf6d758921cb81" => :catalina
+    sha256 "9ccb81e0493aa409725fe76ae345d5910be9ea3c782e4d9a46c24c42b0537150" => :mojave
+    sha256 "3c4443a3944a6834a107e2752c95174b49c83c3213be2ac3df319bfd900c22e6" => :high_sierra
+    sha256 "9b2e28d2331f1c24d8b320cc6509e5da3e3c748fac44d078e1f95c6c701b7b10" => :sierra
   end
 
-  depends_on "pkg-config" => :build
   depends_on "intltool" => :build
-  depends_on "libglade"
-  depends_on "libart"
+  depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "gtk+"
+  depends_on "libart"
+  depends_on "libglade"
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -30,7 +34,7 @@ class Libgnomecanvas < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libgnomecanvas/libgnomecanvas.h>
 
       int main(int argc, char *argv[]) {

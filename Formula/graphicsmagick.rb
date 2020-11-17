@@ -1,95 +1,57 @@
 class Graphicsmagick < Formula
   desc "Image processing tools collection"
   homepage "http://www.graphicsmagick.org/"
-  url "https://downloads.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.25/GraphicsMagick-1.3.25.tar.xz"
-  sha256 "d64bfa52d2e0730eff9ce3ed51d4fc78dbb68e2adaa317b2bb3c56e6ee61ac9f"
+  url "https://downloads.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.35/GraphicsMagick-1.3.35.tar.xz"
+  sha256 "188a8d6108fea87a0208723e8d206ec1d4d7299022be8ce5d0a9720509250250"
+  head "http://hg.code.sf.net/p/graphicsmagick/code", using: :hg
 
-  head "http://hg.code.sf.net/p/graphicsmagick/code", :using => :hg
-
-  bottle do
-    sha256 "aadcff3e84a492354073cb59d107b6371c01c0863ce947d03b48a5960914286b" => :sierra
-    sha256 "e0e72ba85c6cc4d5acb13d093f2b3c59f02f0d81414bb797775d161e17ae2ed1" => :el_capitan
-    sha256 "36c0f4a292253bfeb4184b8b8033c98a767891fd97d3cd53060a8be3432f71bb" => :yosemite
-    sha256 "6846286eb57e624fab71cc5d5b1066c16636dae781d821caf55c9f181f73c425" => :mavericks
+  livecheck do
+    url :stable
   end
 
-  option "with-quantum-depth-8", "Compile with a quantum depth of 8 bit"
-  option "with-quantum-depth-16", "Compile with a quantum depth of 16 bit (default)"
-  option "with-quantum-depth-32", "Compile with a quantum depth of 32 bit"
-  option "without-magick-plus-plus", "disable build/install of Magick++"
-  option "without-svg", "Compile without svg support"
-  option "with-perl", "Build PerlMagick; provides the Graphics::Magick module"
+  bottle do
+    sha256 "01d63807d02cc20cecc7fea250cfd300135836cb8a7451315b2f7430a607d1ef" => :big_sur
+    sha256 "e5517b416b979debeafdf4fc7a408e09f77c2a8f93b76051d6707f2a6750d0c2" => :catalina
+    sha256 "26ba769c14c9ab3b4de02afcb3735b4f1256f23e822166934152c68939508245" => :mojave
+    sha256 "8d27e0e2ee2ce56c77a65d691ae893b1ac4ec38e62ee78111964023800756ac5" => :high_sierra
+  end
 
   depends_on "pkg-config" => :build
-  depends_on "libtool" => :run
-  depends_on "jpeg" => :recommended
-  depends_on "libpng" => :recommended
-  depends_on "libtiff" => :recommended
-  depends_on "freetype" => :recommended
-  depends_on "little-cms2" => :optional
-  depends_on "jasper" => :optional
-  depends_on "libwmf" => :optional
-  depends_on "ghostscript" => :optional
-  depends_on "webp" => :optional
-  depends_on :x11 => :optional
+  depends_on "freetype"
+  depends_on "jasper"
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libtiff"
+  depends_on "libtool"
+  depends_on "little-cms2"
+  depends_on "webp"
+
+  uses_from_macos "bzip2"
+  uses_from_macos "libxml2"
+  uses_from_macos "zlib"
 
   skip_clean :la
 
-  def ghostscript_fonts?
-    File.directory? "#{HOMEBREW_PREFIX}/share/ghostscript/fonts"
-  end
-
   def install
-    quantum_depth = [8, 16, 32].select { |n| build.with? "quantum-depth-#{n}" }
-    if quantum_depth.length > 1
-      odie "graphicsmagick: --with-quantum-depth-N options are mutually exclusive"
-    end
-    quantum_depth = quantum_depth.first || 16 # user choice or default
-
     args = %W[
       --prefix=#{prefix}
       --disable-dependency-tracking
-      --enable-shared
-      --disable-static
-      --with-modules
-      --without-lzma
       --disable-openmp
-      --with-quantum-depth=#{quantum_depth}
+      --disable-static
+      --enable-shared
+      --with-modules
+      --with-quantum-depth=16
+      --without-lzma
+      --without-x
+      --without-gslib
+      --with-gs-font-dir=#{HOMEBREW_PREFIX}/share/ghostscript/fonts
+      --without-wmf
     ]
-
-    args << "--without-gslib" if build.without? "ghostscript"
-    args << "--with-gs-font-dir=#{HOMEBREW_PREFIX}/share/ghostscript/fonts" if build.without? "ghostscript"
-    args << "--without-magick-plus-plus" if build.without? "magick-plus-plus"
-    args << "--with-perl" if build.with? "perl"
-    args << "--with-webp=yes" if build.with? "webp"
-    args << "--without-x" if build.without? "x11"
-    args << "--without-ttf" if build.without? "freetype"
-    args << "--without-xml" if build.without? "svg"
-    args << "--without-lcms2" if build.without? "little-cms2"
 
     # versioned stuff in main tree is pointless for us
     inreplace "configure", "${PACKAGE_NAME}-${PACKAGE_VERSION}", "${PACKAGE_NAME}"
     system "./configure", *args
     system "make", "install"
-    if build.with? "perl"
-      cd "PerlMagick" do
-        # Install the module under the GraphicsMagick prefix
-        system "perl", "Makefile.PL", "INSTALL_BASE=#{prefix}"
-        system "make"
-        system "make", "install"
-      end
-    end
-  end
-
-  def caveats
-    if build.with? "perl"
-      <<-EOS.undent
-        The Graphics::Magick perl module has been installed under:
-
-          #{lib}
-
-      EOS
-    end
   end
 
   test do

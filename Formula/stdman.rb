@@ -1,16 +1,22 @@
 class Stdman < Formula
-  desc "Formatted C++11/14 stdlib man pages from cppreference.com"
+  desc "Formatted C++11/14/17 stdlib man pages from cppreference.com"
   homepage "https://github.com/jeaye/stdman"
-  url "https://github.com/jeaye/stdman/archive/v0.2.tar.gz"
-  sha256 "9591835b0f57f88698d7c46ef645064a4af646644535cf2a052152656d73329a"
+  url "https://github.com/jeaye/stdman/archive/2019.08.27.tar.gz"
+  sha256 "68e10f10218d32723f0c2471fbaad20dc3c73a74e91a6956981d3cea8c4776a5"
+  license "MIT"
+  version_scheme 1
+  head "https://github.com/jeaye/stdman.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "b275709fe59e30b9c7c0cbdbc536ab8f792da4bf247dc12a2a30bcba3431d841" => :sierra
-    sha256 "c68756d067719ed712b672ade33586d24588e6806ce2aeaaafa4e6e7697b3032" => :el_capitan
-    sha256 "bdafb5c1461c5166c682fa59617bc7d29c8c37eda3da862e5ce213a85fb08813" => :yosemite
-    sha256 "a43224e47bc29cd6ddd3f18d53793bec65a44ac8107082bb492cfc49103ff22c" => :mavericks
-    sha256 "b00742508c8b2dffe738114e606a887d189a8ed79653531b9f969e2e90a6d3d4" => :mountain_lion
+    sha256 "5ac1a49ad04d00ad240a8dea6ff1069b20b3166d90772db5865fc2ac25ec7c98" => :big_sur
+    sha256 "0c7500e80257d9639866f2216199b605d1bb33abb3a11cca5f8c8baae5807e60" => :catalina
+    sha256 "a598b69cd962050da6e5ec4bbfb844e5c84ad9a6b2afc4aa8670591cab05090e" => :mojave
+    sha256 "a1d5c1b4e19ae36a4526f71a47c1868547fbb573579977d299accb678ec93234" => :high_sierra
+  end
+
+  on_linux do
+    depends_on "man-db" => :test
   end
 
   def install

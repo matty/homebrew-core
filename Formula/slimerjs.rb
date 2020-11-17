@@ -1,8 +1,9 @@
 class Slimerjs < Formula
   desc "Scriptable browser for Web developers"
   homepage "https://slimerjs.org/"
-  url "https://github.com/laurentj/slimerjs/archive/0.10.2.tar.gz"
-  sha256 "282b7522e5fcdf37258a7753441e4b62dcdde22f3a2ab8554f29fc9750c41a8d"
+  url "https://github.com/laurentj/slimerjs/archive/1.0.0.tar.gz"
+  sha256 "6fd07fa6953e4e497516dd0a7bc5eb2f21c68f9e60bdab080ac2c86e8ab8dfb2"
+  license "MPL-2.0"
   head "https://github.com/laurentj/slimerjs.git"
 
   bottle :unneeded
@@ -16,9 +17,10 @@ class Slimerjs < Formula
     bin.install_symlink libexec/"slimerjs"
   end
 
-  def caveats; <<-EOS.undent
-    The configuration file was installed in:
-      #{libexec}/application.ini
+  def caveats
+    <<~EOS
+      The configuration file was installed in:
+        #{libexec}/application.ini
     EOS
   end
 

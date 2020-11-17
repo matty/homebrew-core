@@ -1,23 +1,27 @@
 class Testssl < Formula
   desc "Tool which checks for the support of TLS/SSL ciphers and flaws"
   homepage "https://testssl.sh/"
-  url "https://github.com/drwetter/testssl.sh/archive/v2.8rc3.tar.gz"
-  version "2.8rc3"
-  sha256 "e36a60acc0aa09191ff2f86762cd07925630df82498d48d81d86e3b7402a3312"
-
-  head "https://github.com/drwetter/testssl.sh.git"
+  url "https://github.com/drwetter/testssl.sh/archive/3.0.2.tar.gz"
+  sha256 "cfca31a0e5fd0e706002e7c1b044c11be5140091f0e22f0ae5b9aa644ef50da2"
+  license "GPL-2.0"
+  head "https://github.com/drwetter/testssl.sh.git", branch: "3.1dev"
 
   bottle :unneeded
 
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
-    ENV.prepend_create_path "PATH", Formula["openssl"].opt_prefix.to_s
     bin.install "testssl.sh"
-    bin.env_script_all_files(libexec+"bin", :PATH => ENV["PATH"])
+    man1.install "doc/testssl.1"
+    prefix.install "etc"
+    env = {
+      PATH:                "#{Formula["openssl@1.1"].opt_bin}:$PATH",
+      TESTSSL_INSTALL_DIR: prefix,
+    }
+    bin.env_script_all_files(libexec/"bin", env)
   end
 
   test do
-    system "#{bin}/testssl.sh", "--local"
+    system "#{bin}/testssl.sh", "--local", "--warnings", "off"
   end
 end

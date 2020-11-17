@@ -1,17 +1,16 @@
 class Vttest < Formula
   desc "Test compatibility of VT100-compatible terminals"
-  homepage "http://invisible-island.net/vttest/"
-  url "ftp://invisible-island.net/vttest/vttest-20140305.tgz"
-  mirror "http://invisible-mirror.net/archives/vttest/vttest-20140305.tgz"
-  sha256 "0168aa34061d4470a68b0dd0781a2a9e2bbfb1493e540c99f615b867a11cbf83"
+  homepage "https://invisible-island.net/vttest/"
+  url "https://invisible-mirror.net/archives/vttest/vttest-20200920.tgz"
+  sha256 "c9619d6bbe5804181dda18ec2901d51ce5551259565b9ccb13d5ef86b3bfb301"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "360d6eaa04e1a147eee360fed7d66ab779acc0a0ab3b51b1916cdf4d4a7f11f1" => :sierra
-    sha256 "e758b4d59d1322b736f247c9ebbabe3c73ad06b324120997c6af784b8a3ab3f7" => :el_capitan
-    sha256 "2584fb77678acad877286416b79db38673320ec028e6a6add37b987b150af648" => :yosemite
-    sha256 "e2faf045a9a09d49e64f104bf65ca7a8fabf4552a50621bd22206e80ef579844" => :mavericks
-    sha256 "acb979d3b90f828d2b504b9f0872ad4eb3c421d30872ad291df91123038433d4" => :mountain_lion
+    sha256 "16cefda230b7a7bff904595e5a4b528d51c46096994a0d3077d7ae687ecdf0e5" => :big_sur
+    sha256 "18550bfedc0f4b511f56c564509b911b2a62a26b24e6b9d95093e44300be1ece" => :catalina
+    sha256 "e3bda0ee8aa89fe4197dddb7fcddaf510424b929667a029a4c05a67824e0a46b" => :mojave
+    sha256 "80644da812e6ee1c267ef9007ae5d1fb65538e732f18c1dc3851860a4e0495ad" => :high_sierra
   end
 
   def install
@@ -21,6 +20,6 @@ class Vttest < Formula
   end
 
   test do
-    assert File.exist? bin/"vttest"
+    assert_match version.to_s, shell_output(bin/"vttest -V")
   end
 end

@@ -3,14 +3,23 @@ require "language/node"
 class Bower < Formula
   desc "Package manager for the web"
   homepage "https://bower.io/"
-  url "https://registry.npmjs.org/bower/-/bower-1.8.0.tgz"
-  sha256 "df634fcbb57f8877914ceeff794c88bca0c8a262d9c9f12f08c37ab13599aaa6"
+  # Use Github tarball to avoid bowers npm 4+ incompatible bundled dep usage
+  url "https://github.com/bower/bower/archive/v1.8.8.tar.gz"
+  sha256 "3faf6c6ba0f96a8ee7ca7329911e683131198cbdd9a25ee4976b46f90357d481"
+  license "MIT"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "eb640d5ee479ffe61ee5e1128c15c86af0042733789025c387bc9145758dc130" => :sierra
-    sha256 "dd8959cfbb739113122d4ecfe329cbd25fc217b11a9b7e8c4ca1a1cbad3d71e6" => :el_capitan
-    sha256 "bc7b25bbac3df03684497f02311d1990a858ee90346f9f196875e564db99f6d6" => :yosemite
+    sha256 "1c12654ea37e771168b7bf3c9d0efb25f2fd0c7690e44f1d8d4630a7625787cf" => :big_sur
+    sha256 "a93aa8f191f1c92fd1ff913baa979ba8f05c151ee488019e54179b38b7568888" => :catalina
+    sha256 "82494967ba46ded634fb761e4fb166ab1d27605ba7514c4248ada0a00b1ce0cd" => :mojave
+    sha256 "077291dbebb25e070a3387fb9e38f3400a35d1551fbf97936643061be4d522b3" => :high_sierra
+    sha256 "2a5689573d8841a0ce8be340aea74f0585c3537340f9d53746fefd21cada43f5" => :sierra
   end
 
   depends_on "node"
@@ -22,6 +31,6 @@ class Bower < Formula
 
   test do
     system bin/"bower", "install", "jquery"
-    assert File.exist?("bower_components/jquery/dist/jquery.min.js"), "jquery.min.js was not installed"
+    assert_predicate testpath/"bower_components/jquery/dist/jquery.min.js", :exist?, "jquery.min.js was not installed"
   end
 end

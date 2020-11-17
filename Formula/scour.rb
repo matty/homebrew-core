@@ -3,23 +3,25 @@ class Scour < Formula
 
   desc "SVG file scrubber"
   homepage "https://www.codedread.com/scour/"
-  url "https://files.pythonhosted.org/packages/cd/3e/b914c3264766621992b0a381ccd3e7342d64640dc560f6aa411cc9594265/scour-0.35.tar.gz"
-  sha256 "7b33a0fc7ed578e7d1fcf4f68eb4c38cd080c243ea57537840062d37cd0d3c8e"
+  url "https://github.com/scour-project/scour/archive/v038.1.tar.gz"
+  sha256 "0d2f88170305d54b143410276ff84da98e3ae9c36abe52430d9c2b510fa77884"
+  license "Apache-2.0"
+  revision 1
   head "https://github.com/scour-project/scour.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e57966bafb1b3cf28e65271b41611feff351b43f5d98d886fc60d32c20ef2d51" => :sierra
-    sha256 "5356058903cf2bf00d40faed108eeda659e15e650299c7b66061d6d96d401563" => :el_capitan
-    sha256 "67139e0349e79d1627362c91f7e993bf966565ee20babae4964d4cb1db8a485d" => :yosemite
-    sha256 "842f1b4f78abb257bb70a08245a60628da52bf18c656e98151ed56db2291eda6" => :mavericks
+    sha256 "59c8544ab5300901bbe06b2279cfd2e81db2b2341506b14522d8f9d1630a3f00" => :big_sur
+    sha256 "f0cbfbf1df3579bbd13c1ad1ff27943f89fc79adb1c81d34fc1a8455eec793ab" => :catalina
+    sha256 "206139ff183f844e57b8b93a9689d5e2120c5fe9e6d3d618bc5fc884d306de7b" => :mojave
+    sha256 "969e45c7db350a7506591221ffdf774b2c272bc14bca989a6241612ee4768f6f" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
 
   resource "six" do
-    url "https://files.pythonhosted.org/packages/b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz"
-    sha256 "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a"
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
   end
 
   def install
@@ -28,6 +30,6 @@ class Scour < Formula
 
   test do
     system "#{bin}/scour", "-i", test_fixtures("test.svg"), "-o", "scrubbed.svg"
-    assert File.exist? "scrubbed.svg"
+    assert_predicate testpath/"scrubbed.svg", :exist?
   end
 end

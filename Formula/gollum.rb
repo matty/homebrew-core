@@ -1,16 +1,18 @@
 class Gollum < Formula
-  desc "n:m message multiplexer written in Go"
+  desc "Go n:m message multiplexer"
   homepage "https://github.com/trivago/gollum"
-  url "https://github.com/trivago/gollum/archive/v0.4.4.tar.gz"
-  sha256 "54e69fcf5f07b2ff543415218faafa85dd83b095a1dbf0188f4c995d6b5a87cf"
+  url "https://github.com/trivago/gollum/archive/v0.5.4.tar.gz"
+  sha256 "ba2299c7946385704b7952a77f28e6a7bd243f350e31e7009e21586ec9ca5494"
+  license "Apache-2.0"
   head "https://github.com/trivago/gollum.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ac625b0f6a64c1fdc3aa2fc5dd5cf56dcd51760be3dfff3da6dbee6e04b9c867" => :sierra
-    sha256 "80d400f2b90777eeb9ccc7d74584d10dc17227935866efc5125d4e5630953a93" => :el_capitan
-    sha256 "e6879f0937f32ba566ac7be3ce5a37c767588971d13bafa27e71c381d2c51f57" => :yosemite
-    sha256 "aa3dcde3d7cbea3df1738ebcce89f08c8dcce01ec5fe1693c4192c085604660b" => :mavericks
+    sha256 "a6d6cfa922dc4fab92280d6b608f73ed620b9042c16c2394ea28d439d7360db4" => :big_sur
+    sha256 "bf987d3c10c67153ffc11b1926162882d00cdf23261516e614181dafb67eb70c" => :catalina
+    sha256 "d2d022b779e4290e98d0783232b00c79bf46fc08d9ad3bea0dd352071e2995f3" => :mojave
+    sha256 "afaf112d706150eeb5f8e5152a7b88ef18fc944fdd01dc8a46357a3c8ce13f8b" => :high_sierra
+    sha256 "9e82aadccabe2a1224658cc824536e061d617355bb7f7eda5a889e117c3bb472" => :sierra
   end
 
   depends_on "go" => :build
@@ -25,16 +27,21 @@ class Gollum < Formula
   end
 
   test do
-    (testpath/"test.conf").write <<-EOS.undent
-    - "consumer.Profiler":
-        Enable: true
-        Runs: 100000
-        Batches: 100
-        Characters: "abcdefghijklmnopqrstuvwxyz .,!;:-_"
-        Message: "%256s"
-        Stream: "profile"
-    EOS
+    (testpath/"test.conf").write <<~EOS
+      "Profiler":
+          Type: "consumer.Profiler"
+          Runs: 100000
+          Batches: 100
+          Characters: "abcdefghijklmnopqrstuvwxyz .,!;:-_"
+          Message: "%256s"
+          Streams: "profile"
+          KeepRunning: false
+          ModulatorRoutines: 0
 
-    assert_match "parsed as ok", shell_output("#{bin}/gollum -tc #{testpath}/test.conf")
+      "Benchmark":
+          Type: "producer.Benchmark"
+          Streams: "profile"
+    EOS
+    assert_match "Config OK.", shell_output("#{bin}/gollum -tc #{testpath}/test.conf")
   end
 end

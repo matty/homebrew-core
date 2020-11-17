@@ -1,17 +1,19 @@
 class Quazip < Formula
   desc "C++ wrapper over Gilles Vollant's ZIP/UNZIP package"
-  homepage "https://quazip.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/quazip/quazip/0.7.3/quazip-0.7.3.tar.gz"
-  sha256 "2ad4f354746e8260d46036cde1496c223ec79765041ea28eb920ced015e269b5"
+  homepage "https://github.com/stachenov/quazip/"
+  url "https://github.com/stachenov/quazip/archive/v0.9.1.tar.gz"
+  sha256 "5d36b745cb94da440432690050e6db45b99b477cfe9bc3b82fd1a9d36fff95f5"
+  license "LGPL-2.1"
 
   bottle do
     cellar :any
-    sha256 "00ea751dca58a09560c21149298df7c320613c589b034e17830cf8ee2520f3df" => :sierra
-    sha256 "857651ea50693f66e8760c83869ded6980920547a6097c3ac98158cd18ee099f" => :el_capitan
-    sha256 "d10b2676efebaeedc6d51f2a1b18cc638207c866d7ba657d62fb0a09123c4247" => :yosemite
+    sha256 "fcc3c28686a10a6e8d0e95ac978c0499400e5af3364c015f6ee128d9c0fd878e" => :catalina
+    sha256 "b74d9a5c9d2dbc349de524bce7ae4ef45882b37e2187b065c11141d7a2056953" => :mojave
+    sha256 "632c10f191326e2afc006c9a065f40af0f5ab8d6b562b4013ecdf77e79ed1eaf" => :high_sierra
   end
 
-  depends_on "qt5"
+  depends_on xcode: :build
+  depends_on "qt"
 
   def install
     system "qmake", "quazip.pro", "-config", "release",
@@ -20,7 +22,7 @@ class Quazip < Formula
   end
 
   test do
-    (testpath/"test.pro").write <<-EOS.undent
+    (testpath/"test.pro").write <<~EOS
       TEMPLATE     = app
       CONFIG      += console
       CONFIG      -= app_bundle
@@ -31,7 +33,7 @@ class Quazip < Formula
       LIBS        += -lquazip
     EOS
 
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <quazip/quazip.h>
       int main() {
         QuaZip zip;
@@ -39,9 +41,9 @@ class Quazip < Formula
       }
     EOS
 
-    system "#{Formula["qt5"].bin}/qmake", "test.pro"
+    system "#{Formula["qt"].bin}/qmake", "test.pro"
     system "make"
-    assert File.exist?("test"), "test output file does not exist!"
+    assert_predicate testpath/"test", :exist?, "test output file does not exist!"
     system "./test"
   end
 end

@@ -1,74 +1,54 @@
 class Folly < Formula
   desc "Collection of reusable C++ library artifacts developed at Facebook"
   homepage "https://github.com/facebook/folly"
-  url "https://github.com/facebook/folly/archive/v2016.12.19.00.tar.gz"
-  sha256 "471050ccd2a32f551eb11f43170d3f9cdd39d363ec026ca922b872d1c03831c1"
-  revision 3
+  url "https://github.com/facebook/folly/archive/v2020.11.09.00.tar.gz"
+  sha256 "24d5df65d4ef21b229b7396605a7375b753ca8950fe655ea33fdf1e2d5218dff"
+  license "Apache-2.0"
   head "https://github.com/facebook/folly.git"
 
   bottle do
     cellar :any
-    sha256 "3244a681eba41c71c305c52917e10b01570b52a676c35170ce985de5372e7380" => :sierra
-    sha256 "54e2925474c7eae238431543e7f5039d24d0f06b54a96e96268cfcdc620a5c4e" => :el_capitan
+    sha256 "68eb6b4c31c0629a237f4a2d420c8759b628271f4f94ce5c84bfbe2a5c3ae6b7" => :big_sur
+    sha256 "84481f2e276e3d71801eb421ff38fc5ae97771a0f78a1599ccb518ec249c7c1e" => :catalina
+    sha256 "e807f482be6fcac3d5b5f9ee442a63c9df44d884bca10adadedc64b55e69e4e6" => :mojave
+    sha256 "4238e809dd169656cbf2909e1a29054300b5a6183d746c9d66d90b3b6a2e7464" => :high_sierra
   end
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "libtool" => :build
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "double-conversion"
-  depends_on "glog"
-  depends_on "gflags"
   depends_on "boost"
+  depends_on "double-conversion"
+  depends_on "fmt"
+  depends_on "gflags"
+  depends_on "glog"
   depends_on "libevent"
-  depends_on "xz"
-  depends_on "snappy"
   depends_on "lz4"
-  depends_on "openssl"
-
-  # https://github.com/facebook/folly/issues/451
-  depends_on :macos => :el_capitan
-
-  needs :cxx11
-
-  # Known issue upstream. They're working on it:
-  # https://github.com/facebook/folly/pull/445
-  fails_with :gcc => "6"
+  # https://github.com/facebook/folly/issues/966
+  depends_on macos: :high_sierra
+  depends_on "openssl@1.1"
+  depends_on "snappy"
+  depends_on "xz"
+  depends_on "zstd"
 
   def install
-    ENV.cxx11
+    mkdir "_build" do
+      args = std_cmake_args + %w[
+        -DFOLLY_USE_JEMALLOC=OFF
+      ]
 
-    cd "folly" do
-      if MacOS.version == "10.11" && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
-        # Workaround for "no matching function for call to 'clock_gettime'"
-        # See upstream PR from 2 Oct 2016 facebook/folly#488
-        inreplace ["Benchmark.cpp", "Benchmark.h"] do |s|
-          s.gsub! "clock_gettime(CLOCK_REALTIME",
-                  "clock_gettime((clockid_t)CLOCK_REALTIME"
-          s.gsub! "clock_getres(CLOCK_REALTIME",
-                  "clock_getres((clockid_t)CLOCK_REALTIME", false
-        end
-
-        # Fix "candidate function not viable: no known conversion from
-        # 'folly::detail::Clock' to 'clockid_t' for 1st argument"
-        # See upstream PR mentioned above
-        inreplace "portability/Time.h", "typedef uint8_t clockid_t;", ""
-      end
-
-      # Fixes the .pc file, which references the gflags .pc under the wrong name.
-      # Applied upstream: https://github.com/facebook/folly/pull/531
-      inreplace "configure.ac", "[libgflags]", "[gflags]"
-
-      system "autoreconf", "-fvi"
-      system "./configure", "--prefix=#{prefix}", "--disable-silent-rules",
-                            "--disable-dependency-tracking"
+      system "cmake", "..", *args, "-DBUILD_SHARED_LIBS=ON"
       system "make"
       system "make", "install"
+
+      system "make", "clean"
+      system "cmake", "..", *args, "-DBUILD_SHARED_LIBS=OFF"
+      system "make"
+      lib.install "libfolly.a", "folly/libfollybenchmark.a"
     end
   end
 
   test do
-    (testpath/"test.cc").write <<-EOS.undent
+    (testpath/"test.cc").write <<~EOS
       #include <folly/FBVector.h>
       int main() {
         folly::fbvector<int> numbers({0, 1, 2, 3});
@@ -80,7 +60,7 @@ class Folly < Formula
         return 0;
       }
     EOS
-    system ENV.cxx, "-std=c++11", "test.cc", "-I#{include}", "-L#{lib}",
+    system ENV.cxx, "-std=c++14", "test.cc", "-I#{include}", "-L#{lib}",
                     "-lfolly", "-o", "test"
     system "./test"
   end

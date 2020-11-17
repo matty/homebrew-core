@@ -1,28 +1,33 @@
 class Jsonnet < Formula
-  desc "Domain specific configuration language for defining JSON data."
-  homepage "https://google.github.io/jsonnet/doc/"
-  url "https://github.com/google/jsonnet/archive/v0.9.3.tar.gz"
-  sha256 "25f21410acb3e1a9c8ced2a9d416cc39af70a0e4e12fb52c48f4eb4ac25bc938"
+  desc "Domain specific configuration language for defining JSON data"
+  homepage "https://jsonnet.org/"
+  url "https://github.com/google/jsonnet/archive/v0.16.0.tar.gz"
+  sha256 "fa1a4047942797b7c4ed39718a20d63d1b98725fb5cf563efbc1ecca3375426f"
+  license "Apache-2.0"
+  head "https://github.com/google/jsonnet.git"
+
+  livecheck do
+    url "https://github.com/google/jsonnet/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "feea87cf10eeb7595fd4411b5901f7a707da125883a4edfdc4e83b5031b98d4f" => :sierra
-    sha256 "089e61f679ceb1b4957cdef07ae71984cf090a9e2c249df23d51cb9e1b0f961e" => :el_capitan
-    sha256 "3f52bff807faa0b55d343554d1d02a71611bfc148180582e61a5f749fbf87628" => :yosemite
+    sha256 "e5f579df1018bcd462e4a6d913c7a080689b3cc7e8afb670e311a337206ba931" => :big_sur
+    sha256 "af01487239fc6947ef6c27d9b4b18772d2b7773393d7e48704001bf09d380e5b" => :catalina
+    sha256 "2255443d01048798797696161de2ddf435565348d7a246647a37b5ec0919dc2b" => :mojave
+    sha256 "7cc0ca007b2d56160e93437779f7214f44caef1a76b0647c911b1ca6ac6ab4c5" => :high_sierra
   end
-
-  needs :cxx11
-
-  depends_on :macos => :mavericks
 
   def install
     ENV.cxx11
     system "make"
     bin.install "jsonnet"
+    bin.install "jsonnetfmt"
   end
 
   test do
-    (testpath/"example.jsonnet").write <<-EOS
+    (testpath/"example.jsonnet").write <<~EOS
       {
         person1: {
           name: "Alice",
@@ -34,11 +39,11 @@ class Jsonnet < Formula
 
     expected_output = {
       "person1" => {
-        "name" => "Alice",
+        "name"    => "Alice",
         "welcome" => "Hello Alice!",
       },
       "person2" => {
-        "name" => "Bob",
+        "name"    => "Bob",
         "welcome" => "Hello Bob!",
       },
     }

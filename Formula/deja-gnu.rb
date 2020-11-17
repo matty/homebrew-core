@@ -1,23 +1,31 @@
 class DejaGnu < Formula
   desc "Framework for testing other programs"
   homepage "https://www.gnu.org/software/dejagnu/"
-  url "https://ftpmirror.gnu.org/dejagnu/dejagnu-1.6.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.tar.gz"
-  sha256 "00b64a618e2b6b581b16eb9131ee80f721baa2669fa0cdee93c500d1a652d763"
+  url "https://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.2.tar.gz"
+  mirror "https://ftpmirror.gnu.org/dejagnu/dejagnu-1.6.2.tar.gz"
+  sha256 "0d0671e1b45189c5fc8ade4b3b01635fb9eeab45cf54f57db23e4c4c1a17d261"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3f6f667f06ed0a74f993668847f437e60f90397b0b1615ebbf0f930f7d2836d2" => :sierra
-    sha256 "099657338971c6b84bf135f2935559a4753b2137edd807d777c999edaf0fb8d6" => :el_capitan
-    sha256 "0d589e4ec11e3d8de7f00abcbb4a62b50e578e15e6d8fafd42371ca9550b04c8" => :yosemite
-    sha256 "575e2565feb8d2d60c3163a1a8d38c4ba719fd5a523fc147a7812aed7f26fb88" => :mavericks
+    sha256 "5bad10e6433487c43ec72f99cee16123953b6834ab714302474b5135b99a9ed5" => :big_sur
+    sha256 "894df4a4de1df0698f3539db58615fa63bcee77f723eba6efd8d1700ce0bb827" => :catalina
+    sha256 "eea1adea3a1c062fd6ba0e85fefebe9f9036736a9d3a3744cec79123390270f3" => :mojave
+    sha256 "eea1adea3a1c062fd6ba0e85fefebe9f9036736a9d3a3744cec79123390270f3" => :high_sierra
+    sha256 "5c1100eaf8ae4f28b1c4311241ddff8e0d195d0d241e106051bc60490d28d0e5" => :sierra
   end
 
   head do
-    url "http://git.savannah.gnu.org/r/dejagnu.git"
-    depends_on "automake" => :build
+    url "https://git.savannah.gnu.org/git/dejagnu.git"
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
+
+  uses_from_macos "expect"
 
   def install
     ENV.deparallelize # Or fails on Mac Pro

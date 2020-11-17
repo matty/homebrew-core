@@ -1,38 +1,33 @@
 class LittleCms < Formula
   desc "Version 1 of the Little CMS library"
-  homepage "http://www.littlecms.com/"
+  homepage "https://www.littlecms.com/"
   url "https://downloads.sourceforge.net/project/lcms/lcms/1.19/lcms-1.19.tar.gz"
   sha256 "80ae32cb9f568af4dc7ee4d3c05a4c31fc513fc3e31730fed0ce7378237273a9"
+  license "MIT"
+  revision 1
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/lcms[._-]v?(1(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "9d7cd298c7d0b89d2cc33ac73c87104bda7ed42ebf7ef55ec26079eda5c29db5" => :sierra
-    sha256 "c1dd6107f2d5e565f35e8358bd968ba7161ad3809d1b5bab4a412d3f01ec874f" => :el_capitan
-    sha256 "48da368fcf57745e933d4022dbd1d64b79a66eeaa76064ceb6f6c4e792fde776" => :yosemite
-    sha256 "175c804307189d9d0d700a423d6daa9d839ec5d3038145f311f436bd1aa71392" => :mavericks
-    sha256 "0d2af3b585f79b60e617301d5251a19114e14f82b5b75f3feda5be11c09404da" => :mountain_lion
+    sha256 "73cda76fd98e9466e570243f5190e68b45ffeeea2073185a51dd14dbde11a21a" => :catalina
+    sha256 "d04e4cc09f471260e6e86eb866743eb0205b3345bc9e687d85307cdbd1a1fa9a" => :mojave
+    sha256 "cead96af013b65c05e98c89890e66de1cdf864d1b6ed7da811f6618f2e551275" => :high_sierra
+    sha256 "227c16cbe117abeac7398265543c20b905396b214785e1a9dc48041f0f3ce128" => :sierra
+    sha256 "c1125a0074a82747ffc33ab79c617ea448b605ace47d6c5cf788f2d3a49d7c5d" => :el_capitan
+    sha256 "bc02c8267bf616ef0dcfc27db97a849b0f79e8211164ea4a955482b964255a7e" => :yosemite
   end
 
-  option :universal
-
-  depends_on :python => :optional
-  depends_on "jpeg" => :recommended
-  depends_on "libtiff" => :recommended
+  depends_on "jpeg"
+  depends_on "libtiff"
 
   def install
-    ENV.universal_binary if build.universal?
     args = %W[--disable-dependency-tracking --disable-debug --prefix=#{prefix}]
-    args << "--without-tiff" if build.without? "libtiff"
-    args << "--without-jpeg" if build.without? "jpeg"
-    if build.with? "python"
-      args << "--with-python"
-      inreplace "python/Makefile.in" do |s|
-        s.change_make_var! "pkgdir", lib/"python2.7/site-packages"
-      end
-    end
-
     system "./configure", *args
+
     system "make"
     ENV.deparallelize
     system "make", "install"
@@ -40,6 +35,6 @@ class LittleCms < Formula
 
   test do
     system "#{bin}/jpegicc", test_fixtures("test.jpg"), "out.jpg"
-    assert File.exist?("out.jpg")
+    assert_predicate testpath/"out.jpg", :exist?
   end
 end

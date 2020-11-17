@@ -1,25 +1,36 @@
 class Pick < Formula
   desc "Utility to choose one option from a set of choices"
-  homepage "https://github.com/calleerlandsson/pick"
-  url "https://github.com/calleerlandsson/pick/releases/download/v1.5.4/pick-1.5.4.tar.gz"
-  sha256 "61de8057b1955501a8fc38227eb3ad9430bb8617480ca32c648e03c3f2c29253"
+  homepage "https://github.com/mptre/pick"
+  url "https://github.com/mptre/pick/releases/download/v4.0.0/pick-4.0.0.tar.gz"
+  sha256 "de768fd566fd4c7f7b630144c8120b779a61a8cd35898f0db42ba8af5131edca"
+  license "MIT"
+  head "https://github.com/mptre/pick.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "320de1fd40ca46c11a239b3f86e0cdd4a9fb82791670dc30f8cad59bf6d5a4c6" => :sierra
-    sha256 "73c0f2f2702e6380161ebf0a7d503d549e287c8e38f84bd9676e70c18f625d91" => :el_capitan
-    sha256 "fdc4572e9871a980a7a4aae10f2799fc94d0db5617ce32acebdd4636631e6770" => :yosemite
+    sha256 "c8da7b41b502c8c72b90fd41bf1570e840198fa6678cc5efca8a1c26a8d5557f" => :big_sur
+    sha256 "754879e53b48743051bb1571bb4b6180a415ac36af8deaf335f5c193326d232f" => :catalina
+    sha256 "55596e8ab28fd4fc36d064f6395c38ce51314bcc0d2f2f3862515a683bc92182" => :mojave
+    sha256 "0fc521881c760d4f9e4f8625795716e0e1c0e1ed1522ccb5efd055313b2729bc" => :high_sierra
   end
 
+  uses_from_macos "ncurses"
+
   def install
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "check"
+    ENV["PREFIX"] = prefix
+    ENV["MANDIR"] = man
+    system "./configure"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/pick", "-v"
+    require "pty"
+    ENV["TERM"] = "xterm"
+    PTY.spawn(bin/"pick") do |r, w, _pid|
+      w.write "foo\nbar\nbaz\n\x04"
+      sleep 1
+      w.write "\n"
+      assert_match /foo\r\nbar\r\nbaz\r\n\^D.*foo\r\n\z/, r.read
+    end
   end
 end

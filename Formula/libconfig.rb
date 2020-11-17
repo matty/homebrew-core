@@ -1,42 +1,32 @@
 class Libconfig < Formula
   desc "Configuration file processing library"
-  homepage "http://www.hyperrealm.com/libconfig/"
-  url "https://github.com/hyperrealm/libconfig/archive/v1.6.tar.gz"
-  sha256 "18739792eb463d73525d7aea9b0a48b14106fae1cfec09aedc668d8c1079adf1"
+  homepage "https://hyperrealm.github.io/libconfig/"
+  url "https://github.com/hyperrealm/libconfig/archive/v1.7.2.tar.gz"
+  sha256 "f67ac44099916ae260a6c9e290a90809e7d782d96cdd462cac656ebc5b685726"
+  license "LGPL-2.1"
+  head "https://github.com/hyperrealm/libconfig.git"
 
   bottle do
     cellar :any
-    sha256 "76c392efe1620331e9840eb426d9551c15f0c1f5b3db6bd255f7a6f7d28a70ec" => :sierra
-    sha256 "b761558d36680478ea69e888a35bb64df066a561f9534e9b893b26e07a4062e4" => :el_capitan
-    sha256 "da3783f62333e9f65b235c7359de96264476e7bb7a0e472f7f81d288cbd059ec" => :yosemite
-    sha256 "dfb06c8602d8cb3a81a0d63127fc45c112bbdd494772f5ce50715f06383d596d" => :mavericks
+    rebuild 1
+    sha256 "3b66cbc5fae338f422386f6a2eecd650a64391da8d2f7fba259af614729844da" => :big_sur
+    sha256 "5133affbfe2df2eccf05017748542e521e70a8db8763c8d8e39e00aec78fe3f8" => :catalina
+    sha256 "b1c005fc0d3a811efcef915d8e84d9cc2828d6c35c5649f71fab3c714b2ae1ea" => :mojave
+    sha256 "5762b7106a3e4ecc470193cd8abcfd40de090c456d42b413e545402246d73f69" => :high_sierra
   end
 
-  head do
-    url "https://github.com/hyperrealm/libconfig.git"
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "libtool" => :build
-  end
-
-  option :universal
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
 
   def install
-    ENV.universal_binary if build.universal?
-
-    system "autoreconf", "-i" if build.head?
+    system "autoreconf", "-fiv"
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
-
-    # Fixes "scanner.l:137:59: error: too few arguments to function call ..."
-    # Forces regeneration of the BUILT_SOURCES "scanner.c" and "scanner.h"
-    # Reported 6 Jun 2016: https://github.com/hyperrealm/libconfig/issues/66
-    touch "lib/scanner.l"
-
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libconfig.h>
       int main() {
         config_t cfg;

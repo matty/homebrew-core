@@ -1,41 +1,46 @@
 class Gwyddion < Formula
   desc "Scanning Probe Microscopy visualization and analysis tool"
   homepage "http://gwyddion.net/"
-  url "http://gwyddion.net/download/2.47/gwyddion-2.47.tar.gz"
-  sha256 "7b440e082f7fbfa38ad0355bafb1576c52eb4b35c4b97c3ac525a4cec879ddf2"
-  revision 1
+  url "http://gwyddion.net/download/2.56/gwyddion-2.56.tar.gz"
+  sha256 "4714ebd28482decceb0d9f83f7af200df5919530e02416b8b2121affe5ae6818"
+  license "GPL-2.0"
+
+  livecheck do
+    url "http://gwyddion.net/download.php"
+    regex(/stable version Gwyddion v?(\d+(?:\.\d+)+):/i)
+  end
 
   bottle do
-    sha256 "6ddc06a1388396662d2be33a7efec97f54b35d61bccbfeaee49aa3fd2959d726" => :sierra
-    sha256 "5b254bffa7e6088a5c5fd8297ea2a57e3ecc5d3cbaa3b20cd4365ebc3b60f668" => :el_capitan
-    sha256 "325036fd27f4c51d1a8cfa7ae1a9c1e522683eef624e886fd052c74e2fde8f1e" => :yosemite
+    sha256 "319ecf28afd492ed5237e77f851af931e72e04001050aa70d778c9591038f36b" => :big_sur
+    sha256 "4172123e804c37db82b8b2ce473f36f4f644f1c2af6029f4e36a35576f792635" => :catalina
+    sha256 "a7d84f53539e1f9d77e0f11ccddd17a000733bf50d169c1af567ed157755502f" => :mojave
+    sha256 "e9a3d12639dc7018e50a0b422b5ea144a651c692818b9e7eb5b168670b8462d3" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "gnu-sed" => :build
   depends_on "fftw"
   depends_on "gtk+"
-  depends_on "gtk-mac-integration"
   depends_on "gtkglext"
+  depends_on "gtksourceview"
   depends_on "libxml2"
   depends_on "minizip"
 
-  depends_on :python => :optional
-  depends_on "pygtk" if build.with? "python"
-  depends_on "gtksourceview" if build.with? "python"
+  on_macos do
+    depends_on "gtk-mac-integration"
+  end
 
   def install
-    ENV.prepend_path "PATH", Formula["gnu-sed"].opt_libexec/"gnubin"
     system "./configure", "--disable-dependency-tracking",
                           "--disable-desktop-file-update",
                           "--prefix=#{prefix}",
-                          "--with-html-dir=#{doc}"
+                          "--with-html-dir=#{doc}",
+                          "--disable-pygwy"
     system "make", "install"
   end
 
   test do
     system "#{bin}/gwyddion", "--version"
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libgwyddion/gwyddion.h>
 
       int main(int argc, char *argv[]) {
@@ -110,13 +115,15 @@ class Gwyddion < Formula
       -lgwydraw2
       -lgwymodule2
       -lgwyprocess2
-      -lintl
       -lpango-1.0
       -lpangocairo-1.0
       -lpangoft2-1.0
       -framework AppKit
       -framework OpenGL
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

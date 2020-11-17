@@ -1,17 +1,16 @@
 class Gti < Formula
   desc "ASCII-art displaying typo-corrector for commands"
-  homepage "http://r-wos.org/hacks/gti"
-  url "https://github.com/rwos/gti/archive/v1.3.0.tar.gz"
-  sha256 "f344b9af622980e3689d3bc7866a913c6794ff5c22b09fa92e2b684309aba958"
-
+  homepage "https://r-wos.org/hacks/gti"
+  url "https://github.com/rwos/gti/archive/v1.7.0.tar.gz"
+  sha256 "cea8baf25ac5e6272f9031bd5e36a17a4b55038830b108f4f24e7f55690198f7"
   head "https://github.com/rwos/gti.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3ba1a8b400ade1296a9706a25d43d86bf37b2ab81047051b287dae3bf0021654" => :sierra
-    sha256 "b253c79ace49639af50fbe80ef39b584d2e4ebc26bf4e7069801790dee5fe000" => :el_capitan
-    sha256 "b5ec12785d74eca21caa9eaebb089f6d666ab4a4e5516f4c007bbb2f40d55e36" => :yosemite
-    sha256 "ec53667c16637cad636131f5b34885a517814531991160cf696e7713ebe2a36b" => :mavericks
+    sha256 "2466fec7628acfe3d24bb93cd31313d353a808f373e3c666b7b9c52326f45a0d" => :big_sur
+    sha256 "dc2f7bf9b442294a044b782321689783cd3fd93a465a9604db606b2b420e4443" => :catalina
+    sha256 "2e1f996a67020a9bd842b41d0ac7d6e5ef0791fbc7fd57ffe3e9b7aacc1ee6de" => :mojave
+    sha256 "9d46e56c0f79ba9d81e40bc1edc7b4ff1a9c9eeb4dbcb087827dec5b84c4f82b" => :high_sierra
   end
 
   def install

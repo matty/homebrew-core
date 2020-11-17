@@ -1,19 +1,26 @@
 class Stuntman < Formula
   desc "Implementation of the STUN protocol"
   homepage "http://www.stunprotocol.org/"
-  url "http://www.stunprotocol.org/stunserver-1.2.10.tgz"
-  sha256 "6e5d734a9cd5cf5753a306a396cec2c19978bea296df5d707ee909c75d804406"
+  url "http://www.stunprotocol.org/stunserver-1.2.16.tgz"
+  sha256 "4479e1ae070651dfc4836a998267c7ac2fba4f011abcfdca3b8ccd7736d4fd26"
+  license "Apache-2.0"
   head "https://github.com/jselbie/stunserver.git"
 
+  livecheck do
+    url :homepage
+    regex(/href=.*?stunserver[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
+
   bottle do
-    cellar :any
-    sha256 "f3a17b16bfd32c4a888500edf6dd5db05e9ddbb72d8767ae86dfd11d5916c8c5" => :sierra
-    sha256 "f25bb4553534d83eeefeffcd0af509f8d16dbd12480102154d9b7da8bb5b3828" => :el_capitan
-    sha256 "51ccb9f6ef78dad5125b5d10c1d6943a5d04761e693ebe2a06e2c4f7da080d57" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "74b6ba4ad33c987b2b3e8a70f4c4e3c383cfa1955a0eb499b02edbf4ed7c8a45" => :big_sur
+    sha256 "e337d1ad8978b0bb926bca46992575b686145f9e8eb43dbc990e4efe08539722" => :catalina
+    sha256 "d1b2a91211d57f057081fba43d0ed6ae3b05c40114b1e77f0cd3c0189f7ad07c" => :mojave
+    sha256 "a7055d814d7645e408d92ffeba5ff5c1215302bdf4411bbf02e8d49ff40115a6" => :high_sierra
   end
 
   depends_on "boost" => :build
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     system "make"

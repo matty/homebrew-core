@@ -1,22 +1,36 @@
 class ProtobufSwift < Formula
-  desc "Implementation of Protocol Buffers in Apple Swift."
+  desc "Implementation of Protocol Buffers in Swift"
   homepage "https://github.com/alexeyxo/protobuf-swift"
-  url "https://github.com/alexeyxo/protobuf-swift/archive/3.0.10.tar.gz"
-  sha256 "1d8043faae3f1ca5ec077b0bb2a0403db75aa4854daf76282fc910de4d567d5b"
+  url "https://github.com/alexeyxo/protobuf-swift/archive/4.0.6.tar.gz"
+  sha256 "598d9e459b4ac74bfbcf22857c7e8fda8f5219c10caac0aa18aea7d8710cce22"
+  license "Apache-2.0"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "44cf488eb0793a469d594b55690a1a664de92f03b0a79a5e2f3fbad6701c71b8" => :sierra
-    sha256 "38dd50b43bdab0177f8e06111a67552834ba36a7c9788b608872f7b9343b8ec5" => :el_capitan
-    sha256 "57d59fd0d20b9dbffbb855894cfb7965c2ba403a7601c6bb884ef8b06039af9d" => :yosemite
+    sha256 "25b96487d0f0d21de51d379e8d81e2dcc9eaf0252e779c9b340de0d089918f26" => :mojave
+    sha256 "33f57aa9d49598a5101de975b92507964493da967b7a3738e91a64dd8a663180" => :high_sierra
+    sha256 "42327634f717f0f9276d61af56df6a4595eea57f17d779f405703fdecae55bed" => :sierra
   end
+
+  # https://github.com/Homebrew/homebrew-core/pull/54471#issuecomment-627430555
+  disable! because: :unmaintained
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "protobuf"
+  depends_on "protobuf@3.7"
+
+  conflicts_with "swift-protobuf",
+    because: "both install `protoc-gen-swift` binaries"
 
   def install
+    ENV.cxx11
+
+    system "protoc", "-Iplugin/compiler",
+                     "plugin/compiler/google/protobuf/descriptor.proto",
+                     "plugin/compiler/google/protobuf/swift-descriptor.proto",
+                     "--cpp_out=plugin/compiler"
     system "./autogen.sh"
     system "./configure", "--prefix=#{prefix}"
     system "make"
@@ -24,7 +38,7 @@ class ProtobufSwift < Formula
   end
 
   test do
-    testdata = <<-EOS.undent
+    testdata = <<~EOS
       syntax = "proto3";
       enum Flavor {
         CHOCOLATE = 0;
@@ -36,6 +50,6 @@ class ProtobufSwift < Formula
       }
     EOS
     (testpath/"test.proto").write(testdata)
-    system "protoc", "test.proto", "--swift_out=."
+    system Formula["protobuf"].opt_bin/"protoc", "test.proto", "--swift_out=."
   end
 end

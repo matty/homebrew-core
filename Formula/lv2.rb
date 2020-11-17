@@ -1,20 +1,26 @@
 class Lv2 < Formula
   desc "Portable plugin standard for audio systems"
-  homepage "http://lv2plug.in"
-  url "http://lv2plug.in/spec/lv2-1.12.0.tar.bz2"
-  sha256 "7a4a53138f10ed997174c8bc5a8573d5f5a5d8441aaac2de6cf2178ff90658e9"
+  homepage "https://lv2plug.in/"
+  url "https://lv2plug.in/spec/lv2-1.18.0.tar.bz2"
+  sha256 "90a3e5cf8bdca81b49def917e89fd6bba1d5845261642cd54e7888df0320473f"
+
+  livecheck do
+    url "https://lv2plug.in/spec/"
+    regex(/href=.*?lv2[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "6e05929ad39ab40031bb8b141eeb9c3ad172cc1f1d0719f79b03c7c339a6d880" => :sierra
-    sha256 "8ad6c88d4ea316fc2e1e15504b3cc88e634e072508932e4278da6824471ac539" => :el_capitan
-    sha256 "a4a75ab0aca13e96c7fe10568ddd905bd511909e3a1cb84d1f640cce6e90acc6" => :yosemite
-    sha256 "ce29adad60e4b904f15e15cfde2cd07f5a2490e7053279a605db0b87a0e7bdd1" => :mavericks
+    sha256 "593bfbd7208eb8cc5ea57318af0fee430cdc0e972413fad746a943f2ae6dd7df" => :big_sur
+    sha256 "6cafb26479b24f5b6746557359b665d03bc42dd47ee7acea5a9c0b742c23936e" => :catalina
+    sha256 "6cafb26479b24f5b6746557359b665d03bc42dd47ee7acea5a9c0b742c23936e" => :mojave
+    sha256 "6cafb26479b24f5b6746557359b665d03bc42dd47ee7acea5a9c0b742c23936e" => :high_sierra
   end
 
+  depends_on :macos # Due to Python 2
+
   def install
-    system "./waf", "configure", "--prefix=#{prefix}", "--no-plugins"
+    system "./waf", "configure", "--prefix=#{prefix}", "--no-plugins", "--lv2dir=#{lib}"
     system "./waf", "build"
     system "./waf", "install"
   end

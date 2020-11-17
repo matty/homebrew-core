@@ -1,16 +1,16 @@
 class Openjazz < Formula
   desc "Open source Jazz Jackrabit engine"
   homepage "http://www.alister.eu/jazz/oj/"
-  url "http://www.alister.eu/jazz/oj/OpenJazz-src-160214.zip"
-  sha256 "8178731e005188a8e87174af26f767b7a1815c06b3bd9b8156440ecea4d7b10a"
-
+  url "https://github.com/AlisterT/openjazz/archive/20190106.tar.gz"
+  sha256 "27da3ab32cb6b806502a213c435e1b3b6ecebb9f099592f71caf6574135b1662"
+  license "GPL-2.0"
   head "https://github.com/AlisterT/openjazz.git"
 
   bottle do
     cellar :any
-    sha256 "e5cecf43b5022ad8ed9eecef1ad221c5fcda9f7ee346c3543ad665d082c226aa" => :sierra
-    sha256 "35720ec4dc158b49f9b537033a72c4ca53a529b68de5ca577ff0e8df4ae102ab" => :el_capitan
-    sha256 "557b67389c325c2377555fd2fd6495acab7df376d03db2ab8cfa7d539c1da4ed" => :yosemite
+    sha256 "9f6f4144256364824f4c16c430aaa738e6675f031f8bd7eaa76fa33d4d367430" => :catalina
+    sha256 "06066b8e0bf792d894ceb24ed1ec5409ad896982db87ecab8c07278eabdc3f98" => :mojave
+    sha256 "b5684fc3faa686f06f9600e8c4bb9c787c7cbf3eb100fc8a64a52502e84ce2ca" => :high_sierra
   end
 
   depends_on "autoconf" => :build
@@ -24,7 +24,7 @@ class Openjazz < Formula
   # services to distribute this game by modem as long as no files are altered
   # or removed."
   resource "shareware" do
-    url "http://image.dosgamesarchive.com/games/jazz.zip"
+    url "https://image.dosgamesarchive.com/games/jazz.zip"
     sha256 "ed025415c0bc5ebc3a41e7a070551bdfdfb0b65b5314241152d8bd31f87c22da"
   end
 
@@ -43,10 +43,10 @@ class Openjazz < Formula
     system "make", "install"
 
     # Default game lookup path is the OpenJazz binary's location
-    (bin/"OpenJazz").write <<-EOS.undent
-    #!/bin/sh
+    (bin/"OpenJazz").write <<~EOS
+      #!/bin/sh
 
-    exec "#{pkgshare}/OpenJazz" "$@"
+      exec "#{pkgshare}/OpenJazz" "$@"
     EOS
 
     resource("shareware").stage do
@@ -54,11 +54,12 @@ class Openjazz < Formula
     end
   end
 
-  def caveats; <<-EOS.undent
-    The shareware version of Jazz Jackrabbit has been installed.
-    You can install the full version by copying the game files to:
-      #{pkgshare}
-  EOS
+  def caveats
+    <<~EOS
+      The shareware version of Jazz Jackrabbit has been installed.
+      You can install the full version by copying the game files to:
+        #{pkgshare}
+    EOS
   end
 end
 

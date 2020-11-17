@@ -1,22 +1,25 @@
 class PureFtpd < Formula
   desc "Secure and efficient FTP server"
   homepage "https://www.pureftpd.org/"
-  url "https://download.pureftpd.org/pub/pure-ftpd/releases/pure-ftpd-1.0.44.tar.gz"
-  mirror "ftp://ftp.pureftpd.org/pub/pure-ftpd/releases/pure-ftpd-1.0.44.tar.gz"
-  sha256 "38b3b613a48ae50f4f681b2e8a56503a11ea531df61bc7916ff6cbeb381b64da"
+  url "https://download.pureftpd.org/pub/pure-ftpd/releases/pure-ftpd-1.0.49.tar.gz"
+  sha256 "767bf458c70b24f80c0bb7a1bbc89823399e75a0a7da141d30051a2b8cc892a5"
+  revision 1
 
-  bottle do
-    sha256 "4f3743bf4cbb5b60dc5711706df379b8815f9bcba6adaa2b31e30fe11b037f9b" => :sierra
-    sha256 "10fbab7ef2764b2e73a0ce6cf05cbd690c2a588510e849ba9b07ad8f471e4a1d" => :el_capitan
-    sha256 "124a7cfc3b61fafeb24e0d30bd1b3ed3845520172b457940c89a37481995e1d7" => :yosemite
+  livecheck do
+    url "https://download.pureftpd.org/pub/pure-ftpd/releases/"
+    regex(/href=.*?pure-ftpd[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  option "with-virtualchroot", "Follow symbolic links even for chrooted accounts"
+  bottle do
+    cellar :any
+    sha256 "aa0a342b50ae3761120370fc0e6605241e03545441c472d778ef030239784454" => :catalina
+    sha256 "e3a63b9af91de3c29eef40a76d7962cdf8623a8e8992aeb67bdf3948293c450d" => :mojave
+    sha256 "a6a9549f3d8bde87cf01210e9fa29b403ed258246a7928d195a57f0c5ace6988" => :high_sierra
+    sha256 "11dfcec52ae727128c8201a4779fc7feea1d547fe86989a621d4ba339f70de92" => :sierra
+  end
 
   depends_on "libsodium"
-  depends_on "openssl"
-  depends_on :postgresql => :optional
-  depends_on :mysql => :optional
+  depends_on "openssl@1.1"
 
   def install
     args = %W[
@@ -30,40 +33,40 @@ class PureFtpd < Formula
       --with-bonjour
     ]
 
-    args << "--with-pgsql" if build.with? "postgresql"
-    args << "--with-mysql" if build.with? "mysql"
-    args << "--with-virtualchroot" if build.with? "virtualchroot"
-
     system "./configure", *args
     system "make", "install"
   end
 
-  plist_options :manual => "pure-ftpd"
+  plist_options manual: "pure-ftpd"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
-        <true/>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_sbin}/pure-ftpd</string>
-          <string>-A -j -z</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>WorkingDirectory</key>
-        <string>#{var}</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/pure-ftpd.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/pure-ftpd.log</string>
-      </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>KeepAlive</key>
+          <true/>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_sbin}/pure-ftpd</string>
+            <string>--chrooteveryone</string>
+            <string>--createhomedir</string>
+            <string>--allowdotfiles</string>
+            <string>--login=puredb:#{etc}/pureftpd.pdb</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>WorkingDirectory</key>
+          <string>#{var}</string>
+          <key>StandardErrorPath</key>
+          <string>#{var}/log/pure-ftpd.log</string>
+          <key>StandardOutPath</key>
+          <string>#{var}/log/pure-ftpd.log</string>
+        </dict>
+      </plist>
     EOS
   end
 

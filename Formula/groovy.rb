@@ -1,35 +1,32 @@
 class Groovy < Formula
-  desc "Groovy: a Java-based scripting language"
-  homepage "http://www.groovy-lang.org"
-  url "https://dl.bintray.com/groovy/maven/apache-groovy-binary-2.4.8.zip"
-  sha256 "668a65ea17037371a1952cca5f42ebc03329e15d3619aacb4c7dd5f4b39a8dfd"
+  desc "Java-based scripting language"
+  homepage "https://www.groovy-lang.org/"
+  url "https://dl.bintray.com/groovy/maven/apache-groovy-binary-3.0.6.zip"
+  sha256 "6e0cc2d5b8a7b8585f15816c7d5cae1b09b4003ced0002e79abe7b4b1ebb35f2"
+  license "Apache-2.0"
+
+  livecheck do
+    url "https://dl.bintray.com/groovy/maven/"
+    regex(/href=.*?groovy-binary[._-]v?([\d.]+)\.zip/i)
+  end
 
   bottle :unneeded
 
-  option "with-invokedynamic", "Install the InvokeDynamic version of Groovy (only works with Java 1.7+)"
+  depends_on "openjdk"
 
-  deprecated_option "invokedynamic" => "with-invokedynamic"
-
-  conflicts_with "groovysdk", :because => "both install the same binaries"
+  conflicts_with "groovysdk", because: "both install the same binaries"
 
   def install
     # Don't need Windows files.
     rm_f Dir["bin/*.bat"]
 
-    if build.with? "invokedynamic"
-      Dir.glob("indy/*.jar") do |src_path|
-        dst_file = File.basename(src_path, "-indy.jar") + ".jar"
-        dst_path = File.join("lib", dst_file)
-        mv src_path, dst_path
-      end
-    end
-
-    libexec.install %w[bin conf lib embeddable]
-    bin.install_symlink Dir["#{libexec}/bin/*"]
+    libexec.install "bin", "conf", "lib"
+    bin.install Dir["#{libexec}/bin/*"] - ["#{libexec}/bin/groovy.ico"]
+    bin.env_script_all_files libexec/"bin", Language::Java.overridable_java_home_env
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       You should set GROOVY_HOME:
         export GROOVY_HOME=#{opt_libexec}
     EOS

@@ -3,23 +3,31 @@ class SdlImage < Formula
   homepage "https://www.libsdl.org/projects/SDL_image"
   url "https://www.libsdl.org/projects/SDL_image/release/SDL_image-1.2.12.tar.gz"
   sha256 "0b90722984561004de84847744d566809dbb9daf732a9e503b91a1b5a84e5699"
-  revision 6
+  license "Zlib"
+  revision 7
+
+  livecheck do
+    url "https://www.libsdl.org/projects/SDL_image/release/"
+    regex(/href=.*?SDL_image[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "1a99dadfe0cf7e4ace770b5e13b6c3e54277cadc65b3847cb8108fb116ef3d3e" => :sierra
-    sha256 "98b10a7358d3f27042f4480f121b89c53c135a42aca4400cc0312d3233cbc39d" => :el_capitan
-    sha256 "6d6105e20e0b8c11cddc1b0b1eda7184c50ec4e69ad71f85980b146a54adb431" => :yosemite
+    sha256 "67495888095b02d6716cc51f5a522f2a872c29de418f19210ecd586d23684b81" => :big_sur
+    sha256 "af782fa2905042005df213106578123c7fd1d6d3111af8bd16e1ec63e273bb8d" => :catalina
+    sha256 "eb27003d54259c16f08795435e2afc34086598e7f1d1f1ae4c2fe5a70a6bf57d" => :mojave
+    sha256 "eeb44401862df80a1d1f77dde4164b265d82993458325e753285566b56477695" => :high_sierra
+    sha256 "d74d6e853e78b65a7e7f266be6733bdb5839f956bcb19061b68a46c16e080a94" => :sierra
+    sha256 "4304e6b83a7afa176a0462e8ba20485bc098731a16bd375261f9f449a8f8f7d3" => :el_capitan
+    sha256 "3403edd53a6776bad8dc4390ef8204479f3af7c485e8a7a1f81f86f43b4a7b5c" => :yosemite
   end
 
-  option :universal
-
   depends_on "pkg-config" => :build
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libtiff"
   depends_on "sdl"
-  depends_on "jpeg" => :recommended
-  depends_on "libpng" => :recommended
-  depends_on "libtiff" => :recommended
-  depends_on "webp" => :recommended
+  depends_on "webp"
 
   # Fix graphical glitching
   # https://github.com/Homebrew/homebrew-python/issues/281
@@ -30,22 +38,16 @@ class SdlImage < Formula
   end
 
   def install
-    ENV.universal_binary if build.universal?
     inreplace "SDL_image.pc.in", "@prefix@", HOMEBREW_PREFIX
 
-    args = %W[
-      --prefix=#{prefix}
-      --disable-dependency-tracking
-      --disable-imageio
-      --disable-sdltest
-    ]
-
-    args << "--disable-png-shared" if build.with? "libpng"
-    args << "--disable-jpg-shared" if build.with? "jpeg"
-    args << "--disable-tif-shared" if build.with? "libtiff"
-    args << "--disable-webp-shared" if build.with? "webp"
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking",
+                          "--disable-imageio",
+                          "--disable-jpg-shared",
+                          "--disable-png-shared",
+                          "--disable-sdltest",
+                          "--disable-tif-shared",
+                          "--disable-webp-shared"
     system "make", "install"
   end
 end

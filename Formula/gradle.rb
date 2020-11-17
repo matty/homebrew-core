@@ -1,23 +1,33 @@
 class Gradle < Formula
-  desc "Build system based on the Groovy language"
+  desc "Open-source build automation tool based on the Groovy and Kotlin DSL"
   homepage "https://www.gradle.org/"
-  url "https://downloads.gradle.org/distributions/gradle-3.3-all.zip"
-  sha256 "71a787faed83c4ef21e8464cc8452b941b5fcd575043aa29d39d15d879be89f7"
+  url "https://services.gradle.org/distributions/gradle-6.7.1-all.zip"
+  sha256 "22449f5231796abd892c98b2a07c9ceebe4688d192cd2d6763f8e3bf8acbedeb"
+  license "Apache-2.0"
+
+  livecheck do
+    url "https://services.gradle.org/distributions/"
+    regex(/href=.*?gradle[._-]v?(\d+(?:\.\d+)+)-all\.(?:[tz])/i)
+  end
 
   bottle :unneeded
 
-  option "with-all", "Installs Javadoc, examples, and source in addition to the binaries"
-
-  depends_on :java => "1.7+"
+  depends_on "openjdk"
 
   def install
-    libexec.install %w[bin lib]
-    libexec.install %w[docs media samples src] if build.with? "all"
-    bin.install_symlink libexec/"bin/gradle"
+    rm_f Dir["bin/*.bat"]
+    libexec.install %w[bin docs lib src]
+    (bin/"gradle").write_env_script libexec/"bin/gradle", Language::Java.overridable_java_home_env
   end
 
   test do
-    ENV.java_cache
     assert_match version.to_s, shell_output("#{bin}/gradle --version")
+
+    (testpath/"settings.gradle").write ""
+    (testpath/"build.gradle").write <<~EOS
+      println "gradle works!"
+    EOS
+    gradle_output = shell_output("#{bin}/gradle build --no-daemon")
+    assert_includes gradle_output, "gradle works!"
   end
 end

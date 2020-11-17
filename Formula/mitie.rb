@@ -1,23 +1,21 @@
 class Mitie < Formula
   desc "Library and tools for information extraction"
   homepage "https://github.com/mit-nlp/MITIE/"
-  url "https://github.com/mit-nlp/MITIE/archive/v0.4.tar.gz"
-  sha256 "3902c9a6332354fb23f1cbdc4ef9631fa1477b69e37e4b7822d3c18a8bbefdc9"
-
+  url "https://github.com/mit-nlp/MITIE/archive/v0.7.tar.gz"
+  sha256 "0830955e64c2a4cceab803884355f090cf8e9086e68ac5df43058f05c34697e8"
+  license "BSL-1.0"
+  revision 2
   head "https://github.com/mit-nlp/MITIE.git"
 
   bottle do
     cellar :any
-    sha256 "fc24dd3da4e0850a60ba6d273ff17eade8a955580aeb91584410efadb29734b2" => :sierra
-    sha256 "107bc6325dc1404d1bfe09d400db80b8892e268626d52152c004e79642ee6421" => :el_capitan
-    sha256 "4570f1e2ac9721e5f53beda0d3e6be2ab88604e490641273b2959424fdf095a2" => :yosemite
-    sha256 "55220ba374b6b03316fd757d2731e8745aa8be50ddc983e0fd28e04bdf5f26da" => :mavericks
-    sha256 "25a3ca7c81987f46cb52f4cc8b8c8de674db5c232d9b6e8383d376fad00ae3ea" => :mountain_lion
+    sha256 "26424cf75f07bf9970c4a5ef979b33f9bffdbcf8b98bdda56759f7b49ed3757d" => :big_sur
+    sha256 "7190df4ed270f1ed0d6b09ea3410b673af9bf8de7349db5cc7c58a8596d10094" => :catalina
+    sha256 "523dbdb69c94746e8e451c01a400897e294f414981bacc7c3933e3cefef590c5" => :mojave
+    sha256 "36a3671f823322c4542af4c555ccfcc1f69ce7c50360f17903b0decc34ddb63e" => :high_sierra
   end
 
-  option "without-models", "Don't download the v0.2 models (~415MB)"
-
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
 
   resource "models-english" do
     url "https://downloads.sourceforge.net/project/mitie/binaries/MITIE-models-v0.2.tar.bz2"
@@ -25,9 +23,7 @@ class Mitie < Formula
   end
 
   def install
-    if build.with? "models"
-      (share/"MITIE-models").install resource("models-english")
-    end
+    (share/"MITIE-models").install resource("models-english")
 
     inreplace "mitielib/makefile", "libmitie.so", "libmitie.dylib"
     system "make", "mitielib"
@@ -35,17 +31,20 @@ class Mitie < Formula
 
     include.install Dir["mitielib/include/*"]
     lib.install "mitielib/libmitie.dylib", "mitielib/libmitie.a"
-    (lib/"python2.7/site-packages").install "mitielib/mitie.py"
-    (share/"mitie").install "examples", "sample_text.txt",
-      "sample_text.reference-output", "sample_text.reference-output-relations"
+
+    xy = Language::Python.major_minor_version "python3"
+    (lib/"python#{xy}/site-packages").install "mitielib/mitie.py"
+    pkgshare.install "examples", "sample_text.txt",
+                     "sample_text.reference-output",
+                     "sample_text.reference-output-relations"
     bin.install "ner_example", "ner_stream", "relation_extraction_example"
   end
 
   test do
     system ENV.cc, "-I#{include}", "-L#{lib}", "-lmitie",
-           share/"mitie/examples/C/ner/ner_example.c",
+           pkgshare/"examples/C/ner/ner_example.c",
            "-o", testpath/"ner_example"
     system "./ner_example", share/"MITIE-models/english/ner_model.dat",
-           share/"mitie/sample_text.txt"
+           pkgshare/"sample_text.txt"
   end
 end

@@ -1,31 +1,31 @@
 class Bitlbee < Formula
   desc "IRC to other chat networks gateway"
   homepage "https://www.bitlbee.org/"
-  url "https://get.bitlbee.org/src/bitlbee-3.5.tar.gz"
-  sha256 "549d02181ab303dfe8a219faafd7a1aea7ee642eb071b767f668782a57388319"
-
+  license "GPL-2.0"
   head "https://github.com/bitlbee/bitlbee.git"
 
-  bottle do
-    sha256 "25e0fccb21f49326295ef5b24de1b6001ebb60e82f7dfad58ea1b14753aa7006" => :sierra
-    sha256 "9f2fe2cde9e8282312eeeea3b694f94d6669ece67a653156c93270f9b6d8f1cb" => :el_capitan
-    sha256 "7d1a271ad5feff5e3a5c3beadc4371e648218ee230547d59c9346471451f8c2b" => :yosemite
+  stable do
+    url "https://get.bitlbee.org/src/bitlbee-3.6.tar.gz"
+    sha256 "9f15de46f29b46bf1e39fc50bdf4515e71b17f551f3955094c5da792d962107e"
   end
 
-  option "with-pidgin", "Use finch/libpurple for all communication with instant messaging networks"
-  option "with-libotr", "Build with otr (off the record) support"
-  option "with-libevent", "Use libevent for the event-loop handling rather than glib."
+  livecheck do
+    url "https://get.bitlbee.org/src/"
+    regex(/href=.*?bitlbee[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
-  deprecated_option "with-finch" => "with-pidgin"
+  bottle do
+    sha256 "dad6720fdc5a098cedbff433883ce7e1098c3e16dc0870b810929ca371b0fdd2" => :big_sur
+    sha256 "52da03d26df7e96ae71125343859b754e24146c8ad5e6c58bc33eb634862ef40" => :catalina
+    sha256 "d6f39cdbf633e779a47d625e8c62393d75fe1656d4d1d8cbe342940fb65cba53" => :mojave
+    sha256 "cefcf70546bf4746913b64ee8c282deb9ca15ffb61a0e564f3f1dc8da09fb447" => :high_sierra
+  end
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "glib"
   depends_on "gnutls"
   depends_on "libgcrypt"
-  depends_on "pidgin" => :optional
-  depends_on "libotr" => :optional
-  depends_on "libevent" => :optional
 
   def install
     args = %W[
@@ -33,14 +33,11 @@ class Bitlbee < Formula
       --plugindir=#{HOMEBREW_PREFIX}/lib/bitlbee/
       --debug=0
       --ssl=gnutls
+      --etcdir=#{etc}/bitlbee
       --pidfile=#{var}/bitlbee/run/bitlbee.pid
       --config=#{var}/bitlbee/lib/
       --ipsocket=#{var}/bitlbee/run/bitlbee.sock
     ]
-
-    args << "--purple=1" if build.with? "pidgin"
-    args << "--otr=1" if build.with? "libotr"
-    args << "--events=libevent" if build.with? "libevent"
 
     system "./configure", *args
 
@@ -51,55 +48,58 @@ class Bitlbee < Formula
     system "make", "install-dev"
     # This build has an extra step.
     system "make", "install-etc"
+  end
 
+  def post_install
     (var/"bitlbee/run").mkpath
     (var/"bitlbee/lib").mkpath
   end
 
-  plist_options :manual => "bitlbee -D"
+  plist_options manual: "bitlbee -D"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>OnDemand</key>
-      <true/>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_sbin}/bitlbee</string>
-      </array>
-      <key>ServiceDescription</key>
-      <string>bitlbee irc-im proxy</string>
-      <key>Sockets</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
       <dict>
-        <key>Listener</key>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>OnDemand</key>
+        <true/>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_sbin}/bitlbee</string>
+        </array>
+        <key>ServiceDescription</key>
+        <string>bitlbee irc-im proxy</string>
+        <key>Sockets</key>
         <dict>
-          <key>SockFamily</key>
-          <string>IPv4</string>
-          <key>SockProtocol</key>
-          <string>TCP</string>
-          <key>SockNodeName</key>
-          <string>127.0.0.1</string>
-          <key>SockServiceName</key>
-          <string>6667</string>
-          <key>SockType</key>
-          <string>stream</string>
+          <key>Listener</key>
+          <dict>
+            <key>SockFamily</key>
+            <string>IPv4</string>
+            <key>SockProtocol</key>
+            <string>TCP</string>
+            <key>SockNodeName</key>
+            <string>127.0.0.1</string>
+            <key>SockServiceName</key>
+            <string>6667</string>
+            <key>SockType</key>
+            <string>stream</string>
+          </dict>
+        </dict>
+        <key>inetdCompatibility</key>
+        <dict>
+          <key>Wait</key>
+          <false/>
         </dict>
       </dict>
-      <key>inetdCompatibility</key>
-      <dict>
-        <key>Wait</key>
-        <false/>
-      </dict>
-    </dict>
-    </plist>
+      </plist>
     EOS
   end
 
   test do
-    shell_output("#{sbin}/bitlbee -V", 1)
+    assert_match version.to_s, shell_output("#{sbin}/bitlbee -V", 1)
   end
 end

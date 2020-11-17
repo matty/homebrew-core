@@ -1,25 +1,26 @@
 class Goaccess < Formula
   desc "Log analyzer and interactive viewer for the Apache Webserver"
   homepage "https://goaccess.io/"
-  url "http://tar.goaccess.io/goaccess-1.1.1.tar.gz"
-  sha256 "4c73147037b350081d66e912a07fb2f0a60484fad1090a76fb6fc24ee086b6d3"
+  url "https://tar.goaccess.io/goaccess-1.4.1.tar.gz"
+  sha256 "9fa2a4121ee76f7c69c272744d8e81234032f3fd32bde36b16012d8b7c1b8bad"
+  license "MIT"
   head "https://github.com/allinurl/goaccess.git"
 
   bottle do
-    sha256 "684f650435abfda6cb22c96f2dfbd704fb896824b0dc4ae9ac544832b3a76a80" => :sierra
-    sha256 "1ddaacdca6e12af6937ba7f0d58150453446d3ab460e132c0e4e677ebcacfdef" => :el_capitan
-    sha256 "07176fce595be6dab42c3adf7fbdaff1947e6d4d6a7c5b85444411d5c8a9df6d" => :yosemite
+    sha256 "0b4c04afd1f6a57679c018d8df0d15c13104ad9aaa7ae189bb60895f63335e6e" => :big_sur
+    sha256 "4c595d0c97f0f73ca0135724e1fb270376803558e061cafb510aacd9b3c03bbf" => :catalina
+    sha256 "34b0e6c71bca1e06092f150ae7a71c7fb5a6dd4a1e9fa6a7bac9a4582d768154" => :mojave
+    sha256 "f8c7eea092fc381f163565cf8cb925ae84d2d2f26a3f06e8543b9a7672af8932" => :high_sierra
   end
-
-  option "with-geoip", "Enable IP location information using GeoIP"
-
-  deprecated_option "enable-geoip" => "with-geoip"
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "geoip" => :optional
+  depends_on "gettext"
+  depends_on "libmaxminddb"
+  depends_on "tokyo-cabinet"
 
   def install
+    ENV.append_path "PATH", Formula["gettext"].bin
     system "autoreconf", "-vfi"
 
     args = %W[
@@ -27,21 +28,26 @@ class Goaccess < Formula
       --disable-dependency-tracking
       --prefix=#{prefix}
       --enable-utf8
+      --enable-tcb=btree
+      --enable-geoip=mmdb
+      --with-libintl-prefix=#{Formula["gettext"].opt_prefix}
     ]
-
-    args << "--enable-geoip" if build.with? "geoip"
 
     system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"access.log").write <<-EOS.undent
-      127.0.0.1 - - [04/May/2015:15:48:17 +0200] "GET / HTTP/1.1" 200 612 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36"
-    EOS
+    (testpath/"access.log").write \
+      '127.0.0.1 - - [04/May/2015:15:48:17 +0200] "GET / HTTP/1.1" 200 612 "-" ' \
+      '"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) ' \
+      'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36"'
 
-    output = shell_output("#{bin}/goaccess --time-format=%T --date-format=%d/%b/%Y --log-format='%h %^[%d:%t %^] \"%r\" %s %b \"%R\" \"%u\"' -f access.log -o json 2>/dev/null")
+    output = shell_output \
+      "#{bin}/goaccess --time-format=%T --date-format=%d/%b/%Y " \
+      "--log-format='%h %^[%d:%t %^] \"%r\" %s %b \"%R\" \"%u\"' " \
+      "-f access.log -o json 2>/dev/null"
 
-    assert_equal "Chrome", JSON.parse(output)["browsers"]["data"][0]["data"]
+    assert_equal "Chrome", JSON.parse(output)["browsers"]["data"].first["data"]
   end
 end

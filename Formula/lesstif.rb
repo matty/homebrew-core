@@ -3,18 +3,32 @@ class Lesstif < Formula
   homepage "https://lesstif.sourceforge.io"
   url "https://downloads.sourceforge.net/project/lesstif/lesstif/0.95.2/lesstif-0.95.2.tar.bz2"
   sha256 "eb4aa38858c29a4a3bcf605cfe7d91ca41f4522d78d770f69721e6e3a4ecf7e3"
+  license all_of: ["GPL-2.0-or-later", "LGPL-2.0-or-later"]
+  revision 1
 
-  bottle do
-    rebuild 1
-    sha256 "d3c4ea1fe9c0e12a88f9a35dbdd4903d93b69bf89b570e9b1a0e15c8d1104275" => :sierra
-    sha256 "bc26ea0e27740c5b3a045b776737ff94ea0bc68b833fc013b92177511271bbcd" => :el_capitan
-    sha256 "a9c9a7fe8261ddbf4830655e6a1a3baa8849669064b990d04338c7bcfb57e6c3" => :yosemite
-    sha256 "b5650ec87b85ac2b36f8e9cb53a452af1ed28f939cf007b209b458773d0634a6" => :mavericks
-    sha256 "07279be1550eef882ed3b9f751cdd152412e84285c5d4e719dfd7fa21c897046" => :mountain_lion
+  deprecate! because: :unmaintained
+
+  livecheck do
+    url :stable
   end
 
-  depends_on :x11
+  bottle do
+    sha256 "49ec8eeeb266caef90b7fee6151d7292e4b636256863a9a4b67abdf965aba33b" => :big_sur
+    sha256 "78f251801b6befbfc5823a668c45babcec2f24a0de4befd089f1034e02dcbf46" => :catalina
+    sha256 "f522a309507b2f9c2aad4aea7a8bbb6cc7d845e922d6d49cd3ca81bccad7f5f5" => :mojave
+    sha256 "6bc0a2511a83a9a15bc27a2385aa7fd944836eb4e685ee7878e590be7680e713" => :high_sierra
+  end
+
   depends_on "freetype"
+  depends_on "libice"
+  depends_on "libsm"
+  depends_on "libx11"
+  depends_on "libxext"
+  depends_on "libxp"
+  depends_on "libxt"
+
+  conflicts_with "openmotif",
+    because: "both Lesstif and Openmotif are complete replacements for each other"
 
   def install
     # LessTif does naughty, naughty, things by assuming we want autoconf macros
@@ -40,5 +54,17 @@ class Lesstif < Formula
     # try to make the same directory and `mkdir` will fail.
     ENV.deparallelize
     system "make", "install"
+
+    # LessTif ships Core.3, which causes a conflict with CORE.3 from
+    # Perl in case-insensitive file systems. Rename it to LessTifCore.3
+    # to avoid this problem.
+    mv man3/"Core.3", man3/"LessTifCore.3"
+  end
+
+  def caveats
+    <<~EOS
+      The manpage was renamed to avoid a conflict with Perl. To read it, run:
+        man LessTifCore
+    EOS
   end
 end

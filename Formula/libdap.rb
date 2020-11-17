@@ -1,41 +1,43 @@
 class Libdap < Formula
   desc "Framework for scientific data networking"
   homepage "https://www.opendap.org/"
-  url "https://www.opendap.org/pub/source/libdap-3.18.3.tar.gz"
-  sha256 "0ced6aa36bb445f51e4d72d480e326de7d513a4a7a2c1e5c73e16e2c1f71f22b"
+  url "https://www.opendap.org/pub/source/libdap-3.20.6.tar.gz"
+  sha256 "35cc7f952d72de4936103e8a95c67ac8f9b855c9211fae73ad065331515cc54a"
+  license "LGPL-2.1"
+
+  livecheck do
+    url "https://www.opendap.org/pub/source/"
+    regex(/href=.*?libdap[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "4ec4781108986332b022cb81d238345f4e697e62ad5a3cc5cb66b77ee7d7ebe8" => :sierra
-    sha256 "1e6bb8cf800083b6c5f6ae3f3efa1284bf436b16601ffaaa77214711aac0cccd" => :el_capitan
-    sha256 "9ab1a73227319d216efd1c0f2737d2f1d43701f1fafbc375bb1963c631c047f2" => :yosemite
+    sha256 "bc3f88998c1d144671ea9ab590e5bb618236d33bcd33c7350fb9e3dfae041a84" => :big_sur
+    sha256 "6a0bbd25fd0b5e873d34a46045c6ba72161007b9937d7957790bfc16bf5b05c3" => :catalina
+    sha256 "ce373bf6fbe4f5b28825fcf243633ae7a807d35b1627e985cc231bc722010793" => :mojave
+    sha256 "fbaa33ce89105a9cab0a7d8b22755524a93f39fb2a8e6d3c5a0459c2ded3bdf5" => :high_sierra
   end
 
   head do
     url "https://github.com/OPENDAP/libdap4.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option "without-test", "Skip build-time tests (Not recommended)"
-
-  depends_on "pkg-config" => :build
   depends_on "bison" => :build
+  depends_on "pkg-config" => :build
   depends_on "libxml2"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
-  needs :cxx11 if MacOS.version < :mavericks
+  uses_from_macos "flex" => :build
+  uses_from_macos "curl"
+
+  on_linux do
+    depends_on "util-linux"
+  end
 
   def install
-    # NOTE:
-    # To future maintainers: if you ever want to build this library as a
-    # universal binary, see William Kyngesburye's notes:
-    #     http://www.kyngchaos.com/macosx/build/dap
-
-    # Otherwise, "make check" fails
-    ENV.cxx11 if MacOS.version < :mavericks
-
     args = %W[
       --prefix=#{prefix}
       --disable-dependency-tracking
@@ -43,19 +45,15 @@ class Libdap < Formula
       --with-included-regex
     ]
 
-    # Let's try removing this for OS X > 10.6; old note follows:
-    # __Always pass the curl prefix!__
-    # Otherwise, configure will fall back to pkg-config and on Leopard
-    # and Snow Leopard, the libcurl.pc file that ships with the system
-    # is seriously broken---too many arch flags. This will be carried
-    # over to `dap-config` and from there the contamination will spread.
-    args << "--with-curl=/usr" if MacOS.version <= :snow_leopard
-
     system "autoreconf", "-fvi" if build.head?
     system "./configure", *args
     system "make"
-    system "make", "check" if build.with? "test"
+    system "make", "check"
     system "make", "install"
+
+    # Ensure no Cellar versioning of libxml2 path in dap-config entries
+    xml2 = Formula["libxml2"]
+    inreplace bin/"dap-config", xml2.opt_prefix.realpath, xml2.opt_prefix
   end
 
   test do

@@ -1,20 +1,20 @@
 class Ideviceinstaller < Formula
-  desc "Cross-platform library for communicating with iOS devices"
-  homepage "http://www.libimobiledevice.org/"
-  url "http://www.libimobiledevice.org/downloads/ideviceinstaller-1.1.0.tar.bz2"
-  sha256 "0821b8d3ca6153d9bf82ceba2706f7bd0e3f07b90a138d79c2448e42362e2f53"
-  revision 2
+  desc "Tool for managing apps on iOS devices"
+  homepage "https://www.libimobiledevice.org/"
+  url "https://github.com/libimobiledevice/ideviceinstaller/releases/download/1.1.1/ideviceinstaller-1.1.1.tar.bz2"
+  sha256 "deb883ec97f2f88115aab39f701b83c843e9f2b67fe02f5e00a9a7d6196c3063"
+  license "GPL-2.0"
 
   bottle do
     cellar :any
-    sha256 "936ad00875c66d243564458edd974877b62d338686608cd525936164d8f21534" => :sierra
-    sha256 "b7eeb31bbff843e910d528adbcae9c2351f4ac6323fa21afd9d4ae65677dad64" => :el_capitan
-    sha256 "87ae074f7e75366be0d3a5ead0e7da2763eb78ad98fd4bc10b37c353dc738ea2" => :yosemite
-    sha256 "b25013280c201c86157f124841d71140570f7fe47896657b8e2a3e6e22530e92" => :mavericks
+    sha256 "6d98523b90770662e350311c375f1157ac0c708769ce2145036aeed451e26621" => :big_sur
+    sha256 "6ee12db78e8c224c0eb0cf88eb4f43242eb1ba672eb006636273b99b75b02a87" => :catalina
+    sha256 "6ed5e4f7ace33fd5f4d1b4c6b9f0fd519836080e170b981e63942087698351c6" => :mojave
+    sha256 "0dfe944eaa47cad87ad22f70dbbcefdb6b27bbeb83ca1f7a229827c03054c07c" => :high_sierra
   end
 
   head do
-    url "http://git.sukimashita.com/ideviceinstaller.git"
+    url "https://git.sukimashita.com/ideviceinstaller.git"
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
@@ -22,6 +22,7 @@ class Ideviceinstaller < Formula
 
   depends_on "pkg-config" => :build
   depends_on "libimobiledevice"
+  depends_on "libplist"
   depends_on "libzip"
 
   def install

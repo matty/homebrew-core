@@ -1,30 +1,33 @@
 class Libsodium < Formula
   desc "NaCl networking and cryptography library"
-  homepage "https://github.com/jedisct1/libsodium/"
-  url "https://github.com/jedisct1/libsodium/releases/download/1.0.11/libsodium-1.0.11.tar.gz"
-  sha256 "a14549db3c49f6ae2170cbbf4664bd48ace50681045e8dbea7c8d9fb96f9c765"
+  homepage "https://libsodium.org/"
+  url "https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz"
+  sha256 "6f504490b342a4f8a4c4a02fc9b866cbef8622d5df4e5452b46be121e46636c1"
+  license "ISC"
+  revision 1
+
+  livecheck do
+    url "https://download.libsodium.org/libsodium/releases/"
+    regex(/href=.*?libsodium[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "e05aba6c665a7a5de297e135568882b6706728ce25820d609a6984b09b69086e" => :sierra
-    sha256 "4737a478ca227bc156890cafae1df4c200591bc217866f38ebdf0f02360790e2" => :el_capitan
-    sha256 "9e9925521bf75dd77192596713a16b3bae27037e2bca6886a0b805ddc90c2cca" => :yosemite
-    sha256 "dc0d77998561c0eaee3d3bf934d9479f6cbfad2b47cc1bbf5b28de4d59575e1d" => :mavericks
+    sha256 "5afc5678e30a174c1e46f1e905124f2619e6d9815ac776836090c0bff85631d6" => :big_sur
+    sha256 "db372521cd0b1861a5b578bee22426f3a1f4f7cb3c382be1f842da4715dc65bd" => :catalina
+    sha256 "55245bfcf6654b0914d3f7459b99a08c54ef2560587bf583a1c1aff4cfc81f28" => :mojave
+    sha256 "fc972755eb60f4221d7b32e58fc0f94e99b913fefefc84c4c76dc4bca1c5c445" => :high_sierra
   end
 
   head do
     url "https://github.com/jedisct1/libsodium.git"
 
-    depends_on "libtool" => :build
     depends_on "autoconf" => :build
     depends_on "automake" => :build
+    depends_on "libtool" => :build
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
-
     system "./autogen.sh" if build.head?
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
@@ -33,7 +36,7 @@ class Libsodium < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <assert.h>
       #include <sodium.h>
 

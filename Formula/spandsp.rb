@@ -3,14 +3,22 @@ class Spandsp < Formula
   homepage "https://www.soft-switch.org/"
   url "https://www.soft-switch.org/downloads/spandsp/spandsp-0.0.6.tar.gz"
   sha256 "cc053ac67e8ac4bb992f258fd94f275a7872df959f6a87763965feabfdcc9465"
+  revision 1
+
+  livecheck do
+    url "https://www.soft-switch.org/downloads/spandsp/?C=M&O=D"
+    regex(/href=.*?spandsp[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "96ba78f9aa0de0ae39edeab9158b8b221e138f814e718c732244611e598d2e9c" => :sierra
-    sha256 "5e8122369eb0639aea23506d55abc5cb3617a0ce3478e8432965edcda07ba56d" => :el_capitan
-    sha256 "d5d2d03d916afba36ac2ab5699991ada42b7640b8c9c324eaf39d17fd582e97b" => :yosemite
-    sha256 "a565b781cab589128aa3667d1de567443bf858c7f06416e7e9a66cfd45302b3d" => :mavericks
+    sha256 "05ff257a953dbb0d88f955fc2f467c7dcf47784a55c53e7b9f9d564767225bf8" => :big_sur
+    sha256 "8a34a25e8108c8a5343d00a031d52c1003422a5ad84186ded83fbed819a834e5" => :catalina
+    sha256 "d38722be71b9d6b3311ee51cb85bc406b2bc34eaf5741851c3b4ed432aecacf2" => :mojave
+    sha256 "0b4bb6795c931452181252754da3db80189e6557c344e743296de823cb711efa" => :high_sierra
+    sha256 "c0b8349525680304f99e464d328df804279be85398969974f2b708e5167c89fe" => :sierra
+    sha256 "428120be3841ca77961f2d19fe8f98f1615972db4f568e3cfa2c0a44cae44e77" => :el_capitan
+    sha256 "65fd095ea758180f18ca9c39864dbd3432115610b0db2439dbc923d3c0002f7b" => :yosemite
   end
 
   depends_on "libtiff"
@@ -26,7 +34,7 @@ class Spandsp < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #define SPANDSP_EXPOSE_INTERNAL_STRUCTURES
       #include <spandsp.h>
 

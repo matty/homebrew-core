@@ -1,47 +1,32 @@
 class Collectd < Formula
   desc "Statistics collection and monitoring daemon"
   homepage "https://collectd.org/"
-
-  stable do
-    url "https://collectd.org/files/collectd-5.7.1.tar.bz2"
-    sha256 "7edd3643c0842215553b2421d5456f4e9a8a58b07e216b40a7e8e91026d8e501"
-  end
+  url "https://collectd.org/files/collectd-5.12.0.tar.bz2"
+  sha256 "5bae043042c19c31f77eb8464e56a01a5454e0b39fa07cf7ad0f1bfc9c3a09d6"
+  license "MIT"
 
   bottle do
-    sha256 "f9adc84dbfdd0acfff4292077b58c9c496a38b4d31b83aa011caba556b2c6fd1" => :sierra
-    sha256 "8b089b6fa5bd2f6860b1fa9ec8136ab12e216d9537bf204311123fae0b04da63" => :el_capitan
-    sha256 "cf32fb80a6d26f60862fcf2fbba1eaf1c50d83d45cb6cce37178a48ec2b05e91" => :yosemite
+    sha256 "ea61777a4d32690b2a1ddd53081f0888f7c83066cc9e0e5482f604e61c981fd9" => :catalina
+    sha256 "9efc5c99db4239be93afbad141938c697cc36c1442e117d92960a5265cfc57cf" => :mojave
+    sha256 "850edf925fa233181c03c7157cf6c89fca53906f930c511febd283358242f688" => :high_sierra
   end
 
   head do
     url "https://github.com/collectd/collectd.git"
 
-    depends_on "libtool" => :build
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
-
-  option "with-java", "Enable Java support"
-  option "with-python", "Enable Python support"
-  option "with-protobuf-c", "Enable write_riemann via protobuf-c support"
-  option "with-debug", "Enable debug support"
-
-  deprecated_option "java" => "with-java"
-  deprecated_option "debug" => "with-debug"
 
   depends_on "pkg-config" => :build
-  depends_on "protobuf-c" => :optional
-  depends_on :java => :optional
-  depends_on :python => :optional
+  depends_on "libgcrypt"
+  depends_on "libtool"
   depends_on "net-snmp"
+  depends_on "riemann-client"
 
-  fails_with :clang do
-    build 318
-    cause <<-EOS.undent
-      Clang interacts poorly with the collectd-bundled libltdl,
-      causing configure to fail.
-    EOS
-  end
+  uses_from_macos "bison"
+  uses_from_macos "flex"
+  uses_from_macos "perl"
 
   def install
     args = %W[
@@ -49,52 +34,59 @@ class Collectd < Formula
       --disable-dependency-tracking
       --prefix=#{prefix}
       --localstatedir=#{var}
+      --disable-java
+      --enable-write_riemann
     ]
-
-    args << "--disable-embedded-perl" if MacOS.version <= :leopard
-    args << "--disable-java" if build.without? "java"
-    args << "--enable-python" if build.with? "python"
-    args << "--enable-write_riemann" if build.with? "protobuf-c"
-    args << "--enable-debug" if build.with? "debug"
 
     system "./build.sh" if build.head?
     system "./configure", *args
     system "make", "install"
   end
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/sbin/collectd -f -C #{HOMEBREW_PREFIX}/etc/collectd.conf"
+  plist_options manual: "#{HOMEBREW_PREFIX}/sbin/collectd -f -C #{HOMEBREW_PREFIX}/etc/collectd.conf"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
-        <true/>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{sbin}/collectd</string>
-          <string>-f</string>
-          <string>-C</string>
-          <string>#{etc}/collectd.conf</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/collectd.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/collectd.log</string>
-      </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>KeepAlive</key>
+          <true/>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{sbin}/collectd</string>
+            <string>-f</string>
+            <string>-C</string>
+            <string>#{etc}/collectd.conf</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>StandardErrorPath</key>
+          <string>#{var}/log/collectd.log</string>
+          <key>StandardOutPath</key>
+          <string>#{var}/log/collectd.log</string>
+        </dict>
+      </plist>
     EOS
   end
 
   test do
+    log = testpath/"collectd.log"
+    (testpath/"collectd.conf").write <<~EOS
+      LoadPlugin logfile
+      <Plugin logfile>
+        File "#{log}"
+      </Plugin>
+      LoadPlugin memory
+    EOS
     begin
-      pid = fork { exec sbin/"collectd", "-f" }
-      assert shell_output("nc -u -w 2 127.0.0.1 25826", 0)
+      pid = fork { exec sbin/"collectd", "-f", "-C", "collectd.conf" }
+      sleep 1
+      assert_predicate log, :exist?, "Failed to create log file"
+      assert_match "plugin \"memory\" successfully loaded.", log.read
     ensure
       Process.kill("SIGINT", pid)
       Process.wait(pid)

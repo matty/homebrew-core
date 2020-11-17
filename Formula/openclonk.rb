@@ -1,30 +1,29 @@
 class Openclonk < Formula
   desc "Multiplayer action game"
-  homepage "http://www.openclonk.org"
-  url "http://www.openclonk.org/builds/release/7.0/openclonk-7.0-src.tar.bz2"
+  homepage "https://www.openclonk.org/"
+  url "https://www.openclonk.org/builds/release/7.0/openclonk-7.0-src.tar.bz2"
   sha256 "bc1a231d72774a7aa8819e54e1f79be27a21b579fb057609398f2aa5700b0732"
-  head "https://github.com/openclonk/openclonk", :using => :git
+  license "ISC"
+  revision 3
+  head "https://github.com/openclonk/openclonk.git"
 
   bottle do
     cellar :any
-    sha256 "481eec5556eaee344b87562f8744cef8eebab542fbd0111266d52e8ec3ec5542" => :sierra
-    sha256 "a643463cf54b88b32455e686b76f83f614d4f02da77c4158f751fa56e5b67822" => :el_capitan
-    sha256 "ea319199ef6666ce4661851d1baa4afb637c99ee42ff512eb9cb6fa0e1425312" => :yosemite
+    sha256 "1f4cca43144a36b7d6eeb24d9d3cefc84b591fb20abc503ecca7e73fc26b07ca" => :big_sur
+    sha256 "95f44dd3686157a5185f1452f46515160347cef55237aac391edfabbbeb0c5de" => :catalina
+    sha256 "688963d2df4cd964a51bed317cf656137d5e8d668b457a7cef89e8302ac02f49" => :mojave
+    sha256 "87779de2d3cfa0dc1880fa45226e3f434ecca4409565db5e8bf278c225487da1" => :high_sierra
   end
 
-  # Requires some C++14 features missing in Mavericks
-  depends_on :macos => :yosemite
   depends_on "cmake" => :build
-  depends_on "jpeg"
-  depends_on "libpng"
-  depends_on "freetype"
-  depends_on "glew"
-  depends_on "libogg"
-  depends_on "libvorbis"
   depends_on "boost"
   depends_on "freealut"
-
-  needs :cxx11
+  depends_on "freetype"
+  depends_on "glew"
+  depends_on "jpeg"
+  depends_on "libogg"
+  depends_on "libpng"
+  depends_on "libvorbis"
 
   def install
     ENV.cxx11

@@ -1,16 +1,20 @@
 class Plustache < Formula
   desc "C++ port of Mustache templating system"
   homepage "https://github.com/mrtazz/plustache"
-  url "https://github.com/mrtazz/plustache/archive/v0.3.0.tar.gz"
-  sha256 "ceb56d6cab81b8ed2d812e4a546036a46dd28685512255e3f52553ba70a15fc8"
+  url "https://github.com/mrtazz/plustache/archive/0.4.0.tar.gz"
+  sha256 "83960c412a7c176664c48ba4d718e72b5d39935b24dc13d7b0f0840b98b06824"
+  license "MIT"
 
   bottle do
     cellar :any
-    sha256 "54055df2b3b0431ba1903eed2f2abf7de05a368b7b8e7660158ef9a7ba2c9bcd" => :sierra
-    sha256 "45a5e0e42d835e175ff923fc3e2c9fe75a25d5e9c6cc24dd1449622bc0a82d01" => :el_capitan
-    sha256 "7535a016ea3e2e1ab59f452d11feeed4b287591c566a08d0c0c3680f8b2e1239" => :yosemite
-    sha256 "6d6fd22aa6da55eef0eb939aebf4a5ec17c5e3ad101bc5c3132213b573d265d7" => :mavericks
+    rebuild 1
+    sha256 "7a9331bddff426646291a13c0cde40ecc1399acc8a44db3073d6756d56ca5621" => :big_sur
+    sha256 "c851f4db6bd4095dd61c1f4a2b192f39b21f05aa8c6e994b9f75d6f183e0bbb8" => :catalina
+    sha256 "e6edf87d690e5c17b32a04d0da7ffe6cdf185cb6273a23058c56373b62bd554d" => :mojave
+    sha256 "046e756acf6694ae9b8768c62981f807a93aaef52d175bbff7005a29bb23aa00" => :high_sierra
   end
+
+  deprecate! because: :repo_archived
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build

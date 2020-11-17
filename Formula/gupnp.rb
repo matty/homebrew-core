@@ -1,51 +1,49 @@
 class Gupnp < Formula
+  include Language::Python::Shebang
+
   desc "Framework for creating UPnP devices and control points"
   homepage "https://wiki.gnome.org/Projects/GUPnP"
-  url "https://download.gnome.org/sources/gupnp/1.0/gupnp-1.0.1.tar.xz"
-  sha256 "934584cc1b361bf251a5ac271ffb1995a3c6426ce44cb64f9c6d779f2af9a6d9"
+  url "https://download.gnome.org/sources/gupnp/1.2/gupnp-1.2.4.tar.xz"
+  sha256 "f7a0307ea51f5e44d1b832f493dd9045444a3a4e211ef85dfd9aa5dd6eaea7d1"
+  license "LGPL-2.0-or-later"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "6f83d007931b5cf9e272d1338e3f1d054aa28cdba9de39464a6ccac88bff5927" => :sierra
-    sha256 "372473313c01e897c81dd9d8d59d55ac1bc025c84e9df406343d60f4133a69c9" => :el_capitan
-    sha256 "75e0f3e4997c7f3e98ab47112df8fe2afc6d57c77ca057a7e3eea3d3c7bfd64f" => :yosemite
+    cellar :any
+    sha256 "0cb0e21dccf7a4cd8105303569e1f11409f46be63893eea7523d59eeff5b2398" => :catalina
+    sha256 "24070ef84b5cad5ed79d0349b4f1bb41a1097aa20f0c401ab80b1c5646bdd153" => :mojave
+    sha256 "0f0c2eb53f1182cb2b81ae49ba947d87c4ce1d0f3028c8aa5df2c0dc120e3ee8" => :high_sierra
   end
 
-  head do
-    url "https://github.com/GNOME/gupnp.git"
-
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
-    depends_on "gnome-common" => :build
-    depends_on "gtk-doc" => :build
-    depends_on "libtool" => :build
-  end
-
+  depends_on "docbook-xsl" => :build
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "intltool" => :build
   depends_on "gettext"
   depends_on "glib"
-  depends_on "libsoup"
   depends_on "gssdp"
+  depends_on "libsoup"
+  depends_on "python@3.9"
 
   def install
-    args = %W[
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-silent-rules
-      --prefix=#{prefix}
-    ]
-    if build.head?
-      ENV.append "CFLAGS", "-I/usr/include/uuid"
-      system "./autogen.sh", *args
-    else
-      system "./configure", *args
+    mkdir "build" do
+      ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
+
+      system "meson", *std_meson_args, ".."
+      system "ninja"
+      system "ninja", "install"
+      bin.find { |f| rewrite_shebang detected_python_shebang, f }
     end
-    system "make", "install"
   end
 
   test do
-    system bin/"gupnp-binding-tool", "--help"
-    (testpath/"test.c").write <<-EOS.undent
+    system bin/"gupnp-binding-tool-1.2", "--help"
+    (testpath/"test.c").write <<~EOS
       #include <libgupnp/gupnp-control-point.h>
 
       static GMainLoop *main_loop;
@@ -55,7 +53,7 @@ class Gupnp < Formula
         GUPnPContext *context;
         GUPnPControlPoint *cp;
 
-        context = gupnp_context_new (NULL, NULL, 0, NULL);
+        context = gupnp_context_new (NULL, 0, NULL);
         cp = gupnp_control_point_new
           (context, "urn:schemas-upnp-org:service:WANIPConnection:1");
 
@@ -67,14 +65,15 @@ class Gupnp < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "-I#{include}/gupnp-1.0", "-L#{lib}", "-lgupnp-1.0",
-           "-I#{Formula["gssdp"].opt_include}/gssdp-1.0",
-           "-I#{Formula["gssdp"].opt_lib}", "-lgssdp-1.0",
+    system ENV.cc, "-I#{include}/gupnp-1.2", "-L#{lib}", "-lgupnp-1.2",
+           "-I#{Formula["gssdp"].opt_include}/gssdp-1.2",
+           "-L#{Formula["gssdp"].opt_lib}", "-lgssdp-1.2",
            "-I#{Formula["glib"].opt_include}/glib-2.0",
            "-I#{Formula["glib"].opt_lib}/glib-2.0/include",
+           "-L#{Formula["glib"].opt_lib}",
            "-lglib-2.0", "-lgobject-2.0",
            "-I#{Formula["libsoup"].opt_include}/libsoup-2.4",
-           "-I/usr/include/libxml2",
+           "-I#{MacOS.sdk_path}/usr/include/libxml2",
            testpath/"test.c", "-o", testpath/"test"
     system "./test"
   end

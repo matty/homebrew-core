@@ -1,24 +1,23 @@
 class CouchdbLucene < Formula
   desc "Full-text search of CouchDB documents using Lucene"
   homepage "https://github.com/rnewson/couchdb-lucene"
-  url "https://github.com/rnewson/couchdb-lucene/archive/v1.1.0.tar.gz"
-  sha256 "854ea7410e542a81a458d0b7a55c6ff7dc40d02e79221928059556292f001087"
+  url "https://github.com/rnewson/couchdb-lucene/archive/v2.1.0.tar.gz"
+  sha256 "8297f786ab9ddd86239565702eb7ae8e117236781144529ed7b72a967224b700"
+  license "Apache-2.0"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4fb08743c0503a767088a1f8b9161be07047019de908a8f30813bd25f3a6d8d9" => :sierra
-    sha256 "56bfe9e52b98c06711412eabf4154b6d6f0347938207924715c33cdcf87a6823" => :el_capitan
-    sha256 "e0051826e2cca177c53f5433bd47f28f870d3c1d998dc33f92cbb8032119bd2d" => :yosemite
-    sha256 "a92d0b0c097bac1da9f9625e13eea8121bb5b8d9b81ee3d059e71b9e55d11bd7" => :mavericks
+    sha256 "714f23364619652be6321a45982688acf42be2a6b58aebbe654625b5ca6c69a3" => :catalina
+    sha256 "7df53cd760b08390dcf985ef6d033e4540e6759cbe6975add36ce0888f48b544" => :mojave
+    sha256 "087475d3e5852700d5d5a96f802072657fa623e1ed23d0b57707d1ef9eeb98c2" => :high_sierra
   end
 
-  depends_on "couchdb"
   depends_on "maven" => :build
-  depends_on :java
+  depends_on "couchdb"
+  depends_on "openjdk@8"
 
   def install
-    ENV.java_cache
-
     system "mvn"
     system "tar", "-xzf", "target/couchdb-lucene-#{version}-dist.tar.gz", "--strip", "1"
 
@@ -36,10 +35,11 @@ class CouchdbLucene < Formula
     ini_path.write(ini_file) unless ini_path.exist?
   end
 
-  def shim_script(target); <<-EOS.undent
-    #!/bin/bash
-    export CL_BASEDIR=#{libexec}/bin
-    exec "$CL_BASEDIR/#{target}" "$@"
+  def shim_script(target)
+    <<~EOS
+      #!/bin/bash
+      export CL_BASEDIR=#{libexec}/bin
+      exec "$CL_BASEDIR/#{target}" "$@"
     EOS
   end
 
@@ -47,51 +47,54 @@ class CouchdbLucene < Formula
     etc/"couchdb/local.d/couchdb-lucene.ini"
   end
 
-  def ini_file; <<-EOS.undent
-    [httpd_global_handlers]
-    _fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
+  def ini_file
+    <<~EOS
+      [httpd_global_handlers]
+      _fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
     EOS
   end
 
-  def caveats; <<-EOS.undent
-    All commands have been installed with the prefix 'cl_'.
+  def caveats
+    <<~EOS
+      All commands have been installed with the prefix 'cl_'.
 
-    If you really need to use these commands with their normal names, you
-    can add a "clbin" directory to your PATH from your bashrc like:
+      If you really need to use these commands with their normal names, you
+      can add a "clbin" directory to your PATH from your bashrc like:
 
-        PATH="#{opt_libexec}/clbin:$PATH"
+          PATH="#{opt_libexec}/clbin:$PATH"
     EOS
   end
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/couchdb-lucene/bin/cl_run"
+  plist_options manual: "#{HOMEBREW_PREFIX}/opt/couchdb-lucene/bin/cl_run"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
-      "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>EnvironmentVariables</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
         <dict>
-          <key>HOME</key>
-          <string>~</string>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>EnvironmentVariables</key>
+          <dict>
+            <key>HOME</key>
+            <string>~</string>
+          </dict>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/cl_run</string>
+          </array>
+          <key>StandardOutPath</key>
+          <string>/dev/null</string>
+          <key>StandardErrorPath</key>
+          <string>/dev/null</string>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <true/>
         </dict>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/cl_run</string>
-        </array>
-        <key>StandardOutPath</key>
-        <string>/dev/null</string>
-        <key>StandardErrorPath</key>
-        <string>/dev/null</string>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <true/>
-      </dict>
-    </plist>
+      </plist>
     EOS
   end
 
@@ -101,11 +104,16 @@ class CouchdbLucene < Formula
     cp_r Dir[opt_prefix/"*"], testpath
     inreplace "bin/cl_run", "CL_BASEDIR=#{libexec}/bin",
                             "CL_BASEDIR=#{testpath}/libexec/bin"
+    port = free_port
+    inreplace "libexec/conf/couchdb-lucene.ini", "port=5985", "port=#{port}"
 
-    io = IO.popen("#{testpath}/bin/cl_run")
-    sleep 2
-    Process.kill("SIGINT", io.pid)
-    Process.wait(io.pid)
-    io.read !~ /Exception/
+    fork do
+      exec "#{testpath}/bin/cl_run"
+    end
+    sleep 5
+
+    output = JSON.parse shell_output("curl --silent localhost:#{port}")
+    assert_equal "Welcome", output["couchdb-lucene"]
+    assert_equal version, output["version"]
   end
 end

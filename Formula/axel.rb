@@ -1,23 +1,27 @@
 class Axel < Formula
   desc "Light UNIX download accelerator"
   homepage "https://github.com/eribertomota/axel"
-  url "https://github.com/eribertomota/axel/archive/2.12.tar.gz"
-  sha256 "28e7bb26b7be3f56a61b60ef07e15e05ea9a41850b0ed45a0c56d6d2202f4a8b"
+  url "https://github.com/axel-download-accelerator/axel/releases/download/v2.17.9/axel-2.17.9.tar.xz"
+  sha256 "f1364d9b55d435efc6d32218097a50a63be7b1300138e698133cf19ad3aa3a54"
+  license "GPL-2.0"
   head "https://github.com/eribertomota/axel.git"
 
   bottle do
-    sha256 "f6eade207e6f38d546026493cb711e694554771544db7342ade340b04f0f72c3" => :sierra
-    sha256 "6e99da46b83e38b8145a6556e7c70a1e8b31df1f600c87d1c55190a77e0d2626" => :el_capitan
-    sha256 "e8b8cbea1f9fc02dccefe9f1985bb04f6a502bf152b890659603eac3b3a3763e" => :yosemite
+    cellar :any
+    sha256 "7d3e739ee8021287345766709cf415de137ef19f64a2a817a3591df1e0a4b808" => :big_sur
+    sha256 "8c4c87ce64a4aaa3691e965a7c5843503f80d348f5d17b0e9d1840c45bbc1aaf" => :catalina
+    sha256 "e1ab7026adcf06373662caad04dbc1d93b5fcabb40ff79b6bbba466e0f6d8da4" => :mojave
+    sha256 "d27855f8ffa19450a2ba4b54a6338105004f342e85527efaa074d67d245af943" => :high_sierra
   end
 
   depends_on "autoconf" => :build
+  depends_on "autoconf-archive" => :build
   depends_on "automake" => :build
+  depends_on "pkg-config" => :build
   depends_on "gettext"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
-    system "./autogen.sh"
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--sysconfdir=#{etc}"
@@ -28,6 +32,6 @@ class Axel < Formula
     filename = (testpath/"axel.tar.gz")
     system bin/"axel", "-o", "axel.tar.gz", stable.url
     filename.verify_checksum stable.checksum
-    assert File.exist?("axel.tar.gz")
+    assert_predicate testpath/"axel.tar.gz", :exist?
   end
 end

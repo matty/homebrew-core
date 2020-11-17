@@ -1,46 +1,36 @@
-require "language/go"
-
 class Vegeta < Formula
   desc "HTTP load testing tool and library"
   homepage "https://github.com/tsenart/vegeta"
-  url "https://github.com/tsenart/vegeta/archive/v6.1.1.tar.gz"
-  sha256 "57bdab4cebcd1ee512c4dd4b0347e8058029e6f852a494ec1a18a9c3120bc30c"
+  url "https://github.com/tsenart/vegeta/archive/v12.8.4.tar.gz"
+  sha256 "418249d07f04da0a587df45abe34705166de9e54a836e27e387c719ebab3e357"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c9e470f58d10a8ba51732a53aaf40083adf22b6e79a78337b10e9f49949362c8" => :sierra
-    sha256 "1d3fcdcd9206a14ca845f33826817c4c491802378ed8958ac5f4f3132d97baec" => :el_capitan
-    sha256 "e399a2c1d617c7a1ca679c328650d31da6bf51a43a6b4cfa0368e07340c13b3b" => :yosemite
-    sha256 "9adf5bef1f56d93b1866cd6c32f6aa964847dd0854f88dc8cd6cfce6e69184e3" => :mavericks
+    sha256 "1f2ea9a3a871ff2f93ee65f1a5977aece4479835d954026342ac0c5eb523db27" => :big_sur
+    sha256 "63b383f4cdff26cc0bf4ba3e24a84ea6d7485a9a61fe49ac62b09f39c5f01e13" => :catalina
+    sha256 "76e2d89891ecee0bfa07e939619683cae2d954bca2c5524a6e87b84c105c6c25" => :mojave
+    sha256 "df3853752133b68c20a9d054c12d36d531779fe595bc6011bb1e2d3245e9df2d" => :high_sierra
   end
 
   depends_on "go" => :build
 
-  go_resource "github.com/streadway/quantile" do
-    url "https://github.com/streadway/quantile.git",
-        :revision => "b0c588724d25ae13f5afb3d90efec0edc636432b"
-  end
-
-  go_resource "golang.org/x/net" do
-    url "https://go.googlesource.com/net.git",
-        :revision => "6250b412798208e6c90b03b7c4f226de5aa299e2"
-  end
-
   def install
-    ENV["GOPATH"] = buildpath
-    ENV["CGO_ENABLED"] = "0"
+    build_time = Utils.safe_popen_read("date -u +'%Y-%m-%dT%H:%M:%SZ' 2> /dev/null").chomp
 
-    (buildpath/"src/github.com/tsenart").mkpath
-    ln_s buildpath, buildpath/"src/github.com/tsenart/vegeta"
-    Language::Go.stage_deps resources, buildpath/"src"
-    system "go", "build", "-ldflags", "-X main.Version=#{version}",
-                          "-o", bin/"vegeta"
+    ldflags = %W[
+      -s -w
+      -X main.Version=#{version}
+      -X main.Date=#{build_time}
+    ]
+
+    system "go", "build", "-o", bin/"vegeta", "-ldflags", ldflags.join(" ")
   end
 
   test do
     input = "GET https://google.com"
     output = pipe_output("#{bin}/vegeta attack -duration=1s -rate=1", input, 0)
     report = pipe_output("#{bin}/vegeta report", output, 0)
-    assert_match /Success +\[ratio\] +100.00%/, report
+    assert_match(/Success +\[ratio\] +100.00%/, report)
   end
 end

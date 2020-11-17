@@ -1,43 +1,30 @@
 class Py2cairo < Formula
   desc "Python 2 bindings for the Cairo graphics library"
   homepage "https://cairographics.org/pycairo/"
-  url "https://cairographics.org/releases/py2cairo-1.10.0.tar.bz2"
-  mirror "https://distfiles.macports.org/py-cairo/py2cairo-1.10.0.tar.bz2"
-  sha256 "d30439f06c2ec1a39e27464c6c828b6eface3b22ee17b2de05dc409e429a7431"
+  url "https://github.com/pygobject/pycairo/releases/download/v1.18.2/pycairo-1.18.2.tar.gz"
+  sha256 "dcb853fd020729516e8828ad364084e752327d4cff8505d20b13504b32b16531"
+  license "LGPL-2.1"
   revision 1
+
+  livecheck do
+    url :stable
+    regex(/^v?(1\.18(?:\.\d+)*)$/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "66d29fc9a931262e2029bb9792aa3357813ae66b81b1fcb9731e9bd104641fef" => :sierra
-    sha256 "b707f47cbeca402be10789d52e05fcdeb85b20cb09908b8dd1651143ed783be0" => :el_capitan
-    sha256 "4969f9b495c0f37c1c38fe2f2e95f32a5b3eb55eed7dc7de3331ea7bcf2d6c84" => :yosemite
-    sha256 "724bde1d66a5c916c95746fc0f23ea4dcbfaddd7123694553557c4a6d51f9729" => :mavericks
-    sha256 "784e49b2f15f30af7f4e255eb2263c6e99ae4e0d0ec961412ff033d0954fd298" => :mountain_lion
+    sha256 "80feea24d8039acef848c76075f8911493762d75b883b56bf4d87f14d5a3bbac" => :big_sur
+    sha256 "78ab70984d612ac9feba4d673615e3918110aebc4aa0b360a854e81fc7ac0ea7" => :catalina
+    sha256 "f01c39e8f71339cdec156309fb7358f5bb3e292fb0a84a071c3a935b58234120" => :mojave
+    sha256 "76dbdbbd42c2a59cae7e9ddc05ad26d331194c8a132e24e7316ceb551a40272b" => :high_sierra
   end
-
-  option :universal
 
   depends_on "pkg-config" => :build
   depends_on "cairo"
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on :macos # Due to Python 2
 
   def install
-    ENV.refurbish_args
-
-    # disable waf's python extension mode because it explicitly links libpython
-    # https://code.google.com/p/waf/issues/detail?id=1531
-    inreplace "src/wscript", "pyext", ""
-    ENV["LINKFLAGS"] = "-undefined dynamic_lookup"
-    ENV.append_to_cflags `python-config --includes`
-
-    # Python extensions default to universal but cairo may not be universal
-    ENV["ARCHFLAGS"] = "-arch #{MacOS.preferred_arch}" unless build.universal?
-
-    system "./waf", "configure", "--prefix=#{prefix}", "--nopyc", "--nopyo"
-    system "./waf", "install"
-
-    module_dir = lib/"python2.7/site-packages/cairo"
-    mv module_dir/"lib_cairo.dylib", module_dir/"_cairo.so"
+    system "python", *Language::Python.setup_install_args(prefix)
   end
 
   test do

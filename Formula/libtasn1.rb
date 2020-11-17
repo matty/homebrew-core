@@ -1,28 +1,31 @@
 class Libtasn1 < Formula
   desc "ASN.1 structure parser library"
   homepage "https://www.gnu.org/software/libtasn1/"
-  url "https://ftpmirror.gnu.org/libtasn1/libtasn1-4.10.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.10.tar.gz"
-  sha256 "681a4d9a0d259f2125713f2e5766c5809f151b3a1392fd91390f780b4b8f5a02"
+  url "https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.16.0.tar.gz"
+  mirror "https://ftpmirror.gnu.org/libtasn1/libtasn1-4.16.0.tar.gz"
+  sha256 "0e0fb0903839117cb6e3b56e68222771bebf22ad7fc2295a0ed7d576e8d4329d"
+  license "LGPL-2.1"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "1e45fba493969f7aebeaffd3037873588efb3faff69b5d41c0e4fec658c0feaa" => :sierra
-    sha256 "5a0f0cfa1ec36351e833a2bd9ce5a8fb2575520334b30abb0da5dc43727415c1" => :el_capitan
-    sha256 "e506e5613818094ab8029cbf94b51068e7f1d1683bcc5bc6b06c84eb9be2576d" => :yosemite
+    sha256 "9a69770cae180c61ada4bb4701f5402b35b828d2baa7c5135196cf1df35965cb" => :big_sur
+    sha256 "00bd968b6a110c5cb497cf0e3b14800ed5e67a2476d0d544aeb1c0c2c1f3f332" => :catalina
+    sha256 "3c2e9cdfec0ccec899847a3ab69b88967b6cbc0b3e406fa1938a4ca6f277b674" => :mojave
+    sha256 "c3cf713b5bb29fcac1381b7242e557b7920cb327c77170a6dd038a477d6021cd" => :high_sierra
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
     system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking",
                           "--disable-silent-rules"
     system "make", "install"
   end
 
   test do
-    (testpath/"pkix.asn").write <<-EOS.undent
+    (testpath/"pkix.asn").write <<~EOS
       PKIX1 { }
       DEFINITIONS IMPLICIT TAGS ::=
       BEGIN
@@ -32,7 +35,7 @@ class Libtasn1 < Formula
       }
       END
     EOS
-    (testpath/"assign.asn1").write <<-EOS.undent
+    (testpath/"assign.asn1").write <<~EOS
       dp PKIX1.Dss-Sig-Value
       r 42
       s 47

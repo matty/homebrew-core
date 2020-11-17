@@ -1,26 +1,30 @@
 class Instead < Formula
   desc "Interpreter of simple text adventures"
   homepage "https://instead.syscall.ru/"
-  url "https://github.com/instead-hub/instead/archive/2.4.1.tar.gz"
-  sha256 "2368d6e7a38ce1e82feea3848d10916f52caf6103579ac5fbc2bd6dcfdf89c6e"
-  head "https://github.com/instead-hub/instead.git"
+  url "https://github.com/instead-hub/instead/archive/3.3.2.tar.gz"
+  sha256 "bdb827f36e693dc7b443e69d4678d24f1ccc20dc093c22f58b8d78192da15f2e"
+  license "MIT"
 
   bottle do
-    sha256 "3e48bcfdbfb9ad1c6dba6ef8891e06d9fe6a0ca16a7aa3af0a847ae19caf81a0" => :sierra
-    sha256 "b5689cfd9d9f6f2f57be7cd0d70f188a808d252d73ba098752a00abfc6a7d194" => :el_capitan
-    sha256 "02232def2681a6b34c5d2efaf006d6d37cfeed5d7839cd52306ce3623696c764" => :yosemite
+    sha256 "4279441d1a315d876f9646a284ac3beefd109e7fa7c4ebce2fb8549bf0947d94" => :big_sur
+    sha256 "e447bee8716c692d07e6d58b337639a64334dfa921326810c5ae0d64b14fe72e" => :catalina
+    sha256 "128a389655c4361f48dd8ee81344682a3d4433485cf91569a71961bed0885e06" => :mojave
+    sha256 "e9029b89e6133d0f233a679a684e64d0195b283aabb6c55640f8a95ed1297f50" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "lua"
-  depends_on "sdl"
-  depends_on "sdl_image"
-  depends_on "sdl_mixer"
-  depends_on "sdl_ttf"
+  depends_on "sdl2"
+  depends_on "sdl2_image"
+  depends_on "sdl2_mixer"
+  depends_on "sdl2_ttf"
 
   def install
     mkdir "build" do
-      system "cmake", "..", "-DWITH_GTK2=OFF", *std_cmake_args
+      system "cmake", "..", "-DWITH_GTK2=OFF",
+                            "-DLUA_INCLUDE_DIR=#{Formula["lua"].opt_include}/lua",
+                            "-DLUA_LIBRARY=#{Formula["lua"].opt_lib}/liblua.dylib",
+                            *std_cmake_args
       system "make", "install"
     end
   end

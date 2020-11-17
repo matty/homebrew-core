@@ -1,32 +1,38 @@
 class Atk < Formula
   desc "GNOME accessibility toolkit"
   homepage "https://library.gnome.org/devel/atk/"
-  url "https://download.gnome.org/sources/atk/2.22/atk-2.22.0.tar.xz"
-  sha256 "d349f5ca4974c9c76a4963e5b254720523b0c78672cbc0e1a3475dbd9b3d44b6"
+  url "https://download.gnome.org/sources/atk/2.36/atk-2.36.0.tar.xz"
+  sha256 "fb76247e369402be23f1f5c65d38a9639c1164d934e40f6a9cf3c9e96b652788"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "0223438a41f539e2c9a9d1b8b8f68d8a67c5ac9dbaae32b7a117da68f8947828" => :sierra
-    sha256 "a065750a4ea385f6504b111f6f538b9bd64b3526bb65a72f705276ebecefbb7d" => :el_capitan
-    sha256 "5f9a612ac3616d720a14f148f19e0a4d3a2259d58fc18edc548443635bc28f48" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  option :universal
+  bottle do
+    cellar :any
+    sha256 "8321e0ee7364e1de1a3667c50954b4b4f629cba7c2d8077114c4a5bc38a24655" => :big_sur
+    sha256 "1065293046ab2984940dfa0b9c9e724439838e63f685c932d508ccd74bcf921b" => :catalina
+    sha256 "68c7b621339c03964036877987db69806f663612ba275e68554a97d218a2b5b4" => :mojave
+    sha256 "fa8f525bfeacab676f795bac37f622fc100e63c9e9661fbd6ddd3e1725ebd097" => :high_sierra
+  end
 
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "glib"
-  depends_on "gobject-introspection"
 
   def install
-    ENV.universal_binary if build.universal?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--enable-introspection=yes"
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <atk/atk.h>
 
       int main(int argc, char *argv[]) {
@@ -47,8 +53,10 @@ class Atk < Formula
       -latk-1.0
       -lglib-2.0
       -lgobject-2.0
-      -lintl
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

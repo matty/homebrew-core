@@ -1,28 +1,31 @@
 class Atdtool < Formula
+  include Language::Python::Virtualenv
+
   desc "Command-line interface for After the Deadline language checker"
   homepage "https://github.com/lpenz/atdtool"
-  url "https://github.com/lpenz/atdtool/archive/upstream/1.3.tar.gz"
-  sha256 "eb634fd9e8a57d5d5e4d8d2ca0dd9692610aa952e28fdf24909fd678a8f39155"
+  url "https://files.pythonhosted.org/packages/83/d1/55150f2dd9afda92e2f0dcb697d6f555f8b1f578f1df4d685371e8b81089/atdtool-1.3.3.tar.gz"
+  sha256 "a83f50e7705c65e7ba5bc339f1a0624151bba9f7cdec7fb1460bb23e9a02dab9"
+  license "BSD-3-Clause"
+  revision 4
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c83db7e4362cecf9d1c44864b71577977c2b288144c651dcaffcf92779eef3de" => :sierra
-    sha256 "3c03f9deaae3f420231b6fa5331e3d213dc0d48c8817a7142403d35d54159283" => :el_capitan
-    sha256 "8120a3e4b9e2cbc74c533baa2fee5427cae2ebfbf634a39d75c3e2481159b03b" => :yosemite
-    sha256 "efda2ae7e414ac866210899a3f037e565631d07957c7ed44ffefc306d1944901" => :mavericks
+    sha256 "f9e3111dd7fc68392f8916623df911076d0c6ed2bcbb294eda942c136fd962c3" => :catalina
+    sha256 "d35df10b09cdcd186178a1101d181c662f37903179438f31d0ec142cc830da93" => :mojave
+    sha256 "5a11e4ab56f3b02990418612c81f0538b8ea6161d15e5bac2932208ee5293055" => :high_sierra
   end
 
-  depends_on "txt2tags" => :build
+  depends_on "python@3.9"
 
   def install
-    # Change the PREFIX to match the homebrew one, since there is no way to
-    # pass it as an option for now edit the Makefile
-    # https://github.com/lpenz/atdtool/pull/8
-    inreplace "Makefile", "PREFIX=/usr/local", "PREFIX=#{prefix}"
-    system "make", "install"
+    virtualenv_install_with_resources
   end
 
   test do
-    system "#{bin}/atdtool", "#{prefix}/AUTHORS"
+    system "#{bin}/atdtool", "--help"
   end
 end

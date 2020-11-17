@@ -1,17 +1,12 @@
 class Byteman < Formula
-  desc "Java bytecode manipulation tool for testing, monitoring and tracing."
+  desc "Java bytecode manipulation tool for testing, monitoring and tracing"
   homepage "https://byteman.jboss.org/"
-  url "https://downloads.jboss.org/byteman/3.0.7/byteman-download-3.0.7-bin.zip"
-  sha256 "c04ac878232e3c3d9facc245a4b573bd85aa3e360f3549cf627fd13f28046326"
-
-  devel do
-    url "https://downloads.jboss.org/byteman/4.0.0-BETA3/byteman-download-4.0.0-BETA3-bin.zip"
-    sha256 "51a387cd3a795fe130cf475f47bc222ddd17022ff2f6632c0530084f684355f4"
-    version "4.0.0-BETA3"
-  end
+  url "https://downloads.jboss.org/byteman/4.0.12/byteman-download-4.0.12-bin.zip"
+  sha256 "7aebafd6877058a1406e725be4246bcafd8efd78fa583b7192e847cb5d6b27a5"
 
   bottle :unneeded
-  depends_on :java => "1.6+"
+
+  depends_on "openjdk"
 
   def install
     rm_rf Dir["bin/*.bat"]
@@ -19,7 +14,7 @@ class Byteman < Formula
     libexec.install ["bin", "lib", "contrib"]
     pkgshare.install ["sample"]
 
-    env = Language::Java.java_home_env("1.6+").merge(:BYTEMAN_HOME => libexec)
+    env = { JAVA_HOME: "${JAVA_HOME:-#{Formula["openjdk"].opt_prefix}}", BYTEMAN_HOME: libexec }
     Pathname.glob("#{libexec}/bin/*") do |file|
       target = bin/File.basename(file, File.extname(file))
       # Drop the .sh from the scripts
@@ -28,7 +23,7 @@ class Byteman < Formula
   end
 
   test do
-    (testpath/"src/main/java/BytemanHello.java").write <<-EOS.undent
+    (testpath/"src/main/java/BytemanHello.java").write <<~EOS
       class BytemanHello {
         public static void main(String... args) {
           System.out.println("Hello, Brew!");
@@ -36,7 +31,7 @@ class Byteman < Formula
       }
     EOS
 
-    (testpath/"brew.btm").write <<-EOS.undent
+    (testpath/"brew.btm").write <<~EOS
       RULE trace main entry
       CLASS BytemanHello
       METHOD main
@@ -56,10 +51,10 @@ class Byteman < Formula
     # Compile example
     system "javac", "src/main/java/BytemanHello.java"
     # Expected successful output when Byteman runs example
-    expected = <<-EOS.undent
-    Entering main
-    Hello, Brew!
-    Exiting main
+    expected = <<~EOS
+      Entering main
+      Hello, Brew!
+      Exiting main
     EOS
     actual = shell_output("#{bin}/bmjava -l brew.btm -cp src/main/java BytemanHello")
     assert_equal(expected, actual)

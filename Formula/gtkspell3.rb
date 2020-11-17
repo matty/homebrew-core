@@ -1,29 +1,42 @@
 class Gtkspell3 < Formula
   desc "Gtk widget for highlighting and replacing misspelled words"
   homepage "https://gtkspell.sourceforge.io/"
-  url "http://gtkspell.sourceforge.net/download/gtkspell3-3.0.7.tar.gz"
-  sha256 "13f2e6d3e2554cc24253ef592074b28c117db33b7a4465c98c69a3e0a4fa3cc2"
+  url "https://downloads.sourceforge.net/project/gtkspell/3.0.10/gtkspell3-3.0.10.tar.xz"
+  sha256 "b040f63836b347eb344f5542443dc254621805072f7141d49c067ecb5a375732"
+  revision 3
 
-  bottle do
-    sha256 "2485ef850a39072ed1848a6f6426750963913f80f4785dac2d13cd2937d9d1af" => :sierra
-    sha256 "a308614008162f5bb8e93e1cbe88394e4f39185fc5616075d46bcce4390ebe0d" => :el_capitan
-    sha256 "68bb9cc7e7772731552b06a0496e79754658eedab6f81b6609a4c1d1a23f9b1b" => :yosemite
-    sha256 "d1d6fbec19ca11ddaebf3d445dbaf04d98981650a08043d0e369fba2f44a9160" => :mavericks
-    sha256 "a33273b5ae3190d67028acdd991a848c9089f1819d3781c4b19dbd7a20358421" => :mountain_lion
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "a3ad550626760e585e9474fd8a548315f02b113bb2a0d823957e809d848da464" => :big_sur
+    sha256 "b3b9eff2b9b11085e6b16cf50165031ab7446cd78aa125afd358747a67419bd8" => :catalina
+    sha256 "1d41a37ab6c27e572e59bf7a0aaf1f66cfbbe587fffb5e9fdcc2749c24be4b26" => :mojave
+    sha256 "590fb3c9f5b1f978d385128db8c8aec91b0285a3dbead32bc19c127d9a35bb50" => :high_sierra
+  end
+
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "gobject-introspection" => :build
   depends_on "intltool" => :build
-  depends_on "gtk+3"
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "vala" => :build
   depends_on "enchant"
+  depends_on "gtk+3"
 
   def install
-    system "./configure", "--disable-debug", "--prefix=#{prefix}"
+    system "autoreconf", "-fi"
+    system "./configure", "--disable-dependency-tracking",
+                          "--disable-debug",
+                          "--enable-vala",
+                          "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gtkspell/gtkspell.h>
 
       int main(int argc, char *argv[]) {
@@ -40,6 +53,7 @@ class Gtkspell3 < Formula
     gettext = Formula["gettext"]
     glib = Formula["glib"]
     gtkx3 = Formula["gtk+3"]
+    harfbuzz = Formula["harfbuzz"]
     libepoxy = Formula["libepoxy"]
     libpng = Formula["libpng"]
     pango = Formula["pango"]
@@ -47,7 +61,7 @@ class Gtkspell3 < Formula
     flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
-      -I#{enchant.opt_include}/enchant
+      -I#{enchant.opt_include}/enchant-2
       -I#{fontconfig.opt_include}
       -I#{freetype.opt_include}/freetype2
       -I#{gdk_pixbuf.opt_include}/gdk-pixbuf-2.0
@@ -56,6 +70,7 @@ class Gtkspell3 < Formula
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
       -I#{gtkx3.opt_include}/gtk-3.0
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/gtkspell-3.0
       -I#{libepoxy.opt_include}
       -I#{libpng.opt_include}/libpng16
@@ -74,7 +89,7 @@ class Gtkspell3 < Formula
       -latk-1.0
       -lcairo
       -lcairo-gobject
-      -lenchant
+      -lenchant-2
       -lgdk-3
       -lgdk_pixbuf-2.0
       -lgio-2.0

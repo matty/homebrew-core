@@ -1,42 +1,63 @@
 class Watchman < Formula
   desc "Watch files and take action when they change"
   homepage "https://github.com/facebook/watchman"
-  url "https://github.com/facebook/watchman/archive/v4.7.0.tar.gz"
-  sha256 "77c7174c59d6be5e17382e414db4907a298ca187747c7fcb2ceb44da3962c6bf"
+  license "Apache-2.0"
+  revision 5
   head "https://github.com/facebook/watchman.git"
 
-  bottle do
-    cellar :any
-    sha256 "370bf84f5a349db3ecd3e72c156b95a90bddf73029c062094a848dae123e3ada" => :sierra
-    sha256 "543ee937e060a61028041ce3f8ea490602fab29b1427bed40152d47e7baa523c" => :el_capitan
-    sha256 "c9ab24b2585ec3cce5641e4a31610916dd5e1a101a0c0e7695516ff32b4e5e9d" => :yosemite
-    sha256 "ee4ec6d737f55204f2b33a3701c494b66353550532a0ec600ee81668be8d6c54" => :mavericks
+  stable do
+    url "https://github.com/facebook/watchman/archive/v4.9.0.tar.gz"
+    sha256 "1f6402dc70b1d056fffc3748f2fdcecff730d8843bb6936de395b3443ce05322"
+
+    # Upstream commit from 1 Sep 2017: "Have bin scripts use iter() method for python3"
+    patch do
+      url "https://github.com/facebook/watchman/commit/17958f7d.patch?full_index=1"
+      sha256 "73990f0c7bd434d04fd5f1310b97c5f8599793007bd31ae438c2ba0211fb2c43"
+    end
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  # The Git repo contains a few tags like `2020.05.18.00`, so we have to
+  # restrict matching to versions with two to three parts (e.g., 1.2, 1.2.3).
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+){,2})$/i)
+  end
+
+  bottle do
+    sha256 "f03c91e17cd7595f98106ee4a27f28433ecc2fd6dde8cc1b7e279bd60b730051" => :big_sur
+    sha256 "30ed7115aa2a2534f5255508915f827c2e6f3100fcd7842415db64e31eabac30" => :catalina
+    sha256 "135eb0a8f098417a8e4d67bf8d732a19bad1932eee085497877e93982e91074f" => :mojave
+    sha256 "e872c3aae64c3b78197de9f12e272bebd5d20c316a120916f59a5f1cd2fac039" => :high_sierra
+  end
+
   depends_on "autoconf" => :build
   depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "openssl@1.1"
   depends_on "pcre"
+  depends_on "python@3.9"
 
   def install
     system "./autogen.sh"
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-pcre",
-                          # we'll do the homebrew specific python
-                          # installation below
+                          # Do homebrew specific Python installation below
                           "--without-python",
                           "--enable-statedir=#{var}/run/watchman"
     system "make"
     system "make", "install"
 
     # Homebrew specific python application installation
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
+    python3 = Formula["python@3.9"].opt_bin/"python3"
+    xy = Language::Python.major_minor_version python3
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{xy}/site-packages"
     cd "python" do
-      system "python", *Language::Python.setup_install_args(libexec)
+      system python3, *Language::Python.setup_install_args(libexec)
     end
     bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
   end
 
   def post_install

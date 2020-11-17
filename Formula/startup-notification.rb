@@ -3,22 +3,28 @@ class StartupNotification < Formula
   homepage "https://www.freedesktop.org/wiki/Software/startup-notification/"
   url "https://www.freedesktop.org/software/startup-notification/releases/startup-notification-0.12.tar.gz"
   sha256 "3c391f7e930c583095045cd2d10eb73a64f085c7fde9d260f2652c7cb3cfbe4a"
+  license "LGPL-2.0-or-later"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "1480bccd4d65d99905fdd5010bd156b0ff2ee2ada36ce0bcb4e7b74fa632c9da" => :sierra
-    sha256 "7762bbbdb98d8f360e82a9ac5e94239f94433e7bb38e8eec309230270c5158e0" => :el_capitan
-    sha256 "770f1ab8c0339c940b098d91989fbc06bacafabe1a91cc891e9891ef39e83781" => :yosemite
+    sha256 "bdb8f9123099562853461f5299108f7cbfac9be39ea3ab9ad6b3853c288ba5c9" => :catalina
+    sha256 "c4fcbad957b22a8999a0bc87a3c2b0b2b6b94654b3f6213f5903025574ae4c76" => :mojave
+    sha256 "60f0a0ce0a2954f53fa9f4b5dfc3aeb99aa5607801f340b506ea172bb1e381f3" => :high_sierra
   end
 
-  depends_on "pkg-config" => :build
-  depends_on :x11
+  depends_on "pkg-config" => [:build, :test]
+  depends_on "libx11"
+  depends_on "libxcb"
+  depends_on "xcb-util"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
+    system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    assert_match "-I#{include}", shell_output("pkg-config --cflags libstartup-notification-1.0").chomp
   end
 end

@@ -1,124 +1,148 @@
 class Libav < Formula
   desc "Audio and video processing tools"
   homepage "https://libav.org/"
-  url "https://libav.org/releases/libav-11.4.tar.xz"
-  sha256 "0b7dabc2605f3a254ee410bb4b1a857945696aab495fe21b34c3b6544ff5d525"
-  revision 2
-
+  url "https://libav.org/releases/libav-12.3.tar.xz"
+  sha256 "6893cdbd7bc4b62f5d8fd6593c8e0a62babb53e323fbc7124db3658d04ab443b"
+  license "GPL-2.0"
+  revision 7
   head "https://git.libav.org/libav.git"
 
-  bottle do
-    rebuild 2
-    sha256 "b3b916804a42c996598c33627ab166a681c92af4ba677fd86687396acc558d7d" => :sierra
-    sha256 "f41e5ed8a78b009840ec98856232e96e00678ca6fde3574fe1a719a1404b2476" => :el_capitan
-    sha256 "00b6a0a42c76720a045c0f3b54da9174c5883fb661450dd0db1af43ce85cdaca" => :yosemite
-    sha256 "d56f9c532f3debf0ade3e58a676c330c3041643b9a8871ca6ef8e6c517e95a18" => :mavericks
+  livecheck do
+    url "https://libav.org/releases/"
+    regex(/href=.*?libav[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  option "without-faac", "Disable AAC encoder via faac"
-  option "without-lame", "Disable MP3 encoder via libmp3lame"
-  option "without-x264", "Disable H.264 encoder via x264"
-  option "without-xvid", "Disable Xvid MPEG-4 video encoder via xvid"
-
-  option "with-opencore-amr", "Enable AMR-NB de/encoding and AMR-WB decoding " \
-    "via libopencore-amrnb and libopencore-amrwb"
-  option "with-openssl", "Enable SSL support"
-  option "with-rtmpdump", "Enable RTMP protocol support"
-  option "with-schroedinger", "Enable Dirac video format"
-  option "with-sdl", "Enable avplay"
-  option "with-speex", "Enable Speex de/encoding via libspeex"
-  option "with-theora", "Enable Theora encoding via libtheora"
-  option "with-libvorbis", "Enable Vorbis encoding via libvorbis"
-  option "with-libvo-aacenc", "Enable VisualOn AAC encoder"
-  option "with-libvpx", "Enable VP8 de/encoding via libvpx"
+  bottle do
+    cellar :any
+    sha256 "bc4f13de926046fac2512ef7924600b196ef0d4da72e2f32bed6541aeb471786" => :big_sur
+    sha256 "5c69b6c9b6a43ecb3db3e5cb4a610cfd50afdca964cbacbd30622fb89241aaaf" => :catalina
+    sha256 "30f9831bae193d6a9716e8e3aed399dfd8d62189079d91b5c4dfb893904a213f" => :mojave
+    sha256 "02fa538e8c123a074967d4b4c8e122c167761d4c6425ed5061a1d15cf47945a7" => :high_sierra
+  end
 
   depends_on "pkg-config" => :build
+  # manpages won't be built without texi2html
+  depends_on "texi2html" => :build
   depends_on "yasm" => :build
 
-  # manpages won't be built without texi2html
-  depends_on "texi2html" => :build if MacOS.version >= :mountain_lion
+  depends_on "faac"
+  depends_on "fdk-aac"
+  depends_on "freetype"
+  depends_on "lame"
+  depends_on "libvorbis"
+  depends_on "libvpx"
+  depends_on "opus"
+  depends_on "sdl"
+  depends_on "theora"
+  depends_on "x264"
+  depends_on "xvid"
 
-  depends_on "faac" => :recommended
-  depends_on "lame" => :recommended
-  depends_on "x264" => :recommended
-  depends_on "xvid" => :recommended
-
-  depends_on "fontconfig" => :optional
-  depends_on "freetype" => :optional
-  depends_on "fdk-aac" => :optional
-  depends_on "frei0r" => :optional
-  depends_on "gnutls" => :optional
-  depends_on "libvo-aacenc" => :optional
-  depends_on "libvorbis" => :optional
-  depends_on "libvpx" => :optional
-  depends_on "opencore-amr" => :optional
-  depends_on "openssl" => :optional
-  depends_on "opus" => :optional
-  depends_on "rtmpdump" => :optional
-  depends_on "schroedinger" => :optional
-  depends_on "sdl" => :optional
-  depends_on "speex" => :optional
-  depends_on "theora" => :optional
-
-  # Fixes the use of a removed identifier in libvpx;
-  # will be fixed in the next release.
+  # https://bugzilla.libav.org/show_bug.cgi?id=1033
   patch do
-    url "https://github.com/libav/libav/commit/4d05e9392f84702e3c833efa86e84c7f1cf5f612.patch"
-    sha256 "78f02e231f3931a6630ec4293994fc6933c6a1c3d1dd501989155236843c47f9"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b6e917c/libav/Check-for--no_weak_imports-in-ldflags-on-macOS.patch"
+    sha256 "986d748ba2c7c83319a59d76fbb0dca22dcd51f0252b3d1f3b80dbda2cf79742"
   end
 
+  # Upstream patch for x264 version >= 153, should be included in libav > 12.3
+  patch do
+    url "https://github.com/libav/libav/commit/c6558e8840fbb2386bf8742e4d68dd6e067d262e.patch?full_index=1"
+    sha256 "0fcfe69274cccbca33825414f526300a1fbbf0c464ac32577e1cc137b8618820"
+  end
+
+  # Upstream patch to fix building with fdk-aac 2
+  patch do
+    url "https://github.com/libav/libav/commit/141c960e21d2860e354f9b90df136184dd00a9a8.patch?full_index=1"
+    sha256 "7081183fed875f71d53cce1e71f6b58fb5d5eee9f30462d35f9367ec2210507b"
+  end
+
+  # Fix for image formats removed from libvpx
+  # https://github.com/shirkdog/hardenedbsd-ports/blob/HEAD/multimedia/libav/files/patch-libavcodec_libvpx.c
+  patch :DATA
+
   def install
-    args = [
-      "--disable-debug",
-      "--disable-shared",
-      "--disable-indev=jack",
-      "--prefix=#{prefix}",
-      "--enable-gpl",
-      "--enable-nonfree",
-      "--enable-version3",
-      "--enable-vda",
-      "--cc=#{ENV.cc}",
-      "--host-cflags=#{ENV.cflags}",
-      "--host-ldflags=#{ENV.ldflags}",
+    args = %W[
+      --disable-debug
+      --disable-shared
+      --disable-indev=jack
+      --prefix=#{prefix}
+      --cc=#{ENV.cc}
+      --host-cflags=#{ENV.cflags}
+      --host-ldflags=#{ENV.ldflags}
+      --enable-gpl
+      --enable-libfaac
+      --enable-libfdk-aac
+      --enable-libfreetype
+      --enable-libmp3lame
+      --enable-libopus
+      --enable-libvorbis
+      --enable-libvpx
+      --enable-libx264
+      --enable-libxvid
+      --enable-nonfree
+      --enable-vda
+      --enable-version3
+      --enable-libtheora
     ]
 
-    args << "--enable-frei0r" if build.with? "frei0r"
-    args << "--enable-gnutls" if build.with? "gnutls"
-    args << "--enable-libfaac" if build.with? "faac"
-    args << "--enable-libfdk-aac" if build.with? "fdk-aac"
-    args << "--enable-libfontconfig" if build.with? "fontconfig"
-    args << "--enable-libfreetype" if build.with? "freetype"
-    args << "--enable-libmp3lame" if build.with? "lame"
-    args << "--enable-libopencore-amrnb" if build.with? "opencore-amr"
-    args << "--enable-libopencore-amrwb" if build.with? "opencore-amr"
-    args << "--enable-libopus" if build.with? "opus"
-    args << "--enable-librtmp" if build.with? "rtmpdump"
-    args << "--enable-libschroedinger" if build.with? "schroedinger"
-    args << "--enable-libspeex" if build.with? "speex"
-    args << "--enable-libtheora" if build.with? "theora"
-    args << "--enable-libvo-aacenc" if build.with? "libvo-aacenc"
-    args << "--enable-libvorbis" if build.with? "libvorbis"
-    args << "--enable-libvpx" if build.with? "libvpx"
-    args << "--enable-libx264" if build.with? "x264"
-    args << "--enable-libxvid" if build.with? "xvid"
-    args << "--enable-openssl" if build.with? "openssl"
-
     system "./configure", *args
-
     system "make"
 
-    bin.install "avconv", "avprobe"
-    man1.install "doc/avconv.1", "doc/avprobe.1"
-    if build.with? "sdl"
-      bin.install "avplay"
-      man1.install "doc/avplay.1"
-    end
+    bin.install "avconv", "avprobe", "avplay"
+    man1.install "doc/avconv.1", "doc/avprobe.1", "doc/avplay.1"
   end
 
   test do
     # Create an example mp4 file
-    system "#{bin}/avconv", "-y", "-filter_complex",
-        "testsrc=rate=1:duration=1", "#{testpath}/video.mp4"
-    assert (testpath/"video.mp4").exist?
+    mp4out = testpath/"video.mp4"
+    system bin/"avconv", "-y", "-filter_complex", "testsrc=rate=1:duration=1", mp4out
+    assert_predicate mp4out, :exist?
   end
 end
+
+__END__
+--- a/libavcodec/libvpx.c
++++ b/libavcodec/libvpx.c
+@@ -25,6 +25,7 @@
+ enum AVPixelFormat ff_vpx_imgfmt_to_pixfmt(vpx_img_fmt_t img)
+ {
+     switch (img) {
++#if VPX_IMAGE_ABI_VERSION < 5
+     case VPX_IMG_FMT_RGB24:     return AV_PIX_FMT_RGB24;
+     case VPX_IMG_FMT_RGB565:    return AV_PIX_FMT_RGB565BE;
+     case VPX_IMG_FMT_RGB555:    return AV_PIX_FMT_RGB555BE;
+@@ -36,10 +37,13 @@ enum AVPixelFormat ff_vpx_imgfmt_to_pixfmt(vpx_img_fmt
+     case VPX_IMG_FMT_ARGB_LE:   return AV_PIX_FMT_BGRA;
+     case VPX_IMG_FMT_RGB565_LE: return AV_PIX_FMT_RGB565LE;
+     case VPX_IMG_FMT_RGB555_LE: return AV_PIX_FMT_RGB555LE;
++#endif
+     case VPX_IMG_FMT_I420:      return AV_PIX_FMT_YUV420P;
+     case VPX_IMG_FMT_I422:      return AV_PIX_FMT_YUV422P;
+     case VPX_IMG_FMT_I444:      return AV_PIX_FMT_YUV444P;
++#if VPX_IMAGE_ABI_VERSION < 5
+     case VPX_IMG_FMT_444A:      return AV_PIX_FMT_YUVA444P;
++#endif
+ #if VPX_IMAGE_ABI_VERSION >= 3
+     case VPX_IMG_FMT_I440:      return AV_PIX_FMT_YUV440P;
+     case VPX_IMG_FMT_I42016:    return AV_PIX_FMT_YUV420P16BE;
+@@ -53,6 +57,7 @@ enum AVPixelFormat ff_vpx_imgfmt_to_pixfmt(vpx_img_fmt
+ vpx_img_fmt_t ff_vpx_pixfmt_to_imgfmt(enum AVPixelFormat pix)
+ {
+     switch (pix) {
++#if VPX_IMAGE_ABI_VERSION < 5
+     case AV_PIX_FMT_RGB24:        return VPX_IMG_FMT_RGB24;
+     case AV_PIX_FMT_RGB565BE:     return VPX_IMG_FMT_RGB565;
+     case AV_PIX_FMT_RGB555BE:     return VPX_IMG_FMT_RGB555;
+@@ -64,10 +69,13 @@ vpx_img_fmt_t ff_vpx_pixfmt_to_imgfmt(enum AVPixelForm
+     case AV_PIX_FMT_BGRA:         return VPX_IMG_FMT_ARGB_LE;
+     case AV_PIX_FMT_RGB565LE:     return VPX_IMG_FMT_RGB565_LE;
+     case AV_PIX_FMT_RGB555LE:     return VPX_IMG_FMT_RGB555_LE;
++#endif
+     case AV_PIX_FMT_YUV420P:      return VPX_IMG_FMT_I420;
+     case AV_PIX_FMT_YUV422P:      return VPX_IMG_FMT_I422;
+     case AV_PIX_FMT_YUV444P:      return VPX_IMG_FMT_I444;
++#if VPX_IMAGE_ABI_VERSION < 5
+     case AV_PIX_FMT_YUVA444P:     return VPX_IMG_FMT_444A;
++#endif
+ #if VPX_IMAGE_ABI_VERSION >= 3
+     case AV_PIX_FMT_YUV440P:      return VPX_IMG_FMT_I440;
+     case AV_PIX_FMT_YUV420P16BE:  return VPX_IMG_FMT_I42016;

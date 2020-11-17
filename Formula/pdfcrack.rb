@@ -1,18 +1,28 @@
 class Pdfcrack < Formula
   desc "PDF files password cracker"
   homepage "https://pdfcrack.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/pdfcrack/pdfcrack/pdfcrack-0.15/pdfcrack-0.15.tar.gz"
-  sha256 "791043693f9fc261fa326dbcb5e4de3801d6ae552dbea39293f9b2674c250d3e"
+  url "https://downloads.sourceforge.net/project/pdfcrack/pdfcrack/pdfcrack-0.19/pdfcrack-0.19.tar.gz"
+  sha256 "3115206998b7cddf13971dd4b50946c077fc96e220aca1c0734798d907a2c0ed"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "29d9fae755ec6f86bd6ef162a100708a4b70ca8df16dfab56c6bd9716e804cdb" => :sierra
-    sha256 "95bdf77c94c37277e1539d9db15e843a3787d9554c7715bfef839db5535adaca" => :el_capitan
-    sha256 "77c9f14f30a06181c2d4777f8a3ec7dda02d45bf7a502ef6c03c5cf7fbbada4e" => :yosemite
+    sha256 "b2f128d92c00fe5d1fa81d7b61e7458fcdb8b58e656b312679fbefe33d4295c4" => :big_sur
+    sha256 "2c26ba3ca3a1edd9cc9e6570cb5d1c7838a152a3d8281a2a16c6be5276d47b23" => :catalina
+    sha256 "12310e0c5841db19ecf51f527cde0aaba1663a04aa78c760a5d6e02218dc4e3c" => :mojave
+    sha256 "9923fadda54414a1d0cd5e86b0796aec8bbaf7c80e96e7518b5ae136d50d5674" => :high_sierra
   end
 
   def install
     system "make", "all"
     bin.install "pdfcrack"
+  end
+
+  test do
+    system "#{bin}/pdfcrack", "--version"
   end
 end

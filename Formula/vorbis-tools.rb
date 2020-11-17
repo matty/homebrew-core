@@ -1,24 +1,37 @@
 class VorbisTools < Formula
   desc "Ogg Vorbis CODEC tools"
-  homepage "http://vorbis.com"
-  url "http://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.0.tar.gz"
+  homepage "https://github.com/xiph/vorbis-tools"
+  url "https://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.0.tar.gz"
   sha256 "a389395baa43f8e5a796c99daf62397e435a7e73531c9f44d9084055a05d22bc"
-  revision 1
+  revision 2
+
+  livecheck do
+    url "https://downloads.xiph.org/releases/vorbis/"
+    regex(/href=.*?vorbis-tools[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "d98cd4b862786d666f031829fa72a367734ac0ec63c6477e80e16b575ead3b51" => :sierra
-    sha256 "b95e6fb92f692cd321bc09952fc9d369533d847c320eac9f0172f0fce3f4beff" => :el_capitan
-    sha256 "0619896b3b6b268bc1f8ac81b52b77011196a019134473f2b680e9c941214590" => :yosemite
-    sha256 "4f4355cd1413f3aec51d51287fe4bedebd4571e1222f611421f5557edc411cab" => :mavericks
+    cellar :any
+    rebuild 1
+    sha256 "671568dbd6ae11ccaafc0e0a3a4bd467898bfa6d700b2e21db8457f900c44778" => :big_sur
+    sha256 "71a81bbeec2d79ddd7f39858cf66a450fac9d542824c30a064298229d6637594" => :catalina
+    sha256 "c3e402519ad170a0a37d80d394d8afbe905985784f8ea5d93fcc84a4486a9977" => :mojave
+    sha256 "e929c31331ffcb58d21cb086184ed747185dd8d0f4b7ee1b98134cabe44490bc" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "flac"
+  depends_on "libao"
   depends_on "libogg"
   depends_on "libvorbis"
-  depends_on "libao"
-  depends_on "flac" => :optional
+
+  uses_from_macos "curl"
 
   def install
+    # Fix `brew linkage --test` "Missing libraries: /usr/lib/libnetwork.dylib"
+    # Prevent bogus linkage to the libnetwork.tbd in Xcode 7's SDK
+    ENV.delete("SDKROOT") if MacOS.version == :yosemite
+
     args = %W[
       --disable-debug
       --disable-dependency-tracking
@@ -26,15 +39,13 @@ class VorbisTools < Formula
       --prefix=#{prefix}
     ]
 
-    args << "--without-flac" if build.without? "flac"
-
     system "./configure", *args
     system "make", "install"
   end
 
   test do
     system bin/"oggenc", test_fixtures("test.wav"), "-o", "test.ogg"
-    assert File.exist?("test.ogg")
+    assert_predicate testpath/"test.ogg", :exist?
     output = shell_output("#{bin}/ogginfo test.ogg")
     assert_match "20.625000 kb/s", output
   end

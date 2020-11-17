@@ -1,56 +1,57 @@
-# encoding: UTF-8
 class Clipper < Formula
   desc "Share macOS clipboard with tmux and other local and remote apps"
   homepage "https://wincent.com/products/clipper"
-  url "https://github.com/wincent/clipper/archive/0.4.1.tar.gz"
-  sha256 "76875e8e3cc7ab53e8966dd52a47d08e8acb6b6db7a0af69a3ec529fe9ae7766"
+  url "https://github.com/wincent/clipper/archive/2.0.0.tar.gz"
+  sha256 "9c9fa0b198d11513777d40c88e2529b2f2f84d7045a500be5946976a5cdcfe83"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a3d294b554108d9d4279c4cb7faec47bace12d809ceace2d78eb6379d64c1cf3" => :sierra
-    sha256 "3544a2a3a19abac783869335f5429d7d34e709fb9487f3a5c7d6f956b7c2a561" => :el_capitan
-    sha256 "8555464d08d154a85e81a10704913e63dcf7fe94fd3d055f44bbbfae3b93f27d" => :yosemite
+    rebuild 1
+    sha256 "3322412e9d0979650ad863bf42ba473c4eaabf06f48ef6d1053cf3fbc89dfc8a" => :big_sur
+    sha256 "6e16549f9930f652364f727cf42ea04608d92f172e7916c85900c3b6feb98df0" => :catalina
+    sha256 "2216327dbb3a341f14db9d2da767749d00e460917bcf1098665948e24eeb2e8b" => :mojave
+    sha256 "a2230d8cb54b244b82ea5f5c47cebabe2f63a6b9dc1b98d47cd4a0fcd4eb743f" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    system "go", "build", "clipper.go"
-    bin.install "clipper"
+    system "go", "build", "-ldflags", "-s -w", "-trimpath", "-o", bin/"clipper", "clipper.go"
   end
 
-  plist_options :manual => "clipper"
+  plist_options manual: "clipper"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-      <key>WorkingDirectory</key>
-      <string>#{HOMEBREW_PREFIX}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/clipper</string>
-      </array>
-      <key>EnvironmentVariables</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
       <dict>
-        <key>LANG</key>
-        <string>en_US.UTF-8</string>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/clipper</string>
+        </array>
+        <key>EnvironmentVariables</key>
+        <dict>
+          <key>LANG</key>
+          <string>en_US.UTF-8</string>
+        </dict>
       </dict>
-    </dict>
-    </plist>
+      </plist>
     EOS
   end
 
   test do
-    TEST_DATA = "a simple string! to test clipper, with söme spéciål characters!! 🐎\n".freeze
+    test_data = "a simple string! to test clipper, with söme spéciål characters!! 🐎\n".freeze
 
     cmd = [opt_bin/"clipper", "-a", testpath/"clipper.sock", "-l", testpath/"clipper.log"].freeze
     ohai cmd.join " "
@@ -60,10 +61,10 @@ class Clipper < Formula
       sleep 0.5 # Give it a moment to launch and create its socket.
       begin
         sock = UNIXSocket.new testpath/"clipper.sock"
-        assert_equal TEST_DATA.bytesize, sock.sendmsg(TEST_DATA)
+        assert_equal test_data.bytesize, sock.sendmsg(test_data)
         sock.close
         sleep 0.5
-        assert_equal TEST_DATA, `LANG=en_US.UTF-8 pbpaste`
+        assert_equal test_data, `LANG=en_US.UTF-8 pbpaste`
       ensure
         Process.kill "TERM", clipper.pid
       end

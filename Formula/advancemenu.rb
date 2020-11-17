@@ -1,16 +1,24 @@
 class Advancemenu < Formula
   desc "Frontend for AdvanceMAME/MESS"
-  homepage "http://www.advancemame.it/menu-readme.html"
-  url "https://github.com/amadvance/advancemame/releases/download/advancemenu-2.9/advancemenu-2.9.tar.gz"
-  sha256 "c7599da6ff715eb3ad9f7a55973a9aaac2f26740a4e12daf744cf08963d652c1"
+  homepage "https://www.advancemame.it/menu-readme.html"
+  url "https://github.com/amadvance/advancemame/releases/download/v3.9/advancemame-3.9.tar.gz"
+  sha256 "3e4628e1577e70a1dbe104f17b1b746745b8eda80837f53fbf7b091c88be8c2b"
+  license "GPL-2.0"
 
   bottle do
-    sha256 "875396a5eb77a17ee1cda679fc782d5fa15072a206331d15cb186e52bf4d5369" => :sierra
-    sha256 "5e4a2e320562c0d92c3d61049f097d0a7ee054b76bacc8dbf81095c2758bed6a" => :el_capitan
-    sha256 "543c8592f5f72c1407fac7e29a9bc298b2d5b15529d669b54338d60209409028" => :yosemite
+    sha256 "81fba884c95faf6fbe13f1dfa128e6875bb3ec7e9743ae70830b2b086863df10" => :big_sur
+    sha256 "07f9a82231936429257190078d28ec7313b39dfe9ecf3ed9e82b15fbe1615366" => :catalina
+    sha256 "36ebf0c6727172fa909b933f801986e483892d5cb10c0a2fb27314880d906bd1" => :mojave
+    sha256 "fda952fe67d2c39e57d621b6a1392493a95c8ef62f510f63534f962a97252d26" => :high_sierra
   end
 
+  depends_on "pkg-config" => :build
   depends_on "sdl"
+
+  uses_from_macos "expat"
+  uses_from_macos "zlib"
+
+  conflicts_with "advancemame", because: "both install `advmenu` binaries"
 
   def install
     system "./configure", "--prefix=#{prefix}"
@@ -18,6 +26,6 @@ class Advancemenu < Formula
   end
 
   test do
-    system bin/"advmenu", "--version"
+    assert_match "Creating AdvanceMENU standard configuration file", shell_output("#{bin}/advmenu --default 2>&1")
   end
 end

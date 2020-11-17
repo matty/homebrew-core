@@ -1,34 +1,34 @@
 class Lsdvd < Formula
   desc "Read the content info of a DVD"
   homepage "https://sourceforge.net/projects/lsdvd"
-  url "https://downloads.sourceforge.net/project/lsdvd/lsdvd/0.16%20-%20I%20hate%20James%20Blunt/lsdvd-0.16.tar.gz"
-  sha256 "04ae3e2d823ed427e31d57f3677d28ec36bdf3bf984d35f7bdfab030d89b20f1"
+  url "https://downloads.sourceforge.net/project/lsdvd/lsdvd/lsdvd-0.17.tar.gz"
+  sha256 "7d2c5bd964acd266b99a61d9054ea64e01204e8e3e1a107abe41b1274969e488"
+  revision 3
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "24d7f2b86648de4b7477d41b0a2adfefa870ac2a973f4a31e16bb88a88fc3904" => :sierra
-    sha256 "29aa32a4b1b1c327aaea8b568f625c0c8e49723a3397d722df927e0b1b4493d7" => :el_capitan
-    sha256 "9af38820e4747c002f38be75d31577533980ca731f12cffc2b9f41c6a37e1a3d" => :yosemite
-    sha256 "b00f07a2636d1d73ab1b3456843d35de78e01f98f9ac818c4f0d70a88893253b" => :mavericks
+    sha256 "78c4f868f8b534b59db6820fe0f303d42c0f908c49be6e5a5896da76441d0e0d" => :big_sur
+    sha256 "63e52d4264e765ca6095153de37b08dee02d59676ae98b2f0c36b29c0fdae48e" => :catalina
+    sha256 "1489bcdd29d86d725cbf76a68ff77335729c676fcf1155555da799d7096ee933" => :mojave
+    sha256 "d5a945ffb9e6172df4625d0ed5b3e5c6aecd2dfc6c9ab5b2a83d88267027edc8" => :high_sierra
   end
 
+  depends_on "pkg-config" => :build
+  depends_on "libdvdcss"
   depends_on "libdvdread"
-  depends_on "libdvdcss" => :optional
-
-  patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/cb1d457/lsdvd/patch-configure.diff"
-    sha256 "3535ad1ad4c8fc2e49287190edcd89cd9d0679682ee94aca200252b9e1d80cd9"
-  end
-
-  patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/cb1d457/lsdvd/patch-lsdvd_c.diff"
-    sha256 "33a8f5876a0aa09532424066da71c64d18ab67154ecbebd66f81d98843937079"
-  end
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--mandir=#{man}"
     system "make", "install"
+  end
+
+  test do
+    system bin/"lsdvd", "--help"
   end
 end

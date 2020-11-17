@@ -1,14 +1,21 @@
 class OmegaRpg < Formula
-  desc "The classic Roguelike game"
+  desc "Classic Roguelike game"
   homepage "http://www.alcyone.com/max/projects/omega/"
   url "http://www.alcyone.com/binaries/omega/omega-0.80.2-src.tar.gz"
   sha256 "60164319de90b8b5cae14f2133a080d5273e5de3d11c39df080a22bbb2886104"
   revision 1
 
+  livecheck do
+    url :homepage
+    regex(/latest.*?>v?(\d+(?:\.\d+)+)</i)
+  end
+
   bottle do
-    sha256 "06008f528a9ac14c6b7e1f9be84a5e76a4ad4df234344e7e13eaedb108ce4b04" => :sierra
-    sha256 "d46db018d9c54c5a0460f46763a218b6bff1bf277aca19fe91b17965dac3a367" => :el_capitan
-    sha256 "1b5b760d814cf07c4d9daa8dbcbcccfc38038dbab140ed182ad514bad07fe932" => :yosemite
+    cellar :any_skip_relocation
+    rebuild 1
+    sha256 "4ab6747f5c291b26c9ba5b750d98ee6368f42dc35039bf23b2e401a318fb87f6" => :catalina
+    sha256 "8161e569d07cae64b550fa2f2e795171ca82b65b283cf1e45056b61d12fa71f5" => :mojave
+    sha256 "0b08d090868aa2b1da56645e74ea87d6a15043c473aba35e56f3fbf2e4b4f4d4" => :high_sierra
   end
 
   def install

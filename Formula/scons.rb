@@ -1,38 +1,33 @@
 class Scons < Formula
+  include Language::Python::Virtualenv
+
   desc "Substitute for classic 'make' tool with autoconf/automake functionality"
-  homepage "http://www.scons.org"
-  url "https://downloads.sourceforge.net/project/scons/scons/2.5.1/scons-2.5.1.tar.gz"
-  sha256 "0b25218ae7b46a967db42f2a53721645b3d42874a65f9552ad16ce26d30f51f2"
+  homepage "https://www.scons.org/"
+  url "https://files.pythonhosted.org/packages/ae/a4/2eb8d05b0ac9e168e8ff0681624c123a123c743487e528757c68ea995d20/SCons-4.0.1.tar.gz"
+  mirror "https://downloads.sourceforge.net/project/scons/scons/4.0.1/scons-4.0.1.tar.gz"
+  sha256 "722ed104b5c624ecdc89bd4e02b094d2b14d99d47b5d0501961e47f579a2007c"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c74c517cbd71ac009888a308226f60a89b55cfa911c667d3e1f773cb5cac2bd1" => :sierra
-    sha256 "c74c517cbd71ac009888a308226f60a89b55cfa911c667d3e1f773cb5cac2bd1" => :el_capitan
-    sha256 "c74c517cbd71ac009888a308226f60a89b55cfa911c667d3e1f773cb5cac2bd1" => :yosemite
+    sha256 "5ebef89fc0bc3ac4b510504e24368a44f926771e61dfa6adb2b0ac29f92e66d7" => :big_sur
+    sha256 "c5051503085ee71b2ca039c0c30d16a1aceb77fd2603735b3e37571b936b9158" => :catalina
+    sha256 "b3fbbbf21fc6198ba87770cc870aa98602a2cf76f2971fb054b7e7dafdcd191c" => :mojave
+    sha256 "337031123eb8835112a41baec030df5d16fcd90944a827d9f9721dd64388d6ef" => :high_sierra
   end
 
-  def install
-    man1.install gzip("scons-time.1", "scons.1", "sconsign.1")
-    system "/usr/bin/python", "setup.py", "install",
-             "--prefix=#{prefix}",
-             "--standalone-lib",
-             # SCons gets handsy with sys.path---`scons-local` is one place it
-             # will look when all is said and done.
-             "--install-lib=#{libexec}/scons-local",
-             "--install-scripts=#{bin}",
-             "--install-data=#{libexec}",
-             "--no-version-script", "--no-install-man"
+  depends_on "python@3.9"
 
-    # Re-root scripts to libexec so they can import SCons and symlink back into
-    # bin. Similar tactics are used in the duplicity formula.
-    bin.children.each do |p|
-      mv p, "#{libexec}/#{p.basename}.py"
-      bin.install_symlink "#{libexec}/#{p.basename}.py" => p.basename
-    end
+  def install
+    virtualenv_install_with_resources
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       int main()
       {

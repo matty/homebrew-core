@@ -1,20 +1,22 @@
 class Luaradio < Formula
-  desc "lightweight, embeddable flow graph signal processing framework for SDR"
-  homepage "http://luaradio.io/"
-  url "https://github.com/vsergeev/luaradio/archive/v0.5.0.tar.gz"
-  sha256 "660b995f8fe6e62e2304647565cfecc3dc042472e514a05c1d2c0d1342565908"
+  desc "Lightweight, embeddable flow graph signal processing framework for SDR"
+  homepage "https://luaradio.io/"
+  url "https://github.com/vsergeev/luaradio/archive/v0.8.0.tar.gz"
+  sha256 "db4c29cea0ca3c1d2204ba33efaedb2c6eb29a4a05c34db53e49cb534b4d717c"
+  license "MIT"
   head "https://github.com/vsergeev/luaradio.git"
 
   bottle do
     cellar :any
-    sha256 "9d1b4988ac40cde3ec5c689f1bca02d18829828ddec5e6209be102b576948fde" => :sierra
-    sha256 "4c25ef01c7e0fbd08b924883a0251d6e0808cc23ccd8386d30256675797f4c80" => :el_capitan
-    sha256 "126631069fc04e1a67bae61ca843f1651c80f43c5a47da59c67dba6933278458" => :yosemite
+    sha256 "1370415899d4c7c41b0bfd5ac4792ea3447736acf8727cbbe492b4214b2cc3c1" => :catalina
+    sha256 "0968a0cd591fd3e3f7af909df152d5065b8b711a4a7a024c2ac13aceea9aac01" => :mojave
+    sha256 "190f3227e451c188e7588e4bdd9f9b1883c97516da52386b2f7019a20858270e" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "fftw"
+  depends_on "liquid-dsp"
   depends_on "luajit"
-  depends_on "fftw" => :recommended
 
   def install
     cd "embed" do
@@ -31,7 +33,7 @@ class Luaradio < Formula
 
   test do
     (testpath/"hello").write("Hello, world!")
-    (testpath/"test.lua").write <<-EOS.undent
+    (testpath/"test.lua").write <<~EOS
       local radio = require('radio')
 
       local PrintBytes = radio.block.factory("PrintBytes")

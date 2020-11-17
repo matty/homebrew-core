@@ -1,15 +1,31 @@
 class Picoc < Formula
   desc "C interpreter for scripting"
-  homepage "https://github.com/zsaleeba/picoc"
-  url "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/picoc/picoc-2.1.tar.bz2"
-  sha256 "bfed355fab810b337ccfa9e3215679d0b9886c00d9cb5e691f7e7363fd388b7e"
+  homepage "https://gitlab.com/zsaleeba/picoc"
+  license "BSD-3-Clause"
+  revision 1
+  head "https://gitlab.com/zsaleeba/picoc.git"
+
+  stable do
+    url "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/picoc/picoc-2.1.tar.bz2"
+    mirror "https://dl.bintray.com/homebrew/mirror/picoc-2.1.tar.bz2"
+    sha256 "bfed355fab810b337ccfa9e3215679d0b9886c00d9cb5e691f7e7363fd388b7e"
+
+    # Remove for > 2.1
+    # Fix abort trap due to stack overflow
+    # Upstream commit from 14 Oct 2013 "Fixed a problem with PlatformGetLine()"
+    patch do
+      url "https://gitlab.com/zsaleeba/picoc/commit/ed54c519169b88b7b40d1ebb11599d89a4228a71.patch"
+      sha256 "bdedbb6e70e6378e05e50d0ef055306045e460f2675f8bd870566ae28b654589"
+    end
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8677b5fe46a67991ed8bbec9d9727472a866d77e23f159124bb833dfc98f4f28" => :sierra
-    sha256 "8c9bff2043ec4140a347e048741caed8c9f286f3958af1bd0e4fdb5c8817ae43" => :el_capitan
-    sha256 "05b84e43b6dc919361a4dc3763350bd471ff793c2aaddcd8696fe708be1dad10" => :yosemite
-    sha256 "19a25b578aaf48405e46341158dc62379a66fca36f7363d01bfcab4c0cea5209" => :mavericks
+    rebuild 1
+    sha256 "41d9836d62b70b7fe1117f4697417d9a03615639f2ff1390f0f1d21003426bb1" => :big_sur
+    sha256 "168aebca830b719b3645b682c9c3f1208663b6853b62d68ddeb2957ee6c8bc07" => :catalina
+    sha256 "0251ecfb5772bffbb92457af974af44856d25215d1d9bd692530b6b53517f71a" => :mojave
+    sha256 "5b2c6a5c8c3404cbd75b4b0e1c6f6cbf1be0246ca0b3d1df70d78a6785e51711" => :high_sierra
   end
 
   def install
@@ -18,7 +34,7 @@ class Picoc < Formula
   end
 
   test do
-    (testpath/"brew.c").write <<-EOS.undent
+    (testpath/"brew.c").write <<~EOS
       #include <stdio.h>
       int main(void) {
         printf("Homebrew\n");

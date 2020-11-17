@@ -1,31 +1,36 @@
 class Re2 < Formula
   desc "Alternative to backtracking PCRE-style regular expression engines"
   homepage "https://github.com/google/re2"
-  url "https://github.com/google/re2/archive/2017-01-01.tar.gz"
-  version "20170101"
-  sha256 "e46019b4428942464bf65ba92f2fcd88739d1b05fe7c3787bc031a03a50a327a"
+  url "https://github.com/google/re2/archive/2020-11-01.tar.gz"
+  version "20201101"
+  sha256 "8903cc66c9d34c72e2bc91722288ebc7e3ec37787ecfef44d204b2d6281954d7"
+  license "BSD-3-Clause"
   head "https://github.com/google/re2.git"
 
   bottle do
     cellar :any
-    sha256 "d6496dda9b6e863b8b06d350033e8656f792231e7d7609971800eac194a59c4d" => :sierra
-    sha256 "5424f029d19403a7f962051dd054299745070007eb37ba444acfb9e42a5dfd2e" => :el_capitan
-    sha256 "d0cb83cf4f3ac26dc46ad3a3dd223de8c0da581b963bd36c1420494a14559ae3" => :yosemite
+    sha256 "02fed353151f3d3d936af926e1fcd18cd68ca0e51694eb48acccbc5280316ce2" => :big_sur
+    sha256 "3775e06cd4478f7ef90cfe76bbd01d051c8ba2b646fd84601e307a8c0e2ec7de" => :catalina
+    sha256 "621f2bcea8c2f42d3ddb2de7f3df669259b5818763290d7b957c6bd406102a45" => :mojave
+    sha256 "6be4625dab709d29564e85823b24c668c1b7fe061365d443ac4956f4ad3135fc" => :high_sierra
   end
 
-  needs :cxx11
+  depends_on "cmake" => :build
 
   def install
     ENV.cxx11
 
-    system "make", "install", "prefix=#{prefix}"
-    MachO::Tools.change_dylib_id("#{lib}/libre2.0.0.0.dylib", "#{lib}/libre2.0.dylib")
-    lib.install_symlink "libre2.0.0.0.dylib" => "libre2.0.dylib"
-    lib.install_symlink "libre2.0.0.0.dylib" => "libre2.dylib"
+    # Run this for pkg-config files
+    system "make", "common-install", "prefix=#{prefix}"
+
+    # Run this for the rest of the install
+    system "cmake", ".", "-DBUILD_SHARED_LIBS=ON", "-DRE2_BUILD_TESTING=OFF", *std_cmake_args
+    system "make"
+    system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <re2/re2.h>
       #include <assert.h>
       int main() {

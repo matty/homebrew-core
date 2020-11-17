@@ -1,28 +1,27 @@
 class Zile < Formula
   desc "Text editor development kit"
   homepage "https://www.gnu.org/software/zile/"
-  url "https://ftpmirror.gnu.org/zile/zile-2.4.13.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/zile/zile-2.4.13.tar.gz"
-  sha256 "c795f369ea432219c21bf59ffc9322fd5f221217021a8fbaa6f9fed91778ac0e"
+  url "https://ftp.gnu.org/gnu/zile/zile-2.4.15.tar.gz"
+  mirror "https://ftpmirror.gnu.org/zile/zile-2.4.15.tar.gz"
+  sha256 "39c300a34f78c37ba67793cf74685935a15568e14237a3a66fda8fcf40e3035e"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "f7dc25c97ab09bcccf37413dc7014e0a3204384574b02ffdb99cf2b418edd691" => :sierra
-    sha256 "cab5ad88b8f8a1a00b82516100a86bd3e60edf3e06971d283fa6b2454197adad" => :el_capitan
-    sha256 "42f3ec505b358369d9c6058602605ef4da80266813ce577916673264a7a608b5" => :yosemite
+    cellar :any
+    sha256 "a968a290fab30518570f4b3b0c01c91014e421109d9b91ecbb4a42ee865aad69" => :big_sur
+    sha256 "c87e1675d9eb1c34e66531c8dabdfb290acaff89c16649b57f0d225ae84fbf72" => :catalina
+    sha256 "f153836d786658870d684374b310ce47a6658ad590bcaccc981c7a6b7c66947e" => :mojave
+    sha256 "943f7ce5aba23fd916e4e89da5bae329471cafdd4261f13cd4bc6696d21bd4e6" => :high_sierra
   end
 
-  # https://github.com/mistydemeo/tigerbrew/issues/215
-  fails_with :gcc_4_0 do
-    cause "src/funcs.c:1128: error: #pragma GCC diagnostic not allowed inside functions"
-  end
-
-  fails_with :gcc do
-    cause "src/funcs.c:1128: error: #pragma GCC diagnostic not allowed inside functions"
-  end
-
-  depends_on "pkg-config" => :build
   depends_on "help2man" => :build
+  depends_on "pkg-config" => :build
   depends_on "bdw-gc"
+
+  uses_from_macos "ncurses"
 
   def install
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"

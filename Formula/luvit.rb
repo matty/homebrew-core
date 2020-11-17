@@ -1,20 +1,22 @@
 class Luvit < Formula
   desc "Asynchronous I/O for Lua"
   homepage "https://luvit.io"
-  url "https://github.com/luvit/luvit/archive/2.12.1.tar.gz"
-  sha256 "2de9ee3b22fdf83dbb151e3050a729acce6775258f798bbe4cdcf78c8225acaf"
+  url "https://github.com/luvit/luvit/archive/2.17.0.tar.gz"
+  sha256 "80657aa752322560fcde780212b6807b626b45d65aca3f3dae254e5c4fb0ee78"
+  license "Apache-2.0"
   head "https://github.com/luvit/luvit.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "508bace208f8f33bfb1fc991a13be58db2272f49168064a03321830924db59f1" => :sierra
-    sha256 "508bace208f8f33bfb1fc991a13be58db2272f49168064a03321830924db59f1" => :el_capitan
-    sha256 "3df87be84fc21729b53b1bda0f30a742531982ad4a36cc0c15650e5d089bfdff" => :yosemite
+    sha256 "e946287a71eead01b620d34ffe99628a5bd143951265bbae9de6288eaf124bb0" => :big_sur
+    sha256 "a1210dda91aa024d11bd4d15a67b71654dcbbbc2ba14a87d1d34ab012f4d5c2a" => :catalina
+    sha256 "a3a37fdf8f0e99efdfc1736978ea9d8cdea74e939b42696fe771c3c5c9914f8f" => :mojave
+    sha256 "2c704b1f98b965c0b6010a897a0c951f47cb896bbbf5381e7d4ee80238692033" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "luajit"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     ENV["USE_SYSTEM_SSL"] = "1"
@@ -25,6 +27,6 @@ class Luvit < Formula
   end
 
   test do
-    system bin/"luvit", "--cflags", "--libs"
+    assert_equal "Hello World\n", shell_output("#{bin}/luvit -e 'print(\"Hello World\")'")
   end
 end

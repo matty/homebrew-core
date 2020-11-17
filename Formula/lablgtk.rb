@@ -1,21 +1,29 @@
 class Lablgtk < Formula
   desc "Objective Caml interface to gtk+"
   homepage "http://lablgtk.forge.ocamlcore.org"
-  url "https://forge.ocamlcore.org/frs/download.php/1627/lablgtk-2.18.5.tar.gz"
-  sha256 "2bf251db21c077fdd26c035ea03edd8fe609187f908e520e87a8ffdd9c36d233"
+  url "https://github.com/garrigue/lablgtk/archive/2.18.11.tar.gz"
+  sha256 "ff3c551df4e220b0c0fb9a3da6429413bff14f8fc93f4dd6807a35463982c863"
+  license "LGPL-2.1"
+  revision 1
+
+  livecheck do
+    url "https://github.com/garrigue/lablgtk/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
-    sha256 "5029b4d9053a5ad9d4b1164aaed7af7070deeca502e388f9973894c02ca018a5" => :sierra
-    sha256 "554cc4007e1c25cd775cffef9528baaddc0d5ea4752a387a236a23e9218e35bc" => :el_capitan
-    sha256 "9e9699be0f2b4b7038204422247418a1e7551bbf1372c114383fb05c1b600781" => :yosemite
+    cellar :any
+    sha256 "597788b6c0736a9ef41a660fec64191b4c4556239fca28495b44099cd846a573" => :big_sur
+    sha256 "e544b612c7067d60de3c58df5cc48f08ac32266dce56ef72a50b4895a841d21f" => :catalina
+    sha256 "ff8fd335cb687977105f9b18efabc78abafa5965aafce64733888c0f035f92ae" => :mojave
+    sha256 "127d47f712f5f0d914be06a87fa96344eaee9166cba08c50793cc28a8fef02dc" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "camlp4" => :build
-  depends_on "ocaml"
   depends_on "gtk+"
-  depends_on "librsvg"
   depends_on "gtksourceview"
+  depends_on "librsvg"
+  depends_on "ocaml"
 
   def install
     system "./configure", "--bindir=#{bin}",
@@ -28,7 +36,7 @@ class Lablgtk < Formula
   end
 
   test do
-    (testpath/"test.ml").write <<-EOS.undent
+    (testpath/"test.ml").write <<~EOS
       let _ =
         GtkMain.Main.init ()
     EOS

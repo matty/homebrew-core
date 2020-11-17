@@ -1,24 +1,28 @@
 class Primesieve < Formula
   desc "Fast C/C++ prime number generator"
-  homepage "http://primesieve.org/"
-  url "https://dl.bintray.com/kimwalisch/primesieve/primesieve-5.7.0.tar.gz"
-  sha256 "4a3e542dd3079dd9c0caf2d67fbb7b79757f65d705bdc8cf50555e65653fa1d1"
+  homepage "https://github.com/kimwalisch/primesieve"
+  url "https://github.com/kimwalisch/primesieve/archive/v7.5.tar.gz"
+  sha256 "fbc4070b2af4b87e2cff7ce3434f79af04d843594be43bba14293674475ec03c"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any
-    sha256 "5e50eb398e186c61cf06d17d4c4cc3a42f5424ed40400f4392e9bcd890ae5951" => :sierra
-    sha256 "bbf14a1041b404069102a0eb853fdfe8d099ccb3aa67a9b453e42f560919c4d9" => :el_capitan
-    sha256 "159886a4250641220e2ef2c41f58caf3c595485df32340f68e9007214a860e6a" => :yosemite
-    sha256 "b15504dd7f1bfb4cd9dc5d4474b7180bd5b345d49e10619f5383516efa061964" => :mavericks
+    sha256 "fb8828f5f605378c1e10ebb8b5b997159c4a49f1a29256b0807a307df9d4ac24" => :big_sur
+    sha256 "93a49e499f6cca69e9bc62e64e3bbf51fd9c8ab3c51e6ba15b6a1ab3feb4d2e8" => :catalina
+    sha256 "7070ec9a601335d1844820e722c346b9d7003ce80af4450f631521a023c291bc" => :mojave
+    sha256 "46185fc5980d6e411f4073ea330735498d918bb25dc65cb90909bb41749e8756" => :high_sierra
   end
 
+  depends_on "cmake" => :build
+
   def install
-    system "./configure", "--disable-dependency-tracking", "--disable-silent-rules",
-           "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make", "install"
+    end
   end
 
   test do
-    system "#{bin}/primesieve", "2", "1000", "--count=1", "-p2"
+    system "#{bin}/primesieve", "100", "--count", "--print"
   end
 end

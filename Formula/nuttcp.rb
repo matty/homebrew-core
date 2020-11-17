@@ -1,16 +1,21 @@
 class Nuttcp < Formula
   desc "Network performance measurement tool"
   homepage "https://www.nuttcp.net/nuttcp"
-  url "https://www.nuttcp.net/nuttcp/nuttcp-6.1.2.tar.bz2"
-  sha256 "054e96d9d68fe917df6f25fab15c7755bdd480f6420d7d48d9194a1a52378169"
+  url "https://www.nuttcp.net/nuttcp/nuttcp-8.2.2.tar.bz2"
+  sha256 "7ead7a89e7aaa059d20e34042c58a198c2981cad729550d1388ddfc9036d3983"
+  license "GPL-2.0"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?nuttcp[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "478522cb3e50128eb9b7b09d519bfaa553ae05025d1708a3d5d0c7b76dcbac8a" => :sierra
-    sha256 "7fe34e31cd50393b055dde913785931696bb332bc1b5948720d7817e1247151c" => :el_capitan
-    sha256 "18cfa8910325006d83e53c94a845d611704ce882f3f48a5edd2ebc6e75def200" => :yosemite
-    sha256 "57c31d24a43302c4fb1b08f6a17a05da60c3486a52481b0580c3e1f5d75c7eaa" => :mavericks
-    sha256 "e289d316c0aea0a8b1a85bde5f72f648cfe2dbae26a9fee4f7614ccdd7aa983a" => :mountain_lion
+    sha256 "9001ef97c90c4097f1ebabed20e63305f82a5f04d7ffc0f0d788c249c49d236d" => :big_sur
+    sha256 "0f5e7a2b61f91360023ef643c0a77fa711855b34006ff07867f1283051aded5c" => :catalina
+    sha256 "de0d1395983d9980dfff73de8282b76bf70c987fb36c68ff5e341f245507100a" => :mojave
+    sha256 "8d9ea3c88d5347b34cc4b3385b6898f942b8e4ff5a4f4a26897e4b66297e2692" => :high_sierra
   end
 
   def install

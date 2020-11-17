@@ -1,31 +1,50 @@
 class GitLfs < Formula
   desc "Git extension for versioning large files"
   homepage "https://github.com/git-lfs/git-lfs"
-  url "https://github.com/git-lfs/git-lfs/archive/v1.5.6.tar.gz"
-  sha256 "4efbc806cde1ea6ab4e1d61db3e1f6939796fd53bf6e9c94ac564610147ea5cd"
+  url "https://github.com/git-lfs/git-lfs/releases/download/v2.12.1/git-lfs-v2.12.1.tar.gz"
+  sha256 "2b2e70f1233f7efe9a010771510391a07527ec7c0af721ecf8edabac5d60f62b"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fe10ba8e54c8cb528ee04ca21efbda52d84e7bf38b09378332af4088f22c7ce4" => :sierra
-    sha256 "16948e15733b56c6d46fd49c72221d590cf56f5557fb486a232412e9d26f008c" => :el_capitan
-    sha256 "f8d1e65857216ae490c06ac0fec62ed17c703a52cb8be3d4ff8ccdbb8fd4d94f" => :yosemite
+    sha256 "d258fd1e12337ddc58f8d9a23af8a631096248471a75bc6c8ae10b3994b9095c" => :big_sur
+    sha256 "d179461dff4a07c40e0b54078f56a5e46edcc6966708726a9b17c159981eef35" => :catalina
+    sha256 "562551db4c901b4227ab55ceef73d39a01c2227961bf3657975e991898000288" => :mojave
+    sha256 "4705b3adb23213242e7df1a27e948b85ba2d8fa5ea15743b4d63482a07ed732e" => :high_sierra
   end
 
   depends_on "go" => :build
+  depends_on "ruby" => :build
 
   def install
-    system "./script/bootstrap"
-    bin.install "bin/git-lfs"
+    ENV["GIT_LFS_SHA"] = ""
+    ENV["VERSION"] = version
+
+    (buildpath/"src/github.com/git-lfs/git-lfs").install buildpath.children
+    cd "src/github.com/git-lfs/git-lfs" do
+      ENV["GEM_HOME"] = ".gem_home"
+      system "gem", "install", "ronn"
+
+      system "make", "vendor"
+      system "make"
+      system "make", "man", "RONN=.gem_home/bin/ronn"
+
+      bin.install "bin/git-lfs"
+      man1.install Dir["man/*.1"]
+      man5.install Dir["man/*.5"]
+      doc.install Dir["man/*.html"]
+    end
   end
 
-  def caveats; <<-EOS.undent
-    Update your git config to finish installation:
+  def caveats
+    <<~EOS
+      Update your git config to finish installation:
 
-      # Update global git config
-      $ git lfs install
+        # Update global git config
+        $ git lfs install
 
-      # Update system git config
-      $ git lfs install --system
+        # Update system git config
+        $ git lfs install --system
     EOS
   end
 

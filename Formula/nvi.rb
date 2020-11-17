@@ -1,20 +1,23 @@
 class Nvi < Formula
   desc "44BSD re-implementation of vi"
   homepage "https://sites.google.com/a/bostic.com/keithbostic/vi/"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/n/nvi/nvi_1.81.6.orig.tar.gz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/n/nvi/nvi_1.81.6.orig.tar.gz"
+  url "https://deb.debian.org/debian/pool/main/n/nvi/nvi_1.81.6.orig.tar.gz"
   sha256 "8bc348889159a34cf268f80720b26f459dbd723b5616107d36739d007e4c978d"
-  revision 3
+  revision 5
 
   bottle do
     cellar :any
-    sha256 "a789fc3d07b258beb99140f2488a8b0ae8f16f0470a5e1f8a195314dc5b3458d" => :sierra
-    sha256 "858fe0fc9589a4f2bf3ab3644677805440910e107ea31a3fe7d3a579c8031113" => :el_capitan
-    sha256 "07aacc59e81b122e4b34444d1e47d5e102cfc7e281bbae1d75bde4b5ac3af1fc" => :yosemite
+    sha256 "433ad12463c8b8f36f78295307d75b9886799b9dd924e2e483667c302a7a8b47" => :catalina
+    sha256 "b5ccb501038dfbb0e14241a2f5efe0c731e05ca0adc2690a473178252f5c0313" => :mojave
+    sha256 "dcaa5dd43e6edfc5c8188761cc8aad6b80a06abc7382b8ceac4d92498354b5c4" => :high_sierra
+    sha256 "1327ea05ec82ec05e9ec7b00b95ac3f7329b198a613385042a0814265b393f13" => :sierra
+    sha256 "e188b0a9fa040c6a11f7ed6338d28d96428e11cfa019aaa1d0aa69e0f2b87bc3" => :el_capitan
   end
 
   depends_on "xz" => :build # Homebrew bug. Shouldn't need declaring explicitly.
   depends_on "berkeley-db"
+
+  uses_from_macos "ncurses"
 
   # Patches per MacPorts
   # The first corrects usage of BDB flags.
@@ -36,8 +39,7 @@ class Nvi < Formula
   # Upstream have been pretty inactive for a while, so we may want to kill this
   # formula at some point unless that changes. We're leaning hard on Debian now.
   patch do
-    url "https://mirrors.ocf.berkeley.edu/debian/pool/main/n/nvi/nvi_1.81.6-13.debian.tar.xz"
-    mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/n/nvi/nvi_1.81.6-13.debian.tar.xz"
+    url "https://deb.debian.org/debian/pool/main/n/nvi/nvi_1.81.6-13.debian.tar.xz"
     sha256 "306c6059d386a161b9884535f0243134c8c9b5b15648e09e595fd1b349a7b9e1"
     apply "patches/03db4.patch",
           "patches/19include_term_h.patch",
@@ -56,5 +58,11 @@ class Nvi < Formula
       ENV.deparallelize
       system "make", "install"
     end
+  end
+
+  test do
+    (testpath/"test").write("This is toto!\n")
+    pipe_output("#{bin}/nvi -e test", "%s/toto/tutu/g\nwq\n")
+    assert_equal "This is tutu!\n", File.read("test")
   end
 end

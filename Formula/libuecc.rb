@@ -1,18 +1,23 @@
 class Libuecc < Formula
   desc "Very small Elliptic Curve Cryptography library"
   homepage "https://git.universe-factory.net/libuecc/"
-  url "https://git.universe-factory.net/libuecc/snapshot/libuecc-6.tar"
-  sha256 "fe61715b7cd8458616840f71ab8c0c7e5f49480a9cfb2c1965fbb9d713f071b6"
-
+  url "https://git.universe-factory.net/libuecc/snapshot/libuecc-7.tar"
+  sha256 "0120aee869f56289204255ba81535369816655264dd018c63969bf35b71fd707"
   head "https://git.universe-factory.net/libuecc"
+
+  livecheck do
+    url :head
+    regex(/href=.*?libuecc[._-]v?(\d+(?:\.\d+)*)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "d6108e008f03c69ef2f76443a7bfecd9262bd3ba03613f24c56d4fd921c73c85" => :sierra
-    sha256 "ed13876ca85617cfe1f6fd174ebd4502d29096d2b8c4bcaf3facc9749f28ae34" => :el_capitan
-    sha256 "eb7bcbd632f8f5f1faedbbe49529a9b1820d31530b5a256558d4e99edc2953e1" => :yosemite
-    sha256 "dfdb783678a0aa3a8edd745d890921b8213f3e1075d152a13a207053e178e270" => :mavericks
+    sha256 "844327a3e5e6bed43c2ed9a36e3b7f6c8c871803fb5968f34ee6aa667fc345b8" => :big_sur
+    sha256 "89acc7a04f910882b89d9e032a45e8c27dc98257d6d4e6b28f6c6a26c8c369ae" => :catalina
+    sha256 "d4d0c41262688ddca9ee2f2e6b80c33670c5a8db7266cd0c0592cd50b0d18be1" => :mojave
+    sha256 "95646c23acf19c1f07032c6f311f446e7a32b1a9d0c1dd385ec3c41811036572" => :high_sierra
+    sha256 "4722877fdc4538c814a10e6d0dc2f1a4d2a3571ce4ca1c8b37279c88cd83883f" => :sierra
+    sha256 "d9e52027a6535fb74e44026d23ef13a2417a1f22402173dc90d136071ea5290d" => :el_capitan
   end
 
   depends_on "cmake" => :build
@@ -23,7 +28,7 @@ class Libuecc < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdlib.h>
       #include <libuecc/ecc.h>
 

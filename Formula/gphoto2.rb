@@ -1,14 +1,21 @@
 class Gphoto2 < Formula
   desc "Command-line interface to libgphoto2"
-  homepage "http://gphoto.org/"
-  url "https://downloads.sourceforge.net/project/gphoto/gphoto/2.5.11/gphoto2-2.5.11.tar.bz2"
-  sha256 "392844d6a06512b0d85e7983a5a0c85c8039feb6ab3bc420674ffdbf7536f9e9"
+  homepage "http://www.gphoto.org/"
+  url "https://downloads.sourceforge.net/project/gphoto/gphoto/2.5.26/gphoto2-2.5.26.tar.bz2"
+  sha256 "7653213b05329c1dc2779efea3eff00504e12011436587aedc9aaa1e8665ab2f"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/gphoto2[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "9eb52529f40552c3eba2b808b53eff1df1e656a10d11840a929b2a33952c390c" => :sierra
-    sha256 "0e2934121f7ca8161647a59a8cb31346ecf3a52615cb37600d4572a8f1be800f" => :el_capitan
-    sha256 "6ed9ca92245da54f0f617ff4aaf6d92bb3d1bb02f42b2bbd26e77f2c6382afcc" => :yosemite
+    sha256 "f78b5393c2d68ce33d628f59222612882fe93738ecbeffe76c2de4abccc3c296" => :big_sur
+    sha256 "c4c42c50ee8bddf1a6b930f0eed9165a9e45ef1fb92476616833726b002ab077" => :catalina
+    sha256 "3b0f309d8d21165b945bb2c22a29f55396cf345a3f9255bc143ab4020fae5442" => :mojave
+    sha256 "a5c57a8b09c87b31c07cd3dea6ca6c859486c55268aa9745df740b1ac52368b2" => :high_sierra
   end
 
   depends_on "pkg-config" => :build

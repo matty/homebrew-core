@@ -1,23 +1,19 @@
 class Fio < Formula
   desc "I/O benchmark and stress test"
-  homepage "http://freecode.com/projects/fio"
-  url "https://github.com/axboe/fio/archive/fio-2.17.tar.gz"
-  sha256 "4d31ce145cc2d21e91aaf08bb4d14cca942ad6572131cba687906983478ce6e5"
+  homepage "https://github.com/axboe/fio"
+  url "https://github.com/axboe/fio/archive/fio-3.19.tar.gz"
+  sha256 "809963b1d023dbc9ac7065557af8129aee17b6895e0e8c5ca671b0b14285f404"
+  license "GPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "80b4ccb0ebffb0219ccce055aff65f4d0288e52adc74ac3ae12c09dd4186f7d5" => :sierra
-    sha256 "958ccd2531a841bddf5eac1113156bd992bcccd6bdbfd8cc74e7fdd28fe4097e" => :el_capitan
-    sha256 "a29b96564d86834fd3c6358a164d7d687372e0ae3c9698f49681d53f283afed5" => :yosemite
+    sha256 "c665a3ba50222002863a421fd34d3a7449b63e7e89dff20e3237a63467f2778c" => :big_sur
+    sha256 "252dd7cba1c767568b9ecb13fbbd891e1ffe47f590ed126cfea8214ff20333f5" => :catalina
+    sha256 "2b4b3372f9ad040eb974ba38ecdde11c08b0328fae71d785e5d0b88c77ecffc3" => :mojave
+    sha256 "89e47c70a1cca2e1acf29b97720da6b968348ea93a5e417fdca7ad86d670114d" => :high_sierra
   end
 
-  # Upstream fix for "dyld: lazy symbol binding failed: Symbol not found: _clock_gettime"
-  # https://github.com/axboe/fio/pull/309
-  patch do
-    url "https://github.com/axboe/fio/commit/ccf2d89d39.diff"
-    sha256 "6a714e9e40a8973549977bc3ae3b7d8fa7a6a25dd8c9d385fe8e0e58006339fe"
-  end
+  uses_from_macos "zlib"
 
   def install
     system "./configure"

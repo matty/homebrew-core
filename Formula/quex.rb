@@ -1,24 +1,31 @@
 class Quex < Formula
   desc "Generate lexical analyzers"
-  homepage "http://quex.org/"
-  url "https://downloads.sourceforge.net/project/quex/DOWNLOAD/quex-0.65.11.zip"
-  sha256 "5384fbff8645bfbdd5d6659b79aba9012a8db184d93d25026c764074b8beb503"
+  homepage "https://quex.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/quex/quex-0.70.0.tar.gz"
+  sha256 "761b68d68255862001d1fe8bf8876ba3d35586fd1927a46a667aea11511452cd"
+  head "https://svn.code.sf.net/p/quex/code/trunk"
 
-  head "http://svn.code.sf.net/p/quex/code/trunk"
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/quex[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e269d48f0459894ab68821851adc6e8cec9ef0f0f131a54a9725bc9ddd15d88e" => :sierra
-    sha256 "dfcc7a5dad70e0fad0a1fd3f6cd78dbd988da4d13274b73c7aefba1eee4ec0b7" => :el_capitan
-    sha256 "b76f2ca4cb65bbb94014e9194db70331a45f6243d778b8bfdf6962589a5d001a" => :yosemite
-    sha256 "2610201d79df9356f5ae7af217b5d1cc32827b9096e081105fbf59415cc03815" => :mavericks
+    sha256 "f3d39a7468e8c529ce1c0d6ab5b2d028f50771304993e9f2e996490f846c4b6c" => :catalina
+    sha256 "f3d39a7468e8c529ce1c0d6ab5b2d028f50771304993e9f2e996490f846c4b6c" => :mojave
+    sha256 "f3d39a7468e8c529ce1c0d6ab5b2d028f50771304993e9f2e996490f846c4b6c" => :high_sierra
   end
+
+  depends_on :macos # Due to Python 2 (Migration to Python 3 has started)
+  # https://sourceforge.net/p/quex/git/ci/e0d9de092751dc0b61e0c7fa2777fdc49ea1d13e/)
 
   def install
     libexec.install "quex", "quex-exe.py"
     doc.install "README", "demo"
+
     # Use a shim script to set QUEX_PATH on the user's behalf
-    (bin+"quex").write <<-EOS.undent
+    (bin/"quex").write <<~EOS
       #!/bin/bash
       QUEX_PATH="#{libexec}" "#{libexec}/quex-exe.py" "$@"
     EOS
@@ -31,7 +38,7 @@ class Quex < Formula
   end
 
   test do
-    system bin/"quex", "-i", doc/"demo/C/000/simple.qx", "-o", "tiny_lexer"
-    File.exist? "tiny_lexer"
+    system bin/"quex", "-i", doc/"demo/C/01-Trivial/easy.qx", "-o", "tiny_lexer"
+    assert_predicate testpath/"tiny_lexer", :exist?
   end
 end

@@ -1,18 +1,20 @@
 class Fakeroot < Formula
   desc "Provide a fake root environment"
   homepage "https://tracker.debian.org/pkg/fakeroot"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/f/fakeroot/fakeroot_1.20.2.orig.tar.bz2"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/f/fakeroot/fakeroot_1.20.2.orig.tar.bz2"
-  sha256 "7c0a164d19db3efa9e802e0fc7cdfeff70ec6d26cdbdc4338c9c2823c5ea230c"
+  url "https://deb.debian.org/debian/pool/main/f/fakeroot/fakeroot_1.24.orig.tar.gz"
+  sha256 "2e045b3160370b8ab4d44d1f8d267e5d1d555f1bb522d650e7167b09477266ed"
+  license "GPL-3.0"
+
+  livecheck do
+    url "https://deb.debian.org/debian/pool/main/f/fakeroot/"
+    regex(/href=.*?fakeroot[._-]v?(\d+(?:\.\d+)+)\.orig\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "54f63ac03028f613f78e59ab94c003d6ebc80d3b400ad0c8150f809361b2767b" => :sierra
-    sha256 "2d97e0b44126223c3c4ced30219e98d02c58caa5246e561557acb0e46a59a082" => :el_capitan
-    sha256 "8826383a8dcef74009b3813a0297732daba8c6dc0fad6ccef0cafda1086a347a" => :yosemite
-    sha256 "3f3a1a9c01102dd3fa90cd0d83c55745b5b8d44769128831cf050dd413a03402" => :mavericks
-    sha256 "88f49412644e3182a2208e782a91f0da7aec1fc64655baf9c7b4696429ceaf50" => :mountain_lion
+    sha256 "c72ae187158b6cce73311fee527ba8bf8d2f0e18340bd66eef57b50b3d45c275" => :catalina
+    sha256 "6c23e4c601af569c2de802cac685de5d18e6ebafcb53e6c53107aa3feb3d1527" => :mojave
+    sha256 "df9be392f3579464893be013744b5aa40a7e4e91e01155bd1547e4104d381640" => :high_sierra
   end
 
   # Compile is broken. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=766649
@@ -45,7 +47,7 @@ class Fakeroot < Formula
     # Patch has been submitted with detailed explanation to
     # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=766649
     system "make", "wraptmpf.h"
-    (buildpath/"patch-for-wraptmpf-h").write <<-EOS.undent
+    (buildpath/"patch-for-wraptmpf-h").write <<~EOS
       diff --git a/wraptmpf.h b/wraptmpf.h
       index dbfccc9..0e04771 100644
       --- a/wraptmpf.h
@@ -70,7 +72,11 @@ class Fakeroot < Formula
   end
 
   test do
-    assert_equal "root", shell_output("#{bin}/fakeroot whoami").strip
+    if MacOS.version <= :yosemite
+      assert_equal "root", shell_output("#{bin}/fakeroot whoami").strip
+    else
+      assert_match version.to_s, shell_output("#{bin}/fakeroot -v")
+    end
   end
 end
 

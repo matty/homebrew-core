@@ -1,51 +1,41 @@
 class Dcd < Formula
   desc "Auto-complete program for the D programming language"
-  homepage "https://github.com/Hackerpilot/DCD"
-  url "https://github.com/Hackerpilot/DCD.git",
-      :tag => "v0.8.0",
-      :revision => "f8f3024dda05e7f3d1a112adde1f99ec98649e78"
-
-  head "https://github.com/Hackerpilot/dcd.git", :shallow => false
+  homepage "https://github.com/dlang-community/DCD"
+  url "https://github.com/dlang-community/DCD.git",
+      tag:      "v0.13.1",
+      revision: "92db0486968f8ee59c16099c21b133dc4e9d91cb"
+  license "GPL-3.0-or-later"
+  head "https://github.com/dlang-community/dcd.git", shallow: false
 
   bottle do
-    sha256 "44421b44452c5d407a1d0a9b0811eced187a0a580d159cbb1a27348f97d72517" => :sierra
-    sha256 "aa5bf3b36f947743dcdf6d3cad4e2973ad2d08746a9eb668a5477b8458090110" => :el_capitan
-    sha256 "fe742c126f957f99b1691b2044352f0b134bf0af8a1812c46b256a370f3396e7" => :yosemite
-    sha256 "03cd0ece3ba032610457891fb74d1be87417a87e960377e38fc580df7ae8f2c1" => :mavericks
-  end
-
-  devel do
-    url "https://github.com/Hackerpilot/DCD.git",
-      :tag => "v0.9.0-alpha.6",
-      :revision => "b5d313922317ff25d3a39980af248b7eff19b93b"
-    version "0.9.0-alpha6"
+    cellar :any_skip_relocation
+    sha256 "662c67e1be52c8a7421e8cd79e3a407e1d1c163e706db86729e0a01fd3f32bb8" => :big_sur
+    sha256 "cb5a1d6c16b9e7a63583f65ef8eea364291b847897e53c7bf2b5533f1965477b" => :catalina
+    sha256 "13afc1eaa6e87e1a37eb80d9eef2febdc9a91b7cb7b68a4ba438a48c29e66776" => :mojave
+    sha256 "b72aa14601e382ab8ea67593dc0b365f7006a7d447291a8314af0bd47906e1ff" => :high_sierra
   end
 
   depends_on "dmd" => :build
 
   def install
-    if build.stable?
-      rmtree "libdparse/experimental_allocator"
-      rmtree "containers/experimental_allocator"
-    end
     system "make"
     bin.install "bin/dcd-client", "bin/dcd-server"
   end
 
   test do
-    begin
-      # spawn a server, using a non-default port to avoid
-      # clashes with pre-existing dcd-server instances
-      server = fork do
-        exec "#{bin}/dcd-server", "-p9167"
-      end
-      # Give it generous time to load
-      sleep 0.5
-      # query the server from a client
-      system "#{bin}/dcd-client", "-q", "-p9167"
-    ensure
-      Process.kill "TERM", server
-      Process.wait server
+    port = free_port
+
+    # spawn a server, using a non-default port to avoid
+    # clashes with pre-existing dcd-server instances
+    server = fork do
+      exec "#{bin}/dcd-server", "-p", port.to_s
     end
+    # Give it generous time to load
+    sleep 0.5
+    # query the server from a client
+    system "#{bin}/dcd-client", "-q", "-p", port.to_s
+  ensure
+    Process.kill "TERM", server
+    Process.wait server
   end
 end

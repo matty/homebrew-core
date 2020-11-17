@@ -3,20 +3,24 @@ class Gtksourceviewmm3 < Formula
   homepage "https://developer.gnome.org/gtksourceviewmm/"
   url "https://download.gnome.org/sources/gtksourceviewmm/3.18/gtksourceviewmm-3.18.0.tar.xz"
   sha256 "51081ae3d37975dae33d3f6a40621d85cb68f4b36ae3835eec1513482aacfb39"
+  revision 5
+
+  livecheck do
+    url :stable
+    regex(/gtksourceviewmm[._-]v?(3\.([0-8]\d*?)?[02468](?:\.\d+)*?)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "375d2dca2549d6a0556cedb8b3cface4ee729eee3d415940adfc28f4e071ce5b" => :sierra
-    sha256 "6184c282837f029b6f2a2fc3159280e02b2253ef46a9e84ba47f129190257c44" => :el_capitan
-    sha256 "57754cb259c45206535fdf9a58ff5a2792a14d9b250a5e627e51563612686631" => :yosemite
-    sha256 "6616e4a0529647c8c222528794b32612e6f6152d8625b0190b42823da77fd9d8" => :mavericks
+    sha256 "7afc9758c717108276fef3f83462363fe25ab1bb903c746447df9299a81c474d" => :big_sur
+    sha256 "d35b302c510fb00351509ce3e0be7b9987e5e85f82ce081c193c7ede8e23222c" => :catalina
+    sha256 "b3c787892287e10195221b827bb4a98e93cbe374ff5d157a093e1439d2cb3f8f" => :mojave
+    sha256 "f0c576ddf05f4098af489f9cd7aa228e9c996fa77a81b820ac52fc1353119719" => :high_sierra
   end
 
-  depends_on "gtksourceview3"
   depends_on "pkg-config" => :build
   depends_on "gtkmm3"
-
-  needs :cxx11
+  depends_on "gtksourceview3"
 
   def install
     ENV.cxx11
@@ -25,7 +29,7 @@ class Gtksourceviewmm3 < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gtksourceviewmm.h>
 
       int main(int argc, char *argv[]) {
@@ -47,9 +51,10 @@ class Gtksourceviewmm3 < Formula
     gtkx3 = Formula["gtk+3"]
     gtkmm3 = Formula["gtkmm3"]
     gtksourceview3 = Formula["gtksourceview3"]
+    harfbuzz = Formula["harfbuzz"]
     libepoxy = Formula["libepoxy"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     pango = Formula["pango"]
     pangomm = Formula["pangomm"]
     pixman = Formula["pixman"]
@@ -77,6 +82,7 @@ class Gtksourceviewmm3 < Formula
       -I#{gtksourceview3.opt_include}/gtksourceview-3.0
       -I#{gtkx3.opt_include}/gtk-3.0
       -I#{gtkx3.opt_include}/gtk-3.0/unix-print
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/gtksourceviewmm-3.0
       -I#{libepoxy.opt_include}
       -I#{libpng.opt_include}/libpng16

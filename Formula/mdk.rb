@@ -1,23 +1,29 @@
 class Mdk < Formula
   desc "GNU MIX development kit"
   homepage "https://www.gnu.org/software/mdk/mdk.html"
-  url "https://ftpmirror.gnu.org/mdk/v1.2.9/mdk-1.2.9.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/mdk/v1.2.9/mdk-1.2.9.tar.gz"
-  sha256 "6c265ddd7436925208513b155e7955e5a88c158cddda72c32714ccf5f3e74430"
-  revision 1
+  url "https://ftp.gnu.org/gnu/mdk/v1.3.0/mdk-1.3.0.tar.gz"
+  mirror "https://ftpmirror.gnu.org/mdk/v1.3.0/mdk-1.3.0.tar.gz"
+  sha256 "8b1e5dd7f47b738cb966ef717be92a501494d9ba6d87038f09e8fa29101b132e"
+  license "GPL-3.0-or-later"
+
+  livecheck do
+    url :stable
+    regex(%r{href=["']?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
-    sha256 "9ba8df4910f272cdce34416cffb4d9b5ea27ab17a18c15a7a03b78e2c82bdde5" => :sierra
-    sha256 "ec7f02653ee96c042c3699337c480cd986d6aef25c158cf4f5051dba53a4c586" => :el_capitan
-    sha256 "9c51160fede51db605a8cf475dfc74b1733304ab2e8179c79a6973f73ec27669" => :yosemite
+    sha256 "305422ac29e1cb04827277976b3c2e7fe678a00cd2a648739d00684c9c1f3a78" => :big_sur
+    sha256 "bd29f7cd3b52987492d17a4cfa9a51712bbacda1f738454cfb942596392fe9f7" => :catalina
+    sha256 "51c33dc12bf9277cd0d60d55a34236a1ab8d9577c9fbe296a8d893962e391d6a" => :mojave
+    sha256 "e8bd4f2623b6e6e55cc2ccf30339a39f14cc1b499d155b6c33144fdf0bf76745" => :high_sierra
   end
 
   depends_on "intltool" => :build
   depends_on "pkg-config" => :build
-  depends_on "gtk+"
-  depends_on "libglade"
-  depends_on "glib"
+  depends_on "adwaita-icon-theme"
   depends_on "flex"
+  depends_on "glib"
+  depends_on "gtk+3"
   depends_on "guile"
   depends_on "readline"
 
@@ -32,7 +38,7 @@ class Mdk < Formula
   test do
     ENV["LANG"] = "en_US.UTF-8"
 
-    (testpath/"hello.mixal").write <<-EOS.undent
+    (testpath/"hello.mixal").write <<~EOS
       *                                                        (1)
       * hello.mixal: say "hello world" in MIXAL                (2)
       *                                                        (3)
@@ -50,7 +56,7 @@ class Mdk < Formula
     system "#{bin}/mixasm", "hello"
     output = `#{bin}/mixvm -r hello`
 
-    expected = <<-EOS.undent
+    expected = <<~EOS
       Program loaded. Start address: 1000
       Running ...
       MIXAL HELLO WORLDXXX

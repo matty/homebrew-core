@@ -1,37 +1,47 @@
 class A2ps < Formula
   desc "Any-to-PostScript filter"
   homepage "https://www.gnu.org/software/a2ps/"
-  url "https://ftpmirror.gnu.org/a2ps/a2ps-4.14.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/a2ps/a2ps-4.14.tar.gz"
+  url "https://ftp.gnu.org/gnu/a2ps/a2ps-4.14.tar.gz"
+  mirror "https://ftpmirror.gnu.org/a2ps/a2ps-4.14.tar.gz"
   sha256 "f3ae8d3d4564a41b6e2a21f237d2f2b104f48108591e8b83497500182a3ab3a4"
+  license "GPL-3.0-or-later"
 
   bottle do
-    cellar :any_skip_relocation
-    rebuild 2
-    sha256 "0ef247af6b8c66048da433e494982a7b541773057780c503e65908ff0b76d6bf" => :sierra
-    sha256 "95e6cd96cc753d9d632ac8aa1b9d5099d5507c5fb8fc085544803fd85a4bd7c8" => :el_capitan
-    sha256 "c89521bb6b3df6a8277564f264006bde650b7d214b288f4805da856a76ec3b69" => :yosemite
-    sha256 "d10db3452567e6d4a6be65f15728c40b4a62bcc374e04ff7f5d3608c294c74f4" => :mavericks
+    rebuild 3
+    sha256 "98a293e2d83134c9a1c35026f68207d9fc2ac1bde9d7d15dd29849d7d9c5b237" => :catalina
+    sha256 "b3d7d7bd0bfcada7fc2bc2340ab67362e5087e53b4d611d84aafedf713bde6c3" => :mojave
+    sha256 "99646196c8b9e6d5a7b67ecca1589160749d690128bb89aace3b79d4c355dfde" => :high_sierra
+    sha256 "5a1c466a3f833797710464dd1aaf4ad6c9ff0a47de33ab3b2ba9cf0c2be36bfd" => :sierra
+    sha256 "532c3f14debcd59028285dad1d6fe41dbad481718cc1752b1b9e7c05fd82e27f" => :el_capitan
   end
 
   pour_bottle? do
-    reason "The bottle needs to be installed into /usr/local."
+    reason "The bottle needs to be installed into #{Homebrew::DEFAULT_PREFIX}."
     # https://github.com/Homebrew/brew/issues/2005
-    satisfy { HOMEBREW_PREFIX.to_s == "/usr/local" }
+    satisfy { HOMEBREW_PREFIX.to_s == Homebrew::DEFAULT_PREFIX }
   end
 
   # Software was last updated in 2007.
   # https://svn.macports.org/ticket/20867
   # https://trac.macports.org/ticket/18255
-  patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/0ae366e6/a2ps/patch-contrib_sample_Makefile.in"
-    sha256 "5a34c101feb00cf52199a28b1ea1bca83608cf0a1cb123e6af2d3d8992c6011f"
+  on_macos do
+    patch :p0 do
+      url "https://raw.githubusercontent.com/Homebrew/formula-patches/0ae366e6/a2ps/patch-contrib_sample_Makefile.in"
+      sha256 "5a34c101feb00cf52199a28b1ea1bca83608cf0a1cb123e6af2d3d8992c6011f"
+    end
+  end
+
+  on_linux do
+    depends_on "gperf"
   end
 
   patch :p0 do
     url "https://raw.githubusercontent.com/Homebrew/formula-patches/0ae366e6/a2ps/patch-lib__xstrrpl.c"
     sha256 "89fa3c95c329ec326e2e76493471a7a974c673792725059ef121e6f9efb05bf4"
   end
+
+  # Fails to build on Catalina. No new release since 2007
+  disable! because: :does_not_build
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",

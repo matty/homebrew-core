@@ -1,17 +1,24 @@
 class Libdiscid < Formula
   desc "C library for creating MusicBrainz and freedb disc IDs"
   homepage "https://musicbrainz.org/doc/libdiscid"
-  url "http://ftp.musicbrainz.org/pub/musicbrainz/libdiscid/libdiscid-0.6.1.tar.gz"
-  sha256 "aceb2bd1a8d15d69b2962dec7c51983af32ece318cbbeb1c43c39802922f6dd5"
+  url "http://ftp.musicbrainz.org/pub/musicbrainz/libdiscid/libdiscid-0.6.2.tar.gz"
+  mirror "https://ftp.osuosl.org/pub/musicbrainz/libdiscid/libdiscid-0.6.2.tar.gz"
+  sha256 "f9e443ac4c0dd4819c2841fcc82169a46fb9a626352cdb9c7f65dd3624cd31b9"
+  license "LGPL-2.1"
+
+  livecheck do
+    url "https://ftp.osuosl.org/pub/musicbrainz/libdiscid/"
+    regex(/href=.*?libdiscid[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "c6560b587cc04d4bef36878a8f1f77f8bc870d6caba612170db2bd5a7a7621f7" => :sierra
-    sha256 "392984622c1f695d018cb6e79f3a6f4a7b66db8fc96c225631477b000a226ba2" => :el_capitan
-    sha256 "8fb4093273d7b74311c16574a8fe8979dad11b81e25e4ae261cd429e1078d873" => :yosemite
-    sha256 "1a812cec01d686ebceaabf3548715c767158a88e7ae245a9d44d14e2d632eab8" => :mavericks
-    sha256 "c6a182d34a50257902bf122b7cd48f4e5bab32dbf03a1d59c7769330d9eec7e5" => :mountain_lion
+    sha256 "3388368253a64c71bd0cb6fcf0cd06102808d53cbaf3be99e482f175b5129952" => :big_sur
+    sha256 "74dd7ef5362b91818107ef3c8c3edab443faf8a17662294a24573e5f476110c7" => :catalina
+    sha256 "f6a415ae56c151ccef5e10cc239675be8cbd7dcf60a8b9c88c87a756bda5bd9a" => :mojave
+    sha256 "3ffb586f09efcd9322a28bafc671292d0caf38edc18326c048a7390ced94979f" => :high_sierra
+    sha256 "6d43fee98239a6a600e59cce0f4f2ceda713bf27cc3d03bc8711d1c773ba84b6" => :sierra
+    sha256 "22e96d837cfe404cf268c41f6ce26c6b47eb8a991578ce1f18bcea862f9f1c91" => :el_capitan
   end
 
   def install

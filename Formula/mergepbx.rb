@@ -3,9 +3,14 @@ class Mergepbx < Formula
   homepage "https://github.com/simonwagner/mergepbx"
   url "https://github.com/simonwagner/mergepbx/archive/v0.10.tar.gz"
   sha256 "1727ea75ffbd95426fe5d1d825bfcfb82dbea3dbc03e96f6d7d7ab2699c67572"
+  license "GPL-3.0"
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "6968dbb45ad1d9aac2df4b002e0a487e7d460c30e82f1a77f2dfeba6b3f652a5" => :big_sur
+    sha256 "afb3b3ce84c58a241b7c96e81068851273d1fdd31403737a13ae1e75ba57240f" => :catalina
+    sha256 "8188a967c09aadd08807dc11cb6695ebc6def26026532d426fd3bf1880fdc591" => :mojave
+    sha256 "2e295ff99574735aa7d1bb5244f1207a1f6f2054c4ec9da322e9d0981bdd5dd3" => :high_sierra
     sha256 "35a545aa5eb9b4d761134818b792f50e007d7bb6235fbbf54e7733a8e35d742e" => :sierra
     sha256 "9330e987d0c93a73b9edfbc77f265fa225b058d36b9210c797fe02494d1a656f" => :el_capitan
     sha256 "77c1ec431ae1a7cd6fb4b04376e14e8aa1f7399cf840e006caf69c0f88839a7e" => :yosemite

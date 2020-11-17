@@ -1,16 +1,19 @@
 class Ubertooth < Formula
   desc "Host tools for Project Ubertooth"
   homepage "https://github.com/greatscottgadgets/ubertooth/wiki"
-  url "https://github.com/greatscottgadgets/ubertooth/releases/download/2015-10-R1/ubertooth-2015-10-R1.tar.xz"
-  version "2015-10-R1"
-  sha256 "bc37e7978d137a64d918d7c8f1e7ca9cff093f9921d805e9809b12e5ab12ae35"
+  url "https://github.com/greatscottgadgets/ubertooth/releases/download/2018-12-R1/ubertooth-2018-12-R1.tar.xz"
+  version "2018-12-R1"
+  sha256 "0042daa79db0f4148a0255cdf05aa57006e23ac36edf7024e9e99ccc4892867b"
+  license "GPL-2.0"
+  head "https://github.com/greatscottgadgets/ubertooth.git"
 
   bottle do
     cellar :any
-    sha256 "7b5472d02fcaf34434248c3630258c7b2eae64115247445186226e24b37ad207" => :sierra
-    sha256 "95ba25253b67e36e263d7d9aca987caec686b313c6dc3e3b2d4bbf4bd4a12056" => :el_capitan
-    sha256 "465f2ecfeacdd426609500d41bd0c3f5134e1885376a7aa2d99bafc3478b135e" => :yosemite
-    sha256 "947fd37511e25e5e824ae9001f8e725e04cadc4f462349beb3a8e266f1ee98db" => :mavericks
+    sha256 "44519c8ea1f5f557404c950922e1c4303633df759676441fbc9620d72ab012ab" => :big_sur
+    sha256 "e08b1229ff32e200e5f6e7d562d83ce26e5dff0e50b4373f1add2a411854ebdf" => :catalina
+    sha256 "9e6dcaeeff6974606332371fc0ce861d679bc9d00471f4185a7531b320e581fb" => :mojave
+    sha256 "d3891c8cd1e395c8d7acd9f364d6d42d3bcb7d9d1ddd5adea9dfabc7f0aead69" => :high_sierra
+    sha256 "b4e68f3183b67bd99d276c0889e6c36ea6a1c99931446bec237d9bf7b4cc5d81" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -19,11 +22,9 @@ class Ubertooth < Formula
   depends_on "libusb"
 
   def install
-    cd "host" do
-      mkdir "build" do
-        system "cmake", "..", *std_cmake_args
-        system "make", "install"
-      end
+    mkdir "host/build" do
+      system "cmake", "..", *std_cmake_args
+      system "make", "install"
     end
   end
 

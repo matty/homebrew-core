@@ -1,8 +1,15 @@
 class Duply < Formula
   desc "Frontend to the duplicity backup system"
-  homepage "http://duply.net"
-  url "https://downloads.sourceforge.net/project/ftplicity/duply%20%28simple%20duplicity%29/2.0.x/duply_2.0.1.tgz"
-  sha256 "9d2baf55ada5ab36a6da3fa909c8bdc4ce9a0116eac259ebba0efe9b93180bb0"
+  # Canonical domain: duply.net
+  # Historical homepage: https://web.archive.org/web/20131126005707/ftplicity.sourceforge.net
+  homepage "https://sourceforge.net/projects/ftplicity/"
+  url "https://downloads.sourceforge.net/project/ftplicity/duply%20%28simple%20duplicity%29/2.2.x/duply_2.2.2.tgz"
+  sha256 "c72662e8c11b4fae37f4cb47eeb4fcb0d3bcf53538d1522bf2208238de4c306e"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/duply[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle :unneeded
 

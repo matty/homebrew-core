@@ -1,28 +1,35 @@
 class Fwknop < Formula
   desc "Single Packet Authorization and Port Knocking"
   homepage "https://www.cipherdyne.org/fwknop/"
-  url "https://github.com/mrash/fwknop/archive/2.6.9.tar.gz"
-  sha256 "0a8de8d3e2073ad08f5834d39def6c33fd035809cfddbea252174e7dc06a5a51"
+  url "https://github.com/mrash/fwknop/archive/2.6.10.tar.gz"
+  sha256 "a7c465ba84261f32c6468c99d5512f1111e1bf4701477f75b024bf60b3e4d235"
+  license "GPL-2.0-or-later"
   head "https://github.com/mrash/fwknop.git"
 
-  bottle do
-    sha256 "20da10e0cc1f53aa7c4126d28ab346313e8692d8d0c94fdb1e64da723e7ccd87" => :sierra
-    sha256 "824bb998105739b7f0ea303f8721fdeb518a316760cf8e5328f5475ddac6b830" => :el_capitan
-    sha256 "e288757e9d083dcf46f86ccb9cf5a6b3a847310821429715db08db9e2285d929" => :yosemite
-    sha256 "d281d8667d92b2cfedbc8d19918c4b6a6f5b223c940b46678243d5ce6850f8c2" => :mavericks
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
-  depends_on "automake" => :build
+  bottle do
+    sha256 "61ec8e446a6dbae400dcf40a8db9e066a8d64937bf82e84ee1c1e5a86d163934" => :big_sur
+    sha256 "3a4ff22b7de484deb6473ffdad63d3e927290925af925b5dbf1b868648824493" => :catalina
+    sha256 "2e56267215274c15f322335f86aa92b671f5600cbfd2275949cef03ec47d390e" => :mojave
+    sha256 "a36cd65fe358a6b156b2b5276bcdf629b2d777ac8a803e7cd40ee9e3c75512e4" => :high_sierra
+    sha256 "7472ea129bbb0d5a1187d08e4a9770d66d480a9bc284a62db11f6dec90b770cf" => :sierra
+    sha256 "ec59a9d13d78f441a695776767038fb830acc4cdbfe28b30cc41ec2b7ea76f1f" => :el_capitan
+  end
+
   depends_on "autoconf" => :build
+  depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "wget" => :optional
   depends_on "gpgme"
 
   def install
     system "./autogen.sh"
     system "./configure", "--disable-dependency-tracking", "--disable-silent-rules",
                           "--prefix=#{prefix}", "--with-gpgme", "--sysconfdir=#{etc}",
-                          "--with-gpg=#{Formula["gnupg2"].opt_bin}/gpg2"
+                          "--with-gpg=#{Formula["gnupg"].opt_bin}/gpg"
     system "make", "install"
   end
 

@@ -3,21 +3,24 @@ class Libglademm < Formula
   homepage "https://gnome.org"
   url "https://download.gnome.org/sources/libglademm/2.6/libglademm-2.6.7.tar.bz2"
   sha256 "38543c15acf727434341cc08c2b003d24f36abc22380937707fc2c5c687a2bc3"
-  revision 2
+  revision 6
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "7c77469914b7ee2946ee35b33814b0436205606d6e0081ae455102060a3c57cb" => :sierra
-    sha256 "0d0d09182101ac8f2dac48163073bf70998d04741ee156137605eedc91f65361" => :el_capitan
-    sha256 "a9f54db752f73d96c4332e7794ba770a222b5bcb1a70b654630886851ed07247" => :yosemite
-    sha256 "71ea08cf3a79daf7ecdc5ee7437d66288e3f4851808e04f64b3739fccac4d86a" => :mavericks
+    sha256 "81f7e576d0ff319df8a3e3ec10b03d9c389b2bc89801562a2b5b1b90f09fce8e" => :big_sur
+    sha256 "d123ccbbf9e8e599a6b889e3b02214b7556b9b205d1835cabb4259bf1520738d" => :catalina
+    sha256 "7198c6996d64bbe6a06380c23d010f0c9a949e3220c8a3dcb785fba0ceb22c33" => :mojave
+    sha256 "4daab6726178c96ac56452716422004dd4fcdfbaef22b85d99f9ddc317c88ea1" => :high_sierra
+    sha256 "6f7c8cbd127f333df690910aa8aa3561989679719bebbfb9d1d4c41a9821d57c" => :sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "gtkmm"
   depends_on "libglade"
-
-  needs :cxx11
 
   def install
     ENV.cxx11
@@ -28,7 +31,7 @@ class Libglademm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libglademm.h>
 
       int main(int argc, char *argv[]) {
@@ -52,9 +55,10 @@ class Libglademm < Formula
     glibmm = Formula["glibmm"]
     gtkx = Formula["gtk+"]
     gtkmm = Formula["gtkmm"]
+    harfbuzz = Formula["harfbuzz"]
     libglade = Formula["libglade"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     pango = Formula["pango"]
     pangomm = Formula["pangomm"]
     pixman = Formula["pixman"]
@@ -81,6 +85,7 @@ class Libglademm < Formula
       -I#{gtkx.opt_include}/gtk-2.0
       -I#{gtkx.opt_include}/gtk-unix-print-2.0
       -I#{gtkx.opt_lib}/gtk-2.0/include
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/libglademm-2.4
       -I#{libglade.opt_include}/libglade-2.0
       -I#{libpng.opt_include}/libpng16

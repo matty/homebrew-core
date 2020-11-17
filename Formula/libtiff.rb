@@ -1,73 +1,46 @@
 class Libtiff < Formula
   desc "TIFF library and utilities"
-  homepage "http://libtiff.maptools.org/"
-  url "http://download.osgeo.org/libtiff/tiff-4.0.7.tar.gz"
-  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/t/tiff/tiff_4.0.7.orig.tar.gz"
-  sha256 "9f43a2cfb9589e5cecaa66e16bf87f814c945f22df7ba600d63aac4632c4f019"
-  revision 2
+  homepage "https://libtiff.gitlab.io/libtiff/"
+  url "https://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz"
+  mirror "https://fossies.org/linux/misc/tiff-4.1.0.tar.gz"
+  sha256 "5d29f32517dadb6dbcd1255ea5bbc93a2b54b94fbf83653b4d65c7d6775b8634"
+  license "libtiff"
+  revision 1
+
+  livecheck do
+    url "https://download.osgeo.org/libtiff/"
+    regex(/href=.*?tiff[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "c2212960a740a559d42c2d150a7f0fedd191c1b2b2ff0b815e54299ccc8ebe29" => :sierra
-    sha256 "8e75bf8bcd907c19a56ca7f83f0d29b6651f31a85fb1b2bccc72e5b4ec6337c2" => :el_capitan
-    sha256 "3d22664e9f1c12b123913bcba3306fe922a860c2399fd33e778f86f58ffe6151" => :yosemite
+    sha256 "0f66c74d4ba96a1e9bac88a58a52335eaa0944de258e608ef62370e80fc5b24a" => :big_sur
+    sha256 "d92eb164b8fbe723a6006023f883a77bc02d4e54d8bbb1db6855f1ad7f1f1d6e" => :catalina
+    sha256 "6194841cb85000404c089288624f3897faa0c888f1653fb5c5388ba58cc8df8f" => :mojave
+    sha256 "75d26fd0a430509b838c5b341221c9bb4a343dfa54dffd626c1f93313e4e512c" => :high_sierra
   end
-
-  option :universal
-  option :cxx11
-  option "with-xz", "Include support for LZMA compression"
 
   depends_on "jpeg"
-  depends_on "xz" => :optional
 
-  # Patches from Debian for CVE-2016-10094, and various other issues.
-  # All reported upstream, so should be safe to remove this block on next stable.
-  patch do
-    url "https://mirrors.ocf.berkeley.edu/debian/pool/main/t/tiff/tiff_4.0.7-5.debian.tar.xz"
-    mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/t/tiff/tiff_4.0.7-5.debian.tar.xz"
-    sha256 "f4183c48ed74b6c3c3a74ff1f10f0cf972d3dba0f840cf28b5a3f3846ceb2be6"
-    apply "patches/01-CVE.patch",
-          "patches/02-CVE.patch",
-          "patches/03-CVE.patch",
-          "patches/04-CVE.patch",
-          "patches/05-CVE.patch",
-          "patches/06-CVE.patch",
-          "patches/07-CVE.patch",
-          "patches/08-CVE.patch",
-          "patches/09-CVE.patch",
-          "patches/10-CVE.patch",
-          "patches/11-CVE.patch",
-          "patches/12-CVE.patch",
-          "patches/13-CVE.patch",
-          "patches/14-CVE.patch",
-          "patches/15-TIFFFaxTabEnt_bugfix.patch",
-          "patches/16-CVE-2016-10094.patch",
-          "patches/17-CVE-2017-5225.patch"
-  end
+  uses_from_macos "zlib"
 
   def install
-    ENV.universal_binary if build.universal?
-    ENV.cxx11 if build.cxx11?
-
     args = %W[
-      --disable-dependency-tracking
       --prefix=#{prefix}
-      --without-x
+      --disable-dependency-tracking
+      --disable-lzma
+      --disable-webp
+      --disable-zstd
       --with-jpeg-include-dir=#{Formula["jpeg"].opt_include}
       --with-jpeg-lib-dir=#{Formula["jpeg"].opt_lib}
+      --without-x
     ]
-    if build.with? "xz"
-      args << "--with-lzma-include-dir=#{Formula["xz"].opt_include}"
-      args << "--with-lzma-lib-dir=#{Formula["xz"].opt_lib}"
-    else
-      args << "--disable-lzma"
-    end
     system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <tiffio.h>
 
       int main(int argc, char* argv[])

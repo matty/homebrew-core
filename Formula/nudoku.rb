@@ -1,24 +1,34 @@
 class Nudoku < Formula
-  desc "ncurses based sudoku game"
+  desc "Ncurses based sudoku game"
   homepage "https://jubalh.github.io/nudoku/"
-  url "https://github.com/jubalh/nudoku/releases/download/0.2.4/nudoku-0.2.4.tar.xz"
-  sha256 "4a5c6ab215ed677e31b968f3aa0c418b91b4e643e4adfade543f533ce6cde53a"
+  url "https://github.com/jubalh/nudoku/archive/2.0.0.tar.gz"
+  sha256 "44d3ec1ff34a010910ac7a92f6d84e8a7a4678a966999b7be27d224609ae54e1"
+  license "GPL-3.0"
+  head "https://github.com/jubalh/nudoku.git"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "ac37d01053c8eae43bd32d9ec94f6800597f369861dcde7b58830d177b00c65a" => :sierra
-    sha256 "d4d1ff67b4e28496e3ce0458ed90802ac8833ebf1739e86265f05c9c4309ada5" => :el_capitan
-    sha256 "7f1a30844a239c14e7c87b49b3ec4351320e7713682e1c12cb0804ec4a6dc5c7" => :yosemite
+    sha256 "bd5279ad0896787dadf5f2ef3c9796eed06d7dac60fb91ae337a7e372191082a" => :big_sur
+    sha256 "42af644b71eee33e827eb588221eddc0a2b16d552907f9bd80116177e91b748a" => :catalina
+    sha256 "c31813e8e20e6a7f3869bd0869d21e24877ee15de9f00f7eaf812bc81244418f" => :mojave
+    sha256 "fabdc0fc21df7b01f097ae89884d8234d8efe1a3b4335a4d2897f98df5291e67" => :high_sierra
   end
 
-  head do
-    url "https://github.com/jubalh/nudoku.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "pkg-config" => :build
+  depends_on "gettext"
+
+  uses_from_macos "ncurses"
+
+  # gettext 0.20 compatibility.
+  # Remove with next release.
+  patch do
+    url "https://github.com/jubalh/nudoku/commit/9a4ffc359fe72f6af0e3654ae19ae421ab941ea8.patch?full_index=1"
+    sha256 "e4b52f5ac48bfd192f28ae4b3a2fb146c7bc1bec1a441e8e10f4ad90550d4e66"
   end
 
   def install
-    system "autoreconf", "-i" if build.head?
+    system "autoreconf", "-fiv"
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
@@ -26,6 +36,6 @@ class Nudoku < Formula
   end
 
   test do
-    assert_match /nudoku version #{version}$/, shell_output("#{bin}/nudoku -v")
+    assert_match "nudoku version #{version}", shell_output("#{bin}/nudoku -v")
   end
 end

@@ -1,16 +1,23 @@
 class Libmodplug < Formula
   desc "Library from the Modplug-XMMS project"
   homepage "https://modplug-xmms.sourceforge.io/"
-  url "https://downloads.sourceforge.net/modplug-xmms/libmodplug/0.8.8.5/libmodplug-0.8.8.5.tar.gz"
-  sha256 "77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad"
+  url "https://downloads.sourceforge.net/project/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz"
+  sha256 "457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/libmodplug[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "38452a474601b4d222b0051f04c05604ac7a1ef55e72c500c07f438991b2c43c" => :sierra
-    sha256 "32f92108df7cbcb04fd08ee34cace282a39b073e37e3116df181c1674f3089a3" => :el_capitan
-    sha256 "ca58e85ca80a2d2199a37203fd1df19d112a4c63e357b96d0348043fbc3a93f8" => :yosemite
-    sha256 "c384456109eaced707376c862ddb087f355838958e32ec35ceb544cc6169d098" => :mavericks
+    rebuild 1
+    sha256 "64f182f657535f24a6f6a9fe6a351eced9f56a99bc0c0aef2f494079de6c2211" => :big_sur
+    sha256 "62cb39e81cea4111f72a3f594ac78557f6f6992ae964321632fda16a16c97bd2" => :catalina
+    sha256 "67ea2db6931cc6f60ed71f09cfab02cb22d2781d2e5bbb96ff0ef6a22ebb1c83" => :mojave
+    sha256 "3f46eca3704d441ba8133d71bd283e8d24cff61e8b903fff720b78932185f9bf" => :high_sierra
+    sha256 "fc88a11e82b19a1a0aa4ada0ed3468147464d3414c3e9dffda9cea139b195c9d" => :sierra
+    sha256 "968a0bdc082725f136ab94f3a7eaf5a6a376eb94ec03b45f49ab275bd9193318" => :el_capitan
   end
 
   resource "testmod" do
@@ -32,7 +39,7 @@ class Libmodplug < Formula
   test do
     # First a basic test just that we can link on the library
     # and call an initialization method.
-    (testpath/"test_null.cpp").write <<-EOS.undent
+    (testpath/"test_null.cpp").write <<~EOS
       #include "libmodplug/modplug.h"
       int main() {
         ModPlugFile* f = ModPlug_Load((void*)0, 0);
@@ -44,19 +51,19 @@ class Libmodplug < Formula
         }
       }
     EOS
-    system ENV.cc, "test_null.cpp", "-lmodplug", "-o", "test_null"
+    system ENV.cc, "test_null.cpp", "-L#{lib}", "-lmodplug", "-o", "test_null"
     system "./test_null"
 
     # Second, acquire an actual music file from a popular internet
     # source and attempt to parse it.
     resource("testmod").stage testpath
-    (testpath/"test_mod.cpp").write <<-EOS.undent
+    (testpath/"test_mod.cpp").write <<~EOS
       #include "libmodplug/modplug.h"
       #include <fstream>
       #include <sstream>
 
       int main() {
-        std::ifstream in("downloads.php");
+        std::ifstream in("2ND_PM.S3M");
         std::stringstream buffer;
         buffer << in.rdbuf();
         int length = buffer.tellp();
@@ -69,7 +76,7 @@ class Libmodplug < Formula
         }
       }
     EOS
-    system ENV.cc, "test_mod.cpp", "-lmodplug", "-lstdc++", "-o", "test_mod"
+    system ENV.cxx, "test_mod.cpp", "-L#{lib}", "-lmodplug", "-o", "test_mod"
     system "./test_mod"
   end
 end

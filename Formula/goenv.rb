@@ -1,9 +1,16 @@
 class Goenv < Formula
   desc "Go version management"
   homepage "https://github.com/syndbg/goenv"
-  url "https://github.com/syndbg/goenv/archive/v20161215.tar.gz"
-  sha256 "b2fb6b0dc2a359caa628e7ceee3e5c46205d41bb185d461a1c591bd119f84286"
+  url "https://github.com/syndbg/goenv/archive/1.23.3.tar.gz"
+  sha256 "1559f2907ee0339328466fe93f3c9637b7674917db81754412c7f842749e3201"
+  license "MIT"
+  version_scheme 1
   head "https://github.com/syndbg/goenv.git"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle :unneeded
 

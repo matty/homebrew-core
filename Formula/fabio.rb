@@ -1,72 +1,65 @@
 class Fabio < Formula
   desc "Zero-conf load balancing HTTP(S) router"
-  homepage "https://github.com/eBay/fabio"
-  url "https://github.com/eBay/fabio/archive/v1.3.8.tar.gz"
-  sha256 "dfa5b78d54de36aa28771592bc5054a27edeed5d1d3eba8ff3a062f27463c95b"
-  head "https://github.com/eBay/fabio.git"
+  homepage "https://github.com/fabiolb/fabio"
+  url "https://github.com/fabiolb/fabio/archive/v1.5.14.tar.gz"
+  sha256 "4d0be0922a371383912a0fcf2bcd325a91aad9fc9579dcda6dbc075c7dbbbc19"
+  license "MIT"
+  head "https://github.com/fabiolb/fabio.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "13b2409e72fa477e1799b935d278957ce60c25f48e51aa8cd08a7bc281c9b479" => :sierra
-    sha256 "7ab80decd27359719fa62717bba0f0b227d4b227cc72f42880e5897a33e36ae8" => :el_capitan
-    sha256 "450c021dad158bf31b7a3c3fb1acdd81fbfbd7d393958e66edf25d535cac4228" => :yosemite
+    sha256 "9ebfc242b5dac1503cdf0c0a8185c37a76202f863aef167f6470156bbdc40764" => :big_sur
+    sha256 "197702e971927d8224bee4a7db06d7e600bd2860bbc055f1df19e20ad2e63358" => :catalina
+    sha256 "d272c77961183cb8361d588c041161de1ecdd729e5857f19e3d4822ddaaf657c" => :mojave
+    sha256 "627bbe4f66761102c57375c327d4352a20825b744e9a653b42c308f3d08e4d45" => :high_sierra
   end
 
   depends_on "go" => :build
-  depends_on "consul" => :recommended
+  depends_on "consul"
 
   def install
-    mkdir_p buildpath/"src/github.com/eBay"
-    ln_s buildpath, buildpath/"src/github.com/eBay/fabio"
-
-    ENV["GOPATH"] = buildpath.to_s
-
-    system "go", "install", "github.com/eBay/fabio"
-    bin.install "#{buildpath}/bin/fabio"
+    system "go", "build", "-ldflags", "-s -w", "-trimpath", "-o", bin/"fabio"
+    prefix.install_metafiles
   end
 
   test do
     require "socket"
     require "timeout"
 
-    CONSUL_DEFAULT_PORT = 8500
-    FABIO_DEFAULT_PORT = 9999
-    LOCALHOST_IP = "127.0.0.1".freeze
+    consul_default_port = 8500
+    fabio_default_port = 9999
+    localhost_ip = "127.0.0.1".freeze
 
-    def port_open?(ip, port, seconds = 1)
+    def port_open?(ip_address, port, seconds = 1)
       Timeout.timeout(seconds) do
-        begin
-          TCPSocket.new(ip, port).close
-          true
-        rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-          false
-        end
+        TCPSocket.new(ip_address, port).close
       end
-    rescue Timeout::Error
+      true
+    rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Timeout::Error
       false
     end
 
-    if !port_open?(LOCALHOST_IP, FABIO_DEFAULT_PORT)
-      if !port_open?(LOCALHOST_IP, CONSUL_DEFAULT_PORT)
+    if port_open?(localhost_ip, fabio_default_port)
+      puts "Fabio already running or Consul not available or starting fabio failed."
+      false
+    else
+      if port_open?(localhost_ip, consul_default_port)
+        puts "Consul already running"
+      else
         fork do
           exec "consul agent -dev -bind 127.0.0.1"
           puts "consul started"
         end
-        sleep 15
-      else
-        puts "Consul already running"
+        sleep 30
       end
       fork do
         exec "#{bin}/fabio &>fabio-start.out&"
         puts "fabio started"
       end
-      sleep 5
-      assert_equal true, port_open?(LOCALHOST_IP, FABIO_DEFAULT_PORT)
+      sleep 10
+      assert_equal true, port_open?(localhost_ip, fabio_default_port)
       system "killall", "fabio" # fabio forks off from the fork...
       system "consul", "leave"
-    else
-      puts "Fabio already running or Consul not available or starting fabio failed."
-      false
     end
   end
 end

@@ -1,29 +1,26 @@
 class Udunits < Formula
   desc "Unidata unit conversion library"
   homepage "https://www.unidata.ucar.edu/software/udunits/"
-  url "ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.24.tar.gz"
-  sha256 "20bac512f2656f056385429a0e44902fdf02fc7fe01c14d56f3c724336177f95"
+  url "https://github.com/Unidata/UDUNITS-2/archive/v2.2.27.6.tar.gz"
+  sha256 "74fd7fb3764ce2821870fa93e66671b7069a0c971513bf1904c6b053a4a55ed1"
 
   bottle do
-    sha256 "c6fa4a694e7abbf431d52a76f24bba3035cfb3c0e6a2eadea7dd54d9612e9f82" => :sierra
-    sha256 "1cb69fbe3d62af625c6289bd8759c41e349764cd33a60a4c867b8c02a9be8c38" => :el_capitan
-    sha256 "40a4532a90e265dcbe85bfda55c6d797581cd7f02e91a660e1c14e03a5642ef2" => :yosemite
+    sha256 "06ce12b4caedfc807687c9ab8d2fdacf6a4dd7a26299a2bc6039a690d380e27f" => :big_sur
+    sha256 "77dcfaf55565b5d34f1ca0da75bc7aed7cdbb9b66ba684147ada21421f35005b" => :catalina
+    sha256 "176548e1d698baf5187088bf16b273af3e3e585f5f765963c396187491ea5fe1" => :mojave
+    sha256 "3c12f59317ded4bdc6f89c24a0eec9260a499371c9c92b2d5e34c1b1a9f50a2c" => :high_sierra
+    sha256 "ad941124a4952ebc353f03601d3da5670155a1eb8271e290bc96b0a54ec87e9e" => :sierra
   end
 
-  option "with-html-docs", "Installs html documentation"
-  option "with-pdf-docs", "Installs pdf documentation"
+  depends_on "cmake" => :build
 
-  deprecated_option "html-docs" => "with-html-docs"
-  deprecated_option "pdf-docs" => "with-pdf-docs"
+  uses_from_macos "expat"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    args = %w[install]
-    args << "install-html" if build.with? "html-docs"
-    args << "install-pdf" if build.with? "pdf-docs"
-    system "make", *args
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make", "install"
+    end
   end
 
   test do

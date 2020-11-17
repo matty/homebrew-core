@@ -1,63 +1,77 @@
 class Fontconfig < Formula
   desc "XML-based font configuration API for X Windows"
   homepage "https://wiki.freedesktop.org/www/Software/fontconfig/"
-  revision 2
+  url "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.1.tar.bz2"
+  sha256 "f655dd2a986d7aa97e052261b36aa67b0a64989496361eca8d604e6414006741"
+  license "MIT"
 
-  stable do
-    url "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.1.tar.bz2"
-    sha256 "b449a3e10c47e1d1c7a6ec6e2016cca73d3bd68fbbd4f0ae5cc6b573f7d6c7f3"
-
-    patch do
-      # Fixes https://bugs.freedesktop.org/show_bug.cgi?id=97546, "fc-cache
-      # failure with /System/Library/Fonts", and #4172.
-      #
-      # Patch from upstream maintainer Akira TAGOH. See
-      #   https://bugs.freedesktop.org/show_bug.cgi?id=97546#c7
-      #   https://bugs.freedesktop.org/attachment.cgi?id=126464
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/3790bcd/fontconfig/patch-2.12.1-fccache.diff"
-      sha256 "e7c074109a367bf3966578034b20d11f7e0b4a611785a040aef1fd11359af04d"
-    end
+  livecheck do
+    url :stable
+    regex(/href=.*?fontconfig[._-]v?(\d+\.\d+\.(?:\d|[0-8]\d+))\.t/i)
   end
 
-  # The bottle tooling is too lenient and thinks fontconfig
-  # is relocatable, but it has hardcoded paths in the executables.
   bottle do
-    cellar :any
-    sha256 "593f068ccb155b27dad21699b753020292beaaa31bcd984ff4e70375ed3e7f41" => :sierra
-    sha256 "151acfcc10e7d9c38aca5e23d5acdb953f3d627f05e206a097d039e6e8168a4a" => :el_capitan
-    sha256 "72c9f7932c02e7ad44d9bed147ea26f84a7bc5ba681da6eb00e52c381b6f7a68" => :yosemite
-    sha256 "644c80b9c9b8af2c13329043f6921cac3d0effdd6a5ecc696484113a46b90488" => :mavericks
+    sha256 "ee5961891c9e943c8bea6ad280d2346caa2d3efafdbd726670e663d0bdfdb010" => :big_sur
+    sha256 "64ff208b28613dfe2a65b9d74fd9b0129f3ca7e423db78329144cdaf51b36f70" => :catalina
+    sha256 "1c704a5a4249252bf42dc4f2a458f911a7858a931858ad257d9ec39978ca5095" => :mojave
+    sha256 "3b763143a4d6e3c74b3a8b237d2e5a383696347ea3599d07957f73a3f6521d23" => :high_sierra
+    sha256 "631531c4eb502bd97e4a5bef30760d1eef87dd50306ef2defb9460ac3338cfe1" => :sierra
+    sha256 "40d70137a970e257de5cf1251b10d56d7db835faee88a9f4c020b4a4e4f82eb1" => :el_capitan
   end
 
   pour_bottle? do
-    reason "The bottle needs to be installed into /usr/local."
+    reason "The bottle needs to be installed into #{Homebrew::DEFAULT_PREFIX}."
     # c.f. the identical hack in lua
     # https://github.com/Homebrew/homebrew/issues/47173
-    satisfy { HOMEBREW_PREFIX.to_s == "/usr/local" }
+    satisfy { HOMEBREW_PREFIX.to_s == Homebrew::DEFAULT_PREFIX }
   end
 
   head do
-    url "https://anongit.freedesktop.org/git/fontconfig", :using => :git
+    url "https://gitlab.freedesktop.org/fontconfig/fontconfig.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
+    depends_on "gettext" => :build
     depends_on "libtool" => :build
   end
-
-  keg_only :provided_pre_mountain_lion
-
-  option :universal
 
   depends_on "pkg-config" => :build
   depends_on "freetype"
 
+  uses_from_macos "bzip2"
+  uses_from_macos "expat"
+
+  on_linux do
+    depends_on "gperf" => :build
+    depends_on "gettext" => :build
+    depends_on "json-c" => :build
+    depends_on "util-linux"
+  end
+
+  # Fix crash issues on arm64.
+  # Remove with the next release.
+  patch do
+    url "https://github.com/freedesktop/fontconfig/commit/6def66164a36eed968aae872d76acfac3173d44a.patch?full_index=1"
+    sha256 "1dbe6247786c75f2b3f5a7e21133a3f9c09189f59fff08b2df7cb15389b0e405"
+  end
+
   def install
-    ENV.universal_binary if build.universal?
+    font_dirs = %w[
+      /System/Library/Fonts
+      /Library/Fonts
+      ~/Library/Fonts
+    ]
+
+    font_dirs << Dir["/System/Library/Assets{,V2}/com_apple_MobileAsset_Font*"].max if MacOS.version >= :sierra
+
     system "autoreconf", "-iv" if build.head?
+    on_linux do
+      ENV["UUID_CFLAGS"] = "-I#{Formula["util-linux"].include}"
+    end
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--enable-static",
-                          "--with-add-fonts=/System/Library/Fonts,/Library/Fonts,~/Library/Fonts",
+                          "--with-add-fonts=#{font_dirs.join(",")}",
                           "--prefix=#{prefix}",
                           "--localstatedir=#{var}",
                           "--sysconfdir=#{etc}"

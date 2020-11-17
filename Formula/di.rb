@@ -1,16 +1,21 @@
 class Di < Formula
   desc "Advanced df-like disk information utility"
   homepage "https://gentoo.com/di/"
-  url "https://gentoo.com/di/di-4.36.tar.gz"
-  sha256 "eb03d2ac0a3df531cdcb64b3667dbaebede60a4d3a4626393639cecb954c6d86"
+  url "https://gentoo.com/di/di-4.48.tar.gz"
+  sha256 "19d549feb59ccde7ff1cd2c48fea7b9ba99fa2285da81424603e23d8b5db3b33"
+  license "Zlib"
+
+  livecheck do
+    url :homepage
+    regex(%r{<p>Current Version: v?(\d+(?:\.\d+)+)</p>}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a22dd16eecb5d3439ef11c239adf497073e4d7fcf1c81938205004b4db99a98f" => :sierra
-    sha256 "088b843fb5b82aa978f8cfe3ae0d90dbac7811b326a6dd9be027e3bbc740b706" => :el_capitan
-    sha256 "aec4d32a7d6930610423b7a9d72033e996a2f50bfe54d1cb778ca55dca5d243d" => :yosemite
-    sha256 "00958ab5af10860c7d7283d7e240f03a56d27f85d36a89872740e7391609e203" => :mavericks
-    sha256 "ad54d80a30189a79074d05e4e79ac7ef5fa4436c217866dea2382b351ec44127" => :mountain_lion
+    sha256 "0ffebbfd7342f23bb63e5263a942a6f414db1fba83b7afceba2f2f9ada54384b" => :big_sur
+    sha256 "c49db9fca46dd848d4cf5badc22524ab66f8169c6368a7839023b3593969f451" => :catalina
+    sha256 "e3ba587be02153b3fc475ffe3dfc21714ce0e82e9a4d03d32e9ecaff4400e287" => :mojave
+    sha256 "14522350f027f600e28be34b412ba66ab95c1fcbbce81dd064826493165aa142" => :high_sierra
   end
 
   def install

@@ -1,72 +1,57 @@
 class Qca < Formula
   desc "Qt Cryptographic Architecture (QCA)"
-  homepage "http://delta.affinix.com/qca/"
-  head "https://anongit.kde.org/qca.git"
+  homepage "https://userbase.kde.org/QCA"
+  license "LGPL-2.1"
+  revision 2
+  head "https://invent.kde.org/libraries/qca.git"
 
   stable do
-    url "https://github.com/KDE/qca/archive/v2.1.3.tar.gz"
-    sha256 "a5135ffb0250a40e9c361eb10cd3fe28293f0cf4e5c69d3761481eafd7968067"
-
-    # upstream fixes for macOS building (remove on 2.2.0 upgrade)
-    patch do
-      url "https://github.com/KDE/qca/commit/7ba0ee591e0f50a7e7b532f9eb7e500e7da784fb.diff"
-      sha256 "fee535fdd01c1ba981bb5ece381cfa01e6e3decca38d62b24c4f20fd8620c1ce"
-    end
-    patch do
-      url "https://github.com/KDE/qca/commit/b435c1b87b14ac2d2de9f83e586bfd6d8c2a755e.diff"
-      sha256 "187de5c4f4cb8975ca562ee7ca38592ce12a844b9606a68af8e3dd932f67818d"
-    end
-    patch do
-      url "https://github.com/KDE/qca/commit/f4b2eb0ced5310f3c43398eb1f03e0c065e08a82.diff"
-      sha256 "a3529a29dd55008be9575bc965cb760365b650a62f5c6c8c441d433e9c9556db"
-    end
+    url "https://download.kde.org/stable/qca/2.3.1/qca-2.3.1.tar.xz"
+    sha256 "c13851109abefc4623370989fae3a745bf6b1acb3c2a13a8958539823e974e4b"
 
     # use major version for framework, instead of full version
-    # see: https://github.com/KDE/qca/pull/3
+    # see: https://invent.kde.org/libraries/qca/-/merge_requests/34
     patch do
-      url "https://github.com/KDE/qca/pull/3.patch"
-      sha256 "ec90fc28c64629ecb81571f5d0e4962cfd6237892b692ac488cd0c87a0adb7b9"
+      url "https://invent.kde.org/libraries/qca/-/commit/f899a6aaad6747c703a9ee438a4a75bd7f6052f4.diff"
+      sha256 "1ae6e279d3e1e4dbe10ff80908517dab29e2b538f7c79384901d28bed69cbc9e"
     end
+  end
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
   bottle do
-    sha256 "49bcd8ddf979e195df13ab645d7400c6c8fdf87d53d953c5a2cf42607169ba85" => :sierra
-    sha256 "54c46dee59de352e5deb1dfef16bf3cd58ac7d931c5dddf321991ab8a131d80e" => :el_capitan
-    sha256 "b6c45096e403d0ccebf365424a83736b796bbbb5cbebed4207e37ffcfcd4610d" => :yosemite
+    cellar :any
+    sha256 "d5af7b8c341d6c1d5792278b4fc4584e189fc68b7615221947de16567ba45430" => :big_sur
+    sha256 "beffb3f0ec64707df65d6debe01378970a64a09bd1f3e62a75135fceb05fad2a" => :catalina
+    sha256 "1698ced59723dd813b0d844557701ff944e2392877bdf6ef3c5dbf6d2dbbc60b" => :mojave
+    sha256 "adf5f64082417a58d3472fbd8a57b1b2f9b37cb5a9410cf1db86b8fa44868cf5" => :high_sierra
   end
-
-  option "with-api-docs", "Build API documentation"
-
-  deprecated_option "with-gnupg" => "with-gpg2"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "qt5"
-
-  # Plugins (QCA needs at least one plugin to do anything useful)
-  depends_on "openssl" # qca-ossl
-  depends_on "botan" => :optional # qca-botan
-  depends_on "libgcrypt" => :optional # qca-gcrypt
-  depends_on :gpg => [:optional, :run] # qca-gnupg
-  depends_on "nss" => :optional # qca-nss
-  depends_on "pkcs11-helper" => :optional # qca-pkcs11
-
-  if build.with? "api-docs"
-    depends_on "graphviz" => :build
-    depends_on "doxygen" => [:build, "with-graphviz"]
-  end
+  depends_on "botan"
+  depends_on "gnupg"
+  depends_on "libgcrypt"
+  depends_on "nss"
+  depends_on "openssl@1.1"
+  depends_on "pkcs11-helper"
+  depends_on "qt"
 
   def install
     args = std_cmake_args
-    args << "-DQT4_BUILD=OFF"
     args << "-DBUILD_TESTS=OFF"
+    args << "-DQCA_PLUGINS_INSTALL_DIR=#{lib}/qt5/plugins"
 
-    # Plugins (qca-ossl, qca-cyrus-sasl, qca-logger, qca-softstore always built)
-    args << "-DWITH_botan_PLUGIN=#{build.with?("botan") ? "YES" : "NO"}"
-    args << "-DWITH_gcrypt_PLUGIN=#{build.with?("libgcrypt") ? "YES" : "NO"}"
-    args << "-DWITH_gnupg_PLUGIN=#{build.with?("gpg2") ? "YES" : "NO"}"
-    args << "-DWITH_nss_PLUGIN=#{build.with?("nss") ? "YES" : "NO"}"
-    args << "-DWITH_pkcs11_PLUGIN=#{build.with?("pkcs11-helper") ? "YES" : "NO"}"
+    # Disable some plugins. qca-ossl, qca-cyrus-sasl, qca-logger,
+    # qca-softstore are always built.
+    args << "-DWITH_botan_PLUGIN=ON"
+    args << "-DWITH_gcrypt_PLUGIN=ON"
+    args << "-DWITH_gnupg_PLUGIN=ON"
+    args << "-DWITH_nss_PLUGIN=ON"
+    args << "-DWITH_pkcs11_PLUGIN=ON"
 
     # ensure opt_lib for framework install name and linking (can't be done via CMake configure)
     inreplace "src/CMakeLists.txt",
@@ -75,11 +60,6 @@ class Qca < Formula
 
     system "cmake", ".", *args
     system "make", "install"
-
-    if build.with? "api-docs"
-      system "make", "doc"
-      doc.install "apidocs/html"
-    end
   end
 
   test do

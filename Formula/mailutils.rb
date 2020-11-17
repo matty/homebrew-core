@@ -1,27 +1,33 @@
 class Mailutils < Formula
   desc "Swiss Army knife of email handling"
-  homepage "http://mailutils.org/"
-  url "https://ftpmirror.gnu.org/mailutils/mailutils-3.1.1.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/mailutils/mailutils-3.1.1.tar.gz"
-  sha256 "d237622ee1957e8e14cd15713bd8bad710bdb0e408be3de2db12db0b8437049b"
-  revision 1
+  homepage "https://mailutils.org/"
+  url "https://ftp.gnu.org/gnu/mailutils/mailutils-3.10.tar.gz"
+  mirror "https://ftpmirror.gnu.org/mailutils/mailutils-3.10.tar.gz"
+  sha256 "1a4025280f504ff56269f0fc25859cfea20a39dd45d12abfffe1f89ee54e708a"
+  license "GPL-3.0-or-later"
 
-  bottle do
-    sha256 "5fffeefa72bf0af1f6b7d216e363a6723e7651eb0d409450c94f7baed9f882b0" => :sierra
-    sha256 "a57eb344e881e4c9938ea47b117bb2e59f6d1434e523c6e5e3a52262173c9836" => :el_capitan
-    sha256 "d789e0d108ced0095019cbaeb1d8b2ab1e2e667387f8b946a5f2d425e084be33" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "libtool" => :run
+  bottle do
+    sha256 "2bd00bf5866505474733869b501295dfa0cd4790bb958e2ddf797c54cc4e3dff" => :big_sur
+    sha256 "2a0c02530447ce4edeeaab7b84cec370e342b02a5606eb36b6ab611d6a308eb9" => :catalina
+    sha256 "dbdbd2b06de4ad016feaf7f89f3bd4536b205489476daac87e8a7e60e8350fd6" => :mojave
+    sha256 "f03c50b72974082a31d51f2665786d723ab853b19ab3df35dd8a2b8c39e27901" => :high_sierra
+  end
+
   depends_on "gnutls"
   depends_on "gsasl"
+  depends_on "libtool"
   depends_on "readline"
-
-  patch :DATA
 
   def install
     system "./configure", "--disable-mh",
                           "--prefix=#{prefix}",
+                          "--without-fribidi",
+                          "--without-gdbm",
+                          "--without-guile",
                           "--without-tokyocabinet"
     system "make", "PYTHON_LIBS=-undefined dynamic_lookup", "install"
   end
@@ -30,17 +36,3 @@ class Mailutils < Formula
     system "#{bin}/movemail", "--version"
   end
 end
-
-__END__
-diff --git a/libmailutils/sockaddr/str.c b/libmailutils/sockaddr/str.c
-index e5bd5a1..6de2647 100644
---- a/libmailutils/sockaddr/str.c
-+++ b/libmailutils/sockaddr/str.c
-@@ -25,6 +25,7 @@
- #include <netinet/in.h>
- #include <arpa/inet.h>
- #include <netdb.h>
-+#include <stdlib.h>
-
- #include <mailutils/sockaddr.h>
- #include <mailutils/errno.h>

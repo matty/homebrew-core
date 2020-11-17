@@ -1,47 +1,45 @@
 class Algernon < Formula
-  desc "HTTP/2 web server with built-in support for Lua and templates"
-  homepage "http://algernon.roboticoverlords.org/"
-  url "https://github.com/xyproto/algernon/archive/1.3.tar.gz"
-  sha256 "46577afcd255f9c4f193f2408c418e0ca5a66db9c9b4e553058fd4bef28631c1"
-  sha256 "a5a5976ce75c58b0a1ec10ee8185457fa590bc4e7473f061053bba85474208cc"
+  desc "Pure Go web server with Lua, Markdown, HTTP/2 and template support"
+  homepage "https://algernon.roboticoverlords.org/"
+  url "https://github.com/xyproto/algernon/archive/1.12.8.tar.gz"
+  sha256 "562d6f1145980d5e4c8eaefc2780801b163d228720599f22165135182018d6bf"
+  license "MIT"
+  revision 1
   version_scheme 1
   head "https://github.com/xyproto/algernon.git"
 
-  bottle do
-    sha256 "c01c2947279e6bbc29eaca07a022cb3276d82d6f7ff6dfa9f1057e12ed764c91" => :sierra
-    sha256 "ac0d53e57be4a00dd8ade3c9ea384730d00ba4f540b5db64d697692a66935446" => :el_capitan
-    sha256 "0f6c5ee39192dc9f48f735fd8d68656cc50fda5234758490f5f53d41a85469cd" => :yosemite
+  livecheck do
+    url "https://github.com/xyproto/algernon/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
-  depends_on "glide" => :build
-  depends_on "go" => :build
-  depends_on "readline"
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "f37e15b90dc31fdcecdeba0b30e97387488aa055a6abf98fb8d81cb6430401ac" => :big_sur
+    sha256 "86789f00d6b8d3469c5d3df5087149a72d1673cb7f2b7e31360672a6193e4eb2" => :catalina
+    sha256 "71d88d3e20c865c299b4083ce9143b8f5594be8be2d5e6a511d6d7187b8465c3" => :mojave
+    sha256 "b78c41a051aac0d969b8d7b49507a11e3e1b69990efe22aa88f9d5a5d544eb46" => :high_sierra
+  end
+
+  depends_on "go@1.14" => :build
 
   def install
-    ENV["GLIDE_HOME"] = buildpath/"glide_home"
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/xyproto/algernon").install buildpath.children
-    cd "src/github.com/xyproto/algernon" do
-      system "glide", "install"
-      system "go", "build", "-o", "algernon"
+    system "go", "build", "-trimpath", "-mod=vendor", "-o", bin/"algernon"
 
-      bin.install "desktop/mdview"
-      bin.install "algernon"
-      prefix.install_metafiles
-    end
+    bin.install "desktop/mdview"
+    prefix.install_metafiles
   end
 
   test do
-    begin
-      pid = fork do
-        exec "#{bin}/algernon", "-s", "-q", "--httponly", "--boltdb", "my.db",
-                                "--addr", ":45678"
-      end
-      sleep(1)
-      output = shell_output("curl -sIm3 -o- http://localhost:45678")
-      assert_match /200 OK.*Server: Algernon/m, output
-    ensure
-      Process.kill("HUP", pid)
+    port = free_port
+    pid = fork do
+      exec "#{bin}/algernon", "-s", "-q", "--httponly", "--boltdb", "tmp.db",
+                              "--addr", ":#{port}"
     end
+    sleep 20
+    output = shell_output("curl -sIm3 -o- http://localhost:#{port}")
+    assert_match /200 OK.*Server: Algernon/m, output
+  ensure
+    Process.kill("HUP", pid)
   end
 end

@@ -1,37 +1,33 @@
 class Pidgin < Formula
   desc "Multi-protocol chat client"
   homepage "https://pidgin.im/"
-  url "https://downloads.sourceforge.net/project/pidgin/Pidgin/2.11.0/pidgin-2.11.0.tar.bz2"
-  sha256 "f72613440586da3bdba6d58e718dce1b2c310adf8946de66d8077823e57b3333"
+  url "https://downloads.sourceforge.net/project/pidgin/Pidgin/2.14.1/pidgin-2.14.1.tar.bz2"
+  sha256 "f132e18d551117d9e46acce29ba4f40892a86746c366999166a3862b51060780"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/pidgin[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    sha256 "af3ead310f0c64642b0e231c2efc30d6f9a6f3fc8041ac1074f0bf0c0876cc7b" => :sierra
-    sha256 "52962570a3c7ad641a990054e48e677749ff787792ae4baef4b8221b30cb23bd" => :el_capitan
-    sha256 "8bcee9a4d3b7a5eb75956fae72e99da7278aab11f4da29b543d76459709e4057" => :yosemite
-    sha256 "0cc25abde42aca098cd2009df81044aa15b5bf02996f9c23a9fe9ea159f315ac" => :mavericks
+    sha256 "db281d2a0ba80382da619c2a5478db48592b40ab1dfaaf39c33f36f3469c37f3" => :big_sur
+    sha256 "4634da7bc606d00dcdc9e3ea42f00d33a9764d6d231b6a7baef0c7a3ef451e74" => :catalina
+    sha256 "a549ae59ccff2482dd02c9eea51db80fb831ab7e720f7f2ec7df37c60eb7f1d8" => :mojave
+    sha256 "99708561a57b3e47d603b8b46b9f3a7dd8fc7f6bb08746ce996130c10ef13784" => :high_sierra
   end
 
-  option "with-perl", "Build Pidgin with Perl support"
-  option "without-gui", "Build only Finch, the command-line client"
-
-  deprecated_option "perl" => "with-perl"
-  deprecated_option "without-GUI" => "without-gui"
-
-  depends_on "pkg-config" => :build
   depends_on "intltool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "cairo"
   depends_on "gettext"
-  depends_on "gsasl" => :optional
   depends_on "gnutls"
+  depends_on "gtk+"
   depends_on "libgcrypt"
+  depends_on "libgnt"
   depends_on "libidn"
-  depends_on "glib"
-
-  if build.with? "gui"
-    depends_on "gtk+"
-    depends_on "cairo"
-    depends_on "pango"
-    depends_on "libotr"
-  end
+  depends_on "libotr"
+  depends_on "pango"
 
   # Finch has an equal port called purple-otr but it is a NIGHTMARE to compile
   # If you want to fix this and create a PR on Homebrew please do so.
@@ -46,37 +42,38 @@ class Pidgin < Formula
       --disable-dependency-tracking
       --prefix=#{prefix}
       --disable-avahi
-      --disable-doxygen
-      --enable-gnutls=yes
       --disable-dbus
+      --disable-doxygen
       --disable-gevolution
       --disable-gstreamer
       --disable-gstreamer-interfaces
       --disable-gtkspell
       --disable-meanwhile
       --disable-vv
+      --enable-gnutls=yes
+      --with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework
+      --with-tkconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tk.framework
       --without-x
     ]
 
-    args << "--disable-perl" if build.without? "perl"
-    args << "--enable-cyrus-sasl" if build.with? "gsasl"
+    ENV["ac_cv_func_perl_run"] = "yes" if MacOS.version == :high_sierra
 
-    args << "--with-tclconfig=#{MacOS.sdk_path}/usr/lib"
-    args << "--with-tkconfig=#{MacOS.sdk_path}/usr/lib"
-    if build.without? "gui"
-      args << "--disable-gtkui"
-    end
+    # patch pidgin to read plugins and allow them to live in separate formulae which can
+    # all install their symlinks into these directories. See:
+    #   https://github.com/Homebrew/homebrew-core/pull/53557
+    inreplace "finch/finch.c", "LIBDIR", "\"#{HOMEBREW_PREFIX}/lib/finch\""
+    inreplace "libpurple/plugin.c", "LIBDIR", "\"#{HOMEBREW_PREFIX}/lib/purple-2\""
+    inreplace "pidgin/gtkmain.c", "LIBDIR", "\"#{HOMEBREW_PREFIX}/lib/pidgin\""
+    inreplace "pidgin/gtkutils.c", "DATADIR", "\"#{HOMEBREW_PREFIX}/share\""
 
     system "./configure", *args
     system "make", "install"
 
-    if build.with? "gui"
-      resource("pidgin-otr").stage do
-        ENV.prepend "CFLAGS", "-I#{Formula["libotr"].opt_include}"
-        ENV.append_path "PKG_CONFIG_PATH", "#{lib}/pkgconfig"
-        system "./configure", "--prefix=#{prefix}", "--mandir=#{man}"
-        system "make", "install"
-      end
+    resource("pidgin-otr").stage do
+      ENV.prepend "CFLAGS", "-I#{Formula["libotr"].opt_include}"
+      ENV.append_path "PKG_CONFIG_PATH", "#{lib}/pkgconfig"
+      system "./configure", "--prefix=#{prefix}", "--mandir=#{man}"
+      system "make", "install"
     end
   end
 

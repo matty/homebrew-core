@@ -1,33 +1,47 @@
 class Libical < Formula
   desc "Implementation of iCalendar protocols and data formats"
   homepage "https://libical.github.io/libical/"
-  url "https://github.com/libical/libical/releases/download/v2.0.0/libical-2.0.0.tar.gz"
-  sha256 "654c11f759c19237be39f6ad401d917e5a05f36f1736385ed958e60cf21456da"
+  url "https://github.com/libical/libical/releases/download/v3.0.8/libical-3.0.8.tar.gz"
+  sha256 "09fecacaf75ba5a242159e3a9758a5446b5ce4d0ab684f98a7040864e1d1286f"
+  # license ["LGPL-2.1", "MPL-2.0"] - pending https://github.com/Homebrew/brew/pull/7953
+  license "LGPL-2.1"
+  revision 2
 
   bottle do
-    sha256 "4b8b3165661fca6ae137559f3b9d0436bee37284ce84c75e9e81677512bacd43" => :sierra
-    sha256 "80cd45eebc20492169a98e26c2ac384d9e7d42c60c97dfb31cf15fa3c978ea27" => :el_capitan
-    sha256 "f4cbcfb04208a01f1589f119e785c656b74713d033949e8a6a367a759ea142eb" => :yosemite
+    cellar :any
+    sha256 "63bf149d253ce0058dc0c8d482498bcdc2f98a1f5fbbcbb5e994ca5902d2585a" => :big_sur
+    sha256 "aee72172114e605f00d453d7a2f5e7be3b813fcc56d05463c97de76f579db5f4" => :catalina
+    sha256 "93bd93bbad50f91aaa215ba2f764046fef919790a4ff227328a309b2ad2490d2" => :mojave
+    sha256 "3ff8dae7c504718bffd8fb8ce066c3b5c777d12250bdc87ff3fbb7f230284d1b" => :high_sierra
   end
 
-  option :universal
-
   depends_on "cmake" => :build
+  depends_on "pkg-config" => :build
+  depends_on "glib"
+  depends_on "icu4c"
+
+  uses_from_macos "libxml2"
 
   def install
-    # Fix libical-glib build failure due to undefined symbol
-    # Upstream issue https://github.com/libical/libical/issues/225
-    inreplace "src/libical/icallangbind.h", "*callangbind_quote_as_ical_r(",
-                                            "*icallangbind_quote_as_ical_r("
-    args = std_cmake_args
-    if build.universal?
-      ENV.universal_binary
-      args << "-DCMAKE_OSX_ARCHITECTURES=#{Hardware::CPU.universal_archs.as_cmake_arch_flags}"
-    end
+    system "cmake", ".", "-DBDB_LIBRARY=BDB_LIBRARY-NOTFOUND",
+                         "-DENABLE_GTK_DOC=OFF",
+                         "-DSHARED_ONLY=ON",
+                         *std_cmake_args
+    system "make", "install"
+  end
 
-    mkdir "build" do
-      system "cmake", "..", "-DSHARED_ONLY=true", *args
-      system "make", "install"
-    end
+  test do
+    (testpath/"test.c").write <<~EOS
+      #define LIBICAL_GLIB_UNSTABLE_API 1
+      #include <libical-glib/libical-glib.h>
+      int main(int argc, char *argv[]) {
+        ICalParser *parser = i_cal_parser_new();
+        return 0;
+      }
+    EOS
+    system ENV.cc, "test.c", "-o", "test", "-L#{lib}", "-lical-glib",
+                   "-I#{Formula["glib"].opt_include}/glib-2.0",
+                   "-I#{Formula["glib"].opt_lib}/glib-2.0/include"
+    system "./test"
   end
 end

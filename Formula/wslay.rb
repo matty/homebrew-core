@@ -1,35 +1,34 @@
 class Wslay < Formula
   desc "C websocket library"
   homepage "https://wslay.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/wslay/wslay-1.0.0/wslay-1.0.0.tar.xz"
-  sha256 "148d5272255b76034f97cf0298f606aed4908ebb4198412a321280f2319160ef"
+  url "https://github.com/tatsuhiro-t/wslay/releases/download/release-1.1.1/wslay-1.1.1.tar.xz"
+  sha256 "166cfa9e3971f868470057ed924ae1b53f428db061b361b9a17c0508719d2cb5"
+  license "MIT"
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "9a442f80a67b037402618b0a76874c3db4d93213081f96f3c3f0b22d79068556" => :sierra
-    sha256 "30939fd620cff4702d15d61a75774b71e1b226fb7b2b3fab8a3acdf96bdd9b7d" => :el_capitan
-    sha256 "294d4646dcf7d352368de8b422a5354e72b3027a8678e993d68ea8d55646388e" => :yosemite
-    sha256 "410634e15d5ce6f680ccd5d96b97fc2226aad9530aebe42690d3ceb4d7011e69" => :mavericks
+    sha256 "b0c31393b4065ddad22d079252f4310ccafee1c26d5ea56a58c2bc3bfa728b46" => :catalina
+    sha256 "4ea82d98c0fd0cfcc1e842dde6e0fbd15355d538876f24fa0c2ca6f05ed17926" => :mojave
+    sha256 "6aade683b7db8a32c859e54134568bdb3983d57878783d86c89e5d28c5e8db77" => :high_sierra
   end
 
   head do
     url "https://github.com/tatsuhiro-t/wslay.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option "without-docs", "Don't generate or install documentation"
-
-  depends_on "sphinx-doc" => :build if build.with? "docs"
   depends_on "cunit" => :build
   depends_on "pkg-config" => :build
+  depends_on "sphinx-doc" => :build
 
   def install
     system "autoreconf", "-fvi" if build.head?
-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking", "--disable-silent-rules"
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking",
+                          "--disable-silent-rules"
     system "make", "check"
     system "make", "install"
   end

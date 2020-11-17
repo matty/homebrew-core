@@ -1,31 +1,39 @@
 class Gprof2dot < Formula
-  desc "Convert the output from many profilers into a Graphviz dot graph."
-  homepage "https://github.com/jrfonseca/gprof2dot"
-  url "https://pypi.python.org/packages/a0/e0/73c71baed306f0402a00a94ffc7b2be94ad1296dfcb8b46912655b93154c/gprof2dot-2016.10.13.tar.gz"
-  sha256 "48c1e168c28b8a8eb23bf30fda78fe2ef218269a41505341ec27c27083e47cf4"
+  include Language::Python::Virtualenv
 
+  desc "Convert the output from many profilers into a Graphviz dot graph"
+  homepage "https://github.com/jrfonseca/gprof2dot"
+  url "https://files.pythonhosted.org/packages/fd/77/3158821acc45cc26d5815d4250275d03c254572ff53c0388af8df168ce78/gprof2dot-2019.11.30.tar.gz"
+  sha256 "b43fe04ebb3dfe181a612bbfc69e90555b8957022ad6a466f0308ed9c7f22e99"
+  license "LGPL-3.0"
+  revision 2
   head "https://github.com/jrfonseca/gprof2dot.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e685cb2d39df01e5714eb9c318e59255423603044f1aee4dc6ea066a6518b2dc" => :sierra
-    sha256 "e685cb2d39df01e5714eb9c318e59255423603044f1aee4dc6ea066a6518b2dc" => :el_capitan
-    sha256 "e685cb2d39df01e5714eb9c318e59255423603044f1aee4dc6ea066a6518b2dc" => :yosemite
+    sha256 "e9834915198ff976dfc33b51aad580cdc585b19de21bae6ae2c23602e9d85c6f" => :big_sur
+    sha256 "088de0dd88acd16d009b57229dc45028277d9a3401e7902208e0cde1972d75e0" => :catalina
+    sha256 "0d693183049e2ee10e946134997c9a0cd23a8ca335705080b0dce1af1831884c" => :mojave
+    sha256 "b2396cc1daa5759af6642a8e85b66d447e3ff3f0395db74429d6969e62823f7c" => :high_sierra
   end
 
-  depends_on "graphviz" => :recommended
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "graphviz"
+  depends_on "python@3.9"
+
+  on_linux do
+    depends_on "libx11"
+  end
 
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
-
-    bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    virtualenv_install_with_resources
   end
 
   test do
-    (testpath/"gprof.output").write <<-EOS.undent
+    (testpath/"gprof.output").write <<~EOS
       Flat profile:
 
       Each sample counts as 0.01 seconds.
@@ -65,7 +73,7 @@ class Gprof2dot < Formula
              the function in the gprof listing. If the index is
              in parenthesis it shows where it would appear in
              the gprof listing if it were to be printed.
-
+      
                    Call graph (explanation follows)
 
 
@@ -182,6 +190,6 @@ class Gprof2dot < Formula
          [4] project1                [2] worker1
     EOS
     system bin/"gprof2dot", testpath/"gprof.output", "-o", testpath/"call_graph.dot"
-    assert File.exist?(testpath/"call_graph.dot")
+    assert_predicate testpath/"call_graph.dot", :exist?
   end
 end

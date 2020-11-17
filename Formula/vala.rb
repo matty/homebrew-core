@@ -1,18 +1,28 @@
 class Vala < Formula
   desc "Compiler for the GObject type system"
-  homepage "https://live.gnome.org/Vala"
-  url "https://download.gnome.org/sources/vala/0.34/vala-0.34.4.tar.xz"
-  sha256 "6b17bd339414563ebc51f64b0b837919ea7552d8a8ffa71cdc837d25c9696b83"
+  homepage "https://wiki.gnome.org/Projects/Vala"
+  url "https://download.gnome.org/sources/vala/0.48/vala-0.48.11.tar.xz"
+  sha256 "54fd1bb356d69824009691955c885bae357eec4eaced6c2e2d038180322e306a"
+  license "LGPL-2.1-or-later"
 
-  bottle do
-    sha256 "a466a3eac6b57099656f1b1da6b4a2d5673c3efd1da5510dec0294fe6e67e75a" => :sierra
-    sha256 "e7cac8843b7a5e5251d46cf1ad44054b9ad40117b97a6788279009aa11a0b41c" => :el_capitan
-    sha256 "b4e1203ff4c793e6fcd94da5710049af032f0e5bd675b1c06138750495d8ac33" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :run
+  bottle do
+    sha256 "d8042afa508bf07fc2997febac00f15f68dea0c3171540fc69e78d7dae14e893" => :big_sur
+    sha256 "cb21133addf409d424f488c8cc859f1f1002fc92daeaf3e6fa0c749315e46b60" => :catalina
+    sha256 "1b36a7bbe5c7253445ecbeb99cca3a9815751d151ae105ef7f1ded61ec0e32fd" => :mojave
+    sha256 "1cc06100d8aa160afa31dae8c6583bad2824945812214d07b4b363e910670fb9" => :high_sierra
+  end
+
   depends_on "gettext"
   depends_on "glib"
+  depends_on "graphviz"
+  depends_on "pkg-config"
+
+  uses_from_macos "bison" => :build
+  uses_from_macos "flex" => :build
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -23,9 +33,10 @@ class Vala < Formula
   end
 
   test do
+    ENV.prepend_path "PKG_CONFIG_PATH", Formula["libffi"].opt_lib/"pkgconfig"
     test_string = "Hello Homebrew\n"
     path = testpath/"hello.vala"
-    path.write <<-EOS
+    path.write <<~EOS
       void main () {
         print ("#{test_string}");
       }
@@ -41,7 +52,7 @@ class Vala < Formula
       path.to_s,
     ]
     system "#{bin}/valac", *valac_args
-    assert File.exist?(testpath/"hello.c")
+    assert_predicate testpath/"hello.c", :exist?
 
     assert_equal test_string, shell_output("#{testpath}/hello")
   end

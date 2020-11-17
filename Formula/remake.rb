@@ -1,16 +1,31 @@
 class Remake < Formula
   desc "GNU Make with improved error handling, tracing, and a debugger"
   homepage "https://bashdb.sourceforge.io/remake"
-  url "https://downloads.sourceforge.net/project/bashdb/remake/4.1%2Bdbg-1.1/remake-4.1%2Bdbg1.1.tar.bz2"
-  version "4.1-1.1"
-  sha256 "42eb79a8418e327255341a55ccbdf358eed42c4e15ffb39052c1627de83521fe"
+  url "https://downloads.sourceforge.net/project/bashdb/remake/4.3%2Bdbg-1.5/remake-4.3%2Bdbg-1.5.tar.gz"
+  version "4.3-1.5"
+  sha256 "2e6eb709f3e6b85893f14f15e34b4c9b754aceaef0b92bb6ca3a025f10119d76"
+  license "GPL-3.0-only"
+
+  # We check the "remake" directory page because the bashdb project contains
+  # various software and remake releases may be pushed out of the SourceForge
+  # RSS feed.
+  livecheck do
+    url "https://sourceforge.net/projects/bashdb/files/remake/"
+    strategy :page_match
+    regex(%r{href=.*?remake/v?(\d+(?:\.\d+)+(?:(?:%2Bdbg)?[._-]\d+(?:\.\d+)+)?)/?["' >]}i)
+  end
 
   bottle do
-    sha256 "442fd8ead728131cf4b6844ea05e6d285e93f5ddd56afb3ff2d419f4ac467275" => :sierra
-    sha256 "acf1304abfe8aafc9795519d7bced2e48a30e756d59e354402f0476ce497ced6" => :el_capitan
-    sha256 "08379f9f4deb5700416c7a65dd2f46fe00e4a9d91e0c036dc877fdabe86a8001" => :yosemite
-    sha256 "a6a8e14b9abad883c20c76e26226018864245e21ac934984f5131a0846784fda" => :mavericks
+    rebuild 1
+    sha256 "933b00f621a8cfc69a197d73bfe7f9d319d3571aae991eb3b039a8471ea9a0f1" => :big_sur
+    sha256 "310b2ef02888a953487fb4e3f7fd7101c209a9abd12286d6a8509669c3ed2909" => :catalina
+    sha256 "05998e7ad1f8442b57e0826b5152894186f359b59d75e68634c1da1a96b0345f" => :mojave
+    sha256 "b3c14a7963aeda5e8367e0e4375354fdd58b24a99c07d6cb3fd881dc8d1b1941" => :high_sierra
   end
+
+  depends_on "readline"
+
+  conflicts_with "make", because: "both install texinfo files for make"
 
   def install
     system "./configure", "--disable-debug",
@@ -20,7 +35,7 @@ class Remake < Formula
   end
 
   test do
-    (testpath/"Makefile").write <<-EOS.undent
+    (testpath/"Makefile").write <<~EOS
       all:
       \techo "Nothing here, move along"
     EOS

@@ -1,38 +1,38 @@
 class Synfig < Formula
   desc "Command-line renderer"
-  homepage "http://synfig.org"
-  url "https://downloads.sourceforge.net/project/synfig/releases/1.0.2/source/synfig-1.0.2.tar.gz"
-  sha256 "34cdf9eac90aadea29fb2997e82da1c32713ab02940f7c8873330f894e167fb4"
-  revision 2
-  head "git://synfig.git.sourceforge.net/gitroot/synfig/synfig"
+  homepage "https://synfig.org/"
+  url "https://downloads.sourceforge.net/project/synfig/releases/1.2.2/source/synfig-1.2.2.tar.gz"
+  sha256 "5f5f7b33483041165f9a63fe4d95eb815971c7444569e574206f6964e83cc2ef"
+  revision 4
+  head "https://svn.code.sf.net/p/synfig/code/"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/synfig[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    sha256 "ad4b23fe38d528dab8be2288ee45bdc42130c1e67f4f4de078f09a3b8e1f0aed" => :sierra
-    sha256 "bb42b47c6c04c7c6ec01509b0fcc0b5385b9fdfc1d813a0b9e507351f25a79ac" => :el_capitan
-    sha256 "a46081768934b324778fc279bdba25eb948b2508f837dff5f83093d47e657658" => :yosemite
+    sha256 "e650a8a7b33f740b705074d08363ff75856d8f66ea1d27875fb5fd9a00be07f6" => :big_sur
+    sha256 "6d117163a9f6842aacaf99fcbb72ba7b4af4a69ee7d39dcd76837fb24f79319a" => :catalina
+    sha256 "b955e3352a86133f4175d8de262089638eb79bc59c6342c5addf5958fcf6fbc8" => :mojave
+    sha256 "1d95e144c64e8564497e2e2913d8644dcca7f0d50e90448a24ccae9a1cdafbbb" => :high_sierra
   end
 
+  depends_on "intltool" => :build
   depends_on "pkg-config" => :build
-  depends_on "gettext"
-  depends_on "etl"
-  depends_on "libsigc++"
-  depends_on "libxml++"
-  depends_on "libpng"
-  depends_on "freetype"
-  depends_on "cairo"
-  depends_on "pango"
   depends_on "boost"
-  depends_on "openexr"
+  depends_on "cairo"
+  depends_on "etl"
+  depends_on "fftw"
+  depends_on "freetype"
+  depends_on "gettext"
+  depends_on "libpng"
+  depends_on "libsigc++@2"
+  depends_on "libtool"
+  depends_on "libxml++"
   depends_on "mlt"
-  depends_on "libtool" => :run
-
-  needs :cxx11
-
-  # bug filed upstream as http://www.synfig.org/issues/thebuggenie/synfig/issues/904
-  patch do
-    url "https://gist.githubusercontent.com/tschoonj/06d5de3cdc5d063f8612/raw/26fe46b6eedeecdc686b9fd5aac01de9f2756424/synfig.diff"
-    sha256 "0ac5b757ba3dda6a863a79e717fc239648c490eac1e643ff275b8ac232a466a3"
-  end
+  depends_on "openexr"
+  depends_on "pango"
 
   def install
     ENV.cxx11
@@ -40,12 +40,13 @@ class Synfig < Formula
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--with-boost=#{boost.opt_prefix}"
+                          "--with-boost=#{boost.opt_prefix}",
+                          "--without-jpeg"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <synfig/version.h>
       int main(int argc, char *argv[])
       {
@@ -62,7 +63,7 @@ class Synfig < Formula
     glib = Formula["glib"]
     glibmm = Formula["glibmm"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     libxmlxx = Formula["libxml++"]
     mlt = Formula["mlt"]
     pango = Formula["pango"]

@@ -1,40 +1,38 @@
 class Libetonyek < Formula
   desc "Interpret and import Apple Keynote presentations"
   homepage "https://wiki.documentfoundation.org/DLP/Libraries/libetonyek"
-  url "http://dev-www.libreoffice.org/src/libetonyek/libetonyek-0.1.6.tar.xz"
-  sha256 "df54271492070fbcc6aad9f81ca89658b25dd106cc4ab6b04b067b7a43dcc078"
+  url "https://dev-www.libreoffice.org/src/libetonyek/libetonyek-0.1.9.tar.xz"
+  sha256 "e61677e8799ce6e55b25afc11aa5339113f6a49cff031f336e32fa58635b1a4a"
   revision 1
 
-  bottle do
-    sha256 "bd8eebe1f6baa116b62e07120d2721e4b58b07afde240b1715fc7765ac8c9f97" => :sierra
-    sha256 "24dcd3c072de267a0c37b56e09018dce03f2af49577072f27bca7fcb3637c13d" => :el_capitan
-    sha256 "638cac17acdf356dd29a0e9e2d190978c1e92778287aa1f03e7daafdf7eeb83a" => :yosemite
+  livecheck do
+    url "https://dev-www.libreoffice.org/src/"
+    regex(/href=["']?libetonyek[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "pkg-config" => :build
+  bottle do
+    rebuild 1
+    sha256 "e08c335554a42a123047a08050f1599eed8ac43e45bc264d2ebdbab181a6a64c" => :big_sur
+    sha256 "fe426f3577057ac3a73b9527b01124e5f916872b505f12e8224674d72a700c5b" => :catalina
+    sha256 "b51d5847f87fba35e67703d248f0552a4e03eb6fc4e35ba5a180f41fec68fdeb" => :mojave
+    sha256 "d86fef6a245db1b767d8965362eae4782af35b2c2b14e819ae7d436790f909cd" => :high_sierra
+  end
+
   depends_on "boost" => :build
-  depends_on "gnu-sed" => :build
+  depends_on "glm" => :build
+  depends_on "mdds" => :build
+  depends_on "pkg-config" => :build
   depends_on "librevenge"
-  depends_on "glm"
-  depends_on "mdds"
+
+  uses_from_macos "libxml2"
 
   resource "liblangtag" do
-    url "https://bitbucket.org/tagoh/liblangtag/downloads/liblangtag-0.5.8.tar.bz2"
-    sha256 "08e2f64bfe3f750be7391eb0af53967e164b628c59f02be4d83789eb4f036eaa"
-  end
-
-  # Remove for > 0.1.6
-  # upstream commit adding support for mdds 1.2 API in configure
-  patch do
-    url "https://github.com/LibreOffice/libetonyek/commit/f6d14b3.patch"
-    sha256 "26022cb803763b83f4458517a63bfc7ad34e7f8cc0ad30175a3da7802263eeb5"
+    url "https://bitbucket.org/tagoh/liblangtag/downloads/liblangtag-0.6.2.tar.bz2"
+    sha256 "d6242790324f1432fb0a6fae71b6851f520b2c5a87675497cf8ea14c2924d52e"
   end
 
   def install
     resource("liblangtag").stage do
-      ENV.prepend_path "PATH", Formula["gnu-sed"].opt_libexec/"gnubin"
       system "./configure", "--prefix=#{libexec}", "--enable-modules=no"
       system "make"
       system "make", "install"
@@ -42,25 +40,24 @@ class Libetonyek < Formula
 
     ENV["LANGTAG_CFLAGS"] = "-I#{libexec}/include"
     ENV["LANGTAG_LIBS"] = "-L#{libexec}/lib -llangtag -lxml2"
-    system "autoreconf", "-v" # Remove for > 0.1.6
     system "./configure", "--without-docs",
                           "--disable-dependency-tracking",
                           "--enable-static=no",
                           "--disable-werror",
                           "--disable-tests",
                           "--prefix=#{prefix}",
-                          "--with-mdds=1.2"
+                          "--with-mdds=1.5"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libetonyek/EtonyekDocument.h>
       int main() {
         return libetonyek::EtonyekDocument::RESULT_OK;
       }
     EOS
-    system ENV.cxx, "test.cpp", "-o", "test",
+    system ENV.cxx, "-std=c++11", "test.cpp", "-o", "test",
                     "-I#{Formula["librevenge"].include}/librevenge-0.0",
                     "-I#{include}/libetonyek-0.1",
                     "-L#{Formula["librevenge"].lib}",

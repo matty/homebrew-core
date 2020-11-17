@@ -1,35 +1,53 @@
 class Mpdas < Formula
   desc "C++ client to submit tracks to audioscrobbler"
   homepage "https://www.50hz.ws/mpdas/"
-  url "https://www.50hz.ws/mpdas/mpdas-0.3.1.tar.bz2"
-  sha256 "eaf01afbeac02e6a2023fd05be81042eee94b30abd82667f2220b06955f52ab9"
-
+  url "https://www.50hz.ws/mpdas/mpdas-0.4.5.tar.gz"
+  sha256 "c9103d7b897e76cd11a669e1c062d74cb73574efc7ba87de3b04304464e8a9ca"
+  license "BSD-3-Clause"
   head "https://github.com/hrkfdn/mpdas.git"
 
   bottle do
-    cellar :any
-    sha256 "90e1ba54b35ed714b5558336793455c2db11e3dab95951cae5b846b0763b1e04" => :sierra
-    sha256 "e82e85475795c700ad560280d551c94eac4a7e376eac2848d214e46747023644" => :el_capitan
-    sha256 "ce6d4b85c76698e1dd16325d3e4fc0b560a53e5e7a9608aa9060833f7059ff5d" => :yosemite
-    sha256 "7844d826d96940c932d89af353e456b17df5cd6ee67627aa51f264d1b713456e" => :mavericks
+    sha256 "db93645db3fef2737193f310b8261a435ad79c426e186c6127017b37cc81ef66" => :catalina
+    sha256 "448514d6ac177e771f61bcd178550e317560cf3d5d73bfd240c3278d8d3f5193" => :mojave
+    sha256 "ae319b22981a8cc5ed9a0e0212f2ecdbd7660bcd32182334865a01ac69c2832f" => :high_sierra
+    sha256 "06fe51aaa95bfd3000f1f9e562709d266ecbf1880d2b96779ff0c9b9d82dea20" => :sierra
+    sha256 "c9261f50d1d71969474203f6431d7902198c3524d828ed6f690733094444a914" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libmpd"
+  depends_on "libmpdclient"
 
   def install
-    ENV["PREFIX"] = prefix
-    ENV["MANPREFIX"] = man
-    ENV["CONFIG"] = etc
-
-    ENV.deparallelize
-    system "make"
-    # Just install ourselves
-    bin.install "mpdas"
-    man1.install "mpdas.1"
+    system "make", "PREFIX=#{prefix}", "MANPREFIX=#{man1}", "CONFIG=#{etc}", "install"
+    etc.install "mpdasrc.example"
   end
 
-  def caveats
-    "Read #{prefix}/README on how to configure mpdas."
+  plist_options manual: "mpdas"
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>WorkingDirectory</key>
+          <string>#{HOMEBREW_PREFIX}</string>
+          <key>ProgramArguments</key>
+          <array>
+              <string>#{opt_bin}/mpdas</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <true/>
+      </dict>
+      </plist>
+    EOS
+  end
+
+  test do
+    system bin/"mpdas", "-v"
   end
 end

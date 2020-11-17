@@ -1,29 +1,28 @@
 class Menhir < Formula
   desc "LR(1) parser generator for the OCaml programming language"
   homepage "http://cristal.inria.fr/~fpottier/menhir"
-  url "http://cristal.inria.fr/~fpottier/menhir/menhir-20161115.tar.gz"
-  sha256 "f31037f904c863b241bd90dd4ba6cd8f5ea86255477c13a2f7d0e02724ab16c9"
+  url "https://gitlab.inria.fr/fpottier/menhir/-/archive/20200624/menhir-20200624.tar.bz2"
+  sha256 "2c436b29f2374566f5e63cb32033a47106c37b625ce45be8ade6857ee6ef0130"
 
   bottle do
-    sha256 "60f84b925e70bf005f84a9441c2134c2ffe48980d6c44883ce84e154b0c46d9a" => :sierra
-    sha256 "016653898fd56dfd858cfd227dbb5b9678c4e9daf4b10c0555b7042ed8d93ed5" => :el_capitan
-    sha256 "bde51805532613d051e17044779da9e2707c29aa8ffe94c62a83a862a81e1f26" => :yosemite
+    cellar :any
+    sha256 "1649284a3f70d1985792a3b9663b72141a8c9bc64bd52fdb5f69a5657ffde77e" => :big_sur
+    sha256 "1d8fe51d871a8ceb81aa9fd8ab2f6afe52827fd1fb9f44920db00d44013c9612" => :catalina
+    sha256 "143e14a2c00f6b0ca8749c86d3c90da34f1a86b82c777aa0ecd10fd8287a9146" => :mojave
+    sha256 "47f172389fa83b5c27cb50dff49253566dfe992e058a32d656c91733c87ac947" => :high_sierra
   end
 
+  depends_on "dune" => :build
+  depends_on "ocamlbuild" => :build
   depends_on "ocaml"
-  depends_on "ocamlbuild"
-
-  # Workaround parallelized build failure by separating all steps
-  # Submitted to menhir-list@yquem.inria.fr on 24th Feb 2016.
-  patch :DATA
 
   def install
-    system "make", "PREFIX=#{prefix}", "all"
-    system "make", "PREFIX=#{prefix}", "install"
+    system "dune", "build", "@install"
+    system "dune", "install", "--prefix=#{prefix}", "--mandir=#{man}"
   end
 
   test do
-    (testpath/"test.mly").write <<-EOS.undent
+    (testpath/"test.mly").write <<~EOS
       %token PLUS TIMES EOF
       %left PLUS
       %left TIMES
@@ -41,26 +40,7 @@ class Menhir < Formula
     EOS
 
     system "#{bin}/menhir", "--dump", "--explain", "--infer", "test.mly"
-    assert File.exist? "test.ml"
-    assert File.exist? "test.mli"
+    assert_predicate testpath/"test.ml", :exist?
+    assert_predicate testpath/"test.mli", :exist?
   end
 end
-
-__END__
-diff --git a/Makefile b/Makefile
-index f426f5d..54f397e 100644
---- a/Makefile
-+++ b/Makefile
-@@ -116,7 +116,11 @@ all:
-	  echo "let ocamlfind = false" >> src/installation.ml ; \
-	fi
- # Compile the library modules and the Menhir executable.
--	@ $(MAKE) -C src library bootstrap
-+	@ $(MAKE) -C src library
-+	@ $(MAKE) -C src .versioncheck
-+	@ $(MAKE) -C src stage1
-+	@ $(MAKE) -C src stage2
-+	@ $(MAKE) -C src stage3
- # The source file menhirLib.ml is created by concatenating all of the source
- # files that make up MenhirLib. This file is not needed to compile Menhir or
- # MenhirLib. It is installed at the same time as MenhirLib and is copied by

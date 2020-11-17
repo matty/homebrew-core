@@ -1,15 +1,16 @@
 class Eventql < Formula
   desc "Database for large-scale event analytics"
   homepage "https://eventql.io"
-  url "https://github.com/eventql/eventql/releases/download/v0.3.2/eventql-0.3.2.tgz"
-  sha256 "d235f3e78fa5f6569fc2db94161d3e3f9cb71dc0646e341acd91814cefd23640"
+  url "https://github.com/eventql/eventql/releases/download/v0.4.1/eventql-0.4.1.tgz"
+  sha256 "a61f093bc45a1f9b9b374331ab40665c0c1060a2278b2833c0b6eb6c547b4ef4"
+  license "AGPL-3.0"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "bb5a697a9e91c2523e24d8d81e842d26001992aa5d4d9867dac7ec4ebe6b81a0" => :sierra
-    sha256 "7d128462969fc4e431c6a486fca5f397fc15c46e657a622d042c0bf531efba82" => :el_capitan
-    sha256 "482a655e17d0b905d0101d2716f52266e1ec8bb6a4814f30a576431fa2d179e4" => :yosemite
-    sha256 "92adde0e08a4bc68c90f1e93f13ee7afc7bc1c7b69f2187610545bcbcb76abd8" => :mavericks
+    cellar :any
+    rebuild 1
+    sha256 "f14adb77f2c1a4ab8ca08a55a14884e5f87058e10895bf3558e7e5b5df6329f6" => :catalina
+    sha256 "b6f264a76ce93195c2de6708d497c59dcb7192da13038247a33b3fd7aae5ce9a" => :mojave
+    sha256 "9f0440ead195557859530cfb429c82cea72b3ad7caf3dbb6e149b5959890ad4e" => :high_sierra
   end
 
   head do
@@ -21,6 +22,9 @@ class Eventql < Formula
   end
 
   def install
+    # SpiderMonkey sets the deployment target to 10.6, kicking in libstdc++ mode
+    # which no longer has headers as of Xcode 10.
+    ENV["_MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
     # the internal libzookeeper fails to build if we don't deparallelize
     # https://github.com/eventql/eventql/issues/180
     ENV.deparallelize
@@ -30,15 +34,13 @@ class Eventql < Formula
   end
 
   test do
-    begin
-      pid = fork do
-        exec bin/"evqld", "--standalone", "--datadir", testpath
-      end
-      sleep 1
-      system bin/"evql", "--database", "test", "-e", "SELECT 42;"
-    ensure
-      Process.kill "SIGTERM", pid
-      Process.wait pid
+    pid = fork do
+      exec bin/"evqld", "--standalone", "--datadir", testpath
     end
+    sleep 1
+    system bin/"evql", "--database", "test", "-e", "SELECT 42;"
+  ensure
+    Process.kill "SIGTERM", pid
+    Process.wait pid
   end
 end

@@ -1,56 +1,50 @@
 class GnuTime < Formula
   desc "GNU implementation of time utility"
   homepage "https://www.gnu.org/software/time/"
-  url "https://ftpmirror.gnu.org/time/time-1.7.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/time/time-1.7.tar.gz"
-  sha256 "e37ea79a253bf85a85ada2f7c632c14e481a5fd262a362f6f4fd58e68601496d"
+  url "https://ftp.gnu.org/gnu/time/time-1.9.tar.gz"
+  mirror "https://ftpmirror.gnu.org/time/time-1.9.tar.gz"
+  sha256 "fbacf0c81e62429df3e33bda4cee38756604f18e01d977338e23306a3e3b521e"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "c3ccf53f79c148c915bf83ce2b128195fff1f614523a4db5d247df2907f37c6b" => :sierra
-    sha256 "3c998fed1b824483f0fd140a0b12164ebc6bd100371dca11291d3406a26ecc47" => :el_capitan
-    sha256 "d0b40a36430314f548ab3e5d362c3695b9ab38e83933a7a459deaccfa705232f" => :yosemite
-    sha256 "f69ffe3bd6748843ff7013c016bf69a58efde8fb936251b0f6e9e4a2352e1450" => :mavericks
-    sha256 "0b28fad39645760e643d90a93c994df01151d4ff43dc8b3c63efa8d59d17783f" => :mountain_lion
+    rebuild 2
+    sha256 "f4fc9d2c49b65130d04a476d4cd887b1e1033a7870df9805be28aba09be901f0" => :big_sur
+    sha256 "9a1d1160f85f46b3022dc4d978dfafe6b3a02fc97446bc51f8b1ae4580b7c69a" => :catalina
+    sha256 "dc007b95e2f9fb0df3380da55d3c9337529b1a4a3cd762972eb88512f567ea1c" => :mojave
+    sha256 "ad5d776c38e43f16fad8976770eeaa18e40562c166fa65fdaa12af61981c7b90" => :high_sierra
+    sha256 "d51ef948a5a87281175fef771cb28469cbdb3085e3c51ad325d780ff921cc013" => :sierra
   end
 
-  option "with-default-names", "Do not prepend 'g' to the binary"
-
-  # Fixes issue with main returning void rather than int
-  # https://trac.macports.org/ticket/32860
-  # https://trac.macports.org/browser/trunk/dports/sysutils/gtime/files/patch-time.c.diff?rev=88924
-  patch :DATA
-
   def install
-    args = [
-      "--prefix=#{prefix}",
-      "--mandir=#{man}",
-      "--info=#{info}",
+    args = %W[
+      --prefix=#{prefix}
+      --info=#{info}
+      --program-prefix=g
     ]
-
-    args << "--program-prefix=g" if build.without? "default-names"
 
     system "./configure", *args
     system "make", "install"
+
+    (libexec/"gnubin").install_symlink bin/"gtime" => "time"
+  end
+
+  def caveats
+    <<~EOS
+      GNU "time" has been installed as "gtime".
+      If you need to use it as "time", you can add a "gnubin" directory
+      to your PATH from your bashrc like:
+
+          PATH="#{opt_libexec}/gnubin:$PATH"
+    EOS
   end
 
   test do
     system bin/"gtime", "ruby", "--version"
+    system opt_libexec/"gnubin/time", "ruby", "--version"
   end
 end
-
-__END__
-diff --git a/time.c b/time.c
-index 9d5cf2c..97611f5 100644
---- a/time.c
-+++ b/time.c
-@@ -628,7 +628,7 @@ run_command (cmd, resp)
-   signal (SIGQUIT, quit_signal);
- }
- 
--void
-+int
- main (argc, argv)
-      int argc;
-      char **argv;

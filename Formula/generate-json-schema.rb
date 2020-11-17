@@ -3,15 +3,22 @@ require "language/node"
 class GenerateJsonSchema < Formula
   desc "Generate a JSON Schema from Sample JSON"
   homepage "https://github.com/Nijikokun/generate-schema"
-  url "https://registry.npmjs.org/generate-schema/-/generate-schema-2.3.3.tgz"
-  sha256 "08509250fc17cacfbf5f65c20ad84abccc30843c4da4f5ef7b356b63f6d350da"
+  url "https://registry.npmjs.org/generate-schema/-/generate-schema-2.6.0.tgz"
+  sha256 "1ddbf91aab2d649108308d1de7af782d9270a086919edb706f48d0216d51374a"
+  license "MIT"
   head "https://github.com/Nijikokun/generate-schema.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "34a7493939dc9f4f64da7a2097185aef4c36637a7b2bc1d09054ec753b557bfd" => :sierra
-    sha256 "2f13174bffd9ac0b72e4db1d2c904f7eff8a7612b066f1066e5d4329ffe58ae2" => :el_capitan
-    sha256 "1d16c27d7181559996291f13da64cdc2e03f47c3c8bc9143f6406ee8d5632b4f" => :yosemite
+    sha256 "4d5a50f712bb6714564574d20cbd771e62ad1da6dcd58d9b7225822af0821d73" => :catalina
+    sha256 "e049d098796be43aa340eca884fa71ec90f4fbeda02031142f66752df005de97" => :mojave
+    sha256 "3461301c038b8bb6e15b8e183661976e95ea7b7e0659d57f0f21ea2c0eb4e67c" => :high_sierra
+    sha256 "a6ff075810774d44030a59a12032d302c64834d03c7aabeb32efb8dc86d276de" => :sierra
+    sha256 "5a5b34d8e233d9b75648c39f8edada5077c8f6c6466bd3358f3f661062ccbe83" => :el_capitan
   end
 
   depends_on "node"
@@ -22,7 +29,7 @@ class GenerateJsonSchema < Formula
   end
 
   test do
-    input = <<-EOS.undent
+    (testpath/"test.json").write <<~EOS
       {
           "id": 2,
           "name": "An ice sculpture",
@@ -39,6 +46,6 @@ class GenerateJsonSchema < Formula
           }
       }
     EOS
-    assert_match "schema.org", pipe_output("#{bin}/generate-schema", input, 0)
+    assert_match "schema.org", shell_output("#{bin}/generate-schema test.json", 1)
   end
 end

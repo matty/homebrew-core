@@ -4,6 +4,10 @@ class BzrBuilder < Formula
   url "https://launchpad.net/bzr-builder/trunk/0.7.3/+download/bzr-builder-0.7.3.tar.gz"
   sha256 "9f8a078eafd6700ccbefa4e7e3f7df3240e15a2003c9538135c4be945ac90c91"
 
+  livecheck do
+    url :stable
+  end
+
   bottle :unneeded
 
   depends_on "bazaar"
@@ -25,7 +29,7 @@ class BzrBuilder < Formula
         system "bzr", "commit", "-m", "initial import"
       end
 
-      (testpath/"repo/my.recipe").write <<-EOS.undent
+      (testpath/"repo/my.recipe").write <<~EOS
         # bzr-builder format 0.3 deb-version 1.0+{revno}-{revno:packaging}
         trunk
       EOS
@@ -33,8 +37,8 @@ class BzrBuilder < Formula
       system "bzr", "build", "my.recipe", "branch"
 
       cd "branch" do
-        assert (testpath/"repo/branch/bzr-builder.manifest").exist?
-        assert (testpath/"repo/branch/readme.txt").exist?
+        assert_predicate testpath/"repo/branch/bzr-builder.manifest", :exist?
+        assert_predicate testpath/"repo/branch/readme.txt", :exist?
       end
     end
   end

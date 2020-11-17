@@ -1,15 +1,22 @@
 class Lzip < Formula
   desc "LZMA-based compression program similar to gzip or bzip2"
-  homepage "http://www.nongnu.org/lzip/lzip.html"
-  url "https://download.savannah.gnu.org/releases/lzip/lzip-1.18.tar.gz"
-  sha256 "47f9882a104ab05532f467a7b8f4ddbb898fa2f1e8d9d468556d6c2d04db14dd"
+  homepage "https://www.nongnu.org/lzip/"
+  url "https://download-mirror.savannah.gnu.org/releases/lzip/lzip-1.21.tar.gz"
+  sha256 "e48b5039d3164d670791f9c5dbaa832bf2df080cb1fbb4f33aa7b3300b670d8b"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://download.savannah.gnu.org/releases/lzip/"
+    regex(/href=.*?lzip[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3d44d4a51d26d920613b90d057200ad25c6d717d6d4b462b30b9125616d9819d" => :sierra
-    sha256 "dcebc83e260a8bfdfe55a2cc991a4184d935b6fe53390160d7e2154371671845" => :el_capitan
-    sha256 "a5e4b8f48d93f2d3ca8988df55b619ff779ff5331d3ee64dd31b57b7d88959db" => :yosemite
-    sha256 "cfde4d3e188c4347a23811e2712a60bd646a3037e6f7b9cf6afecd6db933fda0" => :mavericks
+    sha256 "98412a7d26e986502ad50442e7d68de09809617d4fb16f5761bfe9506386780d" => :big_sur
+    sha256 "e69bdf0e079d8b94221625310d0a0f6ad5cee544b4055d6a55d721f791a5b7f9" => :catalina
+    sha256 "54716b72b43e41cb8d9912fe3f61aeef651f890bf42f8b92482adfd0f2c99798" => :mojave
+    sha256 "bfe47a5379c4d793e15d1d71f5f6b12047a486e2531718f31f675683d54df595" => :high_sierra
+    sha256 "aba0ea18470d9aa4f619c0f6c133a4f459d4b02327ff539a44a1f473a2112369" => :sierra
   end
 
   def install
@@ -28,7 +35,7 @@ class Lzip < Formula
 
     # compress: data.txt -> data.txt.lz
     system "#{bin}/lzip", path
-    assert !path.exist?
+    refute_predicate path, :exist?
 
     # decompress: data.txt.lz -> data.txt
     system "#{bin}/lzip", "-d", "#{path}.lz"

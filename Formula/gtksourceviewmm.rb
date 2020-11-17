@@ -3,21 +3,25 @@ class Gtksourceviewmm < Formula
   homepage "https://developer.gnome.org/gtksourceviewmm/"
   url "https://download.gnome.org/sources/gtksourceviewmm/2.10/gtksourceviewmm-2.10.3.tar.xz"
   sha256 "0000df1b582d7be2e412020c5d748f21c0e6e5074c6b2ca8529985e70479375b"
-  revision 2
+  revision 6
+
+  livecheck do
+    url :stable
+    regex(/gtksourceviewmm[._-]v?(2\.([0-8]\d*?)?[02468](?:\.\d+)*?)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "5b7c63026e73470f387ac4eac0b7ac0d60eb3be5e27c11d16ac1027c852a4a8e" => :sierra
-    sha256 "2bffb5ab482a1eca492c9387d41f746a1c370668e2073b724bb5ef24598e7744" => :el_capitan
-    sha256 "29185d65e548dd917072a5f8223e47179997041eb24dd3e08b7924355c66bded" => :yosemite
-    sha256 "c44d2190e30615b94272f06dd06412d36dd60b4f0d09f42026ef1bbedd87d1c4" => :mavericks
+    sha256 "9bbf7ed611ac6f4771c02cb2b74cb5f3b3b66bfd75e5342eaafbd21e97db8500" => :big_sur
+    sha256 "11a112b786ce66947f6a9a0988d7ecafe62360492e0bab36490bb9bf63e50a17" => :catalina
+    sha256 "3cc10eb3380492729132b0518d0ad95ab81cd88ece8b871ddb139c0517f89a41" => :mojave
+    sha256 "4b1dfd6e1b0a4a78e33f49a4fdf95b1d880bc2148049be74fa6b5b8cb8532372" => :high_sierra
+    sha256 "f7d4623be50ab3901c895998c87b1d5719aff1d2e92f5974a98f71d5f5ed6911" => :sierra
   end
 
-  depends_on "gtksourceview"
   depends_on "pkg-config" => :build
   depends_on "gtkmm"
-
-  needs :cxx11
+  depends_on "gtksourceview"
 
   def install
     ENV.cxx11
@@ -26,7 +30,7 @@ class Gtksourceviewmm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gtksourceviewmm.h>
 
       int main(int argc, char *argv[]) {
@@ -48,8 +52,9 @@ class Gtksourceviewmm < Formula
     gtkx = Formula["gtk+"]
     gtkmm = Formula["gtkmm"]
     gtksourceview = Formula["gtksourceview"]
+    harfbuzz = Formula["harfbuzz"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     pango = Formula["pango"]
     pangomm = Formula["pangomm"]
     pixman = Formula["pixman"]
@@ -77,6 +82,7 @@ class Gtksourceviewmm < Formula
       -I#{gtkx.opt_include}/gtk-2.0
       -I#{gtkx.opt_include}/gtk-unix-print-2.0
       -I#{gtkx.opt_lib}/gtk-2.0/include
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/gtksourceviewmm-2.0
       -I#{libpng.opt_include}/libpng16
       -I#{libsigcxx.opt_include}/sigc++-2.0

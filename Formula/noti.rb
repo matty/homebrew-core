@@ -1,29 +1,24 @@
 class Noti < Formula
   desc "Trigger notifications when a process completes"
   homepage "https://github.com/variadico/noti"
-  url "https://github.com/variadico/noti/archive/v2.5.0.tar.gz"
-  sha256 "5e8f0cf7893ec5e39b2da0d306fb489390e2a466ff32f73421e778db9f61f88a"
+  url "https://github.com/variadico/noti/archive/3.5.0.tar.gz"
+  sha256 "04183106921e3a6aa7c107c6dff6fa13273436e8a26d139e49f34c5d1eea348c"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cc2373da2a7b8d642b55f3f89aa8869f325246adc6a1ed01a1beb144ccdf0724" => :sierra
-    sha256 "bb89dabb74f69180ea558fa2a67aff29e047df4f803816f45cc9d08879b3b4d3" => :el_capitan
-    sha256 "a43cdd2046a358c0934a44e8d8c234daa8b24b61a09f6f8d931fea1b34ade156" => :yosemite
+    sha256 "c62799cbbb117b38b1aa7115d9ca4e823caf6eba30bc509638445d82ea7aaa99" => :big_sur
+    sha256 "fd5b46d0b59943d06196923e4ba4f5628816d3c051d3b982939e3e64d2397fdf" => :catalina
+    sha256 "83a2ca79439aaaa5872597f0d937facea22e69eba196eade49a20099c5b6b120" => :mojave
+    sha256 "f622905f1a8f1ce308b629de6521c17be579de1019a3727ec568a359f852d135" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-
-    notipath = buildpath/"src/github.com/variadico/noti"
-    notipath.install Dir["*"]
-
-    cd "src/github.com/variadico/noti/cmd/noti" do
-      system "go", "build"
-      bin.install "noti"
-      prefix.install_metafiles
-    end
+    system "go", "build", "-mod=vendor", "-o", "#{bin}/noti", "cmd/noti/main.go"
+    man1.install "docs/man/noti.1"
+    man5.install "docs/man/noti.yaml.5"
   end
 
   test do

@@ -1,31 +1,28 @@
 class Kafkacat < Formula
   desc "Generic command-line non-JVM Apache Kafka producer and consumer"
   homepage "https://github.com/edenhill/kafkacat"
-  url "https://github.com/edenhill/kafkacat/archive/1.3.0.tar.gz"
-  sha256 "1170daa3ec66f32542872fb8a181f021589dc19d510ebc3b141adccc02d2ae5d"
+  url "https://github.com/edenhill/kafkacat.git",
+      tag:      "1.6.0",
+      revision: "3cd845bf782296b3e8eb382020173782281746d2"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any
-    sha256 "25a5f4adac93dba85de1681b79ff87d923eb5a1a95582853e92cd70a22c83c4d" => :sierra
-    sha256 "632efceabc31814305eb5331bc25a361414afd9ef1562cb9bb6463526997bb5e" => :el_capitan
-    sha256 "32bcf9d514f4e566029b3427098c6d73f78dad911fd6b762e38395c1ef41edb8" => :yosemite
-    sha256 "c1dcf8abd6c4917950403a872bca4d0502a116dfdfb0eb29c950f03a120ada6f" => :mavericks
+    sha256 "7be256a4f0a2a853b80fd5ded94cd397034e36ec2df13e106d7c766ede8ca4fb" => :big_sur
+    sha256 "b24a6909714b2d35a1255dd938964ebf200b6f6107c8b385596eb94c7111bddd" => :catalina
+    sha256 "37db83112a083daec2d6d91c50e256ca899d43de19e8cd9e58f31a4cf630cab5" => :mojave
+    sha256 "12e0795c76f11c17bfd32f3d59c16ce81025084b925a1ed0cb4e676fc5be76b3" => :high_sierra
   end
 
-  option "with-yajl", "Adds JSON support"
-
+  depends_on "avro-c"
   depends_on "librdkafka"
-  depends_on "yajl" => :optional
+  depends_on "libserdes"
+  depends_on "yajl"
 
   def install
-    args = %W[
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-    ]
-
-    args << "--enable-json" if build.with?("yajl")
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--enable-json",
+                          "--enable-avro"
     system "make"
     system "make", "install"
   end

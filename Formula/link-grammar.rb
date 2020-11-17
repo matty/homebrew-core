@@ -1,31 +1,43 @@
 class LinkGrammar < Formula
   desc "Carnegie Mellon University's link grammar parser"
-  homepage "http://www.abisource.com/projects/link-grammar/"
-  url "http://www.abisource.com/downloads/link-grammar/5.3.14/link-grammar-5.3.14.tar.gz"
-  sha256 "4161ff7af5d6297cc97758ed5062fc48cb3e87749f3b8dcd5b2c8ceae216f267"
+  homepage "https://www.abisource.com/projects/link-grammar/"
+  url "https://www.abisource.com/downloads/link-grammar/5.8.0/link-grammar-5.8.0.tar.gz"
+  sha256 "ad65a6b47ca0665b814430a5a8ff4de51f4805f7fb76642ced90297b4e7f16ed"
+  license "LGPL-2.1"
+  revision 1
 
-  bottle do
-    sha256 "66101790b948b5263e51db66687cda46c28da529be606e5034a5727a6fd36afd" => :sierra
-    sha256 "3bdd18c86f8a755fb4d40402a8e1ffbec0ee6a629eb350275658cb43b579e8fc" => :el_capitan
-    sha256 "fcd29aef31a1b7e36a460b4090ad4381b4dfc51dfc0e11dff5b8d4322471a023" => :yosemite
+  livecheck do
+    url :homepage
+    regex(/href=.*?link-grammar[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "d2125eec68c573874249d6b3629b54b9c55c7c378343f9ae969440dfdbb3497d" => :catalina
+    sha256 "5c6e347b0c82683ae1a3c8838bec8bf9b840c06fbe33e59a494ea3495256b0e0" => :mojave
+    sha256 "64a9aa4bebc23fe23063f436cd18bca518e11f3be4322ca60d2d710c9ed6cd8c" => :high_sierra
+  end
+
+  depends_on "ant" => :build
   depends_on "autoconf" => :build
   depends_on "autoconf-archive" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on :ant => :build
+  depends_on "pkg-config" => :build
+  depends_on "python@3.9" => :build
+
+  uses_from_macos "sqlite"
 
   def install
     ENV["PYTHON_LIBS"] = "-undefined dynamic_lookup"
     inreplace "bindings/python/Makefile.am",
-      "$(PYTHON2_LDFLAGS) -module -no-undefined",
-      "$(PYTHON2_LDFLAGS) -module"
-    inreplace "autogen.sh", "libtoolize", "glibtoolize"
-    system "./autogen.sh", "--no-configure"
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
+      "$(PYTHON_LDFLAGS) -module -no-undefined",
+      "$(PYTHON_LDFLAGS) -module"
+    inreplace "link-grammar/link-grammar.def", "regex_tokenizer_test\n", ""
+    system "autoreconf", "-fiv"
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--with-regexlib=c"
     system "make", "install"
   end
 

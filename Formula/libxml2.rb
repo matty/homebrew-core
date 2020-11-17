@@ -1,76 +1,87 @@
 class Libxml2 < Formula
   desc "GNOME XML library"
-  homepage "http://xmlsoft.org"
+  homepage "http://xmlsoft.org/"
+  url "http://xmlsoft.org/sources/libxml2-2.9.10.tar.gz"
+  mirror "https://ftp.osuosl.org/pub/blfs/conglomeration/libxml2/libxml2-2.9.10.tar.gz"
+  sha256 "aafee193ffb8fe0c82d4afef6ef91972cbaf5feea100edc2f262750611b4be1f"
+  license "MIT"
   revision 2
 
-  stable do
-    url "http://xmlsoft.org/sources/libxml2-2.9.4.tar.gz"
-    mirror "ftp://xmlsoft.org/libxml2/libxml2-2.9.4.tar.gz"
-    sha256 "ffb911191e509b966deb55de705387f14156e1a56b21824357cdf0053233633c"
-
-    # All patches upstream already. Remove whenever 2.9.5 is released.
-    # Fixes CVE-2016-4658, CVE-2016-5131.
-    patch do
-      url "https://mirrors.ocf.berkeley.edu/debian/pool/main/libx/libxml2/libxml2_2.9.4+dfsg1-2.2.debian.tar.xz"
-      mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/libx/libxml2/libxml2_2.9.4+dfsg1-2.2.debian.tar.xz"
-      sha256 "c038bba02a56164cef7728509ba3c8f1856018573769ee9ffcc48c565e90bdc9"
-      apply "patches/0003-Fix-NULL-pointer-deref-in-XPointer-range-to.patch",
-            "patches/0004-Fix-comparison-with-root-node-in-xmlXPathCmpNodes.patch",
-            "patches/0005-Fix-XPointer-paths-beginning-with-range-to.patch",
-            "patches/0006-Disallow-namespace-nodes-in-XPointer-ranges.patch",
-            "patches/0007-Fix-more-NULL-pointer-derefs-in-xpointer.c.patch",
-            "patches/0008-Fix-attribute-decoding-during-XML-schema-validation.patch"
-    end
+  livecheck do
+    url "http://xmlsoft.org/sources"
+    regex(/href=.*?libxml2[._-]v?([\d.]+\.[\d.]+\.[\d.]+)\.t/i)
   end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "08ae8ecc02d55f390122cb6a66e252720ff76ac003f3605a0ff1a700b8da32cd" => :sierra
-    sha256 "935c1dc0821ca6c4676357c4a6a4339946f8a5d699b6da95f74380f098e61db1" => :el_capitan
-    sha256 "eb7c876f407381400b8c64c9a3107aa50dc853823c4bbf2e856f32e93cb68bac" => :yosemite
+    sha256 "0170a16da823ce77d1aad7db927b23a1adb12285a174f36a918275d7952eaaae" => :big_sur
+    sha256 "2983d5a448504389888720bf951713114ed7f010d96cde9289fdc5c4b539d303" => :catalina
+    sha256 "7bcd780db5693475c7711eefbbcf703507865e06483e7338ab61027ec375c4bc" => :mojave
+    sha256 "34d84eaef7f80632a6547903d640be06c6d92b9ca2b815b64b74943b4cf73e63" => :high_sierra
   end
 
   head do
-    url "https://git.gnome.org/browse/libxml2.git"
+    url "https://gitlab.gnome.org/GNOME/libxml2.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
+    depends_on "pkg-config" => :build
   end
 
-  keg_only :provided_by_osx
+  keg_only :provided_by_macos
 
-  option :universal
+  depends_on "python@3.9"
+  depends_on "readline"
 
-  depends_on :python => :optional
+  uses_from_macos "zlib"
+
+  # Fix crash when using Python 3 using Fedora's patch.
+  # Reported upstream:
+  # https://bugzilla.gnome.org/show_bug.cgi?id=789714
+  # https://gitlab.gnome.org/GNOME/libxml2/issues/12
+  patch do
+    url "https://bugzilla.opensuse.org/attachment.cgi?id=746044"
+    sha256 "37eb81a8ec6929eed1514e891bff2dd05b450bcf0c712153880c485b7366c17c"
+  end
+
+  # Resolves CVE-2018-8048, CVE-2018-3740, CVE-2018-3741
+  # Upstream hasn't patched this bug, but Nokogiri distributes
+  # libxml2 with this patch to fix this issue
+  # https://bugzilla.gnome.org/show_bug.cgi?id=769760
+  # https://github.com/sparklemotion/nokogiri/pull/1746
+  patch do
+    url "https://raw.githubusercontent.com/sparklemotion/nokogiri/38721829c1df30e93bdfbc88095cc36838e497f3/patches/libxml2/0001-Revert-Do-not-URI-escape-in-server-side-includes.patch"
+    sha256 "c755e6e17c02584bfbfc8889ffc652384b010c0bd71879d7ff121ca60a218fcd"
+  end
+
+  # Fix compatibility with Python 3.9
+  # https://gitlab.gnome.org/GNOME/libxml2/-/issues/149
+  patch do
+    url "https://gitlab.gnome.org/nwellnhof/libxml2/-/commit/e4fb36841800038c289997432ca547c9bfef9db1.patch"
+    sha256 "c3fa874b78d76b8de8afbbca9f83dc94e9a0da285eaf6ee1f6976ed4cd41e367"
+  end
 
   def install
-    ENV.universal_binary if build.universal?
-    if build.head?
-      inreplace "autogen.sh", "libtoolize", "glibtoolize"
-      system "./autogen.sh"
-    end
+    system "autoreconf", "-fiv" if build.head?
 
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
+                          "--with-history",
                           "--without-python",
                           "--without-lzma"
-    system "make"
-    ENV.deparallelize
     system "make", "install"
 
-    if build.with? "python"
-      cd "python" do
-        # We need to insert our include dir first
-        inreplace "setup.py", "includes_dir = [", "includes_dir = ['#{include}', '#{MacOS.sdk_path}/usr/include',"
-        system "python", "setup.py", "install", "--prefix=#{prefix}"
-      end
+    cd "python" do
+      # We need to insert our include dir first
+      inreplace "setup.py", "includes_dir = [",
+                            "includes_dir = ['#{include}', '#{MacOS.sdk_path}/usr/include',"
+      system Formula["python@3.9"].opt_bin/"python3", "setup.py", "install", "--prefix=#{prefix}"
     end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libxml/tree.h>
 
       int main()
@@ -86,5 +97,9 @@ class Libxml2 < Formula
     args += %w[test.c -o test]
     system ENV.cc, *args
     system "./test"
+
+    xy = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+    ENV.prepend_path "PYTHONPATH", lib/"python#{xy}/site-packages"
+    system Formula["python@3.9"].opt_bin/"python3", "-c", "import libxml2"
   end
 end

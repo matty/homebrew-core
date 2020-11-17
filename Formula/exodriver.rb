@@ -1,30 +1,32 @@
 class Exodriver < Formula
   desc "Thin interface to LabJack devices"
   homepage "https://labjack.com/support/linux-and-mac-os-x-drivers"
-  url "https://github.com/labjack/exodriver/archive/v2.5.3.tar.gz"
-  sha256 "24cae64bbbb29dc0ef13f482f065a14d075d2e975b7765abed91f1f8504ac2a5"
-
+  url "https://github.com/labjack/exodriver/archive/v2.6.0.tar.gz"
+  sha256 "d2ccf992bf42b50e7c009ae3d9d3d3191a67bfc8a2027bd54ba4cbd4a80114b2"
+  license "MIT"
   head "https://github.com/labjack/exodriver.git"
 
   bottle do
     cellar :any
-    sha256 "911a3d571d0ccc6f2ae8df67caec275470d179a2b435fec1cd521fe86f271bc6" => :sierra
-    sha256 "5897f540e38aded535f6f3aa11d1df93c90305fe5196c106057ebbdda8620806" => :el_capitan
-    sha256 "dc685c1d58f01fbe304d36fc33f1c2f2993599c83636054755c0f0b7cc887969" => :yosemite
-    sha256 "bcc5eea01c69b14b1a2f3256105523016294ae54f9e026f03fbd4f65f7ce5c66" => :mavericks
+    sha256 "5fbc6d425b55fc83fc05847a766fa74f33d932c495a4ab7c9b3469441552e489" => :big_sur
+    sha256 "aa86ed0ef4a6886bf65ba979938202a7bfabf2d844f2ffe14dee2466f3c65e59" => :catalina
+    sha256 "9451412a4469cdf44e56eeac4c457a91b3363410859d4d48975ce3223f8b20d2" => :mojave
+    sha256 "db8ef53e652b1296843207ee4d315b7ce5e7adf35ce5cf07f36d1d3f8dfdd28f" => :high_sierra
   end
-
-  option :universal
 
   depends_on "libusb"
 
   def install
-    ENV.universal_binary if build.universal?
+    system "make", "-C", "liblabjackusb", "install",
+           "HEADER_DESTINATION=#{include}", "DESTINATION=#{lib}"
+    ENV.prepend "CPPFLAGS", "-I#{include}"
+    ENV.prepend "LDFLAGS", "-L#{lib}"
+    system "make", "-C", "examples/Modbus"
+    pkgshare.install "examples/Modbus/testModbusFunctions"
+  end
 
-    cd "liblabjackusb"
-    system "make", "-f", "Makefile",
-                   "DESTINATION=#{lib}",
-                   "HEADER_DESTINATION=#{include}",
-                   "install"
+  test do
+    output = shell_output("#{pkgshare}/testModbusFunctions")
+    assert_match /Result:\s+writeBuffer:/, output
   end
 end

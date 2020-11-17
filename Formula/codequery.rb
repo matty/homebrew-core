@@ -1,25 +1,24 @@
 class Codequery < Formula
-  desc "Code-understanding, code-browsing or code-search tool."
+  desc "Code-understanding, code-browsing or code-search tool"
   homepage "https://github.com/ruben2020/codequery"
-  url "https://github.com/ruben2020/codequery/archive/v0.18.1.tar.gz"
-  sha256 "482fa737691c260e16adcc32bc3fd43ba50a309495faec6b2f3098b517e6c0e9"
-  revision 1
+  url "https://github.com/ruben2020/codequery/archive/v0.23.0.tar.gz"
+  sha256 "c8d1cac148de8979fa4fb4455edc7610e36519503bf9848b6edd008b00c41690"
+  license "MPL-2.0"
 
   bottle do
     cellar :any
-    sha256 "ade7464d5b27d9c9882af9476e3c194971311b3903477905058a1ea4b9a690c0" => :sierra
-    sha256 "8c34fe37f022bc659c7860cc948a631f5654a03f4a1a334b83817872d46653e4" => :el_capitan
-    sha256 "1063c272ba906493a32666e25d4b014ae3df86c9fb056870c3342beacb7b4b3f" => :yosemite
+    sha256 "7f8c243f0fc8d33c04ed5ec3579a85d1c39802c4cafd05df0b83a34a1d6edc47" => :big_sur
+    sha256 "b3f585e17783444968f0739397eb41fb14f897584118689bf1dbb862344e4221" => :catalina
+    sha256 "94fd84eb8c088b69eeddd1e09ad6bf7ed97ddd052e2ab4f6381776a6b4d3622d" => :mojave
+    sha256 "da150e36ca0d9cc56f7b243aa26677e4bed67335b1be5d01f10eeaf83df6884b" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "qt@5.7"
-  depends_on "qscintilla2"
+  depends_on "qt"
 
   def install
     args = std_cmake_args
     args << "-DBUILD_QT5=ON"
-    args << "-DQT5QSCINTILLA_LIBRARY=#{Formula["qscintilla2"].opt_lib}/libqscintilla2.dylib"
 
     share.install "test"
     mkdir "build" do

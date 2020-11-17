@@ -1,23 +1,36 @@
 class NetSnmp < Formula
   desc "Implements SNMP v1, v2c, and v3, using IPv4 and IPv6"
   homepage "http://www.net-snmp.org/"
-  url "https://downloads.sourceforge.net/project/net-snmp/net-snmp/5.7.3/net-snmp-5.7.3.tar.gz"
-  sha256 "12ef89613c7707dc96d13335f153c1921efc9d61d3708ef09f3fc4a7014fb4f0"
+  url "https://downloads.sourceforge.net/project/net-snmp/net-snmp/5.9/net-snmp-5.9.tar.gz"
+  sha256 "04303a66f85d6d8b16d3cc53bde50428877c82ab524e17591dfceaeb94df6071"
+  license "Net-SNMP"
 
-  bottle do
-    rebuild 3
-    sha256 "02542e6f3fd23d1833059c86563c961fc24a230a013e0887d3a2d50b42eb2887" => :sierra
-    sha256 "e3209635fdbb10b65e4c405c94e0ac05010be95bde728875fca399209ddee114" => :el_capitan
-    sha256 "1c11e18b727f83f3a736df297d492952867d7de129608b584555edf7c0d7aec6" => :yosemite
-    sha256 "ae16cd409d8bfac5bfc80135ad3d9ba1439b95c963e3e9ded30c4dc379c3ac33" => :mavericks
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/net-snmp[._-]v?(\d+(?:\.\d+)+)\.t}i)
   end
 
-  keg_only :provided_by_osx
+  bottle do
+    sha256 "46837a0296f9a9cb434371d7377800da0e0e06a09ef07a0d70bd79d8bbe3bfb2" => :catalina
+    sha256 "57dc4d78d02ec37a30d822b40aca17afc187de70c15d87c62bd660c5cc17d211" => :mojave
+    sha256 "8285c2dfee4c083c7ea0f5c99964aaa68c5cc26e4c223405727ec9fc85d636db" => :high_sierra
+  end
 
-  depends_on "openssl"
-  depends_on :python => :optional
+  keg_only :provided_by_macos
+
+  depends_on "openssl@1.1"
 
   def install
+    # https://sourceforge.net/p/net-snmp/bugs/2504/
+    # I suspect upstream will fix this in the first post-Mojave release but
+    # if it's not fixed in that release this should be reported upstream.
+    (buildpath/"include/net-snmp/system/darwin18.h").write <<~EOS
+      #include <net-snmp/system/darwin17.h>
+    EOS
+    (buildpath/"include/net-snmp/system/darwin19.h").write <<~EOS
+      #include <net-snmp/system/darwin17.h>
+    EOS
+
     args = %W[
       --disable-debugging
       --prefix=#{prefix}
@@ -30,18 +43,8 @@ class NetSnmp < Formula
       --without-kmem-usage
       --disable-embedded-perl
       --without-perl-modules
-      --with-openssl=#{Formula["openssl"].opt_prefix}
+      --with-openssl=#{Formula["openssl@1.1"].opt_prefix}
     ]
-
-    if build.with? "python"
-      args << "--with-python-modules"
-      ENV["PYTHONPROG"] = which("python")
-    end
-
-    # https://sourceforge.net/p/net-snmp/bugs/2504/
-    ln_s "darwin13.h", "include/net-snmp/system/darwin14.h"
-    ln_s "darwin13.h", "include/net-snmp/system/darwin15.h"
-    ln_s "darwin13.h", "include/net-snmp/system/darwin16.h"
 
     system "./configure", *args
     system "make"

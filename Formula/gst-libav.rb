@@ -1,38 +1,39 @@
 class GstLibav < Formula
   desc "GStreamer plugins for Libav (a fork of FFmpeg)"
   homepage "https://gstreamer.freedesktop.org/"
-  url "https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-1.10.3.tar.xz"
-  sha256 "9a6bc165b1862b18b98d9f1755c43806e4839a80f69ec7ea9a2dab61b65752a9"
+  url "https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-1.18.1.tar.xz"
+  sha256 "39a717bc2613efbbba19df3cf5cacff0987471fc8281ba2c5dcdeaded79c2ed8"
+  license "LGPL-2.1-or-later"
+  revision 1
+  head "https://gitlab.freedesktop.org/gstreamer/gst-libav.git"
+
+  livecheck do
+    url "https://gstreamer.freedesktop.org/src/gst-libav/"
+    regex(/href=.*?gst-libav[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
+  end
 
   bottle do
-    sha256 "7a212f1baae604171eec9bcec870881da8a3019587439619dd8f3eacd51229f8" => :sierra
-    sha256 "28928240a4773c8ccf7cc5156fc7aaade75c53eb35576a8c83afc1067f799f74" => :el_capitan
-    sha256 "5cacdd4fb0df881cdb48b86a2aacb69d96968ce0e990f1cb5277dc8747c852b7" => :yosemite
+    cellar :any
+    sha256 "756ce482c584d324d15cf4050a52bfaf3022ec2543e4befc942ed259661c096b" => :big_sur
+    sha256 "4fbab8e339a32dff4c432113f6e84608702f384c5c9f22eb74140fd3c3c0205b" => :catalina
+    sha256 "3e97b626bbdd6c767a8c56e8669a4881e7506f76092776baf1f0f6a830f3b562" => :mojave
+    sha256 "0d0dacf7c90b1f46e79604b596032ae642c8404f7ee7bfa70df2d6cba2ef2a62" => :high_sierra
   end
 
-  head do
-    url "https://anongit.freedesktop.org/git/gstreamer/gst-libav.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-    depends_on "gettext"
-  end
-
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "yasm" => :build
+  depends_on "ffmpeg"
   depends_on "gst-plugins-base"
   depends_on "xz" # For LZMA
 
   def install
-    if build.head?
-      ENV["NOCONFIGURE"] = "yes"
-      system "./autogen.sh"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
     end
-
-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking"
-    system "make"
-    system "make", "install"
   end
 
   test do

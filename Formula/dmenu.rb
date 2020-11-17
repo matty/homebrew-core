@@ -1,25 +1,35 @@
 class Dmenu < Formula
   desc "Dynamic menu for X11"
-  homepage "http://tools.suckless.org/dmenu/"
-  url "http://dl.suckless.org/tools/dmenu-4.6.tar.gz"
-  sha256 "4a7a24008a621c3cd656155ad91ab8136db8f0d3b9ec56dafeec518cabda96b3"
+  homepage "https://tools.suckless.org/dmenu/"
+  url "https://dl.suckless.org/tools/dmenu-5.0.tar.gz"
+  sha256 "fe18e142c4dbcf71ba5757dbbdea93b1c67d58fc206fc116664f4336deef6ed3"
+  license "MIT"
+  revision 1
+  head "https://git.suckless.org/dmenu/", using: :git
 
-  head "http://git.suckless.org/dmenu/", :using => :git
-
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "a9b0c177c36f006f820ac7a673f21b6d4e63fcb71d9e2a685346ac98464cebcb" => :sierra
-    sha256 "dbc4f0dead6c3fae5245b6771f5196130dd5768a862db89932ea258c849f338f" => :el_capitan
-    sha256 "5ab9424eb602d93e02afd71e2206cadbdcc6be985251881cc214468741544826" => :yosemite
+  livecheck do
+    url "https://dl.suckless.org/tools/"
+    regex(/href=.*?dmenu[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on :x11
+  bottle do
+    cellar :any
+    sha256 "1512aa45817b4bdb25a1190ea923e5454f6c4f08feece65b48b1c05bc75cd1db" => :big_sur
+    sha256 "d92a894ca1d4bb9904b4671f7c849738e266a0cd99d28fcd49324edfd888b367" => :catalina
+    sha256 "e08e8de333a1d00b6ba7c94f6d3916bce646cbf651cd04eb1cdd604df49639c8" => :mojave
+    sha256 "e94b31e21d9ea3d307b61661fa766592a0856ab13111f17be9a4ae4227759a01" => :high_sierra
+  end
+
+  depends_on "fontconfig"
+  depends_on "libx11"
+  depends_on "libxft"
+  depends_on "libxinerama"
 
   def install
-    system "make", "PREFIX=#{prefix}", "install"
+    system "make", "FREETYPEINC=#{HOMEBREW_PREFIX}/include/freetype2", "PREFIX=#{prefix}", "install"
   end
 
   test do
-    assert_match /#{version}/, shell_output("#{bin}/dmenu -v")
+    assert_match "warning: no locale support", shell_output("#{bin}/dmenu 2>&1", 1)
   end
 end

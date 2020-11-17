@@ -1,25 +1,26 @@
 class Logcheck < Formula
   desc "Mail anomalies in the system logfiles to the administrator"
-  homepage "https://logcheck.alioth.debian.org/"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/l/logcheck/logcheck_1.3.17.tar.xz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/l/logcheck/logcheck_1.3.17.tar.xz"
-  sha256 "c2d3fc323e8c6555e91d956385dbfd0f67b55872ed0f6a7ad8ad2526a9faf03a"
+  homepage "https://packages.debian.org/sid/logcheck"
+  url "https://deb.debian.org/debian/pool/main/l/logcheck/logcheck_1.3.20.tar.xz"
+  sha256 "9fb6d02b933470d0b1d1efb54ea186e0d0d27336f9d146be592f65ce60dfb3e6"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://packages.debian.org/unstable/logcheck"
+    regex(/href=.*?logcheck[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 3
-    sha256 "7fe24461210fc2d5f4809e08566e85e010a2715b9b7a6426f686327f40f25cdf" => :sierra
-    sha256 "aab0ab066fe378c88c74b9783a90fb0a4896dd3a6258d00b08cd1d0d2987b108" => :el_capitan
-    sha256 "c75e01fb14bdd0adfc04e110a3c8a65d036b9bd71ac03a6ac58d69006a892fe9" => :yosemite
-    sha256 "25f2dfec7bb30fded535bdb354767a2680108dcd93d0627f8384a115c008cf89" => :mavericks
+    sha256 "8bc85cf12dd6e76956cc0ddc53d85d7465b5b2f45ed9f6a79e5896c29fcbbc83" => :big_sur
+    sha256 "9e354b3fe568c0751443a702251949b5227a5ce09e3bbae4c28664aa1d7f0631" => :catalina
+    sha256 "111520f51e26088aa012bd42dc772e0a00e41decec22011a2bcf71c2ee3e20cc" => :mojave
+    sha256 "111520f51e26088aa012bd42dc772e0a00e41decec22011a2bcf71c2ee3e20cc" => :high_sierra
+    sha256 "12caeda115373b2b964509c07c2101926ab2e67154176078bf72353f3aeab7a3" => :sierra
   end
 
   def install
     inreplace "Makefile", "$(DESTDIR)/$(CONFDIR)", "$(CONFDIR)"
-    # email sent to logcheck mailing list asking whether this patch can land upstream:
-    # https://lists.alioth.debian.org/pipermail/logcheck-users/2015-December/000328.html
-    inreplace "src/logcheck-test", "mktemp --tmpdir logcheck-test", "mktemp /tmp/logcheck-test"
-
     system "make", "install", "--always-make", "DESTDIR=#{prefix}",
                    "SBINDIR=sbin", "BINDIR=bin", "CONFDIR=#{etc}/logcheck"
   end

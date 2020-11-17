@@ -1,54 +1,66 @@
 class Bochs < Formula
   desc "Open source IA-32 (x86) PC emulator written in C++"
   homepage "https://bochs.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/bochs/bochs/2.6.8/bochs-2.6.8.tar.gz"
-  sha256 "79700ef0914a0973f62d9908ff700ef7def62d4a28ed5de418ef61f3576585ce"
+  url "https://downloads.sourceforge.net/project/bochs/bochs/2.6.11/bochs-2.6.11.tar.gz"
+  sha256 "63897b41fbbbdfb1c492d3c4dee1edb4224282a07bbdf442a4a68c19bcc18862"
 
-  bottle do
-    sha256 "6797f2b0af54f4ab18d6e299c1a58b87058a6d4d40605479ff8e9084814cf08b" => :sierra
-    sha256 "ab55b5ad21ade857ea4d306dbf8b80a97144b47fb2cef18dc6e861833db84902" => :el_capitan
-    sha256 "09006b2fee12fc83ded1859991d40964d8710b712e207672dba0b5ef65bf931a" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  option "with-gdb-stub", "Enable GDB Stub"
+  bottle do
+    sha256 "9fc8197b7d04be3b5eafcc970ea167d3a91997ad5e4b30a7d56c0725f61190d4" => :big_sur
+    sha256 "b6d43a6a60360e0d84ebd2ad9ae7724c413a1f2332c59065fb09c2004d76b723" => :catalina
+    sha256 "74fb37178645c4d2b52eec5684931ca215dc2f75794e1cf45b3f6e2b85263819" => :mojave
+    sha256 "f8c79923292849eebece21d9c5ed1028db729d4d25dc1e045a7c8e0f0dcf450b" => :high_sierra
+  end
 
   depends_on "pkg-config" => :build
+  depends_on "libtool"
   depends_on "sdl2"
+
+  uses_from_macos "ncurses"
+
+  # Fix pointer cast issue
+  # https://sourceforge.net/p/bochs/patches/537/
+  if DevelopmentTools.clang_build_version >= 900
+    patch do
+      url "https://raw.githubusercontent.com/Homebrew/formula-patches/e9b520dd4c/bochs/xcode9.patch"
+      sha256 "373c670083a3e96f4012cfe7356d8b3584e2f0d10196b4294d56670124f5e5e7"
+    end
+  end
 
   def install
     args = %W[
       --prefix=#{prefix}
-      --with-sdl2
-      --with-nogui
-      --enable-disasm
       --disable-docbook
-      --enable-x86-64
-      --enable-pci
-      --enable-all-optimizations
-      --enable-plugins
-      --enable-cdrom
       --enable-a20-pin
-      --enable-fpu
       --enable-alignment-check
-      --enable-large-ramfile
-      --enable-debugger-gui
-      --enable-readline
-      --enable-iodebug
-      --enable-xpm
-      --enable-show-ips
-      --enable-logging
-      --enable-usb
-      --enable-ne2000
-      --enable-cpu-level=6
+      --enable-all-optimizations
+      --enable-avx
+      --enable-evex
+      --enable-cdrom
       --enable-clgd54xx
+      --enable-cpu-level=6
+      --enable-debugger
+      --enable-debugger-gui
+      --enable-disasm
+      --enable-fpu
+      --enable-iodebug
+      --enable-large-ramfile
+      --enable-logging
+      --enable-long-phy-address
+      --enable-pci
+      --enable-plugins
+      --enable-readline
+      --enable-show-ips
+      --enable-usb
+      --enable-vmx=2
+      --enable-x86-64
+      --with-nogui
+      --with-sdl2
       --with-term
     ]
-
-    if build.with? "gdb-stub"
-      args << "--enable-gdb-stub"
-    else
-      args << "--enable-debugger"
-    end
 
     system "./configure", *args
 
@@ -59,25 +71,25 @@ class Bochs < Formula
   test do
     require "open3"
 
-    (testpath/"bochsrc.txt").write <<-EOS.undent
-        panic: action=fatal
-        error: action=report
-        info: action=ignore
-        debug: action=ignore
-      EOS
+    (testpath/"bochsrc.txt").write <<~EOS
+      panic: action=fatal
+      error: action=report
+      info: action=ignore
+      debug: action=ignore
+      display_library: nogui
+    EOS
 
-    expected = <<-ERR.undent
-        Bochs is exiting with the following message:
-        \[BIOS  \] No bootable device\.
-      ERR
+    expected = <<~EOS
+      Bochs is exiting with the following message:
+      \[BIOS  \] No bootable device\.
+    EOS
 
     command = "#{bin}/bochs -qf bochsrc.txt"
-    if build.without? "gdb-stub"
-      # When the debugger is enabled, bochs will stop on a breakpoint early
-      # during boot. We can pass in a command file to continue when it is hit.
-      (testpath/"debugger.txt").write("c\n")
-      command << " -rc debugger.txt"
-    end
+
+    # When the debugger is enabled, bochs will stop on a breakpoint early
+    # during boot. We can pass in a command file to continue when it is hit.
+    (testpath/"debugger.txt").write("c\n")
+    command << " -rc debugger.txt"
 
     _, stderr, = Open3.capture3(command)
     assert_match(expected, stderr)

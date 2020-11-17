@@ -1,38 +1,27 @@
 class Twemcache < Formula
   desc "Twitter fork of memcached"
   homepage "https://github.com/twitter/twemcache"
-  url "https://github.com/twitter/twemcache/archive/v2.6.2.tar.gz"
-  sha256 "49905ceb89bf5d0fde25fa4b8843b2fe553915c0dc75c813de827bd9c0c85e26"
+  url "https://github.com/twitter/twemcache/archive/v2.6.3.tar.gz"
+  sha256 "ab05927f7d930b7935790450172187afedca742ee7963d5db1e62164e7f4c92b"
+  license "BSD-3-Clause"
   revision 1
-
   head "https://github.com/twitter/twemcache.git"
 
   bottle do
     cellar :any
-    sha256 "24aa937f8757cab1bad5e0d774478c18f7baf6e2ddc2fee78a2d48a8bf66f381" => :sierra
-    sha256 "08efcbeaabad2800d757213a7919b83772f09bbb852e17d8be5d8b70e332309d" => :el_capitan
-    sha256 "afe9fcd8a6e8c4c8aac98b2484da12b44126a6070e810fcba3441bf1afa899cf" => :yosemite
+    sha256 "64238f0d8c99fad48b6d3f780f2e42557caa316e807a3a411fbeab3a649fc0c3" => :catalina
+    sha256 "2c7fd2ce03cc16859264882f478137de35ece42a26ad9b10f23d668ddc1883d4" => :mojave
+    sha256 "9cc173642f9e53b723321a3013f2327b8a712c528c53ac5bd9fd2b9420244fcb" => :high_sierra
+    sha256 "ec7e5d41f887db3a41d89eadb64d16119a2d86427afd45de92e7a8ca55ce7ef2" => :sierra
   end
-
-  option "with-debug", "Debug mode with assertion panics enabled"
-
-  deprecated_option "enable-debug" => "with-debug"
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libevent"
 
   def install
-    args = %W[--prefix=#{prefix}]
-
-    if build.with? "debug"
-      ENV.O0
-      ENV.append "CFLAGS", "-ggdb3"
-      args << "--enable-debug=full"
-    end
-
     system "autoreconf", "-fvi"
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make", "install"
   end

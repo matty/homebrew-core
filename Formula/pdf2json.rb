@@ -1,16 +1,16 @@
 class Pdf2json < Formula
   desc "PDF to JSON and XML converter"
   homepage "https://github.com/flexpaper/pdf2json"
-  url "https://github.com/flexpaper/pdf2json/releases/download/v0.68/pdf2json-0.68.tar.gz"
-  sha256 "34907954b2029a51a0b372b9db86d6c5112e4a1648201352e514ca5606050673"
+  url "https://github.com/flexpaper/pdf2json/archive/0.71.tar.gz"
+  sha256 "54878473a2afb568caf2da11d6804cabe0abe505da77584a3f8f52bcd37d9c55"
+  license "GPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9a692a971b1e57a0948a1dc0664043d982df1b70cef8a8f39a70f84359bedffd" => :sierra
-    sha256 "01a63a2a56b0209884b0edf4d4857cbea4316f2a475dc17a8e390b36536b5d0a" => :el_capitan
-    sha256 "c82fefb4779c474d6a6b5eaa0e6fd6a9ccf7bd7e3962b5943367e15e6cbbdea1" => :yosemite
-    sha256 "79fb8c9376d0dcc0ec6d9100912f533d9b7301ab9c6a2b90d2564701eaacaa4a" => :mavericks
-    sha256 "6796505fd330e4806d40d07804532eb97b9d4cdb8c0a1d270727b9181b4b7ab9" => :mountain_lion
+    sha256 "20fe898333fa761b942ee5b0f2d41e47660389a250f5c8604ff1ed22788d9581" => :big_sur
+    sha256 "035c69de85f1cad569ff743faef796a88b9f9a706be802bf111a83505858b366" => :catalina
+    sha256 "abf950838b700f50ff4279501533176cb5a1929fb0b88c8ccf94b07ac362c66d" => :mojave
+    sha256 "4bee4b8c61362c64d72a3f011f8c5ef223c5e80d269e442a18472adc42e108e9" => :high_sierra
   end
 
   def install
@@ -21,6 +21,6 @@ class Pdf2json < Formula
 
   test do
     system bin/"pdf2json", test_fixtures("test.pdf"), "test.json"
-    assert File.exist?("test.json")
+    assert_predicate testpath/"test.json", :exist?
   end
 end

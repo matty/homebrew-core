@@ -1,35 +1,51 @@
 class Libgda < Formula
   desc "Provides unified data access to the GNOME project"
-  homepage "http://www.gnome-db.org/"
-  url "https://download.gnome.org/sources/libgda/5.2/libgda-5.2.4.tar.xz"
-  sha256 "2cee38dd583ccbaa5bdf6c01ca5f88cc08758b9b144938a51a478eb2684b765e"
-  revision 2
+  homepage "https://www.gnome-db.org/"
+  url "https://download.gnome.org/sources/libgda/5.2/libgda-5.2.10.tar.xz"
+  sha256 "6f6cdf7b8053f553b907e0c88a6064eb48cf2751852eb24323dcf027792334c8"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "e165830cedc3a0955989746145b310cc03fe96b84f18b33c4c3f2b827bdd473c" => :sierra
-    sha256 "7809bb97ebcd233a740c1e5b5cb0f291a902639a6479d5e53fdcfedd928b6582" => :el_capitan
-    sha256 "01e46f8673fcf3fad0bccdd70e9bd6fac08f0f5b7035e85318a3add4db329a9b" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "1fd18afa48f013fcee08cadebf89c4bbb3e37444b591b16cd61e5848b93d6395" => :big_sur
+    sha256 "83d65ccf6e92620dd833dd23d1a02880f020ab24a0a6ed2ab5cb1a5149a32c5b" => :catalina
+    sha256 "e48a5aea9d860765e58bcd756c8e81956974d4284189604755a63232fc13a806" => :mojave
+    sha256 "8c9a8133c1fd1c554f995c089b12cbe049d2a8a01ac31cb5e68c089857a200a1" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "intltool" => :build
   depends_on "itstool" => :build
+  depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "glib"
-  depends_on "readline"
   depends_on "libgcrypt"
-  depends_on "sqlite"
-  depends_on "openssl"
+  depends_on "libgee"
+  depends_on "openssl@1.1"
+  depends_on "readline"
 
   def install
+    # this build uses the sqlite source code that comes with libgda,
+    # as opposed to using the system or brewed sqlite3, which is not supported on macOS,
+    # as mentioned in https://github.com/GNOME/libgda/blob/95eeca4b0470f347c645a27f714c62aa6e59f820/libgda/sqlite/README#L31
+
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--disable-binreloc",
                           "--disable-gtk-doc",
-                          "--without-java"
+                          "--without-java",
+                          "--enable-introspection",
+                          "--enable-system-sqlite=no"
     system "make"
     system "make", "install"
+  end
+
+  test do
+    system "#{bin}/gda-sql", "-v"
   end
 end

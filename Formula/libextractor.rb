@@ -1,25 +1,27 @@
 class Libextractor < Formula
   desc "Library to extract meta data from files"
   homepage "https://www.gnu.org/software/libextractor/"
-  url "https://ftpmirror.gnu.org/libextractor/libextractor-1.3.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/libextractor/libextractor-1.3.tar.gz"
-  sha256 "868ad64c9a056d6b923d451d746935bffb1ddf5d89c3eb4f67d786001a3f7b7f"
+  url "https://ftp.gnu.org/gnu/libextractor/libextractor-1.10.tar.gz"
+  mirror "https://ftpmirror.gnu.org/libextractor/libextractor-1.10.tar.gz"
+  sha256 "9eed11b5ddc7c929ba112c50de8cfaa379f1d99a0c8e064101775837cf432357"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    cellar :any
-    rebuild 2
-    sha256 "d264c812a1da34de495395f4e1d066598949a152f4186c4c94e8ea01286b11ea" => :sierra
-    sha256 "2622d61cf14af834df45fe16c6515b1d6d9a7684252aadd375ed323b48d1ec40" => :el_capitan
-    sha256 "8bc531741c401c62dffaef0a29547d80b254eeb9dfd847d125b66c91dbcfc22b" => :yosemite
-    sha256 "b725cac753d996850f3584650a04cd7ab7070ec6772d826ff251457b4c778bc4" => :mavericks
-    sha256 "e26a107ce3e93be06cc6ac89d5edee8c6e18ff799e2198d762f81d524b3ce9ec" => :mountain_lion
+    sha256 "57cc73af98204c3c4cd49c7121b34a2f4a312112700226df6d694d0a09e3bf6f" => :big_sur
+    sha256 "1f9781fe4c690eca0d719016cd4f23bd94890ae69cc30c4c1caa47d919286483" => :catalina
+    sha256 "0929de2de549d871c775fb2b3aaf22dc52377b504b8ed3d01ca9350a52704e39" => :mojave
+    sha256 "5a30c428cb327ef0bfd2458feeeb638200df28acf63b688d598a79591cb1c812" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libtool" => :run
-  depends_on "iso-codes" => :optional
+  depends_on "libtool"
 
-  conflicts_with "pkcrack", :because => "both install `extract` binaries"
+  conflicts_with "csound", because: "both install `extract` binaries"
+  conflicts_with "pkcrack", because: "both install `extract` binaries"
 
   def install
     ENV.deparallelize

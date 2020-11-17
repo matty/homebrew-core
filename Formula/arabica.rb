@@ -1,31 +1,42 @@
 class Arabica < Formula
   desc "XML toolkit written in C++"
-  homepage "http://www.jezuk.co.uk/cgi-bin/view/arabica"
-  url "https://github.com/jezhiggins/arabica/archive/2016-January.tar.gz"
-  version "20160214"
-  sha256 "ea6940773ae95ec02c6736c0ba688bdfb5c7691e7d2c8da1b331eca74949d73a"
+  homepage "https://www.jezuk.co.uk/tags/arabica.html"
+  url "https://github.com/jezhiggins/arabica/archive/2020-April.tar.gz"
+  version "20200425"
+  sha256 "b00c7b8afd2c3f17b5a22171248136ecadf0223b598fd9631c23f875a5ce87fe"
+  license "BSD-3-Clause"
   head "https://github.com/jezhiggins/arabica.git"
+
+  livecheck do
+    url "https://github.com/jezhiggins/arabica/releases/latest"
+    regex(%r{href=.*?/tag/([^"' >]+)["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "6a08cb5b8af8d2034569451ad499260acebc610ab390383b20398fc10a6fb115" => :sierra
-    sha256 "185edd120b5759f25d1e69b9f24840eef6a404b1001c90e684546e359cf75928" => :el_capitan
-    sha256 "1882f30edf8da8d98df603a6006c3dce96e21941e4266103366930b3e5a922c2" => :yosemite
-    sha256 "5d247d4d5819106404bc7091e3b6141b4d298c77636bee39bfc524a3c5481e7f" => :mavericks
+    sha256 "c1a63f10d7451ba663ad8d974a69d83091be30730ca962a2fbd0e36b95ab16d2" => :big_sur
+    sha256 "4fbf676c46941de213b095ab74f0b4973e5984c2bbaa7679757b0db4b369480a" => :catalina
+    sha256 "acc299016dbd644658880e9fa29af6d3f0b9f8e226b16ccd3fcaea8dae23febf" => :mojave
+    sha256 "62920d4f26c2da71c6abf60c90c1322457e340df8142d7133a9ee1f7c2b46745" => :high_sierra
   end
-
-  option "without-test", "Skip compile-time make checks (Not Recommended)"
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "boost" => :recommended
+  depends_on "boost"
+
+  uses_from_macos "expat"
 
   def install
     system "autoreconf", "-fvi"
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make"
-    system "make", "check" if build.with? "test"
+    system "make", "check"
     system "make", "install"
+  end
+
+  test do
+    output = shell_output("#{bin}/mangle")
+    assert_match "mangle is an (in-development) XSLT processor", output
   end
 end

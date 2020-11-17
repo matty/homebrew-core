@@ -1,18 +1,23 @@
 class Goocanvas < Formula
   desc "Canvas widget for GTK+ using the Cairo 2D library for drawing"
-  homepage "https://live.gnome.org/GooCanvas"
-  url "https://download.gnome.org/sources/goocanvas/2.0/goocanvas-2.0.2.tar.xz"
-  sha256 "f20e5fbef8d1a2633033edbd886dd13146a1b948d1813a9c353a80a29295d1d0"
+  homepage "https://wiki.gnome.org/Projects/GooCanvas"
+  url "https://download.gnome.org/sources/goocanvas/2.0/goocanvas-2.0.4.tar.xz"
+  sha256 "c728e2b7d4425ae81b54e1e07a3d3c8a4bd6377a63cffa43006045bceaa92e90"
+  revision 2
 
-  bottle do
-    sha256 "8bcfaca0faf69339629083287f91b8ead4b0fba40faf01e1f48697da8908e4c3" => :sierra
-    sha256 "ac7dc165c731d18f5de7b451bc14bdc17d198dad2b528018e94043e4c86a219d" => :el_capitan
-    sha256 "19136fea9c0f7175b7a88607b7501eec1588ef6734a84a00f8c953c0008cc7c0" => :yosemite
-    sha256 "6c54975917e2110ec90c4c5dda28e364a6a25ad68c1e23e73f151daae228e5bd" => :mavericks
-    sha256 "cde420aa902c9db464611078c8703999093d957cac95122e17daf404ebd063f7" => :mountain_lion
+  livecheck do
+    url :stable
   end
 
-  depends_on :x11
+  bottle do
+    sha256 "31471c7264bf173c9f82ba40daec0555403f9007cc8046d7bee5b2406bfeedae" => :big_sur
+    sha256 "ff71ce064b86b1e8973ee5c6aaebdbba6a1159614f5c425d83cc3fb6b00e8b97" => :catalina
+    sha256 "b9d36364339793b428077bbc7735981f8cd33e681971653806dc574236382778" => :mojave
+    sha256 "6822fe0a452809ce94bc1fd70fb32b024ad52702a56878db381b7dad2e05aa28" => :high_sierra
+    sha256 "44b1bd9f058cd4fe112cd1022a0ad2daa93c7f849257ae57bc6d10f9c33e57de" => :sierra
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "pkg-config" => :build
   depends_on "cairo"
   depends_on "glib"

@@ -1,14 +1,16 @@
 class Sdlpop < Formula
   desc "Open-source port of Prince of Persia"
   homepage "https://github.com/NagyD/SDLPoP"
-  url "https://github.com/NagyD/SDLPoP/archive/v1.16.tar.gz"
-  sha256 "4198eecdb2c4fed8f609af810962c943572df83da99c571146cee1596e7ee55b"
+  url "https://github.com/NagyD/SDLPoP/archive/v1.21.tar.gz"
+  sha256 "2d3111bd92f39a6ee203194cf058f59c9774b5cb38437ff245dfc876930d0f95"
+  license "GPL-3.0-or-later"
 
   bottle do
     cellar :any
-    sha256 "8b93f508885eaee3c4ae19ddf742c300cab759071e121b2ff2a8c71f8a7f0b45" => :sierra
-    sha256 "73421230b4c191a3a61432d176a59282459be5319a5f71e5b8ac14b49b1f2a82" => :el_capitan
-    sha256 "f072b31c910a2f88ba2ad51b380d55ab4be4279807e4362353d48099b083417f" => :yosemite
+    sha256 "dc3e491f6ddf7644d20ad5315d519ca43c9cc6be1f4c4de49a2c74c3775820b9" => :big_sur
+    sha256 "b2d7607bbcd3a725ed2c3b1c9e290076c7c561deafac51b081f3d7ceabd04aad" => :catalina
+    sha256 "6ce535a5a303503e21def50933a3596f13b373eaa5263a076ec062be328bb717" => :mojave
+    sha256 "bf4afc58349c91ce9c2f06269e3807015e6cf4e37d0341fd4e09c3e48445c28c" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
@@ -17,28 +19,25 @@ class Sdlpop < Formula
   depends_on "sdl2_mixer"
 
   def install
-    system "make"
+    system "make", "-C", "src"
     doc.install Dir["doc/*"]
+    libexec.install "data"
+    libexec.install "prince"
 
     # Use var directory to keep save and replay files
-    pkgshare.install Dir["*.DAT"]
-    pkgshare.install "data"
     pkgvar = var/"sdlpop"
-    pkgvar.install_symlink Dir["#{pkgshare}/*.DAT"]
-    pkgvar.install_symlink pkgshare/"data"
     pkgvar.install "SDLPoP.ini" unless (pkgvar/"SDLPoP.ini").exist?
 
-    # Data files should be in the working directory
-    libexec.install "prince"
-    (bin/"prince").write <<-EOS.undent
+    (bin/"prince").write <<~EOS
       #!/bin/bash
       cd "#{pkgvar}" && exec "#{libexec}/prince" $@
-      EOS
+    EOS
   end
 
-  def caveats; <<-EOS.undent
-    Data including save and replay files are stored in the following directory:
-      #{var}/sdlpop
+  def caveats
+    <<~EOS
+      Save and replay files are stored in the following directory:
+        #{var}/sdlpop
     EOS
   end
 end

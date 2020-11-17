@@ -1,30 +1,32 @@
 class X3270 < Formula
   desc "IBM 3270 terminal emulator for the X Window System and Windows"
   homepage "http://x3270.bgp.nu/"
-  url "https://downloads.sourceforge.net/project/x3270/x3270/3.5ga9/suite3270-3.5ga9-src.tgz"
-  sha256 "654756cc1204fd69a861d416d350a0ab3c9cea317173a80b06aca0402a517d3e"
+  url "http://x3270.bgp.nu/download/04.00/suite3270-4.0ga12-src.tgz"
+  sha256 "d2e5030b67f01aed7c74dd906114d44dbc89a103d32ed0db564bf80033b8e4fb"
+  license "BSD-3-Clause"
 
-  bottle do
-    sha256 "1cd09052ab45a091596bf1be4cc8bab7acbbd8adf0b28f7667590c8b46871230" => :sierra
-    sha256 "2bed418e88841d641907b730a260dfcac9394c1c69b24eadcdf32e00570f2c0f" => :el_capitan
-    sha256 "897d18de2b85172e751719687710f20b1717293b10dac669d6eb052e08d4b02a" => :yosemite
+  livecheck do
+    url "http://x3270.bgp.nu/download.html"
+    regex(/href=.*?suite3270[._-]v?(\d+(?:\.\d+)+(?:ga\d+)?)(?:-src)?\.t/i)
   end
 
-  option "with-c3270", "Include c3270 (curses-based version)"
-  option "with-s3270", "Include s3270 (displayless version)"
-  option "with-tcl3270", "Include tcl3270 (integrated with Tcl)"
-  option "with-pr3287", "Include pr3287 (printer emulation)"
+  bottle do
+    sha256 "6debec33ebab916d38e8f4543e8bc22a18a8e7e1d6474277bea040bd63a52e60" => :big_sur
+    sha256 "910cfb45bab78112705869fd8bb3fac970d0bd84194ab9555635ff484d355bcb" => :catalina
+    sha256 "99fbe83bf0dfbfab1f11b536608d02cd93d530eca7f0ec72ebde4d4424293444" => :mojave
+    sha256 "e30468e4081beeab927279e9317f30107db6391ac4e8f9f5334d2ecc0e8e57e2" => :high_sierra
+  end
 
-  depends_on :x11
-  depends_on "openssl"
+  depends_on "readline"
 
   def install
-    args = ["--prefix=#{prefix}"]
-    args << "--enable-x3270"
-    args << "--enable-c3270" if build.with? "c3270"
-    args << "--enable-s3270" if build.with? "s3270"
-    args << "--enable-tcl3270" if build.with? "tcl3270"
-    args << "--enable-pr3287" if build.with? "pr3287"
+    args = %W[
+      --prefix=#{prefix}
+      --enable-c3270
+      --enable-pr3287
+      --enable-s3270
+      --enable-tcl3270
+    ]
 
     system "./configure", *args
     system "make", "install"
@@ -32,6 +34,6 @@ class X3270 < Formula
   end
 
   test do
-    system bin/"x3270", "--version"
+    system bin/"c3270", "--version"
   end
 end

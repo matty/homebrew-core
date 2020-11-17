@@ -1,36 +1,33 @@
 class Gloox < Formula
   desc "C++ Jabber/XMPP library that handles the low-level protocol"
   homepage "https://camaya.net/gloox/"
-  url "https://camaya.net/download/gloox-1.0.14.tar.bz2"
-  sha256 "520b72a66fa9fea917a0336872101539f0bea30d1f871e12c31b6c2cd0203941"
+  url "https://camaya.net/download/gloox-1.0.24.tar.bz2"
+  sha256 "ae1462be2a2eb8fe5cd054825143617c53c2c9c7195606cb5a5ba68c0f68f9c9"
+
+  livecheck do
+    url :homepage
+    regex(/Latest stable version.*?href=.*?gloox[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "18568b97bf5455530c018a38ab9cc0a85aa461c8573b946f9cb69f37a80b0a02" => :sierra
-    sha256 "b8f386579b18e8bd114fd6e73d12c375ba90d6a3a29b974e4d665b6a3c546406" => :el_capitan
-    sha256 "42999d48ba063b0963e3df47f4b7eda819831d016c2b77e136cc28166c3cf6c9" => :yosemite
-    sha256 "1bad7cafd725cfb2c9f8aadd16a75ce450465fa9bcc003283b13f96858b911e9" => :mavericks
+    sha256 "143b0a77842e9df885799b07e6cfb166c7951841b8b23027db51c9b93a5ba8a7" => :big_sur
+    sha256 "decf46b20a794855cf3bd3c06e05111d15fd11de4dec1c5fdf6a1253eb865e7a" => :catalina
+    sha256 "607baeeadc43775af6799d5bc4715239cbe6455ec72d2e14d82523d425fa7799" => :mojave
+    sha256 "011c8a88d0f8970c9ad4ed339972b55b56c26120e64ef9d1576b68c03b10f706" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "openssl" => :recommended
-  depends_on "gnutls" => :optional
-  depends_on "libidn" => :optional
+  depends_on "libidn"
+  depends_on "openssl@1.1"
+
+  uses_from_macos "zlib"
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --with-zlib
-      --disable-debug
-    ]
-
-    if build.with? "gnutls"
-      args << "--with-gnutls=yes"
-    else
-      args << "--with-openssl=#{Formula["openssl"].opt_prefix}"
-    end
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--with-zlib",
+                          "--disable-debug",
+                          "--with-openssl=#{Formula["openssl@1.1"].opt_prefix}"
     system "make", "install"
   end
 

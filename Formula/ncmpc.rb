@@ -1,23 +1,45 @@
 class Ncmpc < Formula
   desc "Curses Music Player Daemon (MPD) client"
-  homepage "https://mpd.wikia.com/wiki/Client:Ncmpc"
-  url "https://www.musicpd.org/download/ncmpc/0/ncmpc-0.25.tar.gz"
-  sha256 "5b00237be90367aff98b2b70df88b6d6d4b566291d870053be106b137dcc0fd9"
+  homepage "https://www.musicpd.org/clients/ncmpc/"
+  url "https://www.musicpd.org/download/ncmpc/0/ncmpc-0.40.tar.xz"
+  sha256 "09fa587caceb96b3de71c57c9b07dba9129824aa256272739ee79542bf70d3dd"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "2b0fe50a50ed2b67a05f58a0da2ab551a434621f5ecd449993a3898aea7aee51" => :sierra
-    sha256 "2e02f6c2a5adbb5bf27f3b1c9dd33d1e77fed67d8599f83f2c3b65921c4731dd" => :el_capitan
-    sha256 "a5ee00bd5006e9156199cd263cbd8ee6a5027b60f211017df0da14bb184b2cbb" => :yosemite
-    sha256 "570fe6aba12ceeea5aea099879915a00a6459cd2f7c58e15248f4cc88c374b5a" => :mavericks
+  livecheck do
+    url "https://www.musicpd.org/download/ncmpc/0/"
+    regex(/href=.*?ncmpc[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
+  bottle do
+    cellar :any
+    sha256 "7b984d2e6c46fbc3975e09cf35f76d67eff0c40c6c589bb5f0f9d2a7eeddecf3" => :big_sur
+    sha256 "b0d7f89faa7f1a6a0d39b2e257f8ca0abca93bb6654b69251a3261e2b1fc075b" => :catalina
+    sha256 "d2bbc8836a5c0cb5380c4698706e30876fad06788771129ad0cf953e0b219f50" => :mojave
+    sha256 "da45a87cc0e143418c66f468f94f3930c24544b4ef5d22396aa5280d5878dd45" => :high_sierra
+  end
+
+  depends_on "boost" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
+  depends_on "gcc" if DevelopmentTools.clang_build_version <= 800
   depends_on "gettext"
-  depends_on "glib"
   depends_on "libmpdclient"
+  depends_on "pcre"
+
+  fails_with :clang do
+    build 800
+    cause "error: no matching constructor for initialization of 'value_type'"
+  end
 
   def install
-    system "./configure", "--prefix=#{prefix}", "--disable-debug", "--disable-dependency-tracking"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, "-Dcolors=false", "-Dnls=disabled", ".."
+      system "ninja", "install"
+    end
+  end
+
+  test do
+    system bin/"ncmpc", "--help"
   end
 end

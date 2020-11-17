@@ -1,20 +1,21 @@
 class Fwup < Formula
   desc "Configurable embedded Linux firmware update creator and runner"
   homepage "https://github.com/fhunleth/fwup"
-  url "https://github.com/fhunleth/fwup/releases/download/v0.13.0/fwup-0.13.0.tar.gz"
-  sha256 "a2b175ae1e0e6235165f1f608fc9cb2b1a1b06bf99cb4dc4d7c5baa7a9007086"
+  url "https://github.com/fhunleth/fwup/releases/download/v1.8.2/fwup-1.8.2.tar.gz"
+  sha256 "84c17348dc7271d871e6adbe12edb0622ed9248a7f828efb3d9f6064d73195aa"
+  license "Apache-2.0"
 
   bottle do
     cellar :any
-    sha256 "cb3b5971b6ff3edf5b46cc2a93af8c6ecf88216f173ad316e199acfa18ccbbf7" => :sierra
-    sha256 "9a290734145911fbd3fb1a0605d39548433fae65f579fe463514877b1a5acd6d" => :el_capitan
-    sha256 "e93b92dc63cc8da05d7639a2714fc74a602b7b058e203009021ed3b8efa6357a" => :yosemite
+    sha256 "6c13967bf80a05f2133f617952e4bb2b50087984f55af2e75266113cb865b225" => :big_sur
+    sha256 "74af7cfb5ed18a50e9fbd56c4167f7bc3c5ebeec69cc8c7660b80e20020739b8" => :catalina
+    sha256 "4e33b196f1f611272cf007528088ac485a19bf0fadbb32b1c4d3b8180540bec6" => :mojave
+    sha256 "77a1aa5b48fca51379c19531764e776bd795d4ffbfd61dd2aafbc50bdc33219c" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "confuse"
   depends_on "libarchive"
-  depends_on "libsodium"
 
   def install
     system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking"
@@ -23,7 +24,7 @@ class Fwup < Formula
 
   test do
     system bin/"fwup", "-g"
-    assert File.exist?("fwup-key.priv"), "Failed to create fwup-key.priv!"
-    assert File.exist?("fwup-key.pub"), "Failed to create fwup-key.pub!"
+    assert_predicate testpath/"fwup-key.priv", :exist?, "Failed to create fwup-key.priv!"
+    assert_predicate testpath/"fwup-key.pub", :exist?, "Failed to create fwup-key.pub!"
   end
 end

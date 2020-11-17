@@ -3,13 +3,18 @@ class Apcupsd < Formula
   homepage "http://www.apcupsd.org"
   url "https://downloads.sourceforge.net/project/apcupsd/apcupsd%20-%20Stable/3.14.14/apcupsd-3.14.14.tar.gz"
   sha256 "db7748559b6b4c3784f9856561ef6ac6199ef7bd019b3edcd7e0a647bf8f9867"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/apcupsd%20-%20Stable/[^/]+/apcupsd[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "bc7b9ee40a28adf5351ca70e4bf7f44d28cc849d6327d728e54309ebfb8b0289" => :sierra
-    sha256 "faf979d85d50adebb20de24efbb113a52fe3760f5d4cc4bebda6eaec2268eb09" => :el_capitan
-    sha256 "49cc19f7e0d435d5b70ef75d393de827207ad3ea821e9104d783c61692ea62ba" => :yosemite
-    sha256 "488ed2fc48933a1c4ca08037016ae5af81050bdc27e7975296fd1c172cf10b31" => :mavericks
+    rebuild 3
+    sha256 "6bdbc101891e5c10b8aead1e1c86ce8ed1560f38b4de96a6c804c73953ad3ac0" => :catalina
+    sha256 "f9e745573abb55d0194e958d48256ace18a8116fc2c7577617de915746e6c18b" => :mojave
+    sha256 "8e604286ac22168ede829d3dff95ac782b458316c3389827c6d6c5168a2552e4" => :high_sierra
   end
 
   depends_on "gd"
@@ -27,7 +32,7 @@ class Apcupsd < Formula
 
     cd "platforms/darwin" do
       # Install launch daemon and kernel extension to subdirectories of `prefix`.
-      inreplace "Makefile", "/Library/LaunchDaemons", "#{prefix}/Library/LaunchDaemons"
+      inreplace "Makefile", "/Library/LaunchDaemons", "#{lib}/Library/LaunchDaemons"
       inreplace "Makefile", "/System/Library/Extensions", kext_prefix
 
       # Use appropriate paths for launch daemon and launch script.
@@ -48,7 +53,7 @@ class Apcupsd < Formula
   end
 
   def caveats
-    s = <<-EOS.undent
+    s = <<~EOS
       For #{name} to be able to communicate with UPSes connected via USB,
       the kernel extension must be installed by the root user:
 
@@ -59,7 +64,7 @@ class Apcupsd < Formula
     EOS
 
     if MacOS.version >= :el_capitan
-      s += <<-EOS.undent
+      s += <<~EOS
         Note: On OS X El Capitan and above, the kernel extension currently
         does not work as expected.
 
@@ -69,10 +74,10 @@ class Apcupsd < Formula
       EOS
     end
 
-    s += <<-EOS.undent
+    s += <<~EOS
       To load #{name} at startup, activate the included Launch Daemon:
 
-        sudo cp #{prefix}/Library/LaunchDaemons/org.apcupsd.apcupsd.plist /Library/LaunchDaemons
+        sudo cp #{prefix}/lib/Library/LaunchDaemons/org.apcupsd.apcupsd.plist /Library/LaunchDaemons
         sudo chmod 644 /Library/LaunchDaemons/org.apcupsd.apcupsd.plist
         sudo launchctl load -w /Library/LaunchDaemons/org.apcupsd.apcupsd.plist
 

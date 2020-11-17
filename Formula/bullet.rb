@@ -1,62 +1,43 @@
 class Bullet < Formula
   desc "Physics SDK"
-  homepage "http://bulletphysics.org/wordpress/"
-  url "https://github.com/bulletphysics/bullet3/archive/2.86.1.tar.gz"
-  sha256 "c058b2e4321ba6adaa656976c1a138c07b18fc03b29f5b82880d5d8228fbf059"
+  homepage "https://bulletphysics.org/"
+  url "https://github.com/bulletphysics/bullet3/archive/2.89.tar.gz"
+  sha256 "621b36e91c0371933f3c2156db22c083383164881d2a6b84636759dc4cbb0bb8"
+  license "Zlib"
   head "https://github.com/bulletphysics/bullet3.git"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "efdd2f02421a95c3a399962081ad5209f100825fd1c675e25b4d96693ef9252d" => :sierra
-    sha256 "1aab6c634c6f175667f5e71a2d4221be160decb50b96f7d70e001f5fb495d433" => :el_capitan
-    sha256 "71dcb0c8432c3d066bf349c8501f22c30d9ef179115cf4ed93422e75827dcef9" => :yosemite
+    sha256 "4cc47995de996b2153f88551e70ebd0a151c2fab850ecb1d7068d00d2e076c65" => :big_sur
+    sha256 "38cdb6c948cb2c75ad2d6640629f1cf72b7901b54483f9bc25ba0fd307b90b55" => :catalina
+    sha256 "e4a628878c9358b5a986ffddc682795f13a0a3d04f11f8bbf753e98827d4fdbf" => :mojave
+    sha256 "ddfb705ac9e42845d9d357131add82eea36bdceee95118a970cf4830a4be1878" => :high_sierra
   end
-
-  option "with-framework", "Build frameworks"
-  option "with-shared", "Build shared libraries"
-  option "with-demo", "Build demo applications"
-  option "with-double-precision", "Use double precision"
-
-  deprecated_option "framework" => "with-framework"
-  deprecated_option "shared" => "with-shared"
-  deprecated_option "build-demo" => "with-demo"
-  deprecated_option "double-precision" => "with-double-precision"
 
   depends_on "cmake" => :build
 
   def install
-    args = ["-DINSTALL_EXTRA_LIBS=ON", "-DBUILD_UNIT_TESTS=OFF"]
+    args = std_cmake_args + %W[
+      -DBUILD_BULLET2_DEMOS=OFF
+      -DBUILD_PYBULLET=OFF
+      -DBUILD_UNIT_TESTS=OFF
+      -DCMAKE_INSTALL_RPATH=#{lib}
+      -DINSTALL_EXTRA_LIBS=ON
+    ]
 
-    if build.with? "framework"
-      args << "-DBUILD_SHARED_LIBS=ON" << "-DFRAMEWORK=ON"
-      args << "-DCMAKE_INSTALL_PREFIX=#{frameworks}"
-      args << "-DCMAKE_INSTALL_NAME_DIR=#{frameworks}"
-    else
-      args << "-DBUILD_SHARED_LIBS=ON" if build.with? "shared"
-      args << "-DCMAKE_INSTALL_PREFIX=#{prefix}"
+    mkdir "build" do
+      system "cmake", "..", *args, "-DBUILD_SHARED_LIBS=ON"
+      system "make", "install"
+
+      system "make", "clean"
+
+      system "cmake", "..", *args, "-DBUILD_SHARED_LIBS=OFF"
+      system "make", "install"
     end
-
-    args << "-DUSE_DOUBLE_PRECISION=ON" if build.with? "double-precision"
-
-    # Related to the following warnings when building --with-shared --with-demo
-    # https://gist.github.com/scpeters/6afc44f0cf916b11a226
-    if build.with?("demo") && (build.with?("shared") || build.with?("framework"))
-      raise "Demos cannot be installed with shared libraries or framework."
-    end
-
-    args << "-DBUILD_BULLET2_DEMOS=OFF" if build.without? "demo"
-
-    system "cmake", *args
-    system "make"
-    system "make", "install"
-
-    prefix.install "examples" if build.with? "demo"
-    prefix.install "Extras" if build.with? "extra"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
-      #include "bullet/LinearMath/btPolarDecomposition.h"
+    (testpath/"test.cpp").write <<~EOS
+      #include "LinearMath/btPolarDecomposition.h"
       int main() {
         btMatrix3x3 I = btMatrix3x3::getIdentity();
         btMatrix3x3 u, h;
@@ -64,7 +45,9 @@ class Bullet < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.cpp", "-L#{lib}", "-lLinearMath", "-lc++", "-o", "test"
+
+    system ENV.cc, "test.cpp", "-I#{include}/bullet", "-L#{lib}",
+                   "-lLinearMath", "-lc++", "-o", "test"
     system "./test"
   end
 end

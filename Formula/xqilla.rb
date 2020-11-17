@@ -1,21 +1,32 @@
 class Xqilla < Formula
   desc "XQuery and XPath 2 command-line interpreter"
   homepage "https://xqilla.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/xqilla/XQilla-2.3.3.tar.gz"
-  sha256 "8f76b9b4f966f315acc2a8e104e426d8a76ba4ea3441b0ecfdd1e39195674fd6"
+  url "https://downloads.sourceforge.net/project/xqilla/XQilla-2.3.4.tar.gz"
+  sha256 "292631791631fe2e7eb9727377335063a48f12611d641d0296697e0c075902eb"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/XQilla[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "ec371fc2b757a643eaf9a2ba738ac26038f848abc5ff84cdba67e192c8e69ccd" => :sierra
-    sha256 "50c54dbee37fb8def85096c322d8c2e48e01e568aca9d47936b5e2c25c19c0f6" => :el_capitan
-    sha256 "7b0530e7eb211b6789d26a1331f7a8402ea83351587fb24686284dd6938a8362" => :yosemite
+    rebuild 1
+    sha256 "ac66706739f52be905422e387435524387fdec6ca86243aad5b8be446182d59a" => :big_sur
+    sha256 "3e01ca81220688c9680e3c23c0f7434f415e2b1e7b2e812f514a540eb51b50cd" => :catalina
+    sha256 "93ae09129c45ee7b1a4ecfe996c305791e06833c1e73b604b33282e5ea90248a" => :mojave
+    sha256 "38579e6ab1b6f6801ca5404cc79fcd972f395b9dd2e981672889b3eac5441c86" => :high_sierra
+    sha256 "0f1ef8f2aa1349b723062426a3e44fba2821bcf93316bacabf4c5e2948093bc4" => :sierra
+    sha256 "4326ec876d3e05647320c4ab55824c37531af997cc723f303fac4c4b40153753" => :el_capitan
   end
 
   depends_on "xerces-c"
 
-  conflicts_with "zorba", :because => "Both supply xqc.h"
+  conflicts_with "zorba", because: "both supply `xqc.h`"
 
   def install
+    ENV.cxx11
+
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--with-xerces=#{HOMEBREW_PREFIX}",
                           "--prefix=#{prefix}"
@@ -23,7 +34,7 @@ class Xqilla < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <iostream>
       #include <xqilla/xqilla-simple.hpp>
 

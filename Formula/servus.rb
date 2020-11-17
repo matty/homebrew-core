@@ -1,14 +1,18 @@
 class Servus < Formula
   desc "Library and Utilities for zeroconf networking"
   homepage "https://github.com/HBPVIS/Servus"
-  url "https://github.com/HBPVIS/Servus/archive/1.5.0.tar.gz"
-  sha256 "42fb9c060f17f040ad3c7563f5e87c89f5a221a5aa7da21384fc26b9c725ecc8"
+  url "https://github.com/HBPVIS/Servus.git",
+      tag:      "1.5.2",
+      revision: "170bd93dbdd6c0dd80cf4dfc5926590cc5cef5ab"
+  license "LGPL-3.0"
 
   bottle do
     cellar :any
-    sha256 "e9a959eeaacec3a8b99607f71fbf8bc900d96d5949e5329e32909e83d39b4c18" => :sierra
-    sha256 "7fbf4c4b8d9524e8b76ba6602f46f42a9e2cdc3605c1a482168ac5689a4fd707" => :el_capitan
-    sha256 "206d176deea834d37313413c98c932b2063e8feab5d485c8b74ff264c66c5914" => :yosemite
+    sha256 "4e2b2042868af63bf0d39f10821afdd04d37da37ad8ba4da41dff0a73fae7787" => :big_sur
+    sha256 "e0629cca8bee46595c540c2240ed1cc599c5f676527a21f951bfc89a0335c54e" => :catalina
+    sha256 "65921c797c3a2bf7953cf692dee5852de3fd6c2b2466268221a9dfcb7eab960e" => :mojave
+    sha256 "763042d70e605154698d686554d26f6bab46f30200df8a8c3af9c40faeffca64" => :high_sierra
+    sha256 "bcfa24ee0545c044c32391ac72d54a5151de64170c777409163c0688cd9bf671" => :sierra
   end
 
   depends_on "cmake" => :build
@@ -21,7 +25,7 @@ class Servus < Formula
 
   test do
     # Embed "serializeable" test from the servus 1.5.0 source
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #define BOOST_TEST_MODULE servus_serializable
       #include <boost/test/unit_test.hpp>
 
@@ -111,7 +115,10 @@ class Servus < Formula
           BOOST_CHECK_THROW( obj.toJSON(), std::runtime_error );
       }
     EOS
-    system ENV.cxx, "-lServus", "-DBOOST_TEST_DYN_LINK", "-lboost_unit_test_framework-mt", "-std=gnu++11", "test.cpp", "-o", "test"
+    system ENV.cxx, "-L#{lib}", "-lServus", "-DBOOST_TEST_DYN_LINK",
+                    "-L#{Formula["boost"].opt_lib}",
+                    "-lboost_unit_test_framework-mt",
+                    "-std=gnu++11", "test.cpp", "-o", "test"
     system "./test"
   end
 end

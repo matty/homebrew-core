@@ -1,15 +1,17 @@
 class Flatcc < Formula
   desc "FlatBuffers Compiler and Library in C for C"
   homepage "https://github.com/dvidelabs/flatcc"
-  url "https://github.com/dvidelabs/flatcc/archive/v0.4.1.tar.gz"
-  sha256 "de9f668e5555b24c0885f8dc4f4098cc8065c1f428f8209097624035aee487df"
+  url "https://github.com/dvidelabs/flatcc/archive/v0.6.0.tar.gz"
+  sha256 "a92da3566d11e19bb807a83554b1a2c644a5bd91c9d9b088514456bb56e1c666"
+  license "Apache-2.0"
   head "https://github.com/dvidelabs/flatcc.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5abdb406b83a95f298035ea6d738e88568a8462cf738ffa203cd30ece578d48f" => :sierra
-    sha256 "9637f76e7a3b01c5f6e69b73752f40b8ec2a0d0f353dae6159cf54c82258fe84" => :el_capitan
-    sha256 "4ccac91a15a9cfa05bd707738773f69bd69011b3f700434d1ad10c4a8530477d" => :yosemite
+    sha256 "ccc4f35c551b04bbca5e4b57b1ffb71941b9105a99a1dac2092a56d1e0f2034c" => :big_sur
+    sha256 "f1f1cd7532305f48b008fb1f3687d9369a88f184902a8992fd77789410841b4e" => :catalina
+    sha256 "74651142d2c732bfbe671d78cdcf3357189c9b3d3cb7078bf9e882ad9ca6b053" => :mojave
+    sha256 "9e37511cd8069fb56ff15e72f0184d1908f9d4948ebd57d2b430c760cac60aa6" => :high_sierra
   end
 
   depends_on "cmake" => :build
@@ -25,7 +27,7 @@ class Flatcc < Formula
   end
 
   test do
-    (testpath/"test.fbs").write <<-EOS.undent
+    (testpath/"test.fbs").write <<~EOS
       // example IDL file
 
       namespace MyGame.Sample;
@@ -52,7 +54,7 @@ class Flatcc < Formula
 
       root_type Monster;
 
-      EOS
+    EOS
 
     system bin/"flatcc", "-av", "--json", "test.fbs"
   end

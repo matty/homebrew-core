@@ -1,44 +1,36 @@
 class Quantlib < Formula
   desc "Library for quantitative finance"
-  homepage "http://quantlib.org/"
-  url "https://downloads.sourceforge.net/project/quantlib/QuantLib/1.9.1/QuantLib-1.9.1.tar.gz"
-  sha256 "80c0349dd5f8f6d33ea5205dbb6cc64fce7a0778942506d0c942b632b82c03ed"
+  homepage "https://www.quantlib.org/"
+  url "https://dl.bintray.com/quantlib/releases/QuantLib-1.20.tar.gz"
+  sha256 "af51fe73b88be67536aca68ce8aaa30f523a95cc369652a6071d66beef8708ff"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any
-    sha256 "552c5fce38887d3ac72c825f8332f460c1e37c484911c318ec3da5c5c6f4ddc6" => :sierra
-    sha256 "ac1c6554d50f1296b7554c452d0433dd363a373f62167332c763e8c3d34bd14e" => :el_capitan
-    sha256 "41152596ea9d392ab65ee4e61007b3eb54328a0787b0cd2df6c5ca7091d65219" => :yosemite
+    sha256 "bb5ff2517d357ea2e826a631c38c1ba1b2b8da2ffe55c29b3769977d6d657405" => :big_sur
+    sha256 "61d144264132e25c31f347dbdf3c44595be790e851d671159ffaa3d6027b0f04" => :catalina
+    sha256 "0fb3b38c1c385bdfd8bbe930c3eb64b8b9d3cf4451715325e0f3717c9ade0b69" => :mojave
+    sha256 "d6b3bda389b8d94685f47611d4abfa578d9b2166a2e9603ff07a6961a99f70c4" => :high_sierra
   end
 
   head do
     url "https://github.com/lballabio/quantlib.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option :cxx11
-  option "with-intraday", "Enable intraday components to dates"
-
-  if build.cxx11?
-    depends_on "boost" => "c++11"
-  else
-    depends_on "boost"
-  end
+  depends_on "boost"
 
   def install
-    ENV.cxx11 if build.cxx11?
     (buildpath/"QuantLib").install buildpath.children if build.stable?
     cd "QuantLib" do
       system "./autogen.sh" if build.head?
-      args = []
-      args << "--enable-intraday" if build.with? "intraday"
       system "./configure", "--disable-dependency-tracking",
                             "--prefix=#{prefix}",
                             "--with-lispdir=#{elisp}",
-                            *args
+                            "--enable-intraday"
 
       system "make", "install"
       prefix.install_metafiles

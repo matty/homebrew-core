@@ -1,43 +1,49 @@
 class Ninja < Formula
   desc "Small build system for use with gyp or CMake"
   homepage "https://ninja-build.org/"
-  url "https://github.com/ninja-build/ninja/archive/v1.7.2.tar.gz"
-  sha256 "2edda0a5421ace3cf428309211270772dd35a91af60c96f93f90df6bc41b16d9"
+  url "https://github.com/ninja-build/ninja/archive/v1.10.1.tar.gz"
+  sha256 "a6b6f7ac360d4aabd54e299cc1d8fa7b234cd81b9401693da21221c62569a23e"
+  license "Apache-2.0"
+  revision 3
   head "https://github.com/ninja-build/ninja.git"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "a01d44b0a8af3445a6a1e6cd01c81648c6b445119fbae51a54c634d77cbd7f2e" => :sierra
-    sha256 "1973a5e00cf2bc5a13597f979e3bb7a56d3a1ad12b2073b5b5b4368a58335e65" => :el_capitan
-    sha256 "60dc23e5cc3a940d38f4c0914e0fd2eac2f30222270c95d34b9f1a6b152844ba" => :yosemite
+  livecheck do
+    url "https://github.com/ninja-build/ninja/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
-  option "without-test", "Don't run build-time tests"
+  bottle do
+    sha256 "3e8c494346ba0ae08429f60719e287cdc6b243f2b00f269caa18e80545256697" => :big_sur
+    sha256 "e7bf290104b821c1bc54a3f20f17c6ead05704130c92b6438ca85cc52f7027b8" => :catalina
+    sha256 "aa9821c77bc31e22b8abde346c787353b53c1b092b7c16a5fcefc9d64c97e6ed" => :mojave
+    sha256 "a7a30267288572d960f0d213b941076e6740f6b89c65447ae6c8d41fa3752480" => :high_sierra
+  end
 
-  deprecated_option "without-tests" => "without-test"
+  depends_on "cmake" => :build
+  depends_on "python@3.9"
 
-  resource "gtest" do
-    url "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/googletest/gtest-1.7.0.zip"
-    sha256 "247ca18dd83f53deb1328be17e4b1be31514cedfc1e3424f672bf11fd7e0d60d"
+  # from https://github.com/ninja-build/ninja/pull/1836, remove in next release
+  patch do
+    url "https://github.com/ninja-build/ninja/commit/2f3e5275e2ea67cb634488957adbb997c2ff685f.patch?full_index=1"
+    sha256 "77e96405d6f2d4dbeee07b07186b5963257573fd470894a1ed78e5e6a288e5eb"
   end
 
   def install
-    system "python", "configure.py", "--bootstrap"
+    inreplace "CMakeLists.txt", 'NINJA_PYTHON="python"', "NINJA_PYTHON=\"#{Formula["python@3.9"].opt_bin}/python3\""
 
-    if build.with? "test"
-      (buildpath/"gtest").install resource("gtest")
-      system "./configure.py", "--with-gtest=gtest"
-      system "./ninja", "ninja_test"
-      system "./ninja_test", "--gtest_filter=-SubprocessTest.SetWithLots"
-    end
+    system "cmake", "-Bbuild-cmake", "-H.", *std_cmake_args
+    system "cmake", "--build", "build-cmake"
 
-    bin.install "ninja"
+    # Quickly test the build
+    system "./build-cmake/ninja_test"
+
+    bin.install "build-cmake/ninja"
     bash_completion.install "misc/bash-completion" => "ninja-completion.sh"
     zsh_completion.install "misc/zsh-completion" => "_ninja"
   end
 
   test do
-    (testpath/"build.ninja").write <<-EOS.undent
+    (testpath/"build.ninja").write <<~EOS
       cflags = -Wall
 
       rule cc
@@ -46,5 +52,11 @@ class Ninja < Formula
       build foo.o: cc foo.c
     EOS
     system bin/"ninja", "-t", "targets"
+    port = free_port
+    fork do
+      exec bin/"ninja", "-t", "browse", "--port=#{port}", "--no-browser", "foo.o"
+    end
+    sleep 2
+    assert_match "foo.c", shell_output("curl -s http://localhost:#{port}?foo.o")
   end
 end

@@ -1,47 +1,36 @@
 class Dar < Formula
   desc "Backup directory tree and files"
   homepage "http://dar.linux.free.fr/doc/index.html"
-  url "https://downloads.sourceforge.net/project/dar/dar/2.5.9/dar-2.5.9.tar.gz"
-  sha256 "6973614afa970d095719bf43d91855c450d0fa5dcf0a45b580055625500ba92e"
+  url "https://downloads.sourceforge.net/project/dar/dar/2.6.13/dar-2.6.13.tar.gz"
+  sha256 "3fea9ff9e55fb9827e17a080de7d1a2605b82c2320c0dec969071efefdbfd097"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "c4be95dac5e841a0530d737779c70737104adddffee80dc3cc37c992d322e53c" => :sierra
-    sha256 "28c7a20e1472f026a359d36b7aecae970332935655bdfb8e39f683d0b789e34c" => :el_capitan
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/dar[._-]v?(\d+(?:\.\d+)+)\.t}i)
   end
 
-  option "with-doxygen", "build libdar API documentation and html man page"
-  option "with-libgcrypt", "enable strong encryption support"
-  option "with-lzo", "enable lzo compression support"
-  option "with-upx", "make executables compressed at installation time"
+  bottle do
+    cellar :any
+    sha256 "e3c5b475201e6916f344653c86357a54cdd5bf081a6b5ecc72e1f8cea67bbb8d" => :catalina
+    sha256 "3297d386d1572cf82676d96809cea6b54a4338c1a51213c6c059c81206b98c5b" => :mojave
+    sha256 "7f44bc4ac5e17f47705f8a338517432690dadcf6e6f9e7cce502624d4849c6ca" => :high_sierra
+  end
 
-  deprecated_option "with-docs" => "with-doxygen"
-
-  depends_on :macos => :el_capitan # needs thread-local storage
-  depends_on "doxygen" => [:build, :optional]
-  depends_on "upx" => [:build, :optional]
-  depends_on "libgcrypt" => :optional
-  depends_on "lzo" => :optional
-  depends_on "xz" => :optional
-
-  needs :cxx11
+  depends_on "upx" => :build
+  depends_on "libgcrypt"
+  depends_on "lzo"
+  depends_on macos: :el_capitan # needs thread-local storage
 
   def install
     ENV.cxx11
 
-    args = %W[
-      --enable-mode=64
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-dar-static
-      --prefix=#{prefix}
-    ]
-    args << "--disable-build-html" if build.without? "doxygen"
-    args << "--disable-upx" if build.without? "upx"
-    args << "--disable-libgcrypt-linking" if build.without? "libgcrypt"
-    args << "--disable-liblzo2-linking" if build.without? "lzo"
-    args << "--disable-libxz-linking" if build.without? "xz"
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-build-html",
+                          "--disable-dar-static",
+                          "--disable-dependency-tracking",
+                          "--disable-libxz-linking",
+                          "--enable-mode=64"
     system "make", "install"
   end
 

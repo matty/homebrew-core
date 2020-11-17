@@ -1,15 +1,16 @@
 class Jo < Formula
   desc "JSON output from a shell"
   homepage "https://github.com/jpmens/jo"
-  url "https://github.com/jpmens/jo/releases/download/v1.0/jo-1.0.tar.gz"
-  sha256 "d66ec97258d1afad15643fb2d5b5e807153a732ba45c2417adc66669acbde52e"
+  url "https://github.com/jpmens/jo/releases/download/1.4/jo-1.4.tar.gz"
+  sha256 "24c64d2eb863900947f58f32b502c95fec8f086105fd31151b91f54b7b5256a2"
+  license "GPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "776d6f4bcaed2fd57b0fa313331a905c7e47a31ec13629559c9e48853f22777e" => :sierra
-    sha256 "c94c62f3918266cbd688da0b54274226f0fc5d31b311b6be47f523d184f3e503" => :el_capitan
-    sha256 "c46c74107062d4b419255e5a3bc44caea10cbc2ee290e7fdfbaa1dd254b18e4b" => :yosemite
-    sha256 "25e096147b71cdfe6f6230b6340c577335517fabbbf05027f41db4878629f726" => :mavericks
+    sha256 "e7e0509c877e132429eb5cd71b4150c3ea573c9604e92b4bb31c2de4508eb182" => :big_sur
+    sha256 "15bee62d31331c60c1768949ca11916d242fbe96aafcdc7a66a8359c0f4a9c3c" => :catalina
+    sha256 "6741c18bb9a9519e325ac4b30989cdd0c735107ee34772097d3d8fde103880eb" => :mojave
+    sha256 "bd19a24ded348995844cf428f74729dc91b3c23a9f144ca1b117108c3d3b5401" => :high_sierra
   end
 
   head do

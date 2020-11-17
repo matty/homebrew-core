@@ -1,25 +1,27 @@
 class Roswell < Formula
   desc "Lisp installer and launcher for major environments"
   homepage "https://github.com/roswell/roswell"
-  url "https://github.com/roswell/roswell/archive/v17.1.8.73.tar.gz"
-  sha256 "0a9556c47a001b097cfebf61506ed13858cd5d4198e0e526cc3ae443c1046b2e"
+  url "https://github.com/roswell/roswell/archive/v20.06.14.107.tar.gz"
+  sha256 "fc3fd46c55a50e2b76aba60ebbfeab393f345cdca7f2a87a6772c8b4fce3c2e4"
+  license "MIT"
   head "https://github.com/roswell/roswell.git"
 
   bottle do
-    sha256 "1fa9255c72b1a142ac977d720dd019b3e7dfc4561ee9cbe492d90dfa29fe5079" => :sierra
-    sha256 "bd68637074468e4afe579c992c6bae0043565267b04f1c1856fb434a06219a01" => :el_capitan
-    sha256 "52d01f736ac16bc878b5f92b01915b7219d3e366f85689fd55dbaafba13550d3" => :yosemite
+    sha256 "0ebfd2486d641e65b51886a2d094a102d7fe5e1a9167382e65f7467bde4f7a9a" => :big_sur
+    sha256 "dcd9cf15c21d13724f36fd736529faba40dc0c2af2008c970b94049796d6d171" => :catalina
+    sha256 "2d28ef4f1a1cbf94fba0132f7e1f05abb87854af6ce65f70c71877c7152d5622" => :mojave
+    sha256 "a6d5d3ddafc4afefbb84d077b2157a1e7101c5c057bc7fe25714c19b83659017" => :high_sierra
   end
 
-  depends_on "automake" => :build
   depends_on "autoconf" => :build
+  depends_on "automake" => :build
+
+  uses_from_macos "curl"
 
   def install
     system "./bootstrap"
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
-                          "--enable-manual-generation",
-                          "--enable-html-generation",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
@@ -27,6 +29,6 @@ class Roswell < Formula
   test do
     ENV["ROSWELL_HOME"] = testpath
     system bin/"ros", "init"
-    File.exist? testpath/".roswell/config"
+    assert_predicate testpath/"config", :exist?
   end
 end

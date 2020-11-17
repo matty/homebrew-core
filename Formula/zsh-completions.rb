@@ -1,9 +1,8 @@
 class ZshCompletions < Formula
   desc "Additional completion definitions for zsh"
   homepage "https://github.com/zsh-users/zsh-completions"
-  url "https://github.com/zsh-users/zsh-completions/archive/0.22.0.tar.gz"
-  sha256 "cfb8c4af39c3df4c2d087f5829dc6f0c1cfcc2b2110bcc7e47b59cff5615a79f"
-
+  url "https://github.com/zsh-users/zsh-completions/archive/0.32.0.tar.gz"
+  sha256 "d2d20836fb60d2e5de11b08f1a8373484dc01260d224e64c6de9eec44137fa63"
   head "https://github.com/zsh-users/zsh-completions.git"
 
   bottle :unneeded
@@ -13,28 +12,33 @@ class ZshCompletions < Formula
   end
 
   def caveats
-    <<-EOS.undent
-    To activate these completions, add the following to your .zshrc:
+    <<~EOS
+      To activate these completions, add the following to your .zshrc:
 
-      fpath=(#{HOMEBREW_PREFIX}/share/zsh-completions $fpath)
+        if type brew &>/dev/null; then
+          FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
 
-    You may also need to force rebuild `zcompdump`:
+          autoload -Uz compinit
+          compinit
+        fi
 
-      rm -f ~/.zcompdump; compinit
+      You may also need to force rebuild `zcompdump`:
 
-    Additionally, if you receive "zsh compinit: insecure directories" warnings when attempting
-    to load these completions, you may need to run this:
+        rm -f ~/.zcompdump; compinit
 
-      chmod go-w '#{HOMEBREW_PREFIX}/share'
+      Additionally, if you receive "zsh compinit: insecure directories" warnings when attempting
+      to load these completions, you may need to run this:
+
+        chmod go-w '#{HOMEBREW_PREFIX}/share'
     EOS
   end
 
   test do
-    (testpath/".zshrc").write <<-EOS.undent
-      fpath=(#{HOMEBREW_PREFIX}/share/zsh-completions $fpath)
-      autoload -U compinit
-      compinit
+    (testpath/"test.zsh").write <<~EOS
+      fpath=(#{pkgshare} $fpath)
+      autoload _ack
+      which _ack
     EOS
-    system "/bin/zsh", "--login", "-i", "-c", "which _ack"
+    assert_match /^_ack/, shell_output("/bin/zsh test.zsh")
   end
 end

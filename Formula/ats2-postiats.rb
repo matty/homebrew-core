@@ -1,14 +1,20 @@
 class Ats2Postiats < Formula
-  desc "Statically typed programming language that unifies implementation and formal specification"
+  desc "Programming language with formal specification features"
   homepage "http://www.ats-lang.org/"
-  url "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.2.13/ATS2-Postiats-0.2.13.tgz"
-  sha256 "316eb28470154fb96ed69fddd5ef3477c4986835c48ab3e932fdaec7e7f23307"
+  url "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.4.2/ATS2-Postiats-0.4.2.tgz"
+  sha256 "a6facf2ba3e8bb0b3ca9b62fd0d679c31a152842414fccd34079101739042c59"
+  license "GPL-3.0-only"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/ATS2-Postiats[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "b64895d38ddc05d29d68c217959a538c21831f31a5152cae5d91a72fe3e4c911" => :sierra
-    sha256 "2946e2250329356ffe431b86e8a5abb1cf436ee89de4f1f7a0245856552506ce" => :el_capitan
-    sha256 "16612b33029349b57cca91e71ad4cbaf4754dc237fe99768a9c1239bb747f5d7" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "19ea3eb93cc5ba40ce3c1bdc48666edd4a8cd00027fbb4531392a0f15ecc7a94" => :catalina
+    sha256 "9e0b2824b0ea3d67e22c6690d3608c5d09d9855075e9811ad71b5f2703be9304" => :mojave
+    sha256 "91d683a9f1c94daff0e9b089cc7a5ceda949eb4b5aa7d286c554d9506ee6d49c" => :high_sierra
   end
 
   depends_on "gmp"
@@ -20,7 +26,7 @@ class Ats2Postiats < Formula
   end
 
   test do
-    (testpath/"hello.dats").write <<-EOS.undent
+    (testpath/"hello.dats").write <<~EOS
       val _ = print ("Hello, world!\n")
       implement main0 () = ()
     EOS

@@ -1,60 +1,71 @@
 class Gtkx3 < Formula
   desc "Toolkit for creating graphical user interfaces"
-  homepage "http://gtk.org/"
-  url "https://download.gnome.org/sources/gtk+/3.22/gtk+-3.22.8.tar.xz"
-  sha256 "c7254a88df5c17e9609cee9e848c3d0104512707edad4c3b4f256b131f8d3af1"
+  homepage "https://gtk.org/"
+  url "https://download.gnome.org/sources/gtk+/3.24/gtk+-3.24.23.tar.xz"
+  sha256 "5d864d248357a2251545b3387b35942de5f66e4c66013f0962eb5cb6f8dae2b1"
+  license "LGPL-2.0-or-later"
 
-  bottle do
-    sha256 "4a9acd9ab1746ea1647240ddb328a1f868191635af3d4d3863b05174e46915b0" => :sierra
-    sha256 "395896a9e5355cbf12624a561afc66bfdf10cb241e1fe696b7e13aac4f3cda15" => :el_capitan
-    sha256 "d5686fe43e5f51a2cc42ee787abcc02b2e6e3087a0e564910cf677bb7721ad4e" => :yosemite
+  livecheck do
+    url :stable
+    regex(/gtk\+[._-](3\.([0-8]\d*?)?[02468](?:\.\d+)*?)\.t/i)
   end
 
-  option :universal
-  option "with-quartz-relocation", "Build with quartz relocation support"
+  bottle do
+    sha256 "2d51c5d6bca63533190929db8a2f6d82d618db912e650c446afcf98bd1d5ade4" => :big_sur
+    sha256 "94b7fbbd4b2557e511b7971998d46b9e96a050b9b5468f8df6410c4b1f28ba18" => :catalina
+    sha256 "ea959fea33bb7ebc455249f782372f1f7f89aa6f19113f2f8a16c8539b6f0ea2" => :mojave
+    sha256 "c5ec8329feaa8a798714bea712ba07836014aa04d28d42a9b63bd5e0adc4e659" => :high_sierra
+  end
 
+  depends_on "docbook" => :build
+  depends_on "docbook-xsl" => :build
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "gdk-pixbuf"
   depends_on "atk"
-  depends_on "gobject-introspection"
+  depends_on "gdk-pixbuf"
+  depends_on "glib"
+  depends_on "gsettings-desktop-schemas"
+  depends_on "hicolor-icon-theme"
   depends_on "libepoxy"
   depends_on "pango"
-  depends_on "glib"
-  depends_on "hicolor-icon-theme"
-  depends_on "gsettings-desktop-schemas" => :recommended
-  depends_on "jasper" => :optional
+
+  uses_from_macos "libxslt" => :build # for xsltproc
 
   def install
-    ENV.universal_binary if build.universal?
-
-    args = %W[
-      --enable-debug=minimal
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-      --disable-glibtest
-      --enable-introspection=yes
-      --disable-schemas-compile
-      --enable-quartz-backend
-      --disable-x11-backend
+    args = std_meson_args + %w[
+      -Dx11_backend=false
+      -Dquartz_backend=true
+      -Dgtk_doc=false
+      -Dman=true
+      -Dintrospection=true
     ]
 
-    args << "--enable-quartz-relocation" if build.with?("quartz-relocation")
+    # ensure that we don't run the meson post install script
+    ENV["DESTDIR"] = "/"
 
-    system "./configure", *args
-    # necessary to avoid gtk-update-icon-cache not being found during make install
-    bin.mkpath
-    ENV.prepend_path "PATH", bin
-    system "make", "install"
+    # Find our docbook catalog
+    ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
+
+    mkdir "build" do
+      system "meson", *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
+
     # Prevent a conflict between this and Gtk+2
     mv bin/"gtk-update-icon-cache", bin/"gtk3-update-icon-cache"
   end
 
   def post_install
     system "#{Formula["glib"].opt_bin}/glib-compile-schemas", "#{HOMEBREW_PREFIX}/share/glib-2.0/schemas"
+    system bin/"gtk3-update-icon-cache", "-f", "-t", "#{HOMEBREW_PREFIX}/share/icons/hicolor"
+    system "#{bin}/gtk-query-immodules-3.0 > #{HOMEBREW_PREFIX}/lib/gtk-3.0/3.0.0/immodules.cache"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gtk/gtk.h>
 
       int main(int argc, char *argv[]) {
@@ -69,6 +80,7 @@ class Gtkx3 < Formula
     gdk_pixbuf = Formula["gdk-pixbuf"]
     gettext = Formula["gettext"]
     glib = Formula["glib"]
+    harfbuzz = Formula["harfbuzz"]
     libepoxy = Formula["libepoxy"]
     libpng = Formula["libpng"]
     pango = Formula["pango"]
@@ -83,6 +95,7 @@ class Gtkx3 < Formula
       -I#{glib.opt_include}/gio-unix-2.0/
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}
       -I#{include}/gtk-3.0
       -I#{libepoxy.opt_include}
@@ -112,5 +125,7 @@ class Gtkx3 < Formula
     ]
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
+    # include a version check for the pkg-config files
+    assert_match version.to_s, shell_output("cat #{lib}/pkgconfig/gtk+-3.0.pc").strip
   end
 end

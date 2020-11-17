@@ -1,137 +1,77 @@
 class Logrotate < Formula
   desc "Rotates, compresses, and mails system logs"
-  homepage "https://fedorahosted.org/logrotate/"
-  url "https://fedorahosted.org/releases/l/o/logrotate/logrotate-3.9.1.tar.gz"
-  sha256 "022769e3288c80981559a8421703c88e8438b447235e36dd3c8e97cd94c52545"
+  homepage "https://github.com/logrotate/logrotate"
+  url "https://github.com/logrotate/logrotate/releases/download/3.17.0/logrotate-3.17.0.tar.xz"
+  sha256 "58cc2178ff57faa3c0490181cce041345aeca6cff18dba1c5cd1398bf1c19294"
+  license "GPL-2.0"
 
   bottle do
     cellar :any
-    sha256 "39d4738be1781272c9819d230f3985dc5df892382594f1da725fd440230b5994" => :sierra
-    sha256 "2625381c3aa8e4b4c80ed6a28c0533a4341c8e63e50acd69b4e88970d5b6b5a3" => :el_capitan
-    sha256 "54e30ff0979a6840433942dca543ae3369f7850db3ebf309aa4e1ef47d7fe744" => :yosemite
-    sha256 "bd8a9901a24bb1a72e05a6e5dd5359d0ab609cc7fd6b48654ba5dfca0d7ada42" => :mavericks
-    sha256 "ab15e12cf49a7bb508227685c404c586705497bf3fbf2a7d37f18e3476121d2b" => :mountain_lion
+    sha256 "d49cb61db83f22a4b739d78613fa45469ad3eeb03697c57a5a4ba15a5d135526" => :big_sur
+    sha256 "cb0e376e957310bf7a5c3edcd4cdbc41b0f8d2aa12996a3b25f63174090b9358" => :catalina
+    sha256 "94ab5540c338fa37c83de5ee0f1150b170c5bbb5dd50dcab592c9de74893febc" => :mojave
+    sha256 "c40599d984c6c5da3818e7f86c95626bd3006e61ee0bd0e588bed07729bb1242" => :high_sierra
   end
 
   depends_on "popt"
 
-  # Per MacPorts, let these variables be overridden by ENV vars.
-  # Also, use HOMEBREW suggested locations for run and log files.
-  patch :DATA
+  # https://github.com/logrotate/logrotate/pull/344
+  patch do
+    url "https://github.com/logrotate/logrotate/commit/5aee3d4d73bbdca7531bf641a78bcb5ec58d93ea.patch?full_index=1"
+    sha256 "c0446056737c94e353893f9c6cba547b13cc34190df459c27b1a60654327759f"
+  end
 
   def install
-    # Otherwise defaults to /bin/gz
-    ENV["COMPRESS_COMMAND"] = "/usr/bin/gzip"
-    ENV["COMPRESS_EXT"] = ".gz"
-    ENV["UNCOMPRESS_COMMAND"] = "/usr/bin/gunzip"
-    ENV["STATEFILE"] = "#{var}/lib/logrotate.status"
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--with-compress-command=/usr/bin/gzip",
+                          "--with-uncompress-command=/usr/bin/gunzip",
+                          "--with-state-file-path=#{var}/lib/logrotate.status"
+    system "make", "install"
 
-    system "make"
-    sbin.install "logrotate"
-    man8.install "logrotate.8"
-    man5.install "logrotate.conf.5"
-
-    mv "examples/logrotate-default", "logrotate.conf"
-    inreplace "logrotate.conf", "/etc/logrotate.d", "#{etc}/logrotate.d"
-
-    etc.install "logrotate.conf"
+    inreplace "examples/logrotate.conf", "/etc/logrotate.d", "#{etc}/logrotate.d"
+    etc.install "examples/logrotate.conf" => "logrotate.conf"
     (etc/"logrotate.d").mkpath
   end
 
-  plist_options :manual => "logrotate"
+  plist_options manual: "logrotate"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{sbin}/logrotate</string>
-          <string>#{etc}/logrotate.conf</string>
-        </array>
-        <key>RunAtLoad</key>
-        <false/>
-        <key>StartCalendarInterval</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
         <dict>
-          <key>Hour</key>
-          <integer>6</integer>
-          <key>Minute</key>
-          <integer>25</integer>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{sbin}/logrotate</string>
+            <string>#{etc}/logrotate.conf</string>
+          </array>
+          <key>RunAtLoad</key>
+          <false/>
+          <key>StartCalendarInterval</key>
+          <dict>
+            <key>Hour</key>
+            <integer>6</integer>
+            <key>Minute</key>
+            <integer>25</integer>
+          </dict>
         </dict>
-      </dict>
-    </plist>
+      </plist>
     EOS
   end
 
   test do
     (testpath/"test.log").write("testlograndomstring")
-    (testpath/"testlogrotate.conf").write <<-EOS.undent
-        #{testpath}/test.log {
+    (testpath/"testlogrotate.conf").write <<~EOS
+      #{testpath}/test.log {
         size 1
         copytruncate
-    }
+      }
     EOS
     system "#{sbin}/logrotate", "-s", "logstatus", "testlogrotate.conf"
     assert(File.size?("test.log").nil?, "File is not zero length!")
   end
 end
-
-__END__
-diff --git i/Makefile w/Makefile
-index 5a42fb6..e53f4f7 100644
---- i/Makefile
-+++ w/Makefile
-@@ -86,6 +86,22 @@ ifneq ($(POPT_DIR),)
-     LOADLIBES += -L$(POPT_DIR)
- endif
- 
-+ifneq ($(COMPRESS_COMMAND),)
-+    CFLAGS += -DCOMPRESS_COMMAND=\"$(COMPRESS_COMMAND)\"
-+endif
-+
-+ifneq ($(COMPRESS_EXT),)
-+    CFLAGS += -DCOMPRESS_EXT=\"$(COMPRESS_EXT)\"
-+endif
-+
-+ifneq ($(UNCOMPRESS_COMMAND),)
-+    CFLAGS += -DUNCOMPRESS_COMMAND=\"$(UNCOMPRESS_COMMAND)\"
-+endif
-+
-+ifneq ($(DEFAULT_MAIL_COMMAND),)
-+    CFLAGS += -DDEFAULT_MAIL_COMMAND=\"$(DEFAULT_MAIL_COMMAND)\"
-+endif
-+
- ifneq ($(STATEFILE),)
-     CFLAGS += -DSTATEFILE=\"$(STATEFILE)\"
- endif
-diff --git i/examples/logrotate-default w/examples/logrotate-default
-index 56e9103..c61a33a 100644
---- i/examples/logrotate-default
-+++ w/examples/logrotate-default
-@@ -14,22 +14,7 @@ dateext
- # uncomment this if you want your log files compressed
- #compress
- 
--# RPM packages drop log rotation information into this directory
-+# Homebrew packages drop log rotation information into this directory
- include /etc/logrotate.d
- 
--# no packages own wtmp and btmp -- we'll rotate them here
--/var/log/wtmp {
--    monthly
--    create 0664 root utmp
--    minsize 1M
--    rotate 1
--}
--
--/var/log/btmp {
--    missingok
--    monthly
--    create 0600 root utmp
--    rotate 1
--}
--
- # system-specific logs may be also be configured here.

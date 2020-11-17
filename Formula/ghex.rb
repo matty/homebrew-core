@@ -1,31 +1,40 @@
 class Ghex < Formula
   desc "GNOME hex editor"
   homepage "https://wiki.gnome.org/Apps/Ghex"
-  url "https://download.gnome.org/sources/ghex/3.18/ghex-3.18.3.tar.xz"
-  sha256 "c67450f86f9c09c20768f1af36c11a66faf460ea00fbba628a9089a6804808d3"
+  url "https://download.gnome.org/sources/ghex/3.18/ghex-3.18.4.tar.xz"
+  sha256 "c2d9c191ff5bce836618779865bee4059db81a3a0dff38bda3cc7a9e729637c0"
+  revision 3
 
-  bottle do
-    sha256 "d0f9fbf54dd15dcccfd56ca3aebb9e0e52772ddc9d6c5ff3f6e11075f7c3dd94" => :sierra
-    sha256 "ab58d6fccf6c772e901ef0049677e07c5e415137b8923fd2ec47ab64f214cafc" => :el_capitan
-    sha256 "dc4d519fdc43685cc1ce7f0dbc79075f0fea71e228738ad0c1df2f635eb2362f" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :build
-  depends_on "intltool" => :build
+  bottle do
+    sha256 "3c7a8c7f133ff63b1398074340ed06140645d258b94e971d897f912b8631f609" => :big_sur
+    sha256 "b152b5f03f5bc0d7a50a834fef582ea7fb477dd7560afb4a0b1f4df88e229970" => :catalina
+    sha256 "c2e68caac31470d6dbc66050b2dc42333b3dfc6956ee7453fba9032b5cf894a4" => :mojave
+    sha256 "4de4a0a7ee3f81c7f7b36d7368380b2ff2a063c5d444302cd5979ee33727fb1c" => :high_sierra
+  end
+
   depends_on "itstool" => :build
-  depends_on "libxml2" => [:build, "with-python"]
-  depends_on :python => :build if MacOS.version <= :snow_leopard
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+  depends_on "pkg-config" => :build
   depends_on "gtk+3"
   depends_on "hicolor-icon-theme"
 
+  # submitted upstream as https://gitlab.gnome.org/GNOME/ghex/merge_requests/8
+  patch :DATA
+
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--disable-schemas-compile",
-                          "--prefix=#{prefix}"
-    ENV.append_path "PYTHONPATH", "#{Formula["libxml2"].opt_lib}/python2.7/site-packages"
-    system "make", "install"
+    # ensure that we don't run the meson post install script
+    ENV["DESTDIR"] = "/"
+
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   def post_install
@@ -37,3 +46,29 @@ class Ghex < Formula
     system "#{bin}/ghex", "--help"
   end
 end
+
+__END__
+diff --git a/src/meson.build b/src/meson.build
+index fdcdcc2..ac45c93 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -23,9 +23,9 @@ libghex_c_args = [
+   '-DG_LOG_DOMAIN="libgtkhex-3"'
+ ]
+
+-libghex_link_args = [
++libghex_link_args = cc.get_supported_link_arguments([
+   '-Wl,--no-undefined'
+-]
++])
+
+ install_headers(
+   libghex_headers,
+@@ -36,6 +36,7 @@ libghex = library(
+   'gtkhex-@0@'.format(libghex_version_major),
+   libghex_sources + libghex_headers,
+   version: '0.0.0',
++  darwin_versions: ['1', '1.0'],
+   include_directories: ghex_root_dir,
+   dependencies: libghex_deps,
+   c_args: libghex_c_args,

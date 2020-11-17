@@ -1,13 +1,20 @@
 class Libslax < Formula
   desc "Implementation of the SLAX language (an XSLT alternative)"
   homepage "http://www.libslax.org/"
-  url "https://github.com/Juniper/libslax/releases/download/0.20.2/libslax-0.20.2.tar.gz"
-  sha256 "2daa6c908eb03a4db4a701fce8b9cb269a2cc59d7adc70653cd4934c9662111b"
+  url "https://github.com/Juniper/libslax/releases/download/0.22.1/libslax-0.22.1.tar.gz"
+  sha256 "4da6fb9886e50d75478d5ecc6868c90dae9d30ba7fc6e6d154fc92e6a48d9a95"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "https://github.com/Juniper/libslax/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
-    sha256 "3b5e50d5e0009a3b80d7d2a0d488e51fa14ac2573bcc51e4acede622f40936de" => :sierra
-    sha256 "ebc69e1268822dbfbbc1a116fb713ccbd42ca9155e96a399f8101b17e312a568" => :el_capitan
-    sha256 "fdec6244e1e914e5959f0d0f3d3264d2ae09e522a009713306974b6f9e9e3869" => :yosemite
+    sha256 "e155b74af4563cfc2236a8c473154275118b978bf068329e941f3f6ecf58fea5" => :big_sur
+    sha256 "8b4506f10c72d75425ad849f17918a6574c349ebdf29ab740ad323811d1a4d02" => :catalina
+    sha256 "5e024a22f8a47c0a11724d7543cd50141e8246b3669155cd734854ee74ec9d71" => :mojave
+    sha256 "95e8b6bdc7010103110d8c7a92c33dd8e2e04228e037ca81c3a5cb69ea955ab2" => :high_sierra
   end
 
   head do
@@ -17,19 +24,16 @@ class Libslax < Formula
     depends_on "automake" => :build
   end
 
-  if MacOS.version <= :mountain_lion
-    depends_on "libxml2"
-    depends_on "libxslt"
-    depends_on "sqlite" # Needs 3.7.13, which shipped on 10.9.
-  end
-
   depends_on "libtool" => :build
-  depends_on "curl" if MacOS.version <= :lion
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+
+  conflicts_with "genometools", because: "both install `bin/gt`"
 
   def install
     # configure remembers "-lcrypto" but not the link path.
-    ENV.append "LDFLAGS", "-L#{Formula["openssl"].opt_lib}"
+    ENV.append "LDFLAGS", "-L#{Formula["openssl@1.1"].opt_lib}"
+
+    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra || MacOS.version == :el_capitan
 
     system "sh", "./bin/setup.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
@@ -39,7 +43,7 @@ class Libslax < Formula
   end
 
   test do
-    (testpath/"hello.slax").write <<-EOS.undent
+    (testpath/"hello.slax").write <<~EOS
       version 1.0;
 
       match / {
@@ -47,7 +51,7 @@ class Libslax < Formula
       }
     EOS
     system "#{bin}/slaxproc", "--slax-to-xslt", "hello.slax", "hello.xslt"
-    assert File.exist?("hello.xslt")
+    assert_predicate testpath/"hello.xslt", :exist?
     assert_match "<xsl:text>Hello World!</xsl:text>", File.read("hello.xslt")
   end
 end

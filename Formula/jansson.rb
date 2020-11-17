@@ -1,27 +1,31 @@
 class Jansson < Formula
   desc "C library for encoding, decoding, and manipulating JSON"
-  homepage "http://www.digip.org/jansson/"
-  url "http://www.digip.org/jansson/releases/jansson-2.9.tar.gz"
-  sha256 "0ad0d074ca049a36637e7abef755d40849ad73e926b93914ce294927b97bd2a5"
+  homepage "https://digip.org/jansson/"
+  url "https://digip.org/jansson/releases/jansson-2.13.1.tar.gz"
+  sha256 "f4f377da17b10201a60c1108613e78ee15df6b12016b116b6de42209f47a474f"
+  license "MIT"
+
+  livecheck do
+    url "https://digip.org/jansson/releases/"
+    regex(/href=.*?jansson[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "f71130560290bd3567370e16bd6da01c62b742262ba838785697148273b572a2" => :sierra
-    sha256 "709661eacbb18126715fae9ba5f2b48d6e7d9e7660f601fce67b601f0d5333a8" => :el_capitan
-    sha256 "03a6016b16023b314916147e7ece853c39450a249644fceb2dac3a0417b11fdc" => :yosemite
+    sha256 "7f9717b979d7d66db054be03cfebb72e088e413b5d6125c7cd735db064897671" => :big_sur
+    sha256 "e6a942f77821fd65810d4bc20e6938364a5e40cd7c8510c4b090731573bd0088" => :catalina
+    sha256 "587acdadd1ea8bcf22c316f55a32084f530280a7e24f0864e0e420718d0d1b7f" => :mojave
+    sha256 "38085c147eb40d58df8a91a44e7544d4ceb248aa25f54bdd8a3b10c1a214d9e9" => :high_sierra
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <jansson.h>
       #include <assert.h>
 
@@ -35,7 +39,7 @@ class Jansson < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-ljansson", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-ljansson", "-o", "test"
     system "./test"
   end
 end

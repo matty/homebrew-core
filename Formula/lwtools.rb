@@ -1,15 +1,20 @@
 class Lwtools < Formula
   desc "Cross-development tools for Motorola 6809 and Hitachi 6309"
   homepage "http://lwtools.projects.l-w.ca/"
-  url "http://lwtools.projects.l-w.ca/releases/lwtools/lwtools-4.9.tar.gz"
-  sha256 "e0c96e4f1e10ef00a1c5b1f55ccba8f5924d826ac89837bef96382a474ccf975"
+  url "http://lwtools.projects.l-w.ca/releases/lwtools/lwtools-4.17.tar.gz"
+  sha256 "a93ab316ca0176901822873dba4bc286d3a5cf86e6a853d3edb7a51ecc96a91c"
+
+  livecheck do
+    url "http://www.lwtools.ca/releases/lwtools/"
+    regex(/href=.*?lwtools[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "11038ab6157815e38481c86b60c80b993ef9bd5096259858d5542002b3396844" => :sierra
-    sha256 "6f7c8a5b1ba86e231bc42ed6d65ea3cf5534161c73d403d0a750224695ba2c57" => :el_capitan
-    sha256 "4b4491727bf0ec368a2788332991855b343f13440326c6bc74b870a32d1c9def" => :yosemite
-    sha256 "50063049a2285723daa126a1ea3f10a60c9f729f7b0b82201a55c630076e356d" => :mavericks
+    sha256 "1ce602bff92ea48cca7732b218e999350d62a3f76d7c69c3e73573da2139d662" => :catalina
+    sha256 "3cfae9c3afc0a2fa0d8fdf48c88cb504056f35702f45a4afe5070ceb408d4919" => :mojave
+    sha256 "8c0c67d34661986431d9fdb2fe5b6315a0da6b4ec9b4eac139868bfa1ee18069" => :high_sierra
+    sha256 "d4f5b062ba3fbd7c7d3115c6f6451fdaa4daf331e0e7f0641580df19dc3c65e4" => :sierra
   end
 
   def install
@@ -29,13 +34,13 @@ class Lwtools < Formula
 
     # lwobjdump
     dump = `#{bin}/lwobjdump foo.obj`
-    assert_equal 0, $?.exitstatus
+    assert_equal 0, $CHILD_STATUS.exitstatus
     assert dump.start_with?("SECTION foo")
 
     # lwar
     system "#{bin}/lwar", "--create", "foo.lwa", "foo.obj"
     list = `#{bin}/lwar --list foo.lwa`
-    assert_equal 0, $?.exitstatus
+    assert_equal 0, $CHILD_STATUS.exitstatus
     assert list.start_with?("foo.obj")
   end
 end

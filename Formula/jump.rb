@@ -1,26 +1,25 @@
 class Jump < Formula
-  desc "Quick and fuzzy directory jumper."
+  desc "Helps you navigate your file system faster by learning your habits"
   homepage "https://github.com/gsamokovarov/jump"
-  url "https://github.com/gsamokovarov/jump/archive/v0.9.0.tar.gz"
-  sha256 "978ea7fbc9564eafc1d96760c70d642677a6acf66ad2d2764bdc0b3cc8242420"
+  url "https://github.com/gsamokovarov/jump/archive/v0.30.1.tar.gz"
+  sha256 "76d6453246c047b49e669499dc1b6a7e4c4520653627461d84ad40c6afb45562"
+  license "MIT"
   head "https://github.com/gsamokovarov/jump.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cb1b677d4264a79e2a9375eff786b3d31b2f8b0b6ee982870965a03bd6824ea8" => :sierra
-    sha256 "aaa6488ff1bc746539cf4a7a9aa2007685b835085dc862724c0d2ee105b113c1" => :el_capitan
-    sha256 "068aa3bcdf829f139f128f1faf9d423719af04f1b6b8e92656bb7b1abae11bef" => :yosemite
+    sha256 "583050c8b842e4923e6f654ad3f1a1db1fe3b994c5bd0b5fa7912a682b5a9866" => :big_sur
+    sha256 "7399051ba9939abcfbca29e7f371315de6d55d1bd6fa9e1f7aa7d9ee947dd836" => :catalina
+    sha256 "ba0fecff57b7efe0b984f55ad372bcb06c249f6df9353bab2cc648aef5c48ccf" => :mojave
+    sha256 "450233293f93a80152625bfa6b965d7aa17dd5ee74f775e8adae414b41177250" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/gsamokovarov").mkpath
-    ln_s buildpath, buildpath/"src/github.com/gsamokovarov/jump"
-
-    system "go", "build", "-o", "#{bin}/jump"
+    system "go", "build", "-ldflags", "-s -w", "-trimpath", "-o", "#{bin}/jump"
     man1.install "man/jump.1"
+    man1.install "man/j.1"
   end
 
   test do

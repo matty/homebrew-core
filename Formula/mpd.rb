@@ -1,65 +1,41 @@
 class Mpd < Formula
   desc "Music Player Daemon"
   homepage "https://www.musicpd.org/"
-  url "https://www.musicpd.org/download/mpd/0.20/mpd-0.20.5.tar.xz"
-  sha256 "525573be27443ae26868b21a61e88c03909e72f1212ddaa725a0389a28d88987"
+  url "https://www.musicpd.org/download/mpd/0.22/mpd-0.22.3.tar.xz"
+  sha256 "338012037b5e67730529187c555a54cc567a85b15a7e8ddb3a807b1971566ccf"
+  license "GPL-2.0-or-later"
+  head "https://github.com/MusicPlayerDaemon/MPD.git"
 
   bottle do
-    sha256 "9a4c489b164c97efa103b60da4318b55048a9d420b673e2e3e308c15f763c6a1" => :sierra
-    sha256 "c8c0bb2f00c3dc210b6e080c2f4a3710123893c62f545f251b641356bbb710f1" => :el_capitan
-    sha256 "ee74d6818947f92dfdc4c42ad4626c9ea8fec8a1c1f998c0ed9b0267045c457d" => :yosemite
+    cellar :any
+    sha256 "035629dc87d70607aeba56d678e493d26e5a8f611592aea77077e4bb4fae62c5" => :catalina
+    sha256 "db8b3fe34ec3496c04f7a384005f09f025b45cb40793e5965fbed13288035b72" => :mojave
   end
 
-  head do
-    url "git://git.musicpd.org/master/mpd.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-  end
-
-  option "with-wavpack", "Build with wavpack support (for .wv files)"
-  option "with-lastfm", "Build with last-fm support (for experimental Last.fm radio)"
-  option "with-lame", "Build with lame support (for MP3 encoding when streaming)"
-  option "with-two-lame", "Build with two-lame support (for MP2 encoding when streaming)"
-  option "with-flac", "Build with flac support (for Flac encoding when streaming)"
-  option "with-libvorbis", "Build with vorbis support (for Ogg encoding)"
-  option "with-yajl", "Build with yajl support (for playing from soundcloud)"
-  option "with-opus", "Build with opus support (for Opus encoding and decoding)"
-  option "with-libmodplug", "Build with modplug support (for decoding modules supported by MODPlug)"
-  option "with-pulseaudio", "Build with PulseAudio support (for sending audio output to a PulseAudio sound server)"
-
-  deprecated_option "with-vorbis" => "with-libvorbis"
-
-  depends_on "pkg-config" => :build
   depends_on "boost" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+  depends_on "pkg-config" => :build
+  depends_on "expat"
+  depends_on "faad2"
+  depends_on "ffmpeg"
+  depends_on "flac"
+  depends_on "fluid-synth"
   depends_on "glib"
-  depends_on "libid3tag"
-  depends_on "sqlite"
-  depends_on "libsamplerate"
   depends_on "icu4c"
-
-  needs :cxx11
-
+  depends_on "lame"
+  depends_on "libao"
+  depends_on "libgcrypt"
+  depends_on "libid3tag"
   depends_on "libmpdclient"
-  depends_on "ffmpeg" # lots of codecs
-  # mpd also supports mad, mpg123, libsndfile, and audiofile, but those are
-  # redundant with ffmpeg
-  depends_on "fluid-synth"              # MIDI
-  depends_on "faad2"                    # MP4/AAC
-  depends_on "wavpack" => :optional     # WavPack
-  depends_on "libshout" => :optional    # Streaming (also pulls in Vorbis encoding)
-  depends_on "lame" => :optional        # MP3 encoding
-  depends_on "two-lame" => :optional    # MP2 encoding
-  depends_on "flac" => :optional        # Flac encoding
-  depends_on "jack" => :optional        # Output to JACK
-  depends_on "libmms" => :optional      # MMS input
-  depends_on "libzzip" => :optional     # Reading from within ZIPs
-  depends_on "yajl" => :optional        # JSON library for SoundCloud
-  depends_on "opus" => :optional        # Opus support
-  depends_on "libvorbis" => :optional
-  depends_on "libnfs" => :optional
-  depends_on "mad" => :optional
-  depends_on "libmodplug" => :optional  # MODPlug decoder
-  depends_on "pulseaudio" => :optional
+  depends_on "libnfs"
+  depends_on "libsamplerate"
+  depends_on "libshout"
+  depends_on "libupnp"
+  depends_on "libvorbis"
+  depends_on macos: :mojave # requires C++17 features unavailable in High Sierra
+  depends_on "opus"
+  depends_on "sqlite"
 
   def install
     # mpd specifies -std=gnu++0x, but clang appears to try to build
@@ -67,74 +43,91 @@ class Mpd < Formula
     # The build is fine with G++.
     ENV.libcxx
 
-    system "./autogen.sh" if build.head?
-
-    args = %W[
-      --disable-debug
-      --disable-dependency-tracking
-      --prefix=#{prefix}
+    args = std_meson_args + %W[
       --sysconfdir=#{etc}
-      --enable-bzip2
-      --enable-ffmpeg
-      --enable-fluidsynth
-      --enable-osx
-      --disable-libwrap
+      -Dlibwrap=disabled
+      -Dmad=disabled
+      -Dmpcdec=disabled
+      -Dsoundcloud=disabled
+      -Dao=enabled
+      -Dbzip2=enabled
+      -Dexpat=enabled
+      -Dffmpeg=enabled
+      -Dfluidsynth=enabled
+      -Dnfs=enabled
+      -Dshout=enabled
+      -Dupnp=enabled
+      -Dvorbisenc=enabled
     ]
 
-    args << "--disable-mad" if build.without? "mad"
-    args << "--disable-curl" if MacOS.version <= :leopard
-
-    args << "--enable-zzip" if build.with? "libzzip"
-    args << "--enable-lastfm" if build.with? "lastfm"
-    args << "--disable-lame-encoder" if build.without? "lame"
-    args << "--disable-soundcloud" if build.without? "yajl"
-    args << "--enable-vorbis-encoder" if build.with? "libvorbis"
-    args << "--enable-nfs" if build.with? "libnfs"
-    args << "--enable-modplug" if build.with? "libmodplug"
-    args << "--enable-pulse" if build.with? "pulseaudio"
-
-    system "./configure", *args
-    system "make"
+    system "meson", *args, "output/release", "."
+    system "ninja", "-C", "output/release"
     ENV.deparallelize # Directories are created in parallel, so let's not do that
-    system "make", "install"
+    system "ninja", "-C", "output/release", "install"
 
     (etc/"mpd").install "doc/mpdconf.example" => "mpd.conf"
   end
 
-  plist_options :manual => "mpd"
+  def caveats
+    <<~EOS
+      MPD requires a config file to start.
+      Please copy it from #{etc}/mpd/mpd.conf into one of these paths:
+        - ~/.mpd/mpd.conf
+        - ~/.mpdconf
+      and tailor it to your needs.
+    EOS
+  end
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>WorkingDirectory</key>
-        <string>#{HOMEBREW_PREFIX}</string>
-        <key>ProgramArguments</key>
-        <array>
-            <string>#{opt_bin}/mpd</string>
-            <string>--no-daemon</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <true/>
-    </dict>
-    </plist>
+  plist_options manual: "mpd"
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>WorkingDirectory</key>
+          <string>#{HOMEBREW_PREFIX}</string>
+          <key>ProgramArguments</key>
+          <array>
+              <string>#{opt_bin}/mpd</string>
+              <string>--no-daemon</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <true/>
+          <key>ProcessType</key>
+          <string>Interactive</string>
+      </dict>
+      </plist>
     EOS
   end
 
   test do
+    port = free_port
+
+    (testpath/"mpd.conf").write <<~EOS
+      bind_to_address "127.0.0.1"
+      port "#{port}"
+    EOS
+
     pid = fork do
-      exec "#{bin}/mpd --stdout --no-daemon --no-config"
+      exec "#{bin}/mpd --stdout --no-daemon #{testpath}/mpd.conf"
     end
-    sleep 2
+    sleep 5
 
     begin
-      assert_match "OK MPD", shell_output("curl localhost:6600")
-      assert_match "ACK", shell_output("(sleep 1; echo playid foo) | nc localhost 6600")
+      ohai "Connect to MPD command (localhost:#{port})"
+      TCPSocket.open("localhost", port) do |sock|
+        assert_match "OK MPD", sock.gets
+        ohai "Ping server"
+        sock.puts("ping")
+        assert_match "OK", sock.gets
+        sock.close
+      end
     ensure
       Process.kill "SIGINT", pid
       Process.wait pid

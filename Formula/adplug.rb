@@ -1,15 +1,15 @@
 class Adplug < Formula
   desc "Free, hardware independent AdLib sound player library"
   homepage "https://adplug.github.io"
-  url "https://github.com/adplug/adplug/releases/download/adplug-2.2.1/adplug-2.2.1.tar.bz2"
-  sha256 "f95a015268a0dfe9ff5782f3ea7b2a69e09b8d36ccd19ebf4d979d767b6e53ef"
+  url "https://github.com/adplug/adplug/releases/download/adplug-2.3.3/adplug-2.3.3.tar.bz2"
+  sha256 "a0f3c1b18fb49dea7ac3e8f820e091a663afa5410d3443612bf416cff29fa928"
+  license "LGPL-2.1"
 
   bottle do
-    rebuild 1
-    sha256 "4eed30fe5dd35145d3a6a7c4e90aa6e0e5fd82702f8f7e4e01d15133a676b643" => :sierra
-    sha256 "93e13fe26543c02933533eb1c2f36e500133f3cb685f8b63cd6d3cc452ce1357" => :el_capitan
-    sha256 "565bd6f10cc1be2142e13b0da0fefbbfa338736a36f4f317ba3b3bc440fb2132" => :yosemite
-    sha256 "ffc73557be38d8cb2c886f6b7fa000aeb3b0b9d08afb1f3173fbf74fd005c0b9" => :mavericks
+    cellar :any
+    sha256 "1698e0290de585761d85501881c22826662a4e1a04d5818a1a45d00a98f306ef" => :catalina
+    sha256 "9dc95d2cd84290b55285581c4214234afe13c009be2a67f3ceeb5de39ffe0729" => :mojave
+    sha256 "d9be8ef57f38e700c36e0f00563f5d31256112e1d2a870a97c3ac4d75ae138f2" => :high_sierra
   end
 
   depends_on "pkg-config" => :build

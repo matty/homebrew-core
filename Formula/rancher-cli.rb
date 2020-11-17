@@ -1,27 +1,33 @@
 class RancherCli < Formula
-  desc "The Rancher CLI is a unified tool to manage your Rancher server"
+  desc "Unified tool to manage your Rancher server"
   homepage "https://github.com/rancher/cli"
-  url "https://github.com/rancher/cli/archive/v0.4.1.tar.gz"
-  sha256 "9eff3243135d5da8c03659ec6910989f418938d3346b9737052cb0b2a400196e"
+  url "https://github.com/rancher/cli/archive/v2.4.9.tar.gz"
+  sha256 "db4d52b8dfa14961e5c42d040ef7dec8f45458f528eefdc1aa09ea303c8297d7"
+  license "Apache-2.0"
+  head "https://github.com/rancher/cli.git"
+
+  livecheck do
+    url "https://github.com/rancher/cli/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
-    sha256 "13a3be987a2e2a5e9c05f32dc676cb0267f94f90ef7d124297b6c5047e364885" => :sierra
-    sha256 "7e722a72ac35dd3ba4f501d32287269696e51a2816df7f056cb5cc29e08ab4c2" => :el_capitan
-    sha256 "eedfa1fc0a6bf3a3d12c9bcd23de40712a1f8f0a6cfbaef2713aa5ef6a67e1c0" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "56038ce98b25222f81b716240a56a3c9eb717d60b552e48c8443c7725327b5ee" => :catalina
+    sha256 "f251b7191746fcc8312d7d87bb8bdb810da8b16e1c843bb7b49807d945c3014e" => :mojave
+    sha256 "1508e3253e0d5f7f0e67bc16ee72cccf80d1072de115cc0e4a3d908d7aed0838" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/rancher/cli/").install Dir["*"]
-    system "go", "build", "-ldflags",
-           "-w -X github.com/rancher/cli/version.VERSION=#{version}",
-           "-o", "#{bin}/rancher",
-           "-v", "github.com/rancher/cli/"
+    system "go", "build", "-mod=vendor", "-ldflags",
+           "-w -X main.VERSION=#{version}",
+           "-trimpath", "-o", bin/"rancher"
   end
 
   test do
-    system bin/"rancher", "help"
+    assert_match "Failed to parse SERVERURL", shell_output("#{bin}/rancher login localhost -t foo 2>&1", 1)
+    assert_match "invalid token", shell_output("#{bin}/rancher login https://127.0.0.1 -t foo 2>&1", 1)
   end
 end

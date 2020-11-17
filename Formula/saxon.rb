@@ -1,22 +1,27 @@
 class Saxon < Formula
   desc "XSLT and XQuery processor"
   homepage "https://saxon.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/saxon/Saxon-HE/9.7/SaxonHE9-7-0-4J.zip"
-  version "9.7.0.4"
-  sha256 "b83d9abb4ed2b333a965c7c41787f7073d5af4d5a72e26ad6a551d1bbf9633de"
+  url "https://downloads.sourceforge.net/project/saxon/Saxon-HE/10/Java/SaxonHE10-3J.zip"
+  version "10.3"
+  sha256 "6cfb72a68418d3b9a0c9dc0d0b399179c23dfe312e792eec578bf745caa58a25"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/SaxonHE(\d+(?:[.-]\d+)+)J?\.(?:t|zip)}i)
+  end
 
   bottle :unneeded
 
   def install
     libexec.install Dir["*.jar", "doc", "notices"]
-    bin.write_jar_script libexec/"saxon9he.jar", "saxon"
+    bin.write_jar_script libexec/"saxon-he-#{version.major_minor}.jar", "saxon"
   end
 
   test do
-    (testpath/"test.xml").write <<-XML.undent
+    (testpath/"test.xml").write <<~EOS
       <test>It works!</test>
-    XML
-    (testpath/"test.xsl").write <<-XSL.undent
+    EOS
+    (testpath/"test.xsl").write <<~EOS
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
         <xsl:template match="/">
           <html>
@@ -26,13 +31,13 @@ class Saxon < Formula
           </html>
         </xsl:template>
       </xsl:stylesheet>
-    XSL
-    assert_equal <<-HTML.undent.chop, shell_output("#{bin}/saxon test.xml test.xsl")
-      <html>
+    EOS
+    assert_equal <<~EOS.chop, shell_output("#{bin}/saxon test.xml test.xsl")
+      <!DOCTYPE HTML><html>
          <body>
             <p>It works!</p>
          </body>
       </html>
-    HTML
+    EOS
   end
 end

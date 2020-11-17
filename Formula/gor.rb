@@ -1,31 +1,35 @@
 class Gor < Formula
   desc "Real-time HTTP traffic replay tool written in Go"
-  homepage "https://gortool.com"
-  url "https://github.com/buger/gor.git",
-    :tag => "v0.15.1",
-    :revision => "967c380dc3ca1a96c6cbabd6296b0656a6546016"
-  head "https://github.com/buger/gor.git"
+  homepage "https://goreplay.org"
+  url "https://github.com/buger/goreplay.git",
+    tag:      "v1.2.0",
+    revision: "2b73ea1f0ceee50bd96f705e23af3885f990daa3"
+  license "LGPL-3.0"
+  head "https://github.com/buger/goreplay.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "91081c290396a2d8d52fa9f76b075af47764df3774f3a1d9a8cebdb111f0b665" => :sierra
-    sha256 "664cff81e41321a473a087aa0ca465fa8df7ddc6844c468c3445fe9fb76cb6e5" => :el_capitan
-    sha256 "07bfff5c49bdcd69bc145369d306a7b538b58586b4d6347639b92531b3074644" => :yosemite
-    sha256 "aebc9f938167cc563d674b7acaf0110cb359d854fb98689135ae9fd09be0648d" => :mavericks
+    sha256 "b02c8cacea6257c1faf97f6c3a686f09fc1519e54cbd80713b19c95b9c03ced2" => :big_sur
+    sha256 "0a2c7715c47fa3fb9ba70494b1bf20a4216cabb09d909702f86d810a07c58f17" => :catalina
+    sha256 "347fab444ceaee3d2dae0f23cedcd924267bbbba95a099ad5602ba3051fd5c1f" => :mojave
+    sha256 "0e07f5bf90d57b9bd1b0ccb961e6ee240fd8346a923c45d075b66cd7c4714a63" => :high_sierra
   end
 
   depends_on "go" => :build
 
+  uses_from_macos "libpcap"
+
   def install
-    ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/buger/gor").install buildpath.children
-    cd "src/github.com/buger/gor" do
-      system "go", "build", "-o", bin/"gor", "-ldflags", "-X main.VERSION=#{version}"
-      prefix.install_metafiles
-    end
+    system "go", "build", "-ldflags", "-X main.VERSION=#{version}", *std_go_args
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/gor", 1)
+    test_port = free_port
+    fork do
+      exec bin/"gor", "file-server", ":#{test_port}"
+    end
+
+    sleep 2
+    system "nc", "-z", "localhost", test_port
   end
 end

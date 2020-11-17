@@ -1,34 +1,32 @@
 class Libproxy < Formula
   desc "Library that provides automatic proxy configuration management"
   homepage "https://libproxy.github.io/libproxy/"
-  url "https://github.com/libproxy/libproxy/archive/0.4.14.tar.gz"
-  sha256 "6220a6cab837a8996116a0568324cadfd09a07ec16b930d2a330e16d5c2e1eb6"
+  url "https://github.com/libproxy/libproxy/archive/0.4.15.tar.gz"
+  sha256 "18f58b0a0043b6881774187427ead158d310127fc46a1c668ad6d207fb28b4e0"
+  license "LGPL-2.1"
+  revision 3
   head "https://github.com/libproxy/libproxy.git"
 
   bottle do
-    sha256 "3efe53e47f393d978c1cba75c56ed8a550848182e5b80e92abb23cf3af12c79d" => :sierra
-    sha256 "d1aa41e48f2380cca100bfce1fda8c98645e14e0d63c34ea3750d3d5be1d4e92" => :el_capitan
-    sha256 "0acc5be47d4c208d48d0b21fd676953feda403b119990f7388837d0cd36fbf24" => :yosemite
+    sha256 "8ce22907b3d2e06edc6f1d244322ecb1362da13efb946079314765e34459bc36" => :big_sur
+    sha256 "f8d85ff96d4da5414b766d3515c837a7c836bbf6f1d491f2c151a8f13a4a684d" => :catalina
+    sha256 "17d3a321a78e6eb8b5d9fdd2c5a9abc02867cab29b51f30015d4a191030479e2" => :mojave
+    sha256 "9097c3a2158d8b6dc2a4c6413cead843a81c1125e03a787a7edc21a8e3866f6f" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  # Non-fatally fails to build against system Perl, so stick to Homebrew's here.
-  depends_on "perl" => :optional
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
+
+  uses_from_macos "perl"
 
   def install
+    xy = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
     args = std_cmake_args + %W[
       ..
-      -DPYTHON2_SITEPKG_DIR=#{lib}/python2.7/site-packages
-      -DWITH_PYTHON3=OFF
+      -DPYTHON3_SITEPKG_DIR=#{lib}/python#{xy}/site-packages
+      -DWITH_PERL=OFF
+      -DWITH_PYTHON2=OFF
     ]
-
-    if build.with? "perl"
-      args << "-DPX_PERL_ARCH=#{lib}/perl5/site_perl"
-      args << "-DPERL_LINK_LIBPERL=YES"
-    else
-      args << "-DWITH_PERL=OFF"
-    end
 
     mkdir "build" do
       system "cmake", *args

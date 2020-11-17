@@ -1,27 +1,21 @@
 class Newlisp < Formula
   desc "Lisp-like, general-purpose scripting language"
   homepage "http://www.newlisp.org/"
-  url "http://www.newlisp.org/downloads/newlisp-10.7.0.tgz"
-  sha256 "c4963bf32d67eef7e4957f7118632a0c40350fd0e28064bce095865b383137bb"
-  revision 1
+  url "http://www.newlisp.org/downloads/newlisp-10.7.5.tgz"
+  sha256 "dc2d0ff651c2b275bc4af3af8ba59851a6fb6e1eaddc20ae75fb60b1e90126ec"
 
   bottle do
-    sha256 "76637be4fb4ba87141134cab1dc708d53b4220aa96879b762f253544157cc2f1" => :sierra
-    sha256 "59a068766a6432ef25bde0496a0d70be73af1c4c6d1ae603f56a59732b2598e2" => :el_capitan
-    sha256 "360987ebd0f108b6241edb15f4acbb85efa4a80585424154068ea8567e3fad01" => :yosemite
+    sha256 "509f6892a0eabf53cebe424f2f2163ded090b7942e8fe8e43047f43781b0535e" => :big_sur
+    sha256 "62fd116459d24ab0db976221fb16fd83a7a7db5447298bcc7f8b0dbf9a55f91f" => :catalina
+    sha256 "179146b49c20011f3da4dbdb9b66a6ed66d5dd9f15d07aeca9b8717219a62eeb" => :mojave
+    sha256 "5a0d4085a0e7fc364b3165be7e92a9dfeb2f4882e1971663ac74c70348a5c4a4" => :high_sierra
   end
 
-  depends_on "readline" => :recommended
+  depends_on "readline"
 
   def install
     # Required to use our configuration
     ENV.append_to_cflags "-DNEWCONFIG -c"
-
-    # fix the prefix in a source file
-    inreplace "guiserver/newlisp-edit.lsp" do |s|
-      s.gsub! "#!/usr/local/bin/newlisp", "#!/usr/bin/env newlisp"
-      s.gsub! "/usr/local/bin/newlisp", "#{opt_bin}/newlisp"
-    end
 
     system "./configure-alt", "--prefix=#{prefix}", "--mandir=#{man}"
     system "make"
@@ -29,15 +23,16 @@ class Newlisp < Formula
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    If you have brew in a custom prefix, the included examples
-    will need to be be pointed to your newlisp executable.
+  def caveats
+    <<~EOS
+      If you have brew in a custom prefix, the included examples
+      will need to be be pointed to your newlisp executable.
     EOS
   end
 
   test do
     path = testpath/"test.lsp"
-    path.write <<-EOS
+    path.write <<~EOS
       (println "hello")
       (exit 0)
     EOS

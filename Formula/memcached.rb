@@ -1,63 +1,64 @@
 class Memcached < Formula
   desc "High performance, distributed memory object caching system"
   homepage "https://memcached.org/"
-  url "https://www.memcached.org/files/memcached-1.4.34.tar.gz"
-  sha256 "5064c87f91a37d822dfeab8768490c55fe686a742f07f67c7121101e48d87c79"
-  revision 1
+  url "https://www.memcached.org/files/memcached-1.6.8.tar.gz"
+  sha256 "e23b3a11f6ff52ac04ae5ea2e287052ce58fd1eadd394622eb65c3598fcd7939"
+  license "BSD-3-Clause"
+  head "https://github.com/memcached/memcached.git"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?memcached[._-]v?(\d+(?:\.\d+){2,})\./i)
+  end
 
   bottle do
     cellar :any
-    sha256 "0ffe1d65c709372aab427d0edc61e13038ff09facb22a7c27d8c69603b200243" => :sierra
-    sha256 "35445a6e7e7a958947b07c1f79bb61a847ce01b591a56b9a231b74a094375041" => :el_capitan
-    sha256 "c966d6177fa3d492df276996234297b6552a592988c56741a73d9dbc77c8c19b" => :yosemite
+    sha256 "eb5dea7075c3c756f4120f196b0c4eab3e9ae6eae9c3f842aceb9bff6fc08e03" => :big_sur
+    sha256 "af5af01dea115fbcf909f452ba9fcfed0ce04717d38eb2a5642aecf076e0553d" => :catalina
+    sha256 "78dc84a2c1b40edce260c284995d6931abef2ac5c0857579e381964766163353" => :mojave
+    sha256 "7284490f150c2fe7ef0add1915832373ba7777fea73a413fbea8ce40a96637fb" => :high_sierra
   end
-
-  option "with-sasl", "Enable SASL support -- disables ASCII protocol!"
-  option "with-sasl-pwdb", "Enable SASL with memcached's own plain text password db support -- disables ASCII protocol!"
 
   depends_on "libevent"
 
-  deprecated_option "enable-sasl" => "with-sasl"
-  deprecated_option "enable-sasl-pwdb" => "with-sasl-pwdb"
-
-  conflicts_with "mysql-cluster", :because => "both install `bin/memcached`"
-
   def install
-    args = ["--prefix=#{prefix}", "--disable-coverage"]
-    args << "--enable-sasl" if build.with? "sasl"
-    args << "--enable-sasl-pwdb" if build.with? "sasl-pwdb"
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}", "--disable-coverage", "--enable-tls"
     system "make", "install"
   end
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/memcached/bin/memcached"
+  plist_options manual: "#{HOMEBREW_PREFIX}/opt/memcached/bin/memcached"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>KeepAlive</key>
-      <true/>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/memcached</string>
-        <string>-l</string>
-        <string>localhost</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>WorkingDirectory</key>
-      <string>#{HOMEBREW_PREFIX}</string>
-    </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>KeepAlive</key>
+        <true/>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/memcached</string>
+          <string>-l</string>
+          <string>localhost</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+      </dict>
+      </plist>
     EOS
   end
 
   test do
-    system "#{bin}/memcached", "-h"
+    pidfile = testpath/"memcached.pid"
+    system bin/"memcached", "--listen=localhost:#{free_port}", "--daemon", "--pidfile=#{pidfile}"
+    sleep 1
+    assert_predicate pidfile, :exist?, "Failed to start memcached daemon"
+    pid = (testpath/"memcached.pid").read.chomp.to_i
+    Process.kill "TERM", pid
   end
 end

@@ -1,15 +1,18 @@
 class Hivemind < Formula
-  desc "The mind to rule processes of your development environment"
+  desc "Process manager for Procfile-based applications"
   homepage "https://github.com/DarthSim/hivemind"
-  url "https://github.com/DarthSim/hivemind/archive/v1.0.1.tar.gz"
-  sha256 "166b494bf28e236b5887b108bb7c13095a4b709cc10f06cfacbc18c43bf9639b"
-
+  url "https://github.com/DarthSim/hivemind/archive/v1.0.6.tar.gz"
+  sha256 "8ca7884db49268b7938d0503e7e95443cb3a56696478d5dcc2b9813705525a39"
+  license "MIT"
   head "https://github.com/DarthSim/hivemind.git"
 
   bottle do
-    sha256 "1b4fa624a89134ad5a7297dbc6c8db6ed412257499fc356fc69da27f98f0c18a" => :sierra
-    sha256 "2c5b41c72bdb00649305da748c2728c7cfc8c8c4d269cd16c6d5f0cb691fe081" => :el_capitan
-    sha256 "da26893b9eee6d5ed41a6727aa00d72ea7899e248ba6a76d213c331f293d25fb" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "792e06f04a8f0742bb4f0467c24d42a92cce9c403827ebc2055a0a891c5c07f8" => :big_sur
+    sha256 "ed80238e557ca71f115b2b3cd5031bfac16a3d02d8b37b386b629d89dd26af48" => :catalina
+    sha256 "8e6f70ca5e0c8eb1e42d47bee207ec5333b453660d808103a36d53c51a7fb59a" => :mojave
+    sha256 "7a89018774693681975cea22dcdebe35df043507476d1318f195e6d194978693" => :high_sierra
+    sha256 "4aa25b52b5c7fd3dc7ae29ab31cf19eeddde4e7685fd7e9838be0ea8cf09f3c1" => :sierra
   end
 
   depends_on "go" => :build

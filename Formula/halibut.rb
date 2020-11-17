@@ -1,27 +1,20 @@
 class Halibut < Formula
   desc "Yet another free document preparation system"
-  homepage "http://www.chiark.greenend.org.uk/~sgtatham/halibut/"
-  url "http://www.chiark.greenend.org.uk/~sgtatham/halibut/halibut-1.1.tar.gz"
-  sha256 "b964950d11ed09d3af28ac095da539613f6e50d650f01fe72b4ae752724c80a0"
-
-  head "git://git.tartarus.org/simon/halibut.git"
+  homepage "https://www.chiark.greenend.org.uk/~sgtatham/halibut/"
+  url "https://www.chiark.greenend.org.uk/~sgtatham/halibut/halibut-1.2/halibut-1.2.tar.gz"
+  sha256 "1aedfb6240f27190c36a390fcac9ce732edbdbaa31c85ee675b994e2b083163f"
+  head "https://git.tartarus.org/simon/halibut.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "52d1b558f693989ad6a5a0f78edb984a4d4a67a559a6013b29c3a6aee31a4937" => :sierra
-    sha256 "3499646cc8fb4fc71c87743b0e27ab5fc37b7b72e03b2ff3cdf86b3809ebda7e" => :el_capitan
-    sha256 "db13c78d65619b0b602a83d9641afdbe4d603492bc33bab263ae2530630578f4" => :yosemite
-    sha256 "eedcff72763e75094aadb2a05115614484a2e46561bb11a0466a98153d5dbcab" => :mavericks
-    sha256 "acf6e1989f0f9f895f36b4076179bc8f30fb37be5537f02a1c2f5b0733b8e7a9" => :mountain_lion
+    rebuild 1
+    sha256 "2f3dc434449de2f5d18bb5019dc62a966cba2981eb88d59d77d34b2049e44f2d" => :big_sur
+    sha256 "e9bd74c1ab130f4abc824906bf1f73f910032a4c7c0938798f7fbab2f1346020" => :catalina
+    sha256 "05f0236c180aeab690979615812fb72642e7cdeaccb35ebb865a53aadb35e7c6" => :mojave
+    sha256 "fe74b9670ae0d996a17de4a70a140365d057a83a643125dcbd16b33dacad9f6a" => :high_sierra
   end
 
   def install
-    # Reported to Simon Tatham (anakin@pobox.com) on 8th Mar 2016.
-    ENV.deparallelize
-
-    bin.mkpath
-    man1.mkpath
-
     system "make", "prefix=#{prefix}", "mandir=#{man}", "all"
     system "make", "-C", "doc", "prefix=#{prefix}", "mandir=#{man}"
     system "make", "prefix=#{prefix}", "mandir=#{man}", "install"

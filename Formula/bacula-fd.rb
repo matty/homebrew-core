@@ -1,19 +1,32 @@
 class BaculaFd < Formula
   desc "Network backup solution"
-  homepage "http://www.bacula.org/"
-  url "https://downloads.sourceforge.net/project/bacula/bacula/7.4.5/bacula-7.4.5.tar.gz"
-  sha256 "0e0972768c6a6d42b5bdedeae714237add8ffd9b9703c9eb7f64d86a47d27cec"
+  homepage "https://www.bacula.org/"
+  url "https://downloads.sourceforge.net/project/bacula/bacula/9.6.6/bacula-9.6.6.tar.gz"
+  sha256 "6286c975e3f4980c1b4b3bc81ab9cda9186708eb19515abe4dc0b9ed5e2c8281"
 
-  bottle do
-    sha256 "f3fe5f8a3fa2b9bcfe747342da704172d0e4232e794eaea46186d7a5f2b90e15" => :sierra
-    sha256 "6b4bbff8dc4fabf27545b63388f14fc9e65a7e88c20a8fe2d77fb975aa2ce1de" => :el_capitan
-    sha256 "6ce4e367081350f958e003eff9b3744643c0bf04eaccafd98ec4bfb02f4db714" => :yosemite
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "0dd869846330eeec14fdf2c4c4fb4c68366f436a541d15c2ffb5cce2184b7d68" => :catalina
+    sha256 "835731f3c18291b5dc2d30cd55040e0b1fa349d00e83a8fa4c7a1de85e974c50" => :mojave
+    sha256 "6283f63974c24309a3219b6952b43f30fdc91cc6776305a240e5970320c76e39" => :high_sierra
+  end
+
+  depends_on "openssl@1.1"
   depends_on "readline"
-  depends_on "openssl"
+
+  uses_from_macos "zlib"
+
+  conflicts_with "bareos-client",
+    because: "both install a `bconsole` executable"
 
   def install
+    # CoreFoundation is also used alongside IOKit
+    inreplace "configure", '"-framework IOKit"',
+                           '"-framework IOKit -framework CoreFoundation"'
+
     # * sets --disable-conio in order to force the use of readline
     #   (conio support not tested)
     # * working directory in /var/lib/bacula, reasonable place that
@@ -30,6 +43,10 @@ class BaculaFd < Formula
     system "make"
     system "make", "install"
 
+    # Avoid references to the Homebrew shims directory
+    inreplace Dir[prefix/"etc/bacula_config"],
+              HOMEBREW_SHIMS_PATH/"mac/super/", ""
+
     (var/"lib/bacula").mkpath
   end
 
@@ -37,25 +54,26 @@ class BaculaFd < Formula
     (var/"run").mkpath
   end
 
-  plist_options :startup => true, :manual => "bacula-fd"
+  plist_options startup: true, manual: "bacula-fd"
 
-  def plist; <<-EOS.undent
-    <?xml version="0.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/bacula-fd</string>
-          <string>-f</string>
-        </array>
-      </dict>
-    </plist>
-  EOS
+  def plist
+    <<~EOS
+      <?xml version="0.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/bacula-fd</string>
+            <string>-f</string>
+          </array>
+        </dict>
+      </plist>
+    EOS
   end
 
   test do

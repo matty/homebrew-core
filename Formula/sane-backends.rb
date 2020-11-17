@@ -1,49 +1,46 @@
 class SaneBackends < Formula
   desc "Backends for scanner access"
   homepage "http://www.sane-project.org/"
-  revision 1
+  url "https://gitlab.com/sane-project/backends/uploads/8bf1cae2e1803aefab9e5331550e5d5d/sane-backends-1.0.31.tar.gz"
+  sha256 "4a3b10fcb398ed854777d979498645edfe66fcac2f2fd2b9117a79ff45e2a5aa"
+  license "GPL-2.0-or-later"
+  head "https://gitlab.com/sane-project/backends.git"
 
-  head "https://anonscm.debian.org/cgit/sane/sane-backends.git"
-
-  stable do
-    url "https://fossies.org/linux/misc/sane-backends-1.0.25.tar.gz"
-    mirror "https://mirrors.kernel.org/debian/pool/main/s/sane-backends/sane-backends_1.0.25.orig.tar.gz"
-    sha256 "a4d7ba8d62b2dea702ce76be85699940992daf3f44823ddc128812da33dc6e2c"
-
-    # Fixes some missing headers missing error. Reported upstream
-    # https://lists.alioth.debian.org/pipermail/sane-devel/2015-October/033972.html
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/formula-patches/6dd7790c/sane-backends/1.0.25-missing-types.patch"
-      sha256 "f1cda7914e95df80b7c2c5f796e5db43896f90a0a9679fbc6c1460af66bdbb93"
-    end
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
   bottle do
-    sha256 "9ae23943f94606cef5b487b13316de6315b1902649c4b727a1e2fcb3b7cff6f0" => :sierra
-    sha256 "69f378b3f6de3b875e1a1faa732f1ed42a7c76e79f47f0e4b642691f3a166140" => :el_capitan
-    sha256 "3eb8383ea5af581ae71a5179432c0d654f2001922f7cbd747d2e5e15165eaf2f" => :yosemite
-    sha256 "37f8e076bdddbdc868076456c308d21fbbef40ab647297f69bf5ca4b88a07688" => :mavericks
+    sha256 "7b263e24809b81b27db7d43c4ce92e6c09c003055e3da0874b7d7282fb3a35c8" => :catalina
+    sha256 "2bd03a03d1807d5d0e56695d567b1598696dc0e8e29ada67517665043854865b" => :mojave
+    sha256 "3b54db3fec1723a2cbd5705cd1d9344791ff4942cb2a51d62e5c166f8cca9a9a" => :high_sierra
   end
 
-  option :universal
-
+  depends_on "pkg-config" => :build
   depends_on "jpeg"
+  depends_on "libpng"
   depends_on "libtiff"
-  depends_on "libusb-compat"
-  depends_on "openssl"
+  depends_on "libusb"
   depends_on "net-snmp"
+  depends_on "openssl@1.1"
+
+  if build.head?
+    depends_on "autoconf" => :build
+    depends_on "autoconf-archive" => :build
+    depends_on "automake" => :build
+    depends_on "gettext" => :build
+    depends_on "libtool" => :build
+  end
 
   def install
-    ENV.universal_binary if build.universal?
-    ENV.deparallelize # Makefile does not seem to be parallel-safe
+    system "./autogen.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--localstatedir=#{var}",
                           "--without-gphoto2",
                           "--enable-local-backends",
-                          "--enable-libusb",
-                          "--disable-latex"
-    system "make"
+                          "--with-usb=yes"
     system "make", "install"
   end
 

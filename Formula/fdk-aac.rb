@@ -1,18 +1,23 @@
 class FdkAac < Formula
   desc "Standalone library of the Fraunhofer FDK AAC code from Android"
   homepage "https://sourceforge.net/projects/opencore-amr/"
-  url "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-0.1.5.tar.gz"
-  sha256 "2164592a67b467e5b20fdcdaf5bd4c50685199067391c6fcad4fa5521c9b4dd7"
+  url "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-2.0.1.tar.gz"
+  sha256 "840133aa9412153894af03b27b03dde1188772442c316a4ce2a24ed70093f271"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "dcedf1b0e8d29c6edefcef515845828bf743cd6520498ddb648b3a1a3ecc6599" => :sierra
-    sha256 "d36cd5e64d8c77c7658cc221fd5cef8cf110add87f0aebc5875c6c5059c48cc5" => :el_capitan
-    sha256 "77b887abb2bf1249334aad8a26c6a66af562d923a23f742e042bcbcbf2dd1f38" => :yosemite
+    sha256 "aacfb5ad63c65fd2a2de00ce2bb20e2b620b26e21e9c76cafbf967327d03a49d" => :big_sur
+    sha256 "526c83a79b7f208f07e8d04ad5ce47c8104d90a76034e42422d124fba128ba3c" => :catalina
+    sha256 "9353da38e4b43913964f9cdc5fc2a28c4b6c0a19ceef4e2a58db62ba3fdb4d49" => :mojave
+    sha256 "a8812e355f28272c7d8153bcda0e48a58c0bd0a880ed0256a2bc460143d1df78" => :high_sierra
   end
 
   head do
-    url "git://opencore-amr.git.sourceforge.net/gitroot/opencore-amr/fdk-aac"
+    url "https://git.code.sf.net/p/opencore-amr/fdk-aac.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -29,6 +34,6 @@ class FdkAac < Formula
 
   test do
     system "#{bin}/aac-enc", test_fixtures("test.wav"), "test.aac"
-    assert File.exist?("test.aac")
+    assert_predicate testpath/"test.aac", :exist?
   end
 end

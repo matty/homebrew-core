@@ -3,24 +3,30 @@ class Sqlparse < Formula
 
   desc "Non-validating SQL parser"
   homepage "https://github.com/andialbrecht/sqlparse"
-  url "https://files.pythonhosted.org/packages/55/ce/3944e990b03f80f36f0050b407ad46cde192a210d473f0d705b554bddd1d/sqlparse-0.2.2.tar.gz"
-  sha256 "d446296b2c26f9466860dd85fa32480bec523ab96bda8879262c38e8e8fbba21"
+  url "https://files.pythonhosted.org/packages/a2/54/da10f9a0235681179144a5ca02147428f955745e9393f859dec8d0d05b41/sqlparse-0.4.1.tar.gz"
+  sha256 "0f91fd2e829c44362cbcfab3e9ae12e22badaa8a29ad5ff599f9ec109f0454e8"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9a42b6775a9f271af9c6d0689b21018e49456bc6d155df6565af9836fc281f7a" => :sierra
-    sha256 "b00598d85a30851dc3423224490161e4505d700f76fb9e94f7734a46a8670b2c" => :el_capitan
-    sha256 "6bf8422914fd86c7ec67be7f2cc968827869aa38b854a5d3edcef6fcb7e0e6f3" => :yosemite
+    sha256 "223cb7df4d5a5024e7006b8584edf6c98ab4d7715c1a5e78cc87d9c989d254bb" => :big_sur
+    sha256 "474e731b38baa47c6db75bf1ca957e6814148dd166941c70967836eeb3be844e" => :catalina
+    sha256 "fe9331f9ef485b2b110cf72fb36a9344d5744efb79b4652b4f8e37c1c43facc6" => :mojave
+    sha256 "743a16f18f46d93b073e9dcf01164c1347314fbbbced824d86906a345324e29a" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
 
   def install
     virtualenv_install_with_resources
   end
 
   test do
-    expected = <<-EOS.undent.chomp
+    expected = <<~EOS.chomp
       select *
         from foo
     EOS

@@ -2,23 +2,22 @@ class Premake < Formula
   desc "Write once, build anywhere Lua-based build system"
   homepage "https://premake.github.io/"
   url "https://downloads.sourceforge.net/project/premake/Premake/4.4/premake-4.4-beta5-src.zip"
-  version "4.4-beta5"
   sha256 "0fa1ed02c5229d931e87995123cdb11d44fcc8bd99bba8e8bb1bbc0aaa798161"
+  license "BSD-3-Clause"
   version_scheme 1
   head "https://github.com/premake/premake-core.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9e5d1dd706b3b3af1c8fc5cfe42141cf2a023185f9d19bb25dc58f8aced440e2" => :sierra
-    sha256 "9e5d1dd706b3b3af1c8fc5cfe42141cf2a023185f9d19bb25dc58f8aced440e2" => :el_capitan
-    sha256 "4b1ce1c63cc3ecca7e195d4c0350fb6f823f659c36ff6c1193fd99023ed25b12" => :yosemite
+    rebuild 1
+    sha256 "26aff9a75d01019428c486f14e2b4c0822d1b21530d6b093838308c176939aa5" => :big_sur
+    sha256 "cf128251e2798e7fd65919002b3adc627537c969dfaf62021ec6cd78fb7eeb12" => :catalina
+    sha256 "b5fe3f9495148d2f374b048e72cfc3114be0195a9954d57c8c298fca568d2896" => :mojave
+    sha256 "79e1f3b9c8ba609685ee343f2022aae2fb02cacecc84e44d817014fe7d3dabfc" => :high_sierra
   end
 
-  devel do
-    url "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha10/premake-5.0.0-alpha10-src.zip"
-    version "5.0.0-alpha10"
-    sha256 "15a955bf469857c9b8f81b428debf833c47ca98887477164e21568100875045f"
-  end
+  # See: https://groups.google.com/g/premake-development/c/i1uA1Wk6zYM/m/kbp9q4Awu70J
+  deprecate! date: "2015-05-28", because: :unsupported
 
   def install
     if build.head?
@@ -28,7 +27,7 @@ class Premake < Formula
 
     system "make", "-C", "build/gmake.macosx"
 
-    if build.devel? || build.head?
+    if build.head?
       bin.install "bin/release/premake5"
     else
       bin.install "bin/release/premake4"
@@ -36,10 +35,10 @@ class Premake < Formula
   end
 
   test do
-    if stable?
-      assert_match version.to_s, shell_output("#{bin}/premake4 --version", 1)
-    else
+    if build.head?
       assert_match version.to_s, shell_output("#{bin}/premake5 --version")
+    else
+      assert_match version.to_s, shell_output("#{bin}/premake4 --version", 1)
     end
   end
 end

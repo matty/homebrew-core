@@ -1,24 +1,28 @@
 class Kompose < Formula
   desc "Tool to move from `docker-compose` to Kubernetes"
-  homepage "http://kompose.io"
-  url "https://github.com/kubernetes-incubator/kompose/archive/v0.2.0.tar.gz"
-  sha256 "a6be3935ff666b75ad06f389a5c23184c3c83659ae25135ab7c2c3d37b22d92d"
+  homepage "https://kompose.io/"
+  url "https://github.com/kubernetes/kompose/archive/v1.22.0.tar.gz"
+  sha256 "b12e866958da8bec9f5fcd936f99686967475643009692ccc52b875df581edc8"
+  license "Apache-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f9ff134a40769ed9d390a2571bc16c49940c7cef071bd54d80a97424524887df" => :sierra
-    sha256 "c633227d1ded597d8285086c8b704826ca99e8af64027fd430b4916c7f8d2bdc" => :el_capitan
-    sha256 "18147d01cdd51b9f33407e9f8bc42ecc7f6f70ca6bd75d36ce855b1d85d37d4f" => :yosemite
+    sha256 "f0429863b87e1265a48140cdfd6315712e13fdfb9f18dee1f4e793055ef33d6e" => :big_sur
+    sha256 "34da28575e40dd6c1bb1fcb36e073aa7d8236f4d8c16a33876cdaa2bcd4f7af2" => :catalina
+    sha256 "2f6bf388c3aa7d51a9151f39378911b7d1a6cd16505ada04eba05b7b65e7ec78" => :mojave
+    sha256 "8f727cb8dce4e8f5090c856ef6725f000d3618d6129868a0057293e449f1c79a" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    mkdir_p buildpath/"src/github.com/kubernetes-incubator"
-    ln_s buildpath, buildpath/"src/github.com/kubernetes-incubator/kompose"
-    system "make", "bin"
-    bin.install "kompose"
+    system "go", "build", *std_go_args
+
+    output = Utils.safe_popen_read("#{bin}/kompose", "completion", "bash")
+    (bash_completion/"kompose").write output
+
+    output = Utils.safe_popen_read("#{bin}/kompose", "completion", "zsh")
+    (zsh_completion/"_kompose").write output
   end
 
   test do

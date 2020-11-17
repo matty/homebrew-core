@@ -1,16 +1,26 @@
 class Gabedit < Formula
   desc "GUI to computational chemistry packages like Gamess-US, Gaussian, etc."
   homepage "https://gabedit.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/gabedit/gabedit/Gabedit248/GabeditSrc248.tar.gz"
-  version "2.4.8"
-  sha256 "38d6437a18280387b46fd136f2201a73b33e45abde13fa802c64806b6b64e4d3"
+  url "https://downloads.sourceforge.net/project/gabedit/gabedit/Gabedit250/GabeditSrc250.tar.gz"
+  version "2.5.0"
+  sha256 "45cdde213a09294bbf2df5f324ea11fc4c4045b3f9d58e4d67979e6f071c7689"
   revision 2
+
+  # Consider switching back to checking SourceForge releases once we can alter
+  # the matched version from `250` to `2.5.0`.
+  livecheck do
+    url "https://sites.google.com/site/allouchear/Home/gabedit/download"
+    regex(/current stable version of gabedit is v?(\d+(?:\.\d+)+)/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "65355757dc6da502a9c0e1716aa0a7048f50b6b67fcd2325988ae0b629ba3bd0" => :sierra
-    sha256 "d32b12a340be7d2c2ae089ed2a6488063cd12b419e68cf6eb16d18761acb34be" => :el_capitan
-    sha256 "a48b0977eacecc156b170dbd1b8730d5f694e09aa9553b88e0dc6b68aa3e6cbb" => :yosemite
+    rebuild 1
+    sha256 "ec85ca37b2fce63ac9064364a740fef98389adb8729a6cdb1d2b969c8faff151" => :big_sur
+    sha256 "af6b9870f2b34921313f3f38329a507e450462bf74055880f8c572e153c78932" => :catalina
+    sha256 "c8bd86798356203a2e554310149b51299c2221827a030fd74763c9237996fc9f" => :mojave
+    sha256 "83b205bd7a01eb782a9346f048c3c2e217ba4dc425f620853a4da066563e6b5c" => :high_sierra
+    sha256 "72d3d9bda815ffda49197241c46139686fbc0a4b2c9aeab2dce258573e5ea17b" => :sierra
   end
 
   depends_on "pkg-config" => :build
@@ -34,6 +44,6 @@ class Gabedit < Formula
   end
 
   test do
-    assert (bin/"gabedit").exist?
+    assert_predicate bin/"gabedit", :exist?
   end
 end

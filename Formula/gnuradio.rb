@@ -1,127 +1,135 @@
 class Gnuradio < Formula
-  desc "SDK providing the signal processing runtime and processing blocks"
-  homepage "https://gnuradio.squarespace.com/"
-  url "https://gnuradio.org/releases/gnuradio/gnuradio-3.7.9.1.tar.gz"
-  sha256 "9c06f0f1ec14113203e0486fd526dd46ecef216dfe42f12d78d9b781b1ef967e"
-  revision 2
+  include Language::Python::Virtualenv
+
+  desc "SDK for signal processing blocks to implement software radios"
+  homepage "https://gnuradio.org/"
+  url "https://github.com/gnuradio/gnuradio/releases/download/v3.8.2.0/gnuradio-3.8.2.0.tar.gz"
+  sha256 "3e293541a9ac8d78660762bae8b80c0f6195b3494e1c50c01a9fd79cc60bb624"
+  license "GPL-3.0-or-later"
+  revision 3
+  head "https://github.com/gnuradio/gnuradio.git"
 
   bottle do
-    sha256 "7f2b54d889d4d568736e9ae8221b0a652015d6abb18b1466a5637f92a007884f" => :sierra
-    sha256 "7b70a05aeeb12d4457c81093880786468210d8dc1a409bc1181d6910607e3b3f" => :el_capitan
-    sha256 "464555aaac52b55b9e09ec2b0b2e0e4cabc024b655a1bf815d7ddde59aec92fe" => :yosemite
+    sha256 "97f50b66151e119d2c3661704202e74eea76adeef22c8b2a07eea0354b33cae3" => :big_sur
+    sha256 "b97dbe61c3b4730a96b4f5aeb19370a44e64a3c1e52b1bceaba83ce46c95bfe3" => :catalina
+    sha256 "33a6d4c3c5f974f46f382f0686a4cc6fbee8ae17f14fd1e71676210e1826ffff" => :mojave
+    sha256 "0cf32fbe1213a83d6f339c2179dc67af138a237efe7fb2c7c82106613dbd8971" => :high_sierra
   end
 
-  option :universal
-
+  depends_on "cmake" => :build
+  depends_on "doxygen" => :build
   depends_on "pkg-config" => :build
-
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "swig" => :build
+  depends_on "adwaita-icon-theme"
   depends_on "boost"
-  depends_on "cppunit"
   depends_on "fftw"
+  depends_on "gmp"
   depends_on "gsl"
+  depends_on "gtk+3"
+  depends_on "log4cpp"
+  depends_on "numpy"
+  depends_on "portaudio"
+  depends_on "pygobject3"
+  depends_on "pyqt"
+  depends_on "python@3.9"
+  depends_on "qt"
+  depends_on "qwt"
+  depends_on "uhd"
+  depends_on "volk"
   depends_on "zeromq"
 
-  # For documentation
-  depends_on "doxygen" => :build
-  depends_on "sphinx-doc" => :build
-
-  depends_on "uhd" => :recommended
-  depends_on "sdl" => :recommended
-  depends_on "jack" => :recommended
-  depends_on "portaudio" => :recommended
-
-  # gnuradio is known not to compile against CMake >3.3.2 currently.
-  resource "cmake" do
-    url "https://cmake.org/files/v3.3/cmake-3.3.2.tar.gz"
-    sha256 "e75a178d6ebf182b048ebfe6e0657c49f0dc109779170bad7ffcb17463f2fc22"
-  end
-
-  resource "numpy" do
-    url "https://pypi.python.org/packages/source/n/numpy/numpy-1.10.1.tar.gz"
-    sha256 "8b9f453f29ce96a14e625100d3dcf8926301d36c5f622623bf8820e748510858"
-  end
-
-  # cheetah starts here
-  resource "Markdown" do
-    url "https://pypi.python.org/packages/source/M/Markdown/Markdown-2.4.tar.gz"
-    sha256 "b8370fce4fbcd6b68b6b36c0fb0f4ec24d6ba37ea22988740f4701536611f1ae"
-  end
-
   resource "Cheetah" do
-    url "https://pypi.python.org/packages/source/C/Cheetah/Cheetah-2.4.4.tar.gz"
-    sha256 "be308229f0c1e5e5af4f27d7ee06d90bb19e6af3059794e5fd536a6f29a9b550"
+    url "https://files.pythonhosted.org/packages/50/d5/34b30f650e889d0d48e6ea9337f7dcd6045c828b9abaac71da26b6bdc543/Cheetah3-3.2.5.tar.gz"
+    sha256 "ececc9ca7c58b9a86ce71eb95594c4619949e2a058d2a1af74c7ae8222515eb1"
   end
-  # cheetah ends here
 
-  resource "lxml" do
-    url "https://pypi.python.org/packages/source/l/lxml/lxml-2.0.tar.gz"
-    sha256 "062e6dbebcbe738eaa6e6298fe38b1ddf355dbe67a9f76c67a79fcef67468c5b"
+  resource "click" do
+    url "https://files.pythonhosted.org/packages/27/6f/be940c8b1f1d69daceeb0032fee6c34d7bd70e3e649ccac0951500b4720e/click-7.1.2.tar.gz"
+    sha256 "d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a"
+  end
+
+  resource "click-plugins" do
+    url "https://files.pythonhosted.org/packages/5f/1d/45434f64ed749540af821fd7e42b8e4d23ac04b1eda7c26613288d6cd8a8/click-plugins-1.1.1.tar.gz"
+    sha256 "46ab999744a9d831159c3411bb0c79346d94a444df9a3a3742e9ed63645f264b"
+  end
+
+  resource "Mako" do
+    url "https://files.pythonhosted.org/packages/72/89/402d2b4589e120ca76a6aed8fee906a0f5ae204b50e455edd36eda6e778d/Mako-1.1.3.tar.gz"
+    sha256 "8195c8c1400ceb53496064314c6736719c6f25e7479cd24c77be3d9361cddc27"
+  end
+
+  resource "six" do
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
+  end
+
+  resource "PyYAML" do
+    url "https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz"
+    sha256 "b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d"
   end
 
   resource "cppzmq" do
-    url "https://github.com/zeromq/cppzmq/raw/a4459abdd1d70fd980f9c166d73da71fe9762e0b/zmq.hpp"
-    sha256 "f042d4d66e2a58bd951a3eaf108303e862fad2975693bebf493931df9cd251a5"
+    url "https://raw.githubusercontent.com/zeromq/cppzmq/46fc0572c5e9f09a32a23d6f22fd79b841f77e00/zmq.hpp"
+    sha256 "964031c0944f913933f55ad1610938105a6657a69d1ac5a6dd50e16a679104d5"
+  end
+
+  # patch for boost 1.73.0, remove after next release
+  # https://github.com/gnuradio/gnuradio/pull/3566
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/0d2af1812716a874d1e49268e999ea1a8ca9fc3c/gnuradio/boost-1.73.0.patch"
+    sha256 "7e4abd08210d242d65807b7e2419f163a58b4630027a3beaff0e325d044266d7"
+  end
+
+  # Add -undefined dynamic_lookup linker flag back for macOS
+  # https://github.com/gnuradio/gnuradio/pull/3674
+  patch do
+    url "https://github.com/gnuradio/gnuradio/commit/80ba62cb11cf604495e87a5e302e68eaf441eea9.patch?full_index=1"
+    sha256 "d12640f62b266b244950d84f2deb1544f41574229106a525e693159fb3fc80eb"
   end
 
   def install
-    ENV["CHEETAH_INSTALL_WITHOUT_SETUPTOOLS"] = "1"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
+    ENV.cxx11
+    ENV.prepend_path "PATH", Formula["qt"].opt_bin.to_s
 
-    resource("cmake").stage do
-      args = %W[
-        --prefix=#{buildpath}/cmake
-        --no-system-libs
-        --parallel=#{ENV.make_jobs}
-        --datadir=/share/cmake
-        --docdir=/share/doc/cmake
-        --mandir=/share/man
-        --system-zlib
-        --system-bzip2
-      ]
+    ENV["XML_CATALOG_FILES"] = etc/"xml/catalog"
 
-      # https://github.com/Homebrew/homebrew/issues/45989
-      if MacOS.version <= :lion
-        args << "--no-system-curl"
-      else
-        args << "--system-curl"
-      end
+    venv_root = libexec/"venv"
+    xy = Language::Python.major_minor_version "python3"
+    ENV.prepend_create_path "PYTHONPATH", "#{venv_root}/lib/python#{xy}/site-packages"
+    venv = virtualenv_create(venv_root, "python3")
 
-      system "./bootstrap", *args
-      system "make"
-      system "make", "install"
+    %w[Mako six Cheetah PyYAML click click-plugins].each do |r|
+      venv.pip_install resource(r)
     end
 
-    ENV.prepend_path "PATH", buildpath/"cmake/bin"
-
-    res = %w[Markdown Cheetah lxml numpy]
-    res.each do |r|
-      resource(r).stage do
-        system "python", *Language::Python.setup_install_args(libexec/"vendor")
-      end
+    # Avoid references to the Homebrew shims directory
+    inreplace "CMakeLists.txt" do |s|
+      s.gsub! "${CMAKE_C_COMPILER}", ENV.cc
+      s.gsub! "${CMAKE_CXX_COMPILER}", ENV.cxx
     end
 
     resource("cppzmq").stage include.to_s
 
-    args = std_cmake_args
+    args = std_cmake_args + %W[
+      -DGR_PKG_CONF_DIR=#{etc}/gnuradio/conf.d
+      -DGR_PREFSDIR=#{etc}/gnuradio/conf.d
+      -DENABLE_DEFAULT=OFF
+      -DPYTHON_EXECUTABLE=#{venv_root}/bin/python
+      -DPYTHON_VERSION_MAJOR=3
+      -DQWT_LIBRARIES=#{Formula["qwt"].lib}/qwt.framework/qwt
+      -DQWT_INCLUDE_DIRS=#{Formula["qwt"].lib}/qwt.framework/Headers
+      -DCMAKE_PREFIX_PATH=#{Formula["qt"].opt_lib}
+      -DQT_BINARY_DIR=#{Formula["qt"].opt_bin}
+      -DENABLE_TESTING=OFF
+      -DENABLE_INTERNAL_VOLK=OFF
+    ]
 
-    if build.universal?
-      ENV.universal_binary
-      args << "-DCMAKE_OSX_ARCHITECTURES=#{Hardware::CPU.universal_archs.as_cmake_arch_flags}"
-    end
-
-    args << "-DENABLE_DEFAULT=OFF"
-    enabled_components = %w[gr-analog gr-fft volk gr-filter gnuradio-runtime
-                            gr-blocks testing gr-pager gr-noaa gr-channels
-                            gr-audio gr-fcd gr-vocoder gr-fec gr-digital
-                            gr-dtv gr-atsc gr-trellis gr-zeromq]
-    enabled_components << "gr-wavelet"
-    enabled_components << "gr-video-sdl" if build.with? "sdl"
-    enabled_components << "gr-uhd" if build.with? "uhd"
-    enabled_components += %w[doxygen sphinx] if build.with? "documentation"
-
-    enabled_components.each do |c|
-      args << "-DENABLE_#{c.upcase.split("-").join("_")}=ON"
+    enabled = %w[GNURADIO_RUNTIME GR_ANALOG GR_AUDIO GR_BLOCKS GRC
+                 GR_CHANNELS GR_DIGITAL GR_DTV GR_FEC GR_FFT GR_FILTER
+                 GR_MODTOOL GR_QTGUI GR_TRELLIS GR_UHD GR_UTILS GR_VOCODER
+                 GR_WAVELET GR_ZEROMQ PYTHON VOLK]
+    enabled.each do |c|
+      args << "-DENABLE_#{c}=ON"
     end
 
     mkdir "build" do
@@ -130,11 +138,79 @@ class Gnuradio < Formula
       system "make", "install"
     end
 
+    mv Dir[lib/"python#{xy}/dist-packages/*"], lib/"python#{xy}/site-packages/"
+    rm_rf lib/"python#{xy}/dist-packages"
+
+    site_packages = lib/"python#{xy}/site-packages"
+    pth_contents = "import site; site.addsitedir('#{site_packages}')\n"
+    (venv_root/"lib/python#{xy}/site-packages/homebrew-gnuradio.pth").write pth_contents
+
     rm bin.children.reject(&:executable?)
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/gnuradio-config-info -v").chomp
+    assert_match version.to_s, shell_output("#{bin}/gnuradio-config-info -v")
+
+    (testpath/"test.c++").write <<~EOS
+      #include <gnuradio/top_block.h>
+      #include <gnuradio/blocks/null_source.h>
+      #include <gnuradio/blocks/null_sink.h>
+      #include <gnuradio/blocks/head.h>
+      #include <gnuradio/gr_complex.h>
+
+      class top_block : public gr::top_block {
+      public:
+        top_block();
+      private:
+        gr::blocks::null_source::sptr null_source;
+        gr::blocks::null_sink::sptr null_sink;
+        gr::blocks::head::sptr head;
+      };
+
+      top_block::top_block() : gr::top_block("Top block") {
+        long s = sizeof(gr_complex);
+        null_source = gr::blocks::null_source::make(s);
+        null_sink = gr::blocks::null_sink::make(s);
+        head = gr::blocks::head::make(s, 1024);
+        connect(null_source, 0, head, 0);
+        connect(head, 0, null_sink, 0);
+      }
+
+      int main(int argc, char **argv) {
+        top_block top;
+        top.run();
+      }
+    EOS
+    system ENV.cxx, "-std=c++11", "-L#{lib}", "-L#{Formula["boost"].opt_lib}",
+           "-lgnuradio-blocks", "-lgnuradio-runtime", "-lgnuradio-pmt",
+           "-lboost_system", "-L#{Formula["log4cpp"].opt_lib}", "-llog4cpp",
+            testpath/"test.c++", "-o", testpath/"test"
+    system "./test"
+
+    (testpath/"test.py").write <<~EOS
+      from gnuradio import blocks
+      from gnuradio import gr
+
+      class top_block(gr.top_block):
+          def __init__(self):
+              gr.top_block.__init__(self, "Top Block")
+              self.samp_rate = 32000
+              s = gr.sizeof_gr_complex
+              self.blocks_null_source_0 = blocks.null_source(s)
+              self.blocks_null_sink_0 = blocks.null_sink(s)
+              self.blocks_head_0 = blocks.head(s, 1024)
+              self.connect((self.blocks_head_0, 0),
+                           (self.blocks_null_sink_0, 0))
+              self.connect((self.blocks_null_source_0, 0),
+                           (self.blocks_head_0, 0))
+
+      def main(top_block_cls=top_block, options=None):
+          tb = top_block_cls()
+          tb.start()
+          tb.wait()
+
+      main()
+    EOS
+    system Formula["python@3.9"].opt_bin/"python3", testpath/"test.py"
   end
 end

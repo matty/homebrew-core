@@ -1,48 +1,39 @@
 class Dfmt < Formula
   desc "Formatter for D source code"
-  homepage "https://github.com/Hackerpilot/dfmt"
-  url "https://github.com/Hackerpilot/dfmt.git",
-      :tag => "v0.4.5",
-      :revision => "4fe021df9771d83c325c879012842402a28ca5c7"
-
-  head "https://github.com/Hackerpilot/dfmt.git", :shallow => false
+  homepage "https://github.com/dlang-community/dfmt"
+  url "https://github.com/dlang-community/dfmt.git",
+      tag:      "v0.13.2",
+      revision: "7659b1ae1aaaeda6b787ec60a2ed1e902326d5a0"
+  license "BSL-1.0"
+  head "https://github.com/dlang-community/dfmt.git", branch: "v0.x.x", shallow: false
 
   bottle do
-    sha256 "94174f2b10198e8a58f548d0f55d67bf9660c07eee15ef7c89a5a874ad107649" => :sierra
-    sha256 "ebbad70fca15ca4dfe2ed7f2b790b6994e34ff460d74dc44da78c8fe2a7235d4" => :el_capitan
-    sha256 "b8de4e3f4f490c157deecfaa36db786de0ad3b040d7172a88e176d6bfb377c06" => :yosemite
-    sha256 "cf0880574305df3859312cb927aa6a72d1041694677eb5305e64152416c34a8a" => :mavericks
-  end
-
-  devel do
-    url "https://github.com/Hackerpilot/dfmt.git",
-        :tag => "v0.5.0-beta.5",
-        :revision => "9fb13d0cafb3a9f0252e7e45277c37c28889731c"
-    version "0.5.0-beta5"
+    cellar :any_skip_relocation
+    sha256 "e4f4475c66dccc8466a59a829e64ca18d5f28f25c882cdb4851b7f60dbac8bbe" => :big_sur
+    sha256 "316ce1c0504cf87bd8de9bb045fd855e887c75132993bcbde37d1bf54c9f00d5" => :catalina
+    sha256 "0644eb26171306e6e76606c373cda1f641c8afcc91f6c8852521e89a49b69864" => :mojave
+    sha256 "9edcdbe4f7bf57c0c79ee7bac6f29c4ca1882bf41ec86564e1f3abb35e48c44d" => :high_sierra
   end
 
   depends_on "dmd" => :build
 
   def install
-    if build.stable?
-      rmtree "libdparse/experimental_allocator"
-    end
     system "make"
     bin.install "bin/dfmt"
   end
 
   test do
-    (testpath/"test.d").write <<-EOS.undent
-    import std.stdio; void main() { writeln("Hello, world without explicit compilations!"); }
+    (testpath/"test.d").write <<~EOS
+      import std.stdio; void main() { writeln("Hello, world without explicit compilations!"); }
     EOS
 
-    expected = <<-EOS.undent
-    import std.stdio;
+    expected = <<~EOS
+      import std.stdio;
 
-    void main()
-    {
-        writeln("Hello, world without explicit compilations!");
-    }
+      void main()
+      {
+          writeln("Hello, world without explicit compilations!");
+      }
     EOS
 
     system "#{bin}/dfmt", "-i", "test.d"

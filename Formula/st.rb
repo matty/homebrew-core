@@ -1,16 +1,18 @@
 class St < Formula
   desc "Statistics from the command-line"
   homepage "https://github.com/nferraz/st"
-  url "https://github.com/nferraz/st/archive/v1.1.2.tar.gz"
-  sha256 "46a3d10995a910870d07550ed86c2979a46523059bed4067e9a49a403be331c8"
+  url "https://github.com/nferraz/st/archive/v1.1.4.tar.gz"
+  sha256 "c02a16f67e4c357690a5438319843149fd700c223128f9ffebecab2849c58bb8"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
     rebuild 1
-    sha256 "d76d1f4e18e104d8a596cb98d0e6368993f4d055cfffa28465310039646efd2e" => :sierra
-    sha256 "39e686d653b963ca9bc3a306af5cd11f2d456075de10dfcec6161bb647226ef2" => :el_capitan
-    sha256 "66fae854539976ced286c31719cf038599ae0e2767d6c268dd9bc554c879beea" => :yosemite
-    sha256 "80f77d2a895dfce0e451ebbe6b8e5b9ac930e460e0745b12789d7cfce57eaf8f" => :mavericks
+    sha256 "b72351e73910d27847fb942bdc1413eeefefdf2b4abdb0a1c046743fcbfb16c8" => :catalina
+    sha256 "8c8e5c11bd061f1a90ba17ebc19a285b4cf1494c5790ea6d7c046035ddc65956" => :mojave
+    sha256 "3de383c349b1db5c6bd1d6a85f0c3637615430c55a4b2cc0f7e19208735ef221" => :high_sierra
+    sha256 "cc4150103a1c9c5268355d937664401a04c2fa1ad478aa541ef7535004a75210" => :sierra
+    sha256 "2df47c1388ef527487527c1173508ebdaf217b0f03c70a6e4567d037a912e214" => :el_capitan
   end
 
   def install
@@ -18,10 +20,11 @@ class St < Formula
 
     system "perl", "Makefile.PL", "PREFIX=#{libexec}"
     system "make", "install"
-    inreplace libexec/"bin/st", "perl -T", "perl"
 
     bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files libexec/"bin", :PERL5LIB => ENV["PERL5LIB"]
+    bin.env_script_all_files libexec/"bin", PERL5LIB: ENV["PERL5LIB"]
+
+    man1.install_symlink Dir[libexec/"share/man/man1/*.1"]
   end
 
   test do

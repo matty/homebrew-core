@@ -1,27 +1,37 @@
 class Unoconv < Formula
   desc "Convert between any document format supported by OpenOffice"
-  homepage "http://dag.wiee.rs/home-made/unoconv/"
-  url "http://dag.wieers.com/home-made/unoconv/unoconv-0.7.tar.gz"
-  sha256 "56abbec55632b19dcaff7d506ad6e2fd86f53afff412e622cc1e162afb1263fa"
-  head "https://github.com/dagwieers/unoconv.git"
+  homepage "https://github.com/unoconv/unoconv"
+  url "https://files.pythonhosted.org/packages/ab/40/b4cab1140087f3f07b2f6d7cb9ca1c14b9bdbb525d2d83a3b29c924fe9ae/unoconv-0.9.0.tar.gz"
+  sha256 "308ebfd98e67d898834876348b27caf41470cd853fbe2681cc7dacd8fd5e6031"
+  license "GPL-2.0"
+  revision 2
+  head "https://github.com/unoconv/unoconv.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "67de3e479604cf777e763c116a47793fda5791feaa322af1f2226dc7f0491ddf" => :sierra
-    sha256 "432c15c1bab856edb94784c5849a120f6397d0198ec7e3acedff679f65f6841c" => :el_capitan
-    sha256 "82e4120b114a941e5a099ca5ca3df12270f66795d8292a95d4164bcd3199edac" => :yosemite
-    sha256 "db9fc7afd8681160e90f2e3de016e92bffe9d4d541cd70b50abe85b3c987f7d1" => :mavericks
-    sha256 "ae47973f02b31408afac680814bfb26002714faded753a9c753c3ab28977572b" => :mountain_lion
+    sha256 "7c72ec6ea5faf7c47463f52f37d2c2d72e4aed11cb908edb32dc34e218d13057" => :big_sur
+    sha256 "f2512d061951b02d953ad4c968d5fc4edf6f1ce0b11fecaf9b806c5655c70f7d" => :catalina
+    sha256 "92911d5bef4561db470583e2a2d42a918ad13c4016f79902448c07f6b8a17a00" => :mojave
+    sha256 "cbfd5a7ba3828eedcbfe26dd7f64ed4c58988f42d7972c2139e4e747010a68e5" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
 
   def install
     system "make", "install", "prefix=#{prefix}"
   end
 
-  def caveats; <<-EOS.undent
-    In order to use unoconv, a copy of LibreOffice between versions 3.6.0.1 - 4.3.x must be installed.
+  def caveats
+    <<~EOS
+      In order to use unoconv, a copy of LibreOffice between versions 3.6.0.1 - 4.3.x must be installed.
     EOS
+  end
+
+  test do
+    assert_match /office installation/, pipe_output("#{bin}/unoconv 2>&1")
   end
 end

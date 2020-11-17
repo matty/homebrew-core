@@ -2,35 +2,33 @@ class ZshSyntaxHighlighting < Formula
   desc "Fish shell like syntax highlighting for zsh"
   homepage "https://github.com/zsh-users/zsh-syntax-highlighting"
   url "https://github.com/zsh-users/zsh-syntax-highlighting.git",
-    :tag => "0.5.0",
-    :revision => "15d4587514a3beaa13972093e335bf685b6726a9"
+      tag:      "0.7.1",
+      revision: "932e29a0c75411cb618f02995b66c0a4a25699bc"
+  license "BSD-3-Clause"
   head "https://github.com/zsh-users/zsh-syntax-highlighting.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "d83cf047c3da6c7901f625e9993557523740c84b8988cda986e255330bd03c93" => :sierra
-    sha256 "d83cf047c3da6c7901f625e9993557523740c84b8988cda986e255330bd03c93" => :el_capitan
-    sha256 "d83cf047c3da6c7901f625e9993557523740c84b8988cda986e255330bd03c93" => :yosemite
+    rebuild 1
+    sha256 "8b240a93c28b0c190c427afee55b80a0195dc0ed0cdb2ec956871330e0b2f3a5" => :catalina
+    sha256 "ab57b09a3770c0497b1704ca86bbd285d9bcab439316c0bd7f72ab72e8597d92" => :mojave
+    sha256 "f8e941c6208a3b895a174be341a9ef2c114a3d5efeb0e86b421825b2aee0b943" => :high_sierra
   end
+
+  uses_from_macos "zsh" => [:build, :test]
 
   def install
     system "make", "install", "PREFIX=#{prefix}"
   end
 
   def caveats
-    <<-EOS.undent
-    To activate the syntax highlighting, add the following at the end of your .zshrc:
+    <<~EOS
+      To activate the syntax highlighting, add the following at the end of your .zshrc:
+        source #{HOMEBREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-      source #{HOMEBREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-    You will also need to force reload of your .zshrc:
-
-      source ~/.zshrc
-
-    Additionally, if you receive "highlighters directory not found" error message,
-    you may need to add the following to your .zshenv:
-
-      export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=#{HOMEBREW_PREFIX}/share/zsh-syntax-highlighting/highlighters
+      If you receive "highlighters directory not found" error message,
+      you may need to add the following to your .zshenv:
+        export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=#{HOMEBREW_PREFIX}/share/zsh-syntax-highlighting/highlighters
     EOS
   end
 

@@ -1,30 +1,34 @@
 class Zurl < Formula
   desc "HTTP and WebSocket client worker with ZeroMQ interface"
   homepage "https://github.com/fanout/zurl"
-  url "https://dl.bintray.com/fanout/source/zurl-1.7.1.tar.bz2"
-  sha256 "d94970bafb64224e233e060d1ae591b3f418e1d809afe46099c3c16f19322187"
+  url "https://dl.bintray.com/fanout/source/zurl-1.11.0.tar.bz2"
+  sha256 "18aa3b077aefdba47cc46c5bca513ca2e20f2564715be743f70e4efa4fdccd7a"
+  license "GPL-3.0-or-later"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "f9139f8b2de097d60ccdf3a093a2dc4e92d2bd441443f57350cfac559f12e280" => :sierra
-    sha256 "5cf84370bdfe643fcba554844e0ec0da6473d5b5aa3041aa0cd8c53906c9e760" => :el_capitan
-    sha256 "4407ed52eb3f6b8a6c52e355dcbbf4c5dfaf3628cff480b531d3e7b3917b0140" => :yosemite
+    sha256 "d98fc6a62901e0d4bf2dfd73ea491bb5edf65b5075b2783eb37cd4555b15514a" => :big_sur
+    sha256 "17c084231724231503046a4d1b0de95c8cedceade6b2c4dd589ab259fc34518a" => :catalina
+    sha256 "aac838332c5f0288bf435680564418739ddbcd72e8b1b0309e9df12ad914a60c" => :mojave
+    sha256 "268dc7ab197c9ba0937f4254375e9e144449896d7110c6b2d75a80e6f2b85021" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "curl" if MacOS.version < :lion
-  depends_on "qt5"
+  depends_on "python@3.9" => :test
+  depends_on "qt"
   depends_on "zeromq"
 
+  uses_from_macos "curl"
+
   resource "pyzmq" do
-    url "https://files.pythonhosted.org/packages/12/b8/06a9c0769d1f8024f8ffc516e4150a959d05658fc27eaead5cc199d31194/pyzmq-16.0.0.tar.gz"
-    sha256 "712000cc23e3845936d22b6085be40679fd38d789a3d20836be191b8a86f15a7"
+    url "https://files.pythonhosted.org/packages/86/08/e5fc492317cc9d65b32d161c6014d733e8ab20b5e78e73eca63f53b17004/pyzmq-19.0.1.tar.gz"
+    sha256 "13a5638ab24d628a6ade8f794195e1a1acd573496c3b85af2f1183603b7bf5e0"
   end
 
   def install
     system "./configure", "--prefix=#{prefix}", "--extraconf=QMAKE_MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}"
     system "make"
-    system "make", "check"
     system "make", "install"
   end
 
@@ -33,31 +37,32 @@ class Zurl < Formula
     ipcfile = testpath/"zurl-req"
     runfile = testpath/"test.py"
 
-    resource("pyzmq").stage { system "python", *Language::Python.setup_install_args(testpath/"vendor") }
+    resource("pyzmq").stage do
+      system Formula["python@3.9"].opt_bin/"python3",
+      *Language::Python.setup_install_args(testpath/"vendor")
+    end
 
-    conffile.write(<<-EOS.undent
+    conffile.write(<<~EOS,
       [General]
       in_req_spec=ipc://#{ipcfile}
       defpolicy=allow
       timeout=10
-      EOS
+    EOS
                   )
 
-    runfile.write(<<-EOS.undent
+    port = free_port
+    runfile.write(<<~EOS,
       import json
       import threading
-      from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+      from http.server import BaseHTTPRequestHandler, HTTPServer
       import zmq
       class TestHandler(BaseHTTPRequestHandler):
         def do_GET(self):
           self.send_response(200)
           self.end_headers()
-          self.wfile.write('test response\\n')
-      port = None
+          self.wfile.write(b'test response\\n')
       def server_worker(c):
-        global port
-        server = HTTPServer(('', 0), TestHandler)
-        port = server.server_address[1]
+        server = HTTPServer(('', #{port}), TestHandler)
         c.acquire()
         c.notify()
         c.release()
@@ -75,8 +80,8 @@ class Zurl < Formula
       ctx = zmq.Context()
       sock = ctx.socket(zmq.REQ)
       sock.connect('ipc://#{ipcfile}')
-      req = {'id': '1', 'method': 'GET', 'uri': 'http://localhost:%d/test' % port}
-      sock.send('J' + json.dumps(req))
+      req = {'id': '1', 'method': 'GET', 'uri': 'http://localhost:#{port}/test'}
+      sock.send_string('J' + json.dumps(req))
       poller = zmq.Poller()
       poller.register(sock, zmq.POLLIN)
       socks = dict(poller.poll(15000))
@@ -84,7 +89,7 @@ class Zurl < Formula
       resp = json.loads(sock.recv()[1:])
       assert('type' not in resp)
       assert(resp['body'] == 'test response\\n')
-      EOS
+    EOS
                  )
 
     pid = fork do
@@ -92,8 +97,9 @@ class Zurl < Formula
     end
 
     begin
-      ENV["PYTHONPATH"] = testpath/"vendor/lib/python2.7/site-packages"
-      system "python", runfile
+      xy = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+      ENV["PYTHONPATH"] = testpath/"vendor/lib/python#{xy}/site-packages"
+      system Formula["python@3.9"].opt_bin/"python3", runfile
     ensure
       Process.kill("TERM", pid)
       Process.wait(pid)

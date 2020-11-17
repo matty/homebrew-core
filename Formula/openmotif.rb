@@ -1,72 +1,44 @@
 class Openmotif < Formula
   desc "LGPL release of the Motif toolkit"
   homepage "https://motif.ics.com/motif"
-  url "https://downloads.sourceforge.net/project/motif/Motif%202.3.6%20Source%20Code/motif-2.3.6.tar.gz"
-  sha256 "fa810e6bedeca0f5a2eb8216f42129bcf6bd23919068d433e386b7bfc05d58cf"
+  url "https://downloads.sourceforge.net/project/motif/Motif%202.3.8%20Source%20Code/motif-2.3.8.tar.gz"
+  sha256 "859b723666eeac7df018209d66045c9853b50b4218cecadb794e2359619ebce7"
+  license "LGPL-2.1-or-later"
   revision 1
 
-  bottle do
-    sha256 "eb39560a1fa08efa0e20f91497cf229a6481819c342ef1f2d457f0f9947abe19" => :sierra
-    sha256 "943f1b50e628023d165ef25d56c5ba6152d0251fa65e6161197405e3e1e09c0e" => :el_capitan
-    sha256 "5facc0a7321db4a34bb9d630ad93890ea42596515828d33f351fcdce100d3ae0" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "automake" => :build
-  depends_on "autoconf" => :build
-  depends_on "libtool" => :build
+  bottle do
+    sha256 "ca698d287f8b964a34fa23cf2a8b6039fd5913d6169bbdf90bf90f6b580c8475" => :big_sur
+    sha256 "07edf35230c5dca07fd5b4aa3a198d9ec706319e9b57ae62259f63d9726262f7" => :catalina
+    sha256 "b921f9634055bd7aaab722d156feca35da0742106036f23837241d53d1380648" => :mojave
+    sha256 "0ebe3e7a88d400291a3e0a3f46d40b500c1e0487f5f689535c8c468993e786da" => :high_sierra
+  end
+
   depends_on "pkg-config" => :build
   depends_on "fontconfig"
   depends_on "freetype"
-  depends_on "jpeg" => :optional
-  depends_on "libpng" => :optional
-  depends_on :x11
+  depends_on "jpeg"
+  depends_on "libice"
+  depends_on "libpng"
+  depends_on "libsm"
+  depends_on "libx11"
+  depends_on "libxext"
+  depends_on "libxft"
+  depends_on "libxmu"
+  depends_on "libxp"
+  depends_on "libxt"
+  depends_on "xbitmaps"
 
   conflicts_with "lesstif",
-    :because => "Lesstif and Openmotif are complete replacements for each other"
-
-  # Removes a flag clang doesn't recognise/accept as valid
-  # From https://trac.macports.org/browser/trunk/dports/x11/openmotif/files/patch-configure.ac.diff
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b10858b/openmotif/patch-configure.ac.diff"
-    sha256 "0cfff42cb7f37d4bd14fe778ba3d85e418586636b185b0c90e9e3c7d0a35feef"
-  end
-
-  # "Only weak aliases are supported on darwin"
-  # Adapted from https://trac.macports.org/browser/trunk/dports/x11/openmotif/files/patch-lib-XmP.h.diff
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b10858b/openmotif/patch-lib-XmP.h.diff"
-    sha256 "320754bd0c1fa520c7576f3c7a22249a9b741c12f29606652add4a7a62c75d3f"
-  end
-
-  # Fixes "malloc.h not found" (reported upstream via email)
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b10858b/openmotif/patch-demos-xrmLib.c.diff"
-    sha256 "047f7b4cac522f3374990a3a2fcfb49259750104488b8a43cccfb3109ac5c8e0"
-  end
-
-  # Fix VendorShell reference for XQuartz 2.7.9+
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b10858b/openmotif/patch-lib-VendorS.c.diff"
-    sha256 "71b0573aea2d53cc304f206e2d68e5fa7922782cc21cc404b72739b01bfc8034"
-  end
+    because: "both Lesstif and Openmotif are complete replacements for each other"
 
   def install
-    # https://trac.macports.org/browser/trunk/dports/x11/openmotif/Portfile#L59
-    # Compile breaks if these three files are present.
-    %w[demos/lib/Exm/String.h demos/lib/Exm/StringP.h demos/lib/Exm/String.c].each do |f|
-      rm_rf f
-    end
-
-    args = %W[
-      --prefix=#{prefix}
-      --disable-dependency-tracking
-      --disable-silent-rules
-    ]
-
-    args << "--disable-jpeg" if build.without? "jpeg"
-    args << "--disable-png" if build.without? "libpng"
-
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking",
+                          "--disable-silent-rules"
     system "make"
     system "make", "install"
 

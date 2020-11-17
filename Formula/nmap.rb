@@ -1,22 +1,30 @@
 class Nmap < Formula
   desc "Port scanning utility for large networks"
   homepage "https://nmap.org/"
-  url "https://nmap.org/dist/nmap-7.40.tar.bz2"
-  sha256 "9e14665fffd054554d129d62c13ad95a7b5c7a046daa2290501909e65f4d3188"
-  head "https://guest:@svn.nmap.org/nmap/", :using => :svn
+  url "https://nmap.org/dist/nmap-7.91.tar.bz2"
+  sha256 "18cc4b5070511c51eb243cdd2b0b30ff9b2c4dc4544c6312f75ce3a67a593300"
+  license :cannot_represent
+  head "https://svn.nmap.org/nmap/"
 
-  bottle do
-    sha256 "a8a43b57a4ed84ba718e7ab64015d118d8a9f4b99309ab114edcb8587c2f1693" => :sierra
-    sha256 "bf50768abbdcab2554e06925be69321cc6f8d36ed6125bacb6cd25b1af78356f" => :el_capitan
-    sha256 "713767f307d9cc28e40cacfe1663c175ec96fa5db483121df996aad1490773a6" => :yosemite
+  livecheck do
+    url "https://nmap.org/dist/"
+    regex(/href=.*?nmap[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  option "with-pygtk", "Build Zenmap GUI"
+  bottle do
+    sha256 "cb8315d8d7913081b82c5fd23af831e4d35b2d87581bfa395d6e4ff30b8d45fd" => :big_sur
+    sha256 "5592fb8c2fe633a6339ee61901122c075a4b44c002e2887bddfb2c4b3aa2885f" => :catalina
+    sha256 "ba808d31033d996488fdf56664de1cf424fc942db794ab7030d40a1caad93aa8" => :mojave
+    sha256 "b9a5b9d54fb0af76b1ce343e94f142b3421309fbeb81078d73e41bc2a9d862ea" => :high_sierra
+  end
 
-  depends_on "openssl"
-  depends_on "pygtk" => :optional
+  depends_on "openssl@1.1"
 
-  conflicts_with "ndiff", :because => "both install `ndiff` binaries"
+  uses_from_macos "bison" => :build
+  uses_from_macos "flex" => :build
+  uses_from_macos "zlib"
+
+  conflicts_with "ndiff", because: "both install `ndiff` binaries"
 
   def install
     ENV.deparallelize
@@ -25,16 +33,17 @@ class Nmap < Formula
       --prefix=#{prefix}
       --with-libpcre=included
       --with-liblua=included
-      --with-openssl=#{Formula["openssl"].opt_prefix}
+      --with-openssl=#{Formula["openssl@1.1"].opt_prefix}
       --without-nmap-update
       --disable-universal
+      --without-zenmap
     ]
-
-    args << "--without-zenmap" if build.without? "pygtk"
 
     system "./configure", *args
     system "make" # separate steps required otherwise the build fails
     system "make", "install"
+
+    rm_f Dir[bin/"uninstall_*"] # Users should use brew uninstall.
   end
 
   test do

@@ -1,32 +1,37 @@
 class GnuApl < Formula
   desc "GNU implementation of the programming language APL"
   homepage "https://www.gnu.org/software/apl/"
-  url "https://ftpmirror.gnu.org/apl/apl-1.6.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/apl/apl-1.6.tar.gz"
-  sha256 "5e0da83048d81fd99330186f65309661f8070de2472851a8e639b3b7f7e7ff14"
-  revision 1
+  url "https://ftp.gnu.org/gnu/apl/apl-1.8.tar.gz"
+  mirror "https://ftpmirror.gnu.org/apl/apl-1.8.tar.gz"
+  sha256 "144f4c858a0d430ce8f28be90a35920dd8e0951e56976cb80b55053fa0d8bbcb"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "7c5aebad3061ad6713b08465b6db4534937eabe655f85af52d1d20066811ebdf" => :sierra
-    sha256 "25d163f1cf8adac585f914640b6281ef530876a60812864699bf0b349d3a58af" => :el_capitan
-    sha256 "6164637b1f3b76040e031c5cb53444d1e48d5a007f5ffcc0270d9ad7d75679be" => :yosemite
+    sha256 "2a7717b6b60567eade10b30f473771f563ebd6a009c91e0522eab6497516e892" => :catalina
+    sha256 "9df4d2bfcfda74e10451b132d0c274265bb1e550a9d7829402913d7798a83c46" => :mojave
+    sha256 "d1d035cef7cb23ecde90146a8eae564fbbeba3546228618dc250581d5611a4ab" => :high_sierra
+    sha256 "cbb8043b314e3141b2a9e6e3121b7c797ca68298374d9c50f6d07447e5ea7ca5" => :sierra
   end
 
   head do
-    url "http://svn.savannah.gnu.org/svn/apl/trunk"
+    url "https://svn.savannah.gnu.org/svn/apl/trunk"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  # GNU Readline is required; libedit won't work.
-  depends_on "readline"
-  depends_on :macos => :mavericks
+  depends_on "readline" # GNU Readline is required, libedit won't work
 
   def install
-    # Fix "LApack.cc:21:10: fatal error: 'malloc.h' file not found"
-    inreplace "src/LApack.cc", "malloc.h", "malloc/malloc.h"
+    # Work around "error: no member named 'signbit' in the global namespace"
+    # encountered when trying to detect boost regex in configure
+    ENV.delete("SDKROOT") if DevelopmentTools.clang_build_version >= 900
+    ENV.delete("HOMEBREW_SDKROOT") if MacOS.version == :high_sierra
 
     system "autoreconf", "-fiv" if build.head?
     system "./configure", "--disable-debug",
@@ -37,7 +42,7 @@ class GnuApl < Formula
   end
 
   test do
-    (testpath/"hello.apl").write <<-EOS.undent
+    (testpath/"hello.apl").write <<~EOS
       'Hello world'
       )OFF
     EOS

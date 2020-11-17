@@ -1,28 +1,47 @@
 class Ompl < Formula
   desc "Open Motion Planning Library consists of many motion planning algorithms"
-  homepage "http://ompl.kavrakilab.org"
-  url "https://bitbucket.org/ompl/ompl/downloads/ompl-1.1.0-Source.tar.gz"
-  sha256 "4d141ad3aa322c65ee7ecfa90017a44a8114955316e159b635fae5b5e7db74f8"
+  homepage "https://ompl.kavrakilab.org/"
+  url "https://github.com/ompl/ompl/archive/1.5.0.tar.gz"
+  sha256 "a7df8611b7823ef44c731f02897571adfc23551e85c6618d926e7720004267a5"
+  license "BSD-3-Clause"
+  head "https://github.com/ompl/ompl.git"
+
+  livecheck do
+    url "https://github.com/ompl/ompl/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
-    sha256 "4a90bb34ebda949327b8873faf73cebc22b2de9e603b0f0b8fbc023935cb46f2" => :sierra
-    sha256 "5f29d3dc453e5f1d294333d250fed884b4a38fa91f0bb1048a14eaa58774b709" => :el_capitan
-    sha256 "ee99c05b5f1084ded43e0cacf7bd3ca0a1d3046bf99c1d5faafd225db2fb3a61" => :yosemite
-    sha256 "ab89e5350fdf56e044503f363c0e36ab689e45ef4f38806cf66f214908720838" => :mavericks
+    sha256 "fbbca4d4bb3df2656143e439eabdcec5cace4a7878f0a479b2ce3e0896d0c799" => :big_sur
+    sha256 "f58fc1ff49aeac3a38aa2629385019ad854e9624b4c6e3a3f9051456494984f9" => :catalina
+    sha256 "9d66bb50880af5db4f3fc3a1d85140170643518fc72e78ccc6b7b7814261d198" => :mojave
+    sha256 "b11650509f65bcf45ea04acdd7fe4bebaff22f829c512d73c308e75476f0a94a" => :high_sierra
   end
 
   depends_on "cmake" => :build
+  depends_on "pkg-config" => :build
   depends_on "boost"
-  depends_on "eigen" => :optional
-  depends_on "ode" => :optional
+  depends_on "eigen"
+  depends_on "flann"
+  depends_on "ode"
 
   def install
-    system "cmake", ".", *std_cmake_args
+    ENV.cxx11
+    args = std_cmake_args + %w[
+      -DOMPL_REGISTRATION=OFF
+      -DOMPL_BUILD_DEMOS=OFF
+      -DOMPL_BUILD_TESTS=OFF
+      -DOMPL_BUILD_PYBINDINGS=OFF
+      -DOMPL_BUILD_PYTESTS=OFF
+      -DCMAKE_DISABLE_FIND_PACKAGE_spot=ON
+      -DCMAKE_DISABLE_FIND_PACKAGE_Triangle=ON
+    ]
+    system "cmake", ".", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <ompl/base/spaces/RealVectorBounds.h>
       #include <cassert>
       int main(int argc, char *argv[]) {
@@ -33,7 +52,7 @@ class Ompl < Formula
       }
     EOS
 
-    system ENV.cc, "test.cpp", "-L#{lib}", "-lompl", "-lstdc++", "-o", "test"
+    system ENV.cxx, "test.cpp", "-I#{include}/ompl-1.5", "-L#{lib}", "-lompl", "-o", "test"
     system "./test"
   end
 end

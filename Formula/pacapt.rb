@@ -1,15 +1,16 @@
 class Pacapt < Formula
-  desc "Package manager in the style or Arch's pacman"
+  desc "Package manager in the style of Arch's pacman"
   homepage "https://github.com/icy/pacapt"
-  url "https://github.com/icy/pacapt/archive/v2.3.13.tar.gz"
-  sha256 "078596bcbf6cb5e50abdeae2cf057432bccda5c716eb48fefdeee8da04998b7f"
+  url "https://github.com/icy/pacapt/archive/v2.4.3.tar.gz"
+  sha256 "4dcf0bad070b09267b9c7b77bf5f9ff525c57915a17e9ee63e1ee53413a635ff"
+  license "Fair"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "123006ab10ad7de32a84401dd0dcb9fd87afefabd0ab24dfa1f19298a2e7a69e" => :sierra
-    sha256 "7f6cffa5423937eadf3fa5ce19f1a579dd36394a30717514b245de18881940ab" => :el_capitan
-    sha256 "6a08957b772fcf7adc3e15e03bfd94c25eb5e204c33ec2a3812c3a3c7977b691" => :yosemite
-    sha256 "129d05a1bdbbc6f5b669bc3ae9d4750df51459b7689de480e59ea116b65705d4" => :mavericks
+    sha256 "21d766d65cbf0896dc0cd0e21454de7f2aedd1f72ef14aed9310962e8a31184b" => :big_sur
+    sha256 "88560339524e9f110cb58ddd3e8744cc44d6e24f86c0b9ca05ef01a059c55be2" => :catalina
+    sha256 "88560339524e9f110cb58ddd3e8744cc44d6e24f86c0b9ca05ef01a059c55be2" => :mojave
+    sha256 "88560339524e9f110cb58ddd3e8744cc44d6e24f86c0b9ca05ef01a059c55be2" => :high_sierra
   end
 
   def install

@@ -1,47 +1,42 @@
 class Imageworsener < Formula
   desc "Utility and library for image scaling and processing"
-  homepage "http://entropymine.com/imageworsener/"
-  url "http://entropymine.com/imageworsener/imageworsener-1.3.0.tar.gz"
-  sha256 "2d4e40463658a577056ee17f204aac2a626b291f187f5f6e42b0c4140408d125"
+  homepage "https://entropymine.com/imageworsener/"
+  url "https://entropymine.com/imageworsener/imageworsener-1.3.3.tar.gz"
+  sha256 "7c4b6e5f3da333e336f014805c441bc08aded652dd9dde2abd40be33b1aa3e25"
+  license "MIT"
 
   bottle do
     cellar :any
-    sha256 "2c4ae0df2084aa737d7be2f64f5b349b79b7828dfaf5722594c8239e0c173f35" => :sierra
-    sha256 "37bae78184cee10bef03a1bb927bd7b4310e12eec8d9cede33a01a6f3eb50ead" => :el_capitan
-    sha256 "18495cbe551d223ab723bb0dd477322a1c75a04191a0a4df264b17765025fa64" => :yosemite
-    sha256 "26f7718a20005d76eedc46023a45a70cceea07cd86123b59d2809e8b3bb291d5" => :mavericks
+    sha256 "fd72a318b2e8b398544d23b384cc4070f181537816647a16129dbbb3628dcc4e" => :catalina
+    sha256 "b5e6ce352f0e698cf10452d273ae0e61f50554565f77010de4e62a6fdddd911f" => :mojave
+    sha256 "2332dd0ecedf78344ee5fbd3d00abb0eccc7b28b7e8609c9a18e8e6ab81669de" => :high_sierra
+    sha256 "847f3211aba4095e280d589a87698234b7cd6e3ec77a6a50cf578a3fa6d0236e" => :sierra
   end
 
   head do
     url "https://github.com/jsummers/imageworsener.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  depends_on "libpng" => :recommended
-  depends_on "jpeg" => :optional
-  depends_on "webp" => :optional
+  depends_on "jpeg"
+  depends_on "libpng"
 
   def install
     if build.head?
       inreplace "./scripts/autogen.sh", "libtoolize", "glibtoolize"
       system "./scripts/autogen.sh"
     end
-    args = %W[
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-    ]
-    args << "--without-jpeg" if build.without? "jpeg"
-    args << "--without-webp" if build.without? "webp"
 
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}", "--without-webp"
     system "make", "install"
-    share.install "tests"
+    pkgshare.install "tests"
   end
 
   test do
-    cp_r Dir["#{share}/tests/*"], testpath
+    cp_r Dir["#{pkgshare}/tests/*"], testpath
     system "./runtest", bin/"imagew"
   end
 end

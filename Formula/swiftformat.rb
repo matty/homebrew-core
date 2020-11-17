@@ -1,18 +1,20 @@
 class Swiftformat < Formula
   desc "Formatting tool for reformatting Swift code"
   homepage "https://github.com/nicklockwood/SwiftFormat"
-  url "https://github.com/nicklockwood/SwiftFormat/archive/0.24.6.tar.gz"
-  sha256 "e4745f56847167c0faa8f96796eb3b1c088df0ac8437176f1fc4a4e13690deef"
-
-  head "https://github.com/nicklockwood/SwiftFormat.git", :shallow => false
+  url "https://github.com/nicklockwood/SwiftFormat/archive/0.47.4.tar.gz"
+  sha256 "db26b54fb4e4add7405b9932f36cc85707294b4b9646f372d146f9e89aa780d9"
+  license "MIT"
+  head "https://github.com/nicklockwood/SwiftFormat.git", shallow: false
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9d21f45126fef21aae1812b6c6071da986a594b3101a8795c318921ce92a52b6" => :sierra
-    sha256 "899d078bff6982c2dd09ffbdb7cab828da40a9ae69142872af7e46d46860cd19" => :el_capitan
+    sha256 "924077040606abc98a03cce55359e074c38d754e124f27b054b5d3035c43c24e" => :big_sur
+    sha256 "7785eacec3be9d037d069a1ebe8b4d6d06518ad010e3b4d9da52f342790b59cc" => :catalina
+    sha256 "b575bb3a42dc010c293a4115868cfbe54e3e8e86c4d3bd82e92f475f6ebb5de1" => :mojave
+    sha256 "fa2359e96aff73b546b0b7d171cfc213ffe9fe08cc03e7a08089f4eea864ee9b" => :high_sierra
   end
 
-  depends_on :xcode => ["8.0", :build]
+  depends_on xcode: ["10.1", :build]
 
   def install
     xcodebuild "-project",
@@ -24,7 +26,7 @@ class Swiftformat < Formula
   end
 
   test do
-    (testpath/"potato.swift").write <<-EOS.undent
+    (testpath/"potato.swift").write <<~EOS
       struct Potato {
         let baked: Bool
       }

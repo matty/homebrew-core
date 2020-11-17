@@ -1,19 +1,29 @@
 class Bashdb < Formula
   desc "Bash shell debugger"
   homepage "https://bashdb.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/bashdb/bashdb/4.4-0.92/bashdb-4.4-0.92.tar.bz2"
-  version "4.4-0.92"
-  sha256 "6a8c2655e04339b954731a0cb0d9910e2878e45b2fc08fe469b93e4f2dbaaf92"
+  url "https://downloads.sourceforge.net/project/bashdb/bashdb/5.0-1.1.2/bashdb-5.0-1.1.2.tar.bz2"
+  version "5.0-1.1.2"
+  sha256 "30176d2ad28c5b00b2e2d21c5ea1aef8fbaf40a8f9d9f723c67c60531f3b7330"
+  license "GPL-2.0"
+
+  # We check the "bashdb" directory page because the bashdb project contains
+  # various software and bashdb releases may be pushed out of the SourceForge
+  # RSS feed.
+  livecheck do
+    url "https://sourceforge.net/projects/bashdb/files/bashdb/"
+    strategy :page_match
+    regex(%r{href=(?:["']|.*?bashdb/)?v?(\d+(?:[.-]\d+)+)/?["' >]}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "36ab7e6dbffac6255d2a395581da8b9db1e0490abf2bc7c939c44429211313a4" => :sierra
-    sha256 "36ab7e6dbffac6255d2a395581da8b9db1e0490abf2bc7c939c44429211313a4" => :el_capitan
-    sha256 "36ab7e6dbffac6255d2a395581da8b9db1e0490abf2bc7c939c44429211313a4" => :yosemite
+    sha256 "e49b34af9e621c91f6a101bfe327182f956f7b25b48d9fc7804e5d8ea0277263" => :big_sur
+    sha256 "0ab6de48ce871bc7b6abc582154b425350a70b7f2ecadd3b303c7a91dafc3c41" => :catalina
+    sha256 "0ab6de48ce871bc7b6abc582154b425350a70b7f2ecadd3b303c7a91dafc3c41" => :mojave
+    sha256 "0ab6de48ce871bc7b6abc582154b425350a70b7f2ecadd3b303c7a91dafc3c41" => :high_sierra
   end
 
   depends_on "bash"
-  depends_on :macos => :mountain_lion
 
   def install
     system "./configure", "--with-bash=#{HOMEBREW_PREFIX}/bin/bash",

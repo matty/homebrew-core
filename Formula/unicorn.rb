@@ -1,42 +1,38 @@
 class Unicorn < Formula
   desc "Lightweight multi-architecture CPU emulation framework"
-  homepage "http://www.unicorn-engine.org"
-  url "https://github.com/unicorn-engine/unicorn/archive/0.9.tar.gz"
-  sha256 "1ca03b1c8f6360335567b528210713461e839d47c4eb7c676ba3aa4f72b8cf10"
+  homepage "https://www.unicorn-engine.org/"
+  url "https://github.com/unicorn-engine/unicorn/archive/1.0.2.tar.gz"
+  sha256 "6400e16f9211486fa5353b1870e6a82f8aa342e429718d1cbca08d609aaadc52"
   head "https://github.com/unicorn-engine/unicorn.git"
 
   bottle do
     cellar :any
-    sha256 "89276f96bb7adb28e42b2db6c4334dbeea41f0d46e69c9768e28212bf667c617" => :sierra
-    sha256 "760cd9e01aef293fa1046ba71e608fc66c9689759061d5aef8f6a9f45e69a5cb" => :el_capitan
-    sha256 "c908ef47188f1a21412e6dd808aab7f7d234e7374b37393d4601efbfd7ded8fb" => :yosemite
-    sha256 "8f5ff05290b73e5ceee5af78ea8f46a7167a64e71282f1c5917bbf2612d7e8ee" => :mavericks
+    sha256 "18a17bdacc8c9171a049a3b77533ad5a7abc340c0b99ff351e40b3058bf7f1b3" => :big_sur
+    sha256 "d1e59e6241ec4851d24e3f3086e118ed421ee4bda1fb3d8a5e47053256f97d5a" => :catalina
+    sha256 "72d3bba30abcb9cc00ce28b3fa109aca19adaf60e0fbd6fcf248a3b7c24bc3fd" => :mojave
+    sha256 "81be5f24d90b028828fe678e57086d0db49c5739bcd83a636c8aba01062133a1" => :high_sierra
   end
 
-  option "with-all", "Build with support for ARM64, Motorola 64k, PowerPC and "\
-    "SPARC"
-  option "with-debug", "Create a debug build"
-
-  depends_on "glib"
   depends_on "pkg-config" => :build
+  depends_on :macos # Due to Python 2 (Might work with Python 3 with next release (1.0.2)
+  # See https://github.com/Homebrew/linuxbrew-core/pull/19728
 
   def install
-    archs  = %w[x86 x86_64 arm mips]
-    archs += %w[aarch64 m64k ppc sparc] if build.with?("all")
     ENV["PREFIX"] = prefix
-    ENV["UNICORN_ARCHS"] = archs.join " "
+    ENV["UNICORN_ARCHS"] = "x86 x86_64 arm mips aarch64 m64k ppc sparc"
     ENV["UNICORN_SHARED"] = "yes"
-    if build.with?("debug")
-      ENV["UNICORN_DEBUG"] = "yes"
-    else
-      ENV["UNICORN_DEBUG"] = "no"
-    end
+    ENV["UNICORN_DEBUG"] = "no"
+    system "make"
     system "make", "install"
+
+    cd "bindings/python" do
+      system "python", *Language::Python.setup_install_args(prefix)
+    end
   end
 
   test do
-    (testpath/"test1.c").write <<-EOS
-      /* Adapted from http://www.unicorn-engine.org/docs/tutorial.html
+    (testpath/"test1.c").write <<~EOS
+      /* Adapted from https://www.unicorn-engine.org/docs/tutorial.html
        * shamelessly and without permission. This almost certainly needs
        * replacement, but for now it should be an OK placeholder
        * assertion that the libraries are intact and available.
@@ -78,8 +74,10 @@ class Unicorn < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "-o", testpath/"test1", testpath/"test1.c", "-lglib-2.0",
-      "-lpthread", "-lm", "-lunicorn"
+    system ENV.cc, "-o", testpath/"test1", testpath/"test1.c",
+      "-lpthread", "-lm", "-L#{lib}", "-lunicorn"
     system testpath/"test1"
+
+    system "python", "-c", "import unicorn; print(unicorn.__version__)"
   end
 end

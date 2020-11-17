@@ -1,33 +1,34 @@
 class Leveldb < Formula
   desc "Key-value storage library with ordered mapping"
   homepage "https://github.com/google/leveldb/"
-  url "https://github.com/google/leveldb/archive/v1.19.tar.gz"
-  sha256 "7d7a14ae825e66aabeb156c1c3fae9f9a76d640ef6b40ede74cc73da937e5202"
+  url "https://github.com/google/leveldb/archive/1.22.tar.gz"
+  sha256 "55423cac9e3306f4a9502c738a001e4a339d1a38ffbee7572d4a07d5d63949b2"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any
-    sha256 "688768ac09d7b8facf8e76f12f42482ed1a58323a7067a087705b276ea9aabf0" => :sierra
-    sha256 "a1cd94640590b34d997f4fc68fda303785c3087a592504500f5110b23cd91c85" => :el_capitan
-    sha256 "a3c1d90348b005180c3c83c9d1180dea206b37b8f50f53725f63955552bd8485" => :yosemite
-    sha256 "3de4411766fb99c683ab13e49dd6d788f7193c388b7e244b3b8868b9e23c4cdb" => :mavericks
+    sha256 "410c6f27c9bf8381020c866be9c45e84a41bcb61161061e8219710bb7a5aff0d" => :big_sur
+    sha256 "908fb99544bbc0906134bc9677fbd91c6948324c4de6cd1315fc7e5e6f6634cc" => :catalina
+    sha256 "22e4a129bedd5030525f749a5b5ec978bf6da0a9b0625fe829da482a5ab85755" => :mojave
+    sha256 "b1cf697cad28caac418d2e0ef49bc90863f389402185d3cc0f1f7079516d02c2" => :high_sierra
+    sha256 "810dbeba5e3f7d72d4772b9eff4d9022a1240c0abc6235afbd343c199741e6f7" => :sierra
   end
 
-  option "with-test", "Verify the build with make check"
-
+  depends_on "cmake" => :build
   depends_on "gperftools"
   depends_on "snappy"
 
   def install
-    system "make"
-    system "make", "check" if build.bottle? || build.with?("test")
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args, "-DBUILD_SHARED_LIBS=ON"
+      system "make", "install"
+      bin.install "leveldbutil"
 
-    include.install "include/leveldb"
-    bin.install "out-static/leveldbutil"
-    lib.install "out-static/libleveldb.a"
-    lib.install "out-shared/libleveldb.dylib.1.19" => "libleveldb.1.19.dylib"
-    lib.install_symlink lib/"libleveldb.1.19.dylib" => "libleveldb.dylib"
-    lib.install_symlink lib/"libleveldb.1.19.dylib" => "libleveldb.1.dylib"
-    MachO::Tools.change_dylib_id("#{lib}/libleveldb.1.dylib", "#{lib}/libleveldb.1.19.dylib")
+      system "make", "clean"
+      system "cmake", "..", *std_cmake_args, "-DBUILD_SHARED_LIBS=OFF"
+      system "make"
+      lib.install "libleveldb.a"
+    end
   end
 
   test do

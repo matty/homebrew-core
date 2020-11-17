@@ -1,24 +1,31 @@
 class Dvdauthor < Formula
   desc "DVD-authoring toolset"
   homepage "https://dvdauthor.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/dvdauthor/dvdauthor/0.7.1/dvdauthor-0.7.1.tar.gz"
-  sha256 "501fb11b09c6eb9c5a229dcb400bd81e408cc78d34eab6749970685023c51fe9"
-  revision 1
+  url "https://downloads.sourceforge.net/project/dvdauthor/dvdauthor-0.7.2.tar.gz"
+  sha256 "3020a92de9f78eb36f48b6f22d5a001c47107826634a785a62dfcd080f612eb7"
+  revision 2
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/dvdauthor[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "bd87b4f4e8c33a7a8275ea3b34c8e995f58b61d71a8a7b726d35639868b447c9" => :sierra
-    sha256 "f295c54bd810948d3acf3223d7132c036acd9842a4c7fc449ac111f5e6971d9f" => :el_capitan
-    sha256 "e91dd3ffd68dd00a08d6c2f72e395dbd95c83a2057ebe19bf0310d1abba4fa04" => :mavericks
+    sha256 "0972f90ce00dee3e7449342d73ea5568fa887b887f7f6d112e91171c5193c134" => :big_sur
+    sha256 "669b5fe5348ceb668f9ff55c4942c240f585eb5167e2dfbe1142442fcf7b776b" => :catalina
+    sha256 "3e4e46c56905c289d31d167e75ee3b033a197fc0dda4b6b56dec752ac9773c51" => :mojave
+    sha256 "55cee6a535eec67fc4f1ea65c2283d69c420d32933d9bcd6106168796ba1af9a" => :high_sierra
   end
 
   # Dvdauthor will optionally detect ImageMagick or GraphicsMagick, too.
   # But we don't add either as deps because they are big.
 
   depends_on "pkg-config" => :build
-  depends_on "libdvdread"
   depends_on "freetype"
+  depends_on "libdvdread"
   depends_on "libpng"
+  depends_on "libxml2" if MacOS.version <= :el_capitan
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -27,5 +34,9 @@ class Dvdauthor < Formula
     system "make"
     ENV.deparallelize # Install isn't parallel-safe
     system "make", "install"
+  end
+
+  test do
+    assert_match "VOBFILE", shell_output("#{bin}/dvdauthor --help 2>&1", 1)
   end
 end

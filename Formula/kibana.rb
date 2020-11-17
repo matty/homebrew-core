@@ -1,55 +1,37 @@
-require "language/node"
-
 class Kibana < Formula
   desc "Analytics and search dashboard for Elasticsearch"
   homepage "https://www.elastic.co/products/kibana"
   url "https://github.com/elastic/kibana.git",
-      :tag => "v5.2.1",
-      :revision => "03953ddae5c505842cc39d2df349b7e35f30ee5b"
+      tag:      "v7.8.1",
+      revision: "5db9c677ea993ff3df503df03d03f5657fcea42e"
+  license "Apache-2.0"
+  revision 1
   head "https://github.com/elastic/kibana.git"
 
   bottle do
-    sha256 "190c3cfd9f2faa102c5760b0792ab9e8add7dd410fb4c5683006a12516e83150" => :sierra
-    sha256 "8e851b92e1878cf5f6de03a133b2b689ec773d449f0300340fe82e9d5eab1e8c" => :el_capitan
-    sha256 "c4260914193f719bcab3037ed008147dd631e2d905d81ce94b714bf0abcdee69" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "401d8c825da3b8071fc19ab7611d7786e4852217dcf16dcad8a3474312dcc1a7" => :big_sur
+    sha256 "ab4ebbdabe531a35369b61b5770d0b7a0028a21ec8cdd1dfc7070041c1fa358e" => :catalina
+    sha256 "660bcf7f4f2d5aa6488e8c54bb1cee3e5a106a11fd5f3ecfc0d5af6d34cfe2b7" => :mojave
+    sha256 "7e55dec07c62cf50140ca1bb47ba07a3ae72f2d2c0d85445d09ba0ce51fe18cb" => :high_sierra
   end
 
-  resource "node" do
-    url "https://nodejs.org/dist/v6.9.0/node-v6.9.0.tar.xz" # N.B. includes vendored dependencies
-    sha256 "656342ed8a84c95a36af902f309aeeca7103b16d61c02925bd37bd47d2194915"
-  end
+  depends_on "python@3.9" => :build
+  depends_on "yarn" => :build
+  depends_on "node@10"
 
   def install
-    resource("node").stage do
-      system "./configure", "--prefix=#{libexec}/node"
-      system "make", "test"
-      system "make", "install"
-    end
+    # remove non open source files
+    rm_rf "x-pack"
 
-    # do not build packages for other platforms
-    platforms = Set.new(["darwin-x64", "linux-x64", "linux-x86", "windows-x86"])
-    if MacOS.prefer_64_bit?
-      platform = "darwin-x64"
-    else
-      raise "Installing Kibana via Homebrew is only supported on Darwin x86_64, Linux i386, Linux i686, and Linux x86_64"
-    end
-    platforms.delete(platform)
-    sub = platforms.to_a.join("|")
-    inreplace buildpath/"tasks/config/platforms.js", /('(#{sub})',?(?!;))/, "// \\1"
+    inreplace "package.json", /"node": "10\.\d+\.\d+"/, %Q("node": "#{Formula["node@10"].version}")
+    system "yarn", "kbn", "bootstrap"
+    system "node", "scripts/build", "--oss", "--release", "--skip-os-packages", "--skip-archives"
 
-    # trick the build into thinking we've already downloaded the Node.js binary
-    mkdir_p buildpath/".node_binaries/#{resource("node").version}/#{platform}"
-
-    # set npm env and fix cache edge case (https://github.com/Homebrew/brew/pull/37#issuecomment-208840366)
-    ENV.prepend_path "PATH", prefix/"libexec/node/bin"
-    Pathname.new("#{ENV["HOME"]}/.npmrc").write Language::Node.npm_cache_config
-    system "npm", "install", "--verbose"
-    system "npm", "run", "build", "--", "--release", "--skip-os-packages", "--skip-archives"
-
-    prefix.install Dir["build/kibana-#{version}-#{platform.sub("x64", "x86_64")}/{bin,config,node_modules,optimize,package.json,src,webpackShims}"]
-
-    inreplace "#{bin}/kibana", %r{/node/bin/node}, "/libexec/node/bin/node"
-    inreplace "#{bin}/kibana-plugin", %r{/node/bin/node}, "/libexec/node/bin/node"
+    prefix.install Dir
+      .glob("build/oss/kibana-#{version}-darwin-x86_64/**")
+      .reject { |f| File.fnmatch("build/oss/kibana-#{version}-darwin-x86_64/{node, data, plugins}", f) }
+    mv "licenses/APACHE-LICENSE-2.0.txt", "LICENSE.txt" # install OSS license
 
     cd prefix do
       inreplace "config/kibana.yml", "/var/run/kibana.pid", var/"run/kibana.pid"
@@ -64,35 +46,50 @@ class Kibana < Formula
     (prefix/"plugins").mkdir
   end
 
-  def caveats; <<-EOS.undent
-    Config: #{etc}/kibana/
-    If you wish to preserve your plugins upon upgrade, make a copy of
-    #{opt_prefix}/plugins before upgrading, and copy it into the
-    new keg location after upgrading.
+  def caveats
+    <<~EOS
+      Config: #{etc}/kibana/
+      If you wish to preserve your plugins upon upgrade, make a copy of
+      #{opt_prefix}/plugins before upgrading, and copy it into the
+      new keg location after upgrading.
     EOS
   end
 
-  plist_options :manual => "kibana"
+  plist_options manual: "kibana"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
-    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>Program</key>
-        <string>#{opt_bin}/kibana</string>
-        <key>RunAtLoad</key>
-        <true/>
-      </dict>
-    </plist>
-  EOS
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+      "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>Program</key>
+          <string>#{opt_bin}/kibana</string>
+          <key>RunAtLoad</key>
+          <true/>
+        </dict>
+      </plist>
+    EOS
   end
 
   test do
     ENV["BABEL_CACHE_PATH"] = testpath/".babelcache.json"
-    assert_match /#{version}/, shell_output("#{bin}/kibana -V")
+
+    (testpath/"data").mkdir
+    (testpath/"config.yml").write <<~EOS
+      path.data: #{testpath}/data
+    EOS
+
+    port = free_port
+    fork do
+      exec bin/"kibana", "-p", port.to_s, "-c", testpath/"config.yml"
+    end
+    sleep 15
+    output = shell_output("curl -s 127.0.0.1:#{port}")
+    # Kibana returns this message until it connects to Elasticsearch
+    assert_equal "Kibana server is not ready yet", output
   end
 end

@@ -1,31 +1,43 @@
 class Gom < Formula
   desc "GObject wrapper around SQLite"
   homepage "https://wiki.gnome.org/Projects/Gom"
-  url "https://download.gnome.org/sources/gom/0.3/gom-0.3.2.tar.xz"
-  sha256 "bce8f0f94af6ff7847b853580ba6baebbab8ae531cedb0c78a5c473f39c758fd"
+  url "https://download.gnome.org/sources/gom/0.4/gom-0.4.tar.xz"
+  sha256 "68d08006aaa3b58169ce7cf1839498f45686fba8115f09acecb89d77e1018a9d"
+  revision 2
 
-  bottle do
-    sha256 "10ba2ee65e74ce7a7da2e4671c090b01a65d3c2cbeab153c1e80b6caf3997abc" => :sierra
-    sha256 "c0d7ef477da47db79a99241bf4e514a74a43f2390c5c90b3a8eb11851f6a4b44" => :el_capitan
-    sha256 "060cf100046bd8bedf1ba4df90527754102fea42c7b20ff6147f813bd3c5fb8b" => :yosemite
-    sha256 "1c67b623bf29a0dabedf0cf2c686d1b22f3b28ff0a227fe96624754a14feb88f" => :mavericks
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    cellar :any
+    sha256 "b8c298e1d442d15dd630bfe6b1edfeb11b77326b730237ffc4c6b3c607c48192" => :big_sur
+    sha256 "c86f525462ffd97cb6bd469b5a26d1db56281d725916d5eb524f31a4750b1892" => :catalina
+    sha256 "afda0dc772004cee3b8148719a078f6ac2871480260f310a5d06e367dcd68412" => :mojave
+    sha256 "cccd9551ffced0a1648ff2f420eb3e5666ff102b4c81d96806cd7d25068ef7d7" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "intltool" => :build
+  depends_on "python@3.9" => :build
+  depends_on "gdk-pixbuf"
+  depends_on "gettext"
   depends_on "glib"
-  depends_on "gobject-introspection"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    pyver = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+
+    mkdir "build" do
+      system "meson", *std_meson_args, "-Dpygobject-override-dir=#{lib}/python#{pyver}/site-packages", ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gom/gom.h>
 
       int main(int argc, char *argv[]) {
@@ -46,8 +58,10 @@ class Gom < Formula
       -lglib-2.0
       -lgobject-2.0
       -lgom-1.0
-      -lintl
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

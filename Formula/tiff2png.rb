@@ -3,19 +3,23 @@ class Tiff2png < Formula
   homepage "http://www.libpng.org/pub/png/apps/tiff2png.html"
   url "https://github.com/rillian/tiff2png/archive/v0.92.tar.gz"
   sha256 "64e746560b775c3bd90f53f1b9e482f793d80ea6e7f5d90ce92645fd1cd27e4a"
+  license "ISC"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "fd14123c959120b564cd9391ff56fc944578bedb19c2502fa25adba3d6304dcf" => :sierra
-    sha256 "a8b051f92fc5f84cee447ae5840eb83ef94c2fa226ffd853c9d8409ffd737c5e" => :el_capitan
-    sha256 "3c97a9fd6dd98bb75f60ecd44059d2191d23614759b988002ed02e6d455670ce" => :yosemite
-    sha256 "b6ff58f47124dfddfdeefb7e0326e22bbaff6a4955a55f860831a8d8eb83935e" => :mavericks
-    sha256 "c087e255ae60a218f2d7e2368341bfa5176da0642bd3c2225ad6ca67055aca58" => :mountain_lion
+    sha256 "6001968757ed9c3dd7f67c8d4f53cb57d3d8ae67de0ab995167bbf761e4a26a6" => :big_sur
+    sha256 "7589c830ef81bd43dd0bd3d1ba65483965701dfff8f7c4d8760951f0cf47c378" => :catalina
+    sha256 "e8cf86b68e703c8c5c6fc0f6e9ffee0e2823a103cb685d4a33d21fb626a96439" => :mojave
+    sha256 "e20cc758aab7de1c1e9d286e469a444fe9e384bcffe472ec6a52c06b31131ac4" => :high_sierra
+    sha256 "19951f2ec63fa3c77a43fe2c2444251686ad4fcc1038fbeeb8873fcd528d8954" => :sierra
+    sha256 "43f0afaca7d61a7f55489260deb233c0a35619d3101d362f80dc7a765a877599" => :el_capitan
+    sha256 "bf11412cac81c328f8e8de50c182be049696d053ac900b56302685e858562811" => :yosemite
   end
 
-  depends_on "libtiff"
-  depends_on "libpng"
   depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libtiff"
 
   def install
     bin.mkpath

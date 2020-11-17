@@ -1,29 +1,25 @@
 class AwsSdkCpp < Formula
   desc "AWS SDK for C++"
   homepage "https://github.com/aws/aws-sdk-cpp"
-  url "https://github.com/aws/aws-sdk-cpp/archive/1.0.71.tar.gz"
-  sha256 "92d63b83d979689cd81681ecdff7608dc4b0ff35c2f8fe50ffcf41c3738702f9"
+  # aws-sdk-cpp should only be updated every 10 releases on multiples of 10
+  url "https://github.com/aws/aws-sdk-cpp/archive/1.8.80.tar.gz"
+  sha256 "9e071be214f324bbca687c0bcdfb818019b6268fea5f9f2cd8a53f412f3058da"
+  license "Apache-2.0"
   head "https://github.com/aws/aws-sdk-cpp.git"
 
   bottle do
-    cellar :any
-    sha256 "cba35283924d7b5f495ab6e546596df03af4f92bb0cae94ef4614755d9c162c8" => :sierra
-    sha256 "3c3c146e77dc95dbd0e70062feea44fdc11d890bc87cbe16db6c6f685ce87505" => :el_capitan
-    sha256 "c3c89e23d0b3234d7af91e95d0cce905f496a5a584fcb86adb422686eac5c97a" => :yosemite
+    sha256 "ca283d86045ca7166ed15bb043adf5fd070b9065d141dd37c35e0859b5974f19" => :catalina
+    sha256 "b44d1d6238ecdf78818c901d974fc1b58cc63557c59fefdc196bcccc0526b078" => :mojave
+    sha256 "102ad4e59f983ce938bd208aae92f4b7509c32a2d361517f4d34032239ce70f1" => :high_sierra
   end
-
-  option "with-static", "Build with static linking"
-  option "without-http-client", "Don't include the libcurl HTTP client"
 
   depends_on "cmake" => :build
 
-  def install
-    args = std_cmake_args
-    args << "-DSTATIC_LINKING=1" if build.with? "static"
-    args << "-DNO_HTTP_CLIENT=1" if build.without? "http-client"
+  uses_from_macos "curl"
 
+  def install
     mkdir "build" do
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args
       system "make"
       system "make", "install"
     end
@@ -32,7 +28,7 @@ class AwsSdkCpp < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <aws/core/Version.h>
       #include <iostream>
 
@@ -41,7 +37,8 @@ class AwsSdkCpp < Formula
           return 0;
       }
     EOS
-    system ENV.cxx, "test.cpp", "-o", "test", "-laws-cpp-sdk-core"
+    system ENV.cxx, "-std=c++11", "test.cpp", "-L#{lib}", "-laws-cpp-sdk-core",
+           "-o", "test"
     system "./test"
   end
 end

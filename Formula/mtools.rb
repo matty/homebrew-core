@@ -1,43 +1,36 @@
 class Mtools < Formula
   desc "Tools for manipulating MSDOS files"
   homepage "https://www.gnu.org/software/mtools/"
-  url "https://ftpmirror.gnu.org/mtools/mtools-4.0.18.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/mtools/mtools-4.0.18.tar.gz"
-  sha256 "30d408d039b4cedcd04fbf824c89b0ff85dcbb6f71f13d2d8d65abb3f58cacc3"
+  url "https://ftp.gnu.org/gnu/mtools/mtools-4.0.25.tar.gz"
+  mirror "https://ftpmirror.gnu.org/mtools/mtools-4.0.25.tar.gz"
+  sha256 "8b6d4a75122984350186250aaa6063665bfa69100253fd77b972d2744e07dc08"
+  license "GPL-3.0-or-later"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "de7062ca18e6d30d03576b3f62d0ab03b2198ae743f8edb3c38ace82934b61ed" => :sierra
-    sha256 "5d0f845ba2f37a4f3a6c30522889d5ad574e1cede8884d1d38757fb9993a8c58" => :el_capitan
-    sha256 "fab1e3ca4c7446687ab6001bfee835f15c452bc2fe6278581ba6491f05b72ff5" => :yosemite
-    sha256 "2415b06b3cc473180cf59e0bd13a4b373ea38996afea75fc24a3f6d71f8bea38" => :mavericks
+    sha256 "ca6daf3fce1f9e42783434c20f99da97735050f51d525fa3913392a6d23cda0d" => :big_sur
+    sha256 "cb2c2d3fc7800cdea12f6be7ed16caba9a4c7c19ab88e3e63a5c1918997f574d" => :catalina
+    sha256 "6fdc5e5b10131648eeeadd8a76ceb81b6f06a0a7b8918fffae500b0d0b41d0ad" => :mojave
+    sha256 "753dd7f093256f2e8e0a609e9196f1365953e68661aeb4849441aef6c1b168da" => :high_sierra
   end
 
-  depends_on :x11 => :optional
+  conflicts_with "multimarkdown", because: "both install `mmd` binaries"
 
-  conflicts_with "multimarkdown", :because => "both install `mmd` binaries"
+  # 4.0.25 doesn't include the proper osx locale headers.
+  patch :DATA
 
   def install
-    # Prevents errors such as "mainloop.c:89:15: error: expected ')'"
-    # Upstream issue https://lists.gnu.org/archive/html/info-mtools/2014-02/msg00000.html
-    if ENV.cc == "clang"
-      inreplace "sysincludes.h",
-        "#  define UNUSED(x) x __attribute__ ((unused));x",
-        "#  define UNUSED(x) x"
-    end
-
     args = %W[
       LIBS=-liconv
       --disable-debug
       --prefix=#{prefix}
       --sysconfdir=#{etc}
+      --without-x
     ]
-
-    if build.with? "x11"
-      args << "--with-x"
-    else
-      args << "--without-x"
-    end
 
     system "./configure", *args
     system "make"
@@ -49,3 +42,19 @@ class Mtools < Formula
     assert_match /#{version}/, shell_output("#{bin}/mtools --version")
   end
 end
+
+__END__
+diff --git a/sysincludes.h b/sysincludes.h
+index 056218e..ba3677b 100644
+--- a/sysincludes.h
++++ b/sysincludes.h
+@@ -279,6 +279,8 @@ extern int errno;
+ #include <pwd.h>
+ #endif
+ 
++#include <xlocale.h>
++#include <strings.h>
+ 
+ #ifdef HAVE_STRING_H
+ # include <string.h>
+

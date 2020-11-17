@@ -1,19 +1,20 @@
 class Liblockfile < Formula
   desc "Library providing functions to lock standard mailboxes"
   homepage "https://tracker.debian.org/pkg/liblockfile"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/libl/liblockfile/liblockfile_1.09.orig.tar.gz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/libl/liblockfile/liblockfile_1.09.orig.tar.gz"
-  sha256 "16979eba05396365e1d6af7100431ae9d32f9bc063930d1de66298a0695f1b7f"
+  url "https://deb.debian.org/debian/pool/main/libl/liblockfile/liblockfile_1.16.orig.tar.gz"
+  sha256 "cf6e3828ced3fcc7e5ed36b7dabdf9e0e3ba55a973dab8ed212fb86afc901c69"
 
   bottle do
-    rebuild 2
-    sha256 "ab9fc63a064b56bc38c6cfaed2f5dfe8f91b7c4b743a57167895d31ffc6c01d8" => :sierra
-    sha256 "e4d6ff7643eebb7fd6726176db9938b0e68526d53909a5cf3a2dd6aff1c1a378" => :el_capitan
-    sha256 "1db90af0082d415223b928d477b6abe2047d9bad9b2f07991ad4eee3e5c0cde6" => :yosemite
-    sha256 "279009f21a530b2350ddc0321e649fe90ff443480522b078e0f082398d740f24" => :mavericks
+    sha256 "c22eb6cb53066f5a9b16a60cf77a1b4980ad28b4f71f89a9e3c6bc5674c62b51" => :big_sur
+    sha256 "e5991a3eac0b5cd41f2850d73643607c33bb41b7014105f0ed80b75c5e7ef866" => :catalina
+    sha256 "18663ff713cb46c514546f5a73026deb4e3df5b701b082b5cd68275581b05ba8" => :mojave
+    sha256 "bc532693f97e4d14ac59974b80f5a31b121b5cc404efb2aacda1c1607f4bcf5b" => :high_sierra
   end
 
   def install
+    # brew runs without root privileges (and the group is named "wheel" anyway)
+    inreplace "Makefile.in", " -g root ", " "
+
     system "./configure", "--disable-dependency-tracking",
                           "--disable-debug",
                           "--with-mailgroup=staff",
@@ -31,8 +32,8 @@ class Liblockfile < Formula
 
   test do
     system bin/"dotlockfile", "-l", "locked"
-    assert File.exist?("locked")
+    assert_predicate testpath/"locked", :exist?
     system bin/"dotlockfile", "-u", "locked"
-    assert !File.exist?("locked")
+    refute_predicate testpath/"locked", :exist?
   end
 end

@@ -1,58 +1,67 @@
 class Gedit < Formula
-  desc "The GNOME text editor"
+  desc "GNOME text editor"
   homepage "https://wiki.gnome.org/Apps/Gedit"
-  url "https://download.gnome.org/sources/gedit/3.22/gedit-3.22.0.tar.xz"
-  sha256 "063b5a0b5dcc8f540f6e8c3ea1c22cf8a3a19edffc25315a1b6bc51d462b3f45"
+  url "https://download.gnome.org/sources/gedit/3.38/gedit-3.38.0.tar.xz"
+  sha256 "46cf06806de58f6e5e95e34fd98ad0b2c0c50b3dae6d23ca57d16d5cc41856f8"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "86f0fb0000fca3d5cdf78df96bcf9d12671fdccc7609cde5390b0196477e3496" => :sierra
-    sha256 "2034d1d4cdd38ecf3455b6b6567536a882d76d02a6548f4a9db752837b1b532a" => :el_capitan
-    sha256 "bdd65dec12abb7b3808e5802ec3a9793ab44186803618cdfb7907bd4f2d289f8" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :build
-  depends_on "intltool" => :build
+  bottle do
+    sha256 "e17ca7bf78431383ad4ffa100f17407f8cb174a2584aae0a2d00c635ccdffff5" => :big_sur
+    sha256 "20f526cd2c9cd65e6d3d5745291abab24e90da2297ba9cf3d968fb0a8bca61f1" => :catalina
+    sha256 "829baca554b2379332b40b23726cd07ea5df9c3bb0cde67b91e215aef73fd67f" => :mojave
+    sha256 "4466c99c2f70ddcacda0dd99c52bbc5d0f7094e4153144e8c20ae0300b2dabce" => :high_sierra
+  end
+
   depends_on "itstool" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+  depends_on "pkg-config" => :build
+  depends_on "vala" => :build
+  depends_on "adwaita-icon-theme"
   depends_on "atk"
   depends_on "cairo"
   depends_on "gdk-pixbuf"
   depends_on "gettext"
   depends_on "glib"
-  depends_on "pango"
-  depends_on "gtk+3"
-  depends_on "gtk-mac-integration"
   depends_on "gobject-introspection"
-  depends_on "gspell"
-  depends_on "iso-codes"
-  depends_on "libxml2"
-  depends_on "libpeas"
-  depends_on "gtksourceview3"
   depends_on "gsettings-desktop-schemas"
-  depends_on "gnome-icon-theme"
+  depends_on "gspell"
+  depends_on "gtk+3"
+  depends_on "gtksourceview4"
+  depends_on "libpeas"
+  depends_on "libsoup"
+  depends_on "libxml2"
+  depends_on "pango"
+  depends_on "tepl"
 
   def install
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}",
-                          "--disable-updater",
-                          "--disable-schemas-compile",
-                          "--disable-python"
-    system "make", "install"
+    ENV["DESTDIR"] = "/"
+
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   def post_install
     system "#{Formula["glib"].opt_bin}/glib-compile-schemas", "#{HOMEBREW_PREFIX}/share/glib-2.0/schemas"
+    system "#{Formula["gtk+3"].opt_bin}/gtk3-update-icon-cache", "-qtf", "#{HOMEBREW_PREFIX}/share/icons/hicolor"
   end
 
   test do
     # main executable test
     system bin/"gedit", "--version"
     # API test
-    (testpath/"test.c").write <<-EOS.undent
-      #include <gedit/gedit-utils.h>
+    (testpath/"test.c").write <<~EOS
+      #include <gedit/gedit-debug.h>
 
       int main(int argc, char *argv[]) {
-        gchar *text = gedit_utils_make_valid_utf8("test text");
+        gedit_debug_init();
         return 0;
       }
     EOS
@@ -66,7 +75,8 @@ class Gedit < Formula
     glib = Formula["glib"]
     gobject_introspection = Formula["gobject-introspection"]
     gtkx3 = Formula["gtk+3"]
-    gtksourceview3 = Formula["gtksourceview3"]
+    gtksourceview4 = Formula["gtksourceview4"]
+    harfbuzz = Formula["harfbuzz"]
     libepoxy = Formula["libepoxy"]
     libffi = Formula["libffi"]
     libpeas = Formula["libpeas"]
@@ -84,9 +94,10 @@ class Gedit < Formula
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
       -I#{gobject_introspection.opt_include}/gobject-introspection-1.0
-      -I#{gtksourceview3.opt_include}/gtksourceview-3.0
+      -I#{gtksourceview4.opt_include}/gtksourceview-4
       -I#{gtkx3.opt_include}/gtk-3.0
-      -I#{include}/gedit-3.14
+      -I#{harfbuzz.opt_include}/harfbuzz
+      -I#{include}/gedit-3.38
       -I#{libepoxy.opt_include}
       -I#{libffi.opt_lib}/libffi-3.0.13/include
       -I#{libpeas.opt_include}/libpeas-1.0
@@ -101,7 +112,7 @@ class Gedit < Formula
       -L#{gettext.opt_lib}
       -L#{glib.opt_lib}
       -L#{gobject_introspection.opt_lib}
-      -L#{gtksourceview3.opt_lib}
+      -L#{gtksourceview4.opt_lib}
       -L#{gtkx3.opt_lib}
       -L#{libpeas.opt_lib}
       -L#{lib}
@@ -111,14 +122,14 @@ class Gedit < Formula
       -lcairo-gobject
       -lgdk-3
       -lgdk_pixbuf-2.0
-      -lgedit
+      -lgedit-3.38
       -lgio-2.0
       -lgirepository-1.0
       -lglib-2.0
       -lgmodule-2.0
       -lgobject-2.0
       -lgtk-3
-      -lgtksourceview-3.0
+      -lgtksourceview-4.0
       -lintl
       -lpango-1.0
       -lpangocairo-1.0

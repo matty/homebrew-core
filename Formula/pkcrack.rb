@@ -7,23 +7,23 @@ class Pkcrack < Formula
   bottle do
     cellar :any_skip_relocation
     rebuild 1
+    sha256 "a2dd9784714a8b28083cf1d68d6f0c36515e90a2a6ae4ff079aaa33a563a310e" => :big_sur
+    sha256 "d3a30eacefe197d458f08b01ad58d778376fc5b4d53c35f7c0e5c525c17c32d0" => :catalina
+    sha256 "43571237e186fe6907bef85b5584772b80ed96b7336e55c47a1b18a41ef75278" => :mojave
+    sha256 "13c80200a6a1b96c74c590c595c1860447b04a6bb44d10210d82e0fa53e8f61b" => :high_sierra
     sha256 "264358646b08985192cd06c9bc032c16296eb00198dd9852521e0cfdfe1703ef" => :sierra
     sha256 "9b46e1c0097cc4024d4f5b182ac8fdbc27e3caec52874b19d570aba6f946fc10" => :el_capitan
     sha256 "47f2ffa2e27f0dc5e6df45de7335e316a8ea83288153b274ae5d8e11c7157055" => :yosemite
   end
 
-  # This patch is to build correctly in OSX. I've changed #include<malloc.h> to
-  # include<stdlib.h> because OSX doesn't have malloc.h.
-  # I have sent to the author [conrad@unix-ag.uni-kl.de] for this patch at 2015/03/31.
-  # Detail: https://gist.github.com/jtwp470/e998c720451f8ec849b0
-  patch do
-    url "https://gist.githubusercontent.com/jtwp470/e998c720451f8ec849b0/raw/012657af1dffd38db4e072a8b793661808a58d69/pkcrack_for_osx_brew.diff"
-    sha256 "e0303d9adeffb2fb2a61a82ad040a3fec4edc23cae044ac1517b826c27fce412"
-  end
-
-  conflicts_with "libextractor", :because => "both install `extract` binaries"
+  conflicts_with "csound", because: "both install `extract` binaries"
+  conflicts_with "libextractor", because: "both install `extract` binaries"
 
   def install
+    # Fix "fatal error: 'malloc.h' file not found"
+    # Reported 18 Sep 2017 to conrad AT unix-ag DOT uni-kl DOT de
+    ENV.prepend "CPPFLAGS", "-I#{MacOS.sdk_path}/usr/include/malloc"
+
     system "make", "-C", "src/"
     bin.install Dir["src/*"].select { |f| File.executable? f }
   end

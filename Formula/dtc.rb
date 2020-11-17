@@ -1,28 +1,32 @@
 class Dtc < Formula
   desc "Device tree compiler"
   homepage "https://www.devicetree.org/"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/d/device-tree-compiler/device-tree-compiler_1.4.0+dfsg.orig.tar.gz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/d/device-tree-compiler/device-tree-compiler_1.4.0+dfsg.orig.tar.gz"
-  version "1.4.0"
-  sha256 "f5f9a1aea478ee6dbcece8907fd4551058fe72fc2c2a7be972e3d0b7eec4fa43"
+  url "https://www.kernel.org/pub/software/utils/dtc/dtc-1.6.0.tar.xz"
+  sha256 "10503b0217e1b07933e29e8d347a00015b2431bea5f59afe0bed3af30340c82d"
+
+  livecheck do
+    url "https://mirrors.edge.kernel.org/pub/software/utils/dtc/"
+    regex(/href=.*?dtc[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "416d5edbc2790bb3508a02e5f0d01fddd88e0ab43d5a4f522e3a8902cfdb394e" => :sierra
-    sha256 "0213fcb000d66a99c2c97f63d07ae36d949daba0f73a23ddbe57b8e6291b9099" => :el_capitan
-    sha256 "ed550f87fdb51917cb90124e41f2580508785d47c32e16e10c0637256e171585" => :yosemite
-    sha256 "dc180d41f215564fe6b161d9be8aa88cf50519c9f4035a2c08f88cfe59efedc9" => :mavericks
+    sha256 "94b85edc6eca271107edecfa0b2f76b0d98b6bd41ea556c1c1ba150966d940bf" => :big_sur
+    sha256 "3cbdb48bb892f6cce39b9cc381f60a9ad8a785ad3582a4f324be8ec4caed7423" => :catalina
+    sha256 "d80813f17abce4b20eb1e656919e9a5ee9d4fd10613b144c61217f3f1febf55c" => :mojave
+    sha256 "00273c1cc191558075437f3e1938977cbc22cc84c58bb6b8920acc672d25b85d" => :high_sierra
   end
 
+  depends_on "pkg-config" => :build
+
   def install
-    system "make"
-    system "make", "DESTDIR=#{prefix}", "PREFIX=", "install"
-    mv lib/"libfdt.dylib.1", lib/"libfdt.1.dylib"
+    inreplace "libfdt/Makefile.libfdt", "libfdt.$(SHAREDLIB_EXT).1", "libfdt.1.$(SHAREDLIB_EXT)"
+    system "make", "NO_PYTHON=1"
+    system "make", "NO_PYTHON=1", "DESTDIR=#{prefix}", "PREFIX=", "install"
   end
 
   test do
-    (testpath/"test.dts").write <<-EOS.undent
+    (testpath/"test.dts").write <<~EOS
       /dts-v1/;
       / {
       };

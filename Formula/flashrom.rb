@@ -1,47 +1,38 @@
 class Flashrom < Formula
   desc "Identify, read, write, verify, and erase flash chips"
   homepage "https://flashrom.org/"
-  url "https://download.flashrom.org/releases/flashrom-0.9.8.tar.bz2"
-  sha256 "13dc7c895e583111ecca370363a3527d237d178a134a94b20db7df177c05f934"
+  url "https://download.flashrom.org/releases/flashrom-v1.2.tar.bz2"
+  sha256 "e1f8d95881f5a4365dfe58776ce821dfcee0f138f75d0f44f8a3cd032d9ea42b"
+  license "GPL-2.0"
+  head "https://review.coreboot.org/flashrom.git"
 
-  head "svn://flashrom.org/flashrom/trunk"
+  livecheck do
+    url "https://download.flashrom.org/releases/"
+    regex(/href=.*?flashrom[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "dd18f33faccdd965ea7d1eb5f768dbe6ab634e2851899e18bdebddcaccc326af" => :sierra
-    sha256 "aeaaed81630634b45ea99449245ddb8bd1effecaee062f0734ad72464f8f81aa" => :el_capitan
-    sha256 "aedac2e61e6e5926a8a30207137d509d3f5c5661e2fdf89ae8200e78a5f095dc" => :yosemite
-    sha256 "f5c2516a19df0fe6945a9536dad7a11f3de1c4f21de1890b916211ff2cabb70b" => :mavericks
-    sha256 "bb314be2b1181ad6a4fb41ccabb92b4b72b49fa31c87a180cbe5af85eb56f322" => :mountain_lion
+    rebuild 1
+    sha256 "aa5c0856318732adf6a2bb4b980cef8a21829bd6a606beb357cae3ca71561217" => :big_sur
+    sha256 "301d0aafe8b31a53e6ee77217ce2280d1e998ceb7c8bc1a54a85c88afa940a33" => :catalina
+    sha256 "69131a69023cd0336b8c9c9f1a56cafb28509f1e8eb5ada0bd45ff48357df38c" => :mojave
+    sha256 "08d74d59cb4a56347de27465cc289b6494199951e2d251fafc328b4dc2f3e1e3" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libusb-compat"
   depends_on "libftdi0"
+  depends_on "libusb-compat"
 
   def install
-    ENV["CONFIG_GFXNVIDIA"] = "0"
-    ENV["CONFIG_NIC3COM"] = "0"
-    ENV["CONFIG_NICREALTEK"] = "0"
-    ENV["CONFIG_NICNATSEMI"] = "0"
-    ENV["CONFIG_NICINTEL"] = "0"
-    ENV["CONFIG_NICINTEL_SPI"] = "0"
-    ENV["CONFIG_NICINTEL_EEPROM"] = "0"
-    ENV["CONFIG_OGP_SPI"] = "0"
-    ENV["CONFIG_SATAMV"] = "0"
-    ENV["CONFIG_SATASII"] = "0"
-    ENV["CONFIG_DRKAISER"] = "0"
-    ENV["CONFIG_RAYER_SPI"] = "0"
-    ENV["CONFIG_INTERNAL"] = "0"
-    ENV["CONFIG_IT8212"] = "0"
-    ENV["CONFIG_ATAHPT"] = "0"
-    ENV["CONFIG_ATAVIA"] = "0"
+    ENV["CONFIG_RAYER_SPI"] = "no"
+    ENV["CONFIG_ENABLE_LIBPCI_PROGRAMMERS"] = "no"
 
     system "make", "DESTDIR=#{prefix}", "PREFIX=/", "install"
     mv sbin, bin
   end
 
   test do
-    system "#{bin}/flashrom" " --version"
+    system bin/"flashrom", "--version"
   end
 end

@@ -1,22 +1,24 @@
-require "language/haskell"
-
 class HopenpgpTools < Formula
-  include Language::Haskell::Cabal
-
   desc "Command-line tools for OpenPGP-related operations"
   homepage "https://hackage.haskell.org/package/hopenpgp-tools"
-  url "https://hackage.haskell.org/package/hopenpgp-tools/hopenpgp-tools-0.19.4.tar.gz"
-  sha256 "e656cd989833c6d318d5c44931ef5a8cd98bb0ebb4bab70a2d2f701091d0abd8"
-  head "https://anonscm.debian.org/git/users/clint/hopenpgp-tools.git"
+  url "https://hackage.haskell.org/package/hopenpgp-tools-0.23.3/hopenpgp-tools-0.23.3.tar.gz"
+  sha256 "576054cc292c8e17dda844820138f05dc20076ad2eea61a165a0ee130b78d0c0"
+  license "AGPL-3.0-or-later"
+  head "https://salsa.debian.org/clint/hOpenPGP.git"
 
-  bottle do
-    sha256 "eff4e0ca14ca088a780c058c0f205ecd487915abece7679e91f5dea2ea5ee807" => :sierra
-    sha256 "71f1dad3a01f39cb4349ecf19956b41edd837fcde61fbb4627be87cfa977d419" => :el_capitan
-    sha256 "f0248da438ef0e4a2ad9dd16246b863a5cdd9bda1d280261ccc1a6e2683f42f0" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "ghc" => :build
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "8d6b240336e06f4a12a1abc3ba911b398ab565f07c597ad8c5a95a32716b6139" => :catalina
+    sha256 "449c9d19526406e7204c302b3b14dfb31637e1ea9b3256518a02ff68422989c5" => :mojave
+    sha256 "28978d7cbd8da9251a3bedfadd43b7a79cbea80f8b98e60b81391f45029ff03e" => :high_sierra
+  end
+
   depends_on "cabal-install" => :build
+  depends_on "ghc@8.6" => :build
   depends_on "pkg-config" => :build
   depends_on "nettle"
 
@@ -26,7 +28,8 @@ class HopenpgpTools < Formula
   end
 
   def install
-    install_cabal_package :using => ["alex", "happy"]
+    system "cabal", "v2-update"
+    system "cabal", "v2-install", *std_cabal_v2_args
   end
 
   test do

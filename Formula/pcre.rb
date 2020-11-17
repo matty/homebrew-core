@@ -1,42 +1,51 @@
 class Pcre < Formula
   desc "Perl compatible regular expressions library"
-  homepage "http://www.pcre.org/"
-  url "https://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.39.tar.bz2"
-  mirror "https://www.mirrorservice.org/sites/downloads.sourceforge.net/p/pc/pcre/pcre/8.39/pcre-8.39.tar.bz2"
-  sha256 "b858099f82483031ee02092711689e7245586ada49e534a06e678b8ea9549e8b"
+  homepage "https://www.pcre.org/"
+  url "https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.bz2"
+  mirror "https://www.mirrorservice.org/sites/ftp.exim.org/pub/pcre/pcre-8.44.tar.bz2"
+  sha256 "19108658b23b3ec5058edc9f66ac545ea19f9537234be1ec62b714c84399366d"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "https://ftp.pcre.org/pub/pcre/"
+    regex(/href=.*?pcre[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "c1be1b0c15e9e8f9cd568724618952d136612baccc66901317e877277ebd7230" => :sierra
-    sha256 "a9333dda2e7b2f2a3f0de5e542d24f4cd0750edc53bfaa6bbf34f0d03db5fb3c" => :el_capitan
-    sha256 "202f05c7d2dc78c30ef7115395ec0bf7bc3f40bfb2dd1704ca1a01ff1661142c" => :yosemite
-    sha256 "d2bb8776d8dca524aa1cbbb4f18b156658d673fe5424daeb96100b01b55805dd" => :mavericks
+    sha256 "a67dd6141e117f849bbb7d3bde92ffb6485921939c1d64e39a3f7fd0dac3f523" => :big_sur
+    sha256 "f8ac266e04f984fa55091a43f0fdc39a40d57c2489d289a186c88ccedaba7eeb" => :catalina
+    sha256 "ed9b483538da7bc6559d2e63dd36659736fab9510681661d970d707a18731de4" => :mojave
+    sha256 "aeea1351e1439847d00c3cee54bd28639493e686f809568cf42fea7bb28da2a5" => :high_sierra
   end
 
   head do
     url "svn://vcs.exim.org/pcre/code/trunk"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option :universal
+  uses_from_macos "bzip2"
+  uses_from_macos "zlib"
 
   def install
-    ENV.universal_binary if build.universal?
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+      --enable-utf8
+      --enable-pcre8
+      --enable-pcre16
+      --enable-pcre32
+      --enable-unicode-properties
+      --enable-pcregrep-libz
+      --enable-pcregrep-libbz2
+    ]
+    args << "--enable-jit" if MacOS.version >= :sierra && Hardware::CPU.arch == :x86_64
 
     system "./autogen.sh" if build.head?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--enable-utf8",
-                          "--enable-pcre8",
-                          "--enable-pcre16",
-                          "--enable-pcre32",
-                          "--enable-unicode-properties",
-                          "--enable-pcregrep-libz",
-                          "--enable-pcregrep-libbz2",
-                          "--enable-jit"
+    system "./configure", *args
     system "make"
     ENV.deparallelize
     system "make", "test"

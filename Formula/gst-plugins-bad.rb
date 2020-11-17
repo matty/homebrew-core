@@ -1,65 +1,56 @@
 class GstPluginsBad < Formula
   desc "GStreamer plugins less supported, not fully tested"
   homepage "https://gstreamer.freedesktop.org/"
-  url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.10.3.tar.xz"
-  sha256 "24099351fb6984c9e7560de06e072ff2e33d0b2db38b8fcc7afefb536e5094e7"
+  url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.18.1.tar.xz"
+  sha256 "c195978c85d97406c05eb9d43ac54b9ab35eda6ffdae32b3ed597b8f1743c1b2"
+  license "LGPL-2.0-or-later"
+  revision 1
+  head "https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git"
+
+  livecheck do
+    url "https://gstreamer.freedesktop.org/src/gst-plugins-bad/"
+    regex(/href=.*?gst-plugins-bad[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
+  end
 
   bottle do
-    sha256 "743198f349c7d7cc512b7513f311403844619506cabff8872b77d591453ad3a2" => :sierra
-    sha256 "4f69b5d57ac8c8f9205803fbf14dcecb5a9c05208cc6bf3e1eb52855b2b4eb29" => :el_capitan
-    sha256 "6c44a5e78199d5193171267598fe414351c3dfc16e21579d6ffd2b0dba53fae4" => :yosemite
+    sha256 "83bc202c6f2406cabc6c22f71b0497ef1dd83a3b22c1abbab833e2fcddf8389f" => :catalina
+    sha256 "d2014041dce1450c5b3c699cf435d3d9d3b25dd51728aa8e01ce8ac2ef2848f3" => :mojave
+    sha256 "953a0a304df1cf091436f8ec878c9b2346e48a69f702e0236806c8bc11bfb367" => :high_sierra
   end
 
-  head do
-    url "https://anongit.freedesktop.org/git/gstreamer/gst-plugins-bad.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-  end
-
-  depends_on "libtool" => :build
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
+  depends_on "faac"
+  depends_on "faad2"
   depends_on "gettext"
   depends_on "gst-plugins-base"
-  depends_on "openssl"
-  depends_on "jpeg" => :recommended
-  depends_on "orc" => :recommended
-  depends_on "dirac" => :optional
-  depends_on "faac" => :optional
-  depends_on "faad2" => :optional
-  depends_on "gnutls" => :optional
-  depends_on "gtk+3" => :optional
-  depends_on "libdvdread" => :optional
-  depends_on "libexif" => :optional
-  depends_on "libmms" => :optional
-  depends_on "homebrew/science/opencv" => :optional
-  depends_on "opus" => :optional
-  depends_on "rtmpdump" => :optional
-  depends_on "schroedinger" => :optional
-  depends_on "sound-touch" => :optional
-  depends_on "srtp" => :optional
-  depends_on "libvo-aacenc" => :optional
+  depends_on "jpeg"
+  depends_on "libmms"
+  depends_on "libnice"
+  depends_on "libusrsctp"
+  depends_on "musepack"
+  depends_on "openssl@1.1"
+  depends_on "opus"
+  depends_on "orc"
+  depends_on "rtmpdump"
+  depends_on "srtp"
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --disable-yadif
-      --disable-sdl
-      --disable-debug
-      --disable-dependency-tracking
+    args = std_meson_args + %w[
+      -Dintrospection=enabled
+      -Dexamples=disabled
     ]
 
-    args << "--with-gtk=3.0" if build.with? "gtk+3"
+    # The apple media plug-in uses API that was added in Mojave
+    args << "-Dapplemedia=disabled" if MacOS.version <= :high_sierra
 
-    if build.head?
-      # autogen is invoked in "stable" build because we patch configure.ac
-      ENV["NOCONFIGURE"] = "yes"
-      system "./autogen.sh"
+    mkdir "build" do
+      system "meson", *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
     end
-
-    system "./configure", *args
-    system "make"
-    system "make", "install"
   end
 
   test do

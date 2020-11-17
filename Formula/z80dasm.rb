@@ -1,14 +1,21 @@
 class Z80dasm < Formula
   desc "Disassembler for the Zilog Z80 microprocessor and compatibles"
   homepage "https://www.tablix.org/~avian/blog/articles/z80dasm/"
-  url "https://www.tablix.org/~avian/z80dasm/z80dasm-1.1.4.tar.gz"
-  sha256 "ca52fdf3bcb65d928baf3e852e0961944f713f1d7ea33903aa8db4d1615bac0a"
+  url "https://www.tablix.org/~avian/z80dasm/z80dasm-1.1.6.tar.gz"
+  sha256 "76d3967bb028f380a0c4db704a894c2aa939951faa5c5630b3355c327c0bd360"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://www.tablix.org/~avian/z80dasm"
+    regex(/href=.*?z80dasm[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "de8792d3309324500758a7c173091573835308e0b4715b0e1ea48dd7a9c7c135" => :sierra
-    sha256 "0309ecd2137730b8e756f3f3cdb364a16df1a03aa454684922706b0c6d705567" => :el_capitan
-    sha256 "3219de661b1355cd130687c0f547bacf030dd1b2e499c5817b20bc5dbd8f1b54" => :yosemite
+    sha256 "7b14f8e49b2e1a7e3ea40bf6f0143b75d4aea3561d9beaccc9526f576893e5a3" => :big_sur
+    sha256 "5012e33c0fc342ec32a22462f9a75897fd69d44cf2918c64a593d268fa365c86" => :catalina
+    sha256 "0650fc5eadf8ee791201886bd39356af1365f9258c2222e27824fe63500b6eac" => :mojave
+    sha256 "a6d8e1d4caa612567de07580a353c82040e5c8005a08117386633e9a11f0df2e" => :high_sierra
   end
 
   def install

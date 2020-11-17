@@ -1,25 +1,33 @@
 class Physfs < Formula
   desc "Library to provide abstract access to various archives"
   homepage "https://icculus.org/physfs/"
-  url "https://icculus.org/physfs/downloads/physfs-2.0.3.tar.bz2"
-  sha256 "ca862097c0fb451f2cacd286194d071289342c107b6fe69079c079883ff66b69"
-  head "https://hg.icculus.org/icculus/physfs/", :using => :hg
+  url "https://icculus.org/physfs/downloads/physfs-3.0.2.tar.bz2"
+  sha256 "304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863"
+  head "https://hg.icculus.org/icculus/physfs/", using: :hg
+
+  livecheck do
+    url "https://icculus.org/physfs/downloads/"
+    regex(/href=.*?physfs[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "c06c09374e9691665cd54947ba44b4d1f69be852c03f55148310db882912a3ff" => :sierra
-    sha256 "d501cbfdfea7df8ae807f158ad428c02354366a546925a4d042ccb2f9eb30267" => :el_capitan
-    sha256 "c53001feb6316238029050dd5f07cdb6a1f17a3c96df9a09b43f709a99b7504e" => :yosemite
-    sha256 "c4d372b4db8a7b0ed8019562cebce7ac59b1778c8a88d27a0d6cd508607826b9" => :mavericks
+    sha256 "00c1ceb61a64c6d9c23fe6de1c73a31e89f8ff1657ffddc9d688482a1a217ca8" => :big_sur
+    sha256 "31693a34c610ea382a1b0832065db2b223db549ced6fe6a2f8c569d6b58bf19a" => :catalina
+    sha256 "cb97a3a17728f3173d4c19fde495cffbddce965bbf6015e45882e3c27f267cf3" => :mojave
+    sha256 "296927566472c976a578f89c4bd6bf0f518427a53d586499a8e202896d469ee3" => :high_sierra
+    sha256 "6742501c33943dcdab748b3c2188cf6292f462b82896da001cdbcfbbcc01e489" => :sierra
   end
-
-  option :universal
 
   depends_on "cmake" => :build
 
+  uses_from_macos "zip" => :test
+
+  on_linux do
+    depends_on "readline"
+  end
+
   def install
-    ENV.universal_binary if build.universal?
     mkdir "macbuild" do
       args = std_cmake_args
       args << "-DPHYSFS_BUILD_TEST=TRUE"
@@ -32,10 +40,10 @@ class Physfs < Formula
   test do
     (testpath/"test.txt").write "homebrew"
     system "zip", "test.zip", "test.txt"
-    (testpath/"test").write <<-EOS.undent
+    (testpath/"test").write <<~EOS
       addarchive test.zip 1
       cat test.txt
-      EOS
+    EOS
     assert_match /Successful\.\nhomebrew/, shell_output("#{bin}/test_physfs < test 2>&1")
   end
 end

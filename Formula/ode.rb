@@ -1,45 +1,53 @@
 class Ode < Formula
-  desc "Library for simulating articulated rigid body dynamics"
-  homepage "http://www.ode.org/"
-  url "https://bitbucket.org/odedevs/ode/downloads/ode-0.14.tar.gz"
-  sha256 "1072fc98d9d00262a0d6136e7b9ff7f5d953bbdb23b646f426909d28c0b4f6db"
-  head "https://bitbucket.org/odedevs/ode/", :using => :hg
+  desc "Simulating articulated rigid body dynamics"
+  homepage "https://www.ode.org/"
+  url "https://bitbucket.org/odedevs/ode/downloads/ode-0.16.2.tar.gz"
+  sha256 "b26aebdcb015e2d89720ef48e0cb2e8a3ca77915f89d853893e7cc861f810f22"
+  head "https://bitbucket.org/odedevs/ode.git"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "0878fe75d32116ec15f5c33397b484f9aa5497b9393ef34764d4af0b80d46b88" => :sierra
-    sha256 "a819c7f5b726beab6c2dbb4bd4e0e09535e31e012fd6c2827d798eba88ecefec" => :el_capitan
-    sha256 "978f6488c0bec75919bfc2b12882a5d7c517e5e9a3ff3c55eea5bc9a3f99b7fb" => :yosemite
-    sha256 "1909c03ba89ab957497e58a02a95972e57f37bb7d4a45a5e7aa822eb37177e5c" => :mavericks
+  livecheck do
+    url :stable
   end
 
-  option "with-double-precision", "Compile ODE with double precision"
-  option "with-shared", "Compile ODE with shared library support"
-  option "with-libccd", "Enable all libccd colliders (except box-cylinder)"
-  option "with-x11", "Build the drawstuff library and demos"
-
-  deprecated_option "enable-double-precision" => "with-double-precision"
-  deprecated_option "enable-shared" => "with-shared"
-  deprecated_option "enable-libccd" => "with-libccd"
+  bottle do
+    cellar :any
+    sha256 "333320201f493ecb42eb9754a8c73d8490aa8d0155129865384fe2faf2706482" => :big_sur
+    sha256 "b033d3a8ddb92602728fbe921f5f421fed220c1d5293333d43801bf259a16cd5" => :catalina
+    sha256 "0967cc5799fe66b3afff2c1fb9832e6d4ee7dde03f1388818de9d4b87581b4f8" => :mojave
+    sha256 "7c794395db9cbb9d8d8c7a60d787c0747c527c4a177ef975e4bd6d4a8da1eb32" => :high_sierra
+  end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on :x11 => :optional
+  depends_on "libccd"
 
   def install
-    args = ["--prefix=#{prefix}"]
-    args << "--enable-double-precision" if build.with? "double-precision"
-    args << "--enable-shared" if build.with? "shared"
-    args << "--enable-libccd" if build.with? "libccd"
-    args << "--with-demos" if build.with? "x11"
-
     inreplace "bootstrap", "libtoolize", "glibtoolize"
     system "./bootstrap"
 
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--enable-libccd",
+                          "--enable-shared",
+                          "--disable-static",
+                          "--enable-double-precision"
     system "make"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.cpp").write <<~EOS
+      #include <ode/ode.h>
+      int main() {
+        dInitODE();
+        dCloseODE();
+        return 0;
+      }
+    EOS
+    system ENV.cc, "test.cpp", "-I#{include}/ode", "-L#{lib}", "-lode",
+                   "-L#{Formula["libccd"].opt_lib}", "-lccd",
+                   "-lc++", "-o", "test"
+    system "./test"
   end
 end

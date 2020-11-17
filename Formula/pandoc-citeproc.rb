@@ -5,28 +5,35 @@ class PandocCiteproc < Formula
 
   desc "Library and executable for using citeproc with pandoc"
   homepage "https://github.com/jgm/pandoc-citeproc"
-  url "https://hackage.haskell.org/package/pandoc-citeproc-0.10.4/pandoc-citeproc-0.10.4.tar.gz"
-  sha256 "1dcfffe0dc26d0a1b5ef5688a09c1bb81231702169196e6faed8ddef360d848f"
+  url "https://hackage.haskell.org/package/pandoc-citeproc-0.17.0.2/pandoc-citeproc-0.17.0.2.tar.gz"
+  sha256 "0b8846ca37547004a6a165ff7f47f58a07f783b01da32c8bf5740272fe37e1f2"
+  license "BSD-3-Clause"
   head "https://github.com/jgm/pandoc-citeproc.git"
 
   bottle do
-    sha256 "1c99018d79ad1cf922690bb7934a0177a6deccc7b7e914ecd548ca29d2ebe21c" => :sierra
-    sha256 "2bfd7a376de2152032cff391f78ccbff0b846638cd2d0546aa54da7ee135fc1c" => :el_capitan
-    sha256 "b330b05b9f456418a9a66311271d5135cf6a5e85eddc02c7ba94b368c3f5674e" => :yosemite
+    sha256 "518ed9646d3a165b413a4222d87d5148130891fc2505f2e71e20e05507131992" => :catalina
+    sha256 "fbbe846a5843e8e0de7d7bafa3ff3af2600c4fbb8ee2e50a05286ac02de52f6e" => :mojave
+    sha256 "dfd25614701ee6cfdbe4ec0d6e67a9e54f6c08ded7f8b3de65f1db621fdc72dc" => :high_sierra
   end
 
-  depends_on "ghc" => :build
+  # https://github.com/jgm/pandoc-citeproc/commit/473378e588c40a6c3cb3b24330431b89cf4f81b4
+  # This package is no longer maintained.
+  # Pandoc now uses the [citeproc](https://github.com/jgm/citeproc)
+  # library, and no external filter is needed.
+  deprecate! date: "2020-10-09", because: :deprecated_upstream
+
   depends_on "cabal-install" => :build
+  depends_on "ghc@8.8" => :build
   depends_on "pandoc"
 
+  uses_from_macos "unzip" => :build
+
   def install
-    args = []
-    args << "--constraint=cryptonite -support_aesni" if MacOS.version <= :lion
-    install_cabal_package *args
+    install_cabal_package
   end
 
   test do
-    (testpath/"test.bib").write <<-EOS.undent
+    (testpath/"test.bib").write <<~EOS
       @Book{item1,
       author="John Doe",
       title="First Book",
@@ -35,7 +42,7 @@ class PandocCiteproc < Formula
       publisher="Cambridge University Press"
       }
     EOS
-    expected = <<-EOS.undent
+    expected = <<~EOS
       ---
       references:
       - id: item1
@@ -44,7 +51,7 @@ class PandocCiteproc < Formula
         - family: Doe
           given: John
         issued:
-        - year: '2005'
+        - year: 2005
         title: First book
         publisher: Cambridge University Press
         publisher-place: Cambridge

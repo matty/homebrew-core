@@ -1,14 +1,22 @@
 class Minicom < Formula
   desc "Menu-driven communications program"
-  homepage "https://alioth.debian.org/projects/minicom/"
-  url "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/m/minicom/minicom_2.7.orig.tar.gz"
-  sha256 "9ac3a663b82f4f5df64114b4792b9926b536c85f59de0f2d2b321c7626a904f4"
+  homepage "https://packages.debian.org/sid/minicom"
+  url "https://deb.debian.org/debian/pool/main/m/minicom/minicom_2.7.1.orig.tar.gz"
+  sha256 "532f836b7a677eb0cb1dca8d70302b73729c3d30df26d58368d712e5cca041f1"
+
+  livecheck do
+    url "https://deb.debian.org/debian/pool/main/m/minicom/"
+    regex(/href=.*?minicom[._-]v?(\d+(?:\.\d+)+)\.orig\.t/i)
+  end
 
   bottle do
-    sha256 "d2195e67bda7158fee69a8a343961490dda50f35ac6f472dbba2e7317d00c2b2" => :sierra
-    sha256 "81f7a4e2671a83ed8ee528b74dc47d6b5bf57995d066048b3130a097ff22203d" => :el_capitan
-    sha256 "ab76b20b7ad26d544946d6fa39722e3709fd2b2de5c8da3693c56c1829db8f8a" => :yosemite
-    sha256 "18f41c6b651d70c248efba991f044d3f1ed4226ec0bd916773609e865abf0c1a" => :mavericks
+    sha256 "37646be23a39a2c08c798221a12997e9309c9ac68ded36cb94e407f2fafe2ec9" => :big_sur
+    sha256 "9a95136e2a0176a25874a996fd93ff2e77da00b17e450fc532c85bbdc80edfd3" => :catalina
+    sha256 "77cc043be40a99634caa99d5f309741d85309fed07c1c21f313c6d99c4732966" => :mojave
+    sha256 "ec4beca9c9816db86a3bb7a11d7507fe0740feb62461341232a425a5156cd4a1" => :high_sierra
+    sha256 "63584b5ee8463dfb6cef69ad32308c51a4e83778dd44b80fc4c1e7c40cb48b2e" => :sierra
+    sha256 "820aae10f1c298350f51f7571d4d6becb4b0cfc876fb77126ea1e43bec8466e4" => :el_capitan
+    sha256 "5f17b6f15c2417acbda3a91b64f7df166b29fd2389adc52f011e2541f1fdbcb9" => :yosemite
   end
 
   def install
@@ -25,21 +33,22 @@ class Minicom < Formula
     (prefix/"etc/minirc.dfl").write "pu lock #{prefix}/var\npu escape-key Escape (Meta)\n"
   end
 
-  def caveats; <<-EOS.undent
-    Terminal Compatibility
-    ======================
-    If minicom doesn't see the LANG variable, it will try to fallback to
-    make the layout more compatible, but uglier. Certain unsupported
-    encodings will completely render the UI useless, so if the UI looks
-    strange, try setting the following environment variable:
+  def caveats
+    <<~EOS
+      Terminal Compatibility
+      ======================
+      If minicom doesn't see the LANG variable, it will try to fallback to
+      make the layout more compatible, but uglier. Certain unsupported
+      encodings will completely render the UI useless, so if the UI looks
+      strange, try setting the following environment variable:
 
-      LANG="en_US.UTF-8"
+        LANG="en_US.UTF-8"
 
-    Text Input Not Working
-    ======================
-    Most development boards require Serial port setup -> Hardware Flow
-    Control to be set to "No" to input text.
-  EOS
+      Text Input Not Working
+      ======================
+      Most development boards require Serial port setup -> Hardware Flow
+      Control to be set to "No" to input text.
+    EOS
   end
 
   test do

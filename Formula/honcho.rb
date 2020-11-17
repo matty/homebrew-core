@@ -1,28 +1,33 @@
 class Honcho < Formula
   desc "Python clone of Foreman, for managing Procfile-based applications"
   homepage "https://github.com/nickstenning/honcho"
-  url "https://github.com/nickstenning/honcho/archive/v0.7.1.tar.gz"
-  sha256 "6d838c77ffda1e59507542ac3aa062c2865e506aa7ead6814780c2f2e39cf959"
+  url "https://github.com/nickstenning/honcho/archive/v1.0.1.tar.gz"
+  sha256 "3271f986ff7c4732cfd390383078bfce68c46f9ad74f1804c1b0fc6283b13f7e"
+  license "MIT"
+  revision 3
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c65e7e9121ffc56269463e76b271ded4dc34c5851693146a4383c6b3902f31f3" => :sierra
-    sha256 "6469c1a7f8136472fd3222a392b7f14e2bb525e9818fb50e6563d4ba11153627" => :el_capitan
-    sha256 "67b976fb9de691ebd2424475a83688b20f2cfd630ad8080f1e96ff6954971964" => :yosemite
-    sha256 "3a52f9b3e325e2509362f00c4d42a718a295fed8ae13dcc53e57a1408f923032" => :mavericks
+    sha256 "3b71dbaf78c89d80cb6ad81942556f67ea90ad152c919f65a986ed7a7b90d2ad" => :big_sur
+    sha256 "042378b35c51528de85dc5c1999605bfaf561063da18b50bc3665331b9193019" => :catalina
+    sha256 "65e4f0673086e6cf37184b82faa1c78c8cf32dc642c9a70caeb8deb16e455f95" => :mojave
+    sha256 "39a8cdb134c590156a7ca18d4342933aa19a5163d38ab1caf6f2079d0348b506" => :high_sierra
   end
 
+  depends_on "python@3.9"
+
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
+    xy = Language::Python.major_minor_version "python3"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{xy}/site-packages"
+    system "python3", *Language::Python.setup_install_args(libexec)
 
     bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
   end
 
   test do
     (testpath/"Procfile").write("talk: echo $MY_VAR")
     (testpath/".env").write("MY_VAR=hi")
-    assert_match /talk\.\d+ \| \e\[0mhi/, shell_output("#{bin}/honcho start")
+    assert_match /talk\.\d+ \| hi/, shell_output("#{bin}/honcho start")
   end
 end

@@ -3,19 +3,26 @@ class Brogue < Formula
   homepage "https://sites.google.com/site/broguegame/"
   # The OS X version doesn't contain a Makefile, so we
   # need to download the Linux version
-  url "https://sites.google.com/site/broguegame/brogue-1.7.4-linux-amd64.tbz2"
-  version "1.7.4"
-  sha256 "eba5f35fe317efad9c97876f117eaf7a26956c435fdd2bc1a5989f0a4f70cfd3"
+  url "https://sites.google.com/site/broguegame/brogue-1.7.5-linux-amd64.tbz2"
+  version "1.7.5"
+  sha256 "a74ff18139564c597d047cfb167f74ab1963dd8608b6fb2e034e7635d6170444"
 
   bottle do
-    sha256 "cf93101e6920d496966fb6ecc9e2bdfbb48e4de57259a64e31c2e82f732d2ca4" => :sierra
-    sha256 "7470afc3d1235a9c1dd6ef89ba6a7e72d5e3e0e3e18b19ffe62064813834ae90" => :el_capitan
-    sha256 "b860adf0b0d376f61c478d7c936e4f3078dc5203054093fe129555aa5e2fc431" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "942d5ca5002a3df398ada3879071d924cf14487e6c4acace5a7645b0799cc679" => :catalina
+    sha256 "62d88540558c2f014403686898cf68d9a44c62e0095e285e77958b66e5c1ff3a" => :mojave
+    sha256 "864ae48cf80e2f1f3dc2a31a2ea4811177906eda30b11d12d5e3018ca4f1f3b8" => :high_sierra
+    sha256 "b5f6a25670f2eeb737bcde972b78801892971e2af4e3f7df1bbaa237eb4db50f" => :sierra
   end
+
+  uses_from_macos "ncurses"
 
   # put the highscores file in HOMEBREW_PREFIX/var/brogue/ instead of a
   # version-dependent location.
-  patch :DATA
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/c999df7dff/brogue/1.7.4.patch"
+    sha256 "ac5f86930a0190146ca35856266e8e8af06ac925bc8ae4c73c202352f258669c"
+  end
 
   def install
     (var/"brogue").mkpath
@@ -34,9 +41,10 @@ class Brogue < Formula
     libexec.install "bin/brogue", "bin/keymap"
   end
 
-  def caveats; <<-EOS.undent
-    If you are upgrading from 1.7.2, you need to copy your highscores file:
-        cp #{HOMEBREW_PREFIX}/Cellar/#{name}/1.7.2/BrogueHighScores.txt #{var}/brogue/
+  def caveats
+    <<~EOS
+      If you are upgrading from 1.7.2, you need to copy your highscores file:
+          cp #{HOMEBREW_PREFIX}/Cellar/#{name}/1.7.2/BrogueHighScores.txt #{var}/brogue/
     EOS
   end
 
@@ -44,39 +52,3 @@ class Brogue < Formula
     system "#{bin}/brogue", "--version"
   end
 end
-
-__END__
---- a/src/platform/platformdependent.c	2013-10-08 21:53:15.000000000 +0200
-+++ b/src/platform/platformdependent.c	2013-10-08 21:55:22.000000000 +0200
-@@ -75,7 +75,7 @@
-	short i;
-	FILE *scoresFile;
-
--	scoresFile = fopen("BrogueHighScores.txt", "w");
-+	scoresFile = fopen("HOMEBREW_PREFIX/var/brogue/BrogueHighScores.txt", "w");
-	for (i=0; i<HIGH_SCORES_COUNT; i++) {
-		fprintf(scoresFile, "%li\t%li\t%s", (long) 0, (long) 0, "(empty entry)\n");
-	}
-@@ -128,11 +128,11 @@
-	time_t rawtime;
-	struct tm * timeinfo;
-
--	scoresFile = fopen("BrogueHighScores.txt", "r");
-+	scoresFile = fopen("HOMEBREW_PREFIX/var/brogue/BrogueHighScores.txt", "r");
-
-	if (scoresFile == NULL) {
-		initScores();
--		scoresFile = fopen("BrogueHighScores.txt", "r");
-+		scoresFile = fopen("HOMEBREW_PREFIX/var/brogue/BrogueHighScores.txt", "r");
-	}
-
-	for (i=0; i<HIGH_SCORES_COUNT; i++) {
-@@ -197,7 +197,7 @@
-	short i;
-	FILE *scoresFile;
-
--	scoresFile = fopen("BrogueHighScores.txt", "w");
-+	scoresFile = fopen("HOMEBREW_PREFIX/var/brogue/BrogueHighScores.txt", "w");
-
-	for (i=0; i<HIGH_SCORES_COUNT; i++) {
-		// save the entry

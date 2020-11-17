@@ -1,25 +1,33 @@
 class Libofx < Formula
   desc "Library to support OFX command responses"
   homepage "https://libofx.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/libofx/libofx/0.9.10/libofx-0.9.10.tar.gz"
-  sha256 "54e26a4944ef2785087cfd8ed8f187ab9d397d9b92b5acc199dd7d5d095cf695"
+  url "https://downloads.sourceforge.net/project/libofx/libofx/libofx-0.9.15.tar.gz"
+  sha256 "e95c14e09fc37b331af3ef4ef7bea29eb8564a06982959fbd4bca7e331816144"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/libofx[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    sha256 "f43a3d30d5490038591245675c739613720c50502630cf21574e2de401b5ad8f" => :sierra
-    sha256 "51e0d70b279d22394058c04cc4509788047d9d6cdb0ac7ed7a121f2863bddb7b" => :el_capitan
-    sha256 "f569247d3c0849ed8ebe0d639fb281f64ce175c6db38241f1c60e5d46dc0cff6" => :yosemite
-    sha256 "d2aedd050d47d0ca1274a34cf6ae14f3a2a4c8db65309ab3d46554c9d64ccd2b" => :mavericks
+    sha256 "aa4c73d9fe09d54bc4fb0a1dde14bd927949f4d0ce100dae987f03df79236958" => :catalina
+    sha256 "9b731e873dee237f2723fd05aa7f88b0e64f29197297c33e9def68112d7c2fc8" => :mojave
+    sha256 "7c561c3c928ad133d1763afe6a9d25b784d236411f00085151740f3505b164b3" => :high_sierra
   end
 
   depends_on "open-sp"
 
   def install
+    opensp = Formula["open-sp"]
     system "./configure", "--disable-dependency-tracking",
+                          "--with-opensp-includes=#{opensp.opt_include}/OpenSP",
+                          "--with-opensp-libs=#{opensp.opt_lib}",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    assert_equal "ofxdump #{version}", shell_output("ofxdump -V").chomp
+    assert_equal "ofxdump #{version}", shell_output("#{bin}/ofxdump -V").chomp
   end
 end

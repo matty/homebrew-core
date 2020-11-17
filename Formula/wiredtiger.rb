@@ -1,17 +1,26 @@
 class Wiredtiger < Formula
-  desc "high performance NoSQL extensible platform for data management"
+  desc "High performance NoSQL extensible platform for data management"
   homepage "http://www.wiredtiger.com"
-  url "https://github.com/wiredtiger/wiredtiger/releases/download/2.9.1/wiredtiger-2.9.1.tar.bz2"
-  sha256 "2995acab3422f1667b50e487106c6c88b8666d3cf239d8ecffa2dbffb17dfdcf"
+  url "https://github.com/wiredtiger/wiredtiger/releases/download/3.2.0/wiredtiger-3.2.0.tar.bz2"
+  sha256 "c812d34ac542fdd2f5dc16e2f47ebc1eba09487f45e34fbae5a052a668931968"
+
+  livecheck do
+    url "https://github.com/wiredtiger/wiredtiger.git"
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "da99b2e657972518071a86f4633b54f5e74ed6e34b8ad047e0c2f6abbdb8f7d1" => :sierra
-    sha256 "a75213abe8e436012bbf2a3830fdd941dc2987c1259a6c9ea1813392e8b8ffdf" => :el_capitan
-    sha256 "9d0ddaaf2a8c765723f820d676d54340e1ea90566ca4e74a1537ecc8216578d5" => :yosemite
+    sha256 "24076b53baf3e50cb523ab04d5caad5d9c155b834bc951e9a9576af3a0789c7f" => :big_sur
+    sha256 "9b0799ed632b6b053c1f208a3a91c4eb97bfab817542267b32cc42ad0da11da0" => :catalina
+    sha256 "6346862c90443a6fc72cb214e2b657fcd69980dcd3d622b9017c150b955d4891" => :mojave
+    sha256 "c831e84a17cc41fbb4a4571aad5460fc989fd865c0e770b9bf65399bfeb46f4b" => :high_sierra
+    sha256 "27744de01928c6f529028861fb5b443885f8fc320deb0c61ac2a7bd754d44d7e" => :sierra
   end
 
   depends_on "snappy"
+
+  uses_from_macos "zlib"
 
   def install
     system "./configure", "--with-builtins=snappy,zlib",

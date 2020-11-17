@@ -1,30 +1,51 @@
 class Tarantool < Formula
-  desc "In-memory database and Lua application server."
+  desc "In-memory database and Lua application server"
   homepage "https://tarantool.org/"
-  url "https://download.tarantool.org/tarantool/1.7/src/tarantool-1.7.3.99.tar.gz"
-  sha256 "e6fbe05f491cde472f30c3e978d8b6533245852bd353824e2e33164aa6bba903"
-
-  head "https://github.com/tarantool/tarantool.git", :branch => "1.7", :shallow => false
+  url "https://download.tarantool.org/tarantool/2.5/src/tarantool-2.5.2.0.tar.gz"
+  sha256 "f64b8ef772d42017bd938770912b4a1727ce6302087efcd5c7faac9e425d9ac4"
+  license "BSD-2-Clause"
+  head "https://github.com/tarantool/tarantool.git", branch: "2.5", shallow: false
 
   bottle do
-    sha256 "872054634b828db330728218df90b0bb3ecb98c7a4d40132e092d1cbc85bc4fd" => :sierra
-    sha256 "f4bfdecb75a6ddc4e680ea5d4f6b9dca62e40fa8ac2e3c4fea0c36250aaeb584" => :el_capitan
-    sha256 "eff95199b02b2de5a93173738d42e0cb22aa27f71712db92428dbcf427c050bb" => :yosemite
+    cellar :any
+    sha256 "10240e8f72bc8c9a2463e22fbc6ea4033b6b775b50419040f6f1491ae91ef0ff" => :catalina
+    sha256 "76d89fbaa6d7a4265051ee2acf5bea261b829041b312335047466f4a8c85723c" => :mojave
+    sha256 "35f468f277d8b6d4889199c05462d675bc37f09794ef11a8b657ab13db648c95" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "openssl"
+  depends_on "icu4c"
+  depends_on "openssl@1.1"
   depends_on "readline"
 
-  def install
-    args = std_cmake_args
+  uses_from_macos "curl"
+  uses_from_macos "ncurses"
 
+  def install
+    sdk = MacOS::CLT.installed? ? "" : MacOS.sdk_path
+
+    # Necessary for luajit to build on macOS Mojave (see luajit formula)
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version
+
+    # Avoid keeping references to Homebrew's clang/clang++ shims
+    inreplace "src/trivia/config.h.cmake",
+              "#define COMPILER_INFO \"@CMAKE_C_COMPILER@ @CMAKE_CXX_COMPILER@\"",
+              "#define COMPILER_INFO \"/usr/bin/clang /usr/bin/clang++\""
+
+    args = std_cmake_args
     args << "-DCMAKE_INSTALL_MANDIR=#{doc}"
     args << "-DCMAKE_INSTALL_SYSCONFDIR=#{etc}"
     args << "-DCMAKE_INSTALL_LOCALSTATEDIR=#{var}"
     args << "-DENABLE_DIST=ON"
-    args << "-DOPENSSL_ROOT_DIR=#{Formula["openssl"].opt_prefix}"
+    args << "-DOPENSSL_ROOT_DIR=#{Formula["openssl@1.1"].opt_prefix}"
     args << "-DREADLINE_ROOT=#{Formula["readline"].opt_prefix}"
+    args << "-DENABLE_BUNDLED_LIBCURL=OFF"
+    args << "-DCURL_INCLUDE_DIR=#{sdk}/usr/include"
+    args << "-DCURL_LIBRARY=/usr/lib/libcurl.dylib"
+    args << "-DCURSES_NEED_NCURSES=TRUE"
+    args << "-DCURSES_NCURSES_INCLUDE_PATH=#{sdk}/usr/include"
+    args << "-DCURSES_NCURSES_LIBRARY=/usr/lib/libncurses.dylib"
+    args << "-DICONV_INCLUDE_DIR=#{sdk}/usr/include"
 
     system "cmake", ".", *args
     system "make"
@@ -41,17 +62,17 @@ class Tarantool < Formula
   end
 
   test do
-    (testpath/"test.lua").write <<-EOS.undent
-        box.cfg{}
-        local s = box.schema.create_space("test")
-        s:create_index("primary")
-        local tup = {1, 2, 3, 4}
-        s:insert(tup)
-        local ret = s:get(tup[1])
-        if (ret[3] ~= tup[3]) then
-          os.exit(-1)
-        end
-        os.exit(0)
+    (testpath/"test.lua").write <<~EOS
+      box.cfg{}
+      local s = box.schema.create_space("test")
+      s:create_index("primary")
+      local tup = {1, 2, 3, 4}
+      s:insert(tup)
+      local ret = s:get(tup[1])
+      if (ret[3] ~= tup[3]) then
+        os.exit(-1)
+      end
+      os.exit(0)
     EOS
     system bin/"tarantool", "#{testpath}/test.lua"
   end

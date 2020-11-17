@@ -1,24 +1,28 @@
 class Govendor < Formula
-  desc "Go vendor tool that works with the standard vendor file."
+  desc "Tool for vendoring Go dependencies"
   homepage "https://github.com/kardianos/govendor"
-  url "https://github.com/kardianos/govendor/archive/v1.0.8.tar.gz"
-  sha256 "7e887b84c7a9278473f39ae8a74440ffc17b329aa193e9304d170d458f8785c7"
-  revision 1
+  url "https://github.com/kardianos/govendor/archive/v1.0.9.tar.gz"
+  sha256 "d303abf194838792234a1451c3a1e87885d1b2cd21774867b592c1f7db00551e"
+  license "BSD-3-Clause"
   head "https://github.com/kardianos/govendor.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "128c4b938687104b86e21765664ef9426710cfaa3f455a56c02af24aadb0ad51" => :sierra
-    sha256 "b5614b2cdd37dec0c5bd2e6b11bba94435127a1d2fba9cdf59451711447aec42" => :el_capitan
-    sha256 "cec9a38df63880a8c4cdea079e3f86e4712e32ed7c78c4489fe98f722b056c2e" => :yosemite
+    rebuild 1
+    sha256 "80a65c6a119d2b511cbbccc810db50822ebdf9f70ef1e46c5e6c17e2a1081ef3" => :big_sur
+    sha256 "654e979f975c3cf1174f6b1b572657d4d4d813551e0d4cf73239a2b6e2bc15e4" => :catalina
+    sha256 "913ae29b2c13520f049c1cca03f0a12b7aba75702fdb9c981395d3e888903ed3" => :mojave
+    sha256 "bf52da036c6701f20182ce7252e7920e4e12630f7e0bf0e3e3d3c9c88d58be8b" => :high_sierra
   end
+
+  deprecate! because: :repo_archived
 
   depends_on "go"
 
   def install
     ENV["GOPATH"] = buildpath
     ENV["GOOS"] = "darwin"
-    ENV["GOARCH"] = MacOS.prefer_64_bit? ? "amd64" : "386"
+    ENV["GOARCH"] = "amd64"
 
     (buildpath/"src/github.com/kardianos/").mkpath
     ln_sf buildpath, buildpath/"src/github.com/kardianos/govendor"
@@ -34,7 +38,7 @@ class Govendor < Formula
 
     cd "src/github.com/project/testing" do
       system bin/"govendor", "init"
-      assert File.exist?("vendor"), "Failed to init!"
+      assert_predicate Pathname.pwd/"vendor", :exist?, "Failed to init!"
       system bin/"govendor", "fetch", "-tree", "golang.org/x/crypto@#{commit}"
       assert_match commit, File.read("vendor/vendor.json")
       assert_match "golang.org/x/crypto/blowfish", shell_output("#{bin}/govendor list")

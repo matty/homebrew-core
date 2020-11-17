@@ -1,17 +1,19 @@
 class Opencsg < Formula
-  desc "The CSG rendering library"
+  desc "Constructive solid geometry rendering library"
   homepage "http://www.opencsg.org"
   url "http://www.opencsg.org/OpenCSG-1.4.2.tar.gz"
   sha256 "d952ec5d3a2e46a30019c210963fcddff66813efc9c29603b72f9553adff4afb"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "075e67cb712c3d0ffd8b20bc2f510cc1a06a42cfabf1048f7ba21867320c8222" => :sierra
-    sha256 "075e67cb712c3d0ffd8b20bc2f510cc1a06a42cfabf1048f7ba21867320c8222" => :el_capitan
-    sha256 "d95e4f314bf0b2184d6b5133861d6ad85caf0285273ab1bd8b9e42fc01fbbce3" => :yosemite
+    sha256 "2d663b21cd90f37d02e772426aba83c7f9e9451a8325a2caf99f926a2176a495" => :big_sur
+    sha256 "d42c4c0c8aa5ef5abbe1f260e98f2652b0e7f78563415219b6b8c80fc4aa5859" => :catalina
+    sha256 "41ca5a9f643f81e0c9ad862e5386994d85aed57c8c9b6a34493d97f7e66e7a53" => :mojave
+    sha256 "67d059404b3a950b73ac4ab6096727c90f24fc1309871969c0d46a7df429de5b" => :high_sierra
   end
 
-  depends_on "qt5" => :build
+  depends_on "qt" => :build
   depends_on "glew"
 
   # This patch disabling building examples
@@ -28,7 +30,7 @@ class Opencsg < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <opencsg.h>
       class Test : public OpenCSG::Primitive {
         public:

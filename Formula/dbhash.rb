@@ -1,19 +1,23 @@
 class Dbhash < Formula
   desc "Computes the SHA1 hash of schema and content of a SQLite database"
   homepage "https://www.sqlite.org/dbhash.html"
-  url "https://www.sqlite.org/2017/sqlite-src-3170000.zip"
-  version "3.17.0"
-  sha256 "86754bee6bcaf1f2a6bf4a02676eb3a43d22d4e5d8339e217424cb2be6b748c3"
+  url "https://www.sqlite.org/2020/sqlite-src-3330000.zip"
+  version "3.33.0"
+  sha256 "90bf7604a5aa26deece551af7a665fd4ce3d854ea809899c0e4bb19a69d609b8"
+  license "blessing"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "735393656e4cca0a6ac15bf647aeed698dd57a59d7ba68bbd687e9979a72869c" => :sierra
-    sha256 "c7463aa4e9afab28ea1f4349831903b941cc40c78b8d40b3e94e1ba73ce0941f" => :el_capitan
-    sha256 "74dc17ea29958525c00c9b01632c1541b97fb098e7aba409564268827cb1808d" => :yosemite
+    sha256 "137c6454f067e88e0257bf8d29bc64d8efa201dcb1cb5770646c1a1569a0e34a" => :big_sur
+    sha256 "286b4a753cd443251a2b9b27d2ff813faf384a3c78940c2bded450d391ba7a66" => :catalina
+    sha256 "f9f1001a4e2a887070762636737a144d13e53f00dfa39278c9535cc448b6f91c" => :mojave
+    sha256 "7e973140b25ac83fb8d8dd77a2b7b4ee5cf13f4b10d1a27b92c1ad4180cf71e8" => :high_sierra
   end
 
+  uses_from_macos "tcl-tk" => :build
+  uses_from_macos "sqlite" => :test
+
   def install
-    ENV.append "CPPFLAGS", "-DSQLITE_DISABLE_INTRINSIC" if MacOS.version <= :yosemite && ENV.compiler == :clang
     system "./configure", "--disable-debug", "--prefix=#{prefix}"
     system "make", "dbhash"
     bin.install "dbhash"

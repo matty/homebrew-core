@@ -1,37 +1,33 @@
 class Openjpeg < Formula
   desc "Library for JPEG-2000 image manipulation"
-  homepage "http://www.openjpeg.org/"
-  url "https://github.com/uclouvain/openjpeg/archive/v2.1.2.tar.gz"
-  sha256 "4ce77b6ef538ef090d9bde1d5eeff8b3069ab56c4906f083475517c2c023dfa7"
-
+  homepage "https://www.openjpeg.org/"
+  url "https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz"
+  sha256 "63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9"
+  license "BSD-2-Clause"
   head "https://github.com/uclouvain/openjpeg.git"
 
   bottle do
     cellar :any
-    sha256 "4e27fbf3c861435a3413a9ce6a32dd2336b666fb046278eb72711176cb10ecad" => :sierra
-    sha256 "7d4ac6ba6dceae7f22d1f477abc8e4c3039324382d7029df71bd8f380f4e94d3" => :el_capitan
-    sha256 "6e5766dd0f55d5cee1406ad8919ffc89fe3a701a2a4dd2cdd836abb34d753ae6" => :yosemite
+    sha256 "7f242d562de5b4dd5d0fb2392e2b8b0cc3fe7e2e719578481574f9524774f124" => :big_sur
+    sha256 "29b9e0e1ed01683fd26a2fb07d7ee354d8d236033305d8b0ca1dd5f36568fc65" => :catalina
+    sha256 "6de317bfef3ab808ff5f3eb9c1aa47f77e7236fba8ad0d606b29b38eb47c321e" => :mojave
+    sha256 "1eb8b2f698ecf16196e06a2d9f7ba20eb7f0ba447d351e36eb3344d3ed6c5c58" => :high_sierra
+    sha256 "d2b377424ff5387892bc1af653654fdcc70702e4524f3309b3f0874ac6e2d84c" => :sierra
   end
 
-  option "without-doxygen", "Do not build HTML documentation."
-  option "with-static", "Build a static library."
-
   depends_on "cmake" => :build
-  depends_on "doxygen" => [:build, :recommended]
-  depends_on "little-cms2"
-  depends_on "libtiff"
+  depends_on "doxygen" => :build
   depends_on "libpng"
+  depends_on "libtiff"
+  depends_on "little-cms2"
 
   def install
-    args = std_cmake_args
-    args << "-DBUILD_SHARED_LIBS=OFF" if build.with? "static"
-    args << "-DBUILD_DOC=ON" if build.with? "doxygen"
-    system "cmake", ".", *args
+    system "cmake", ".", *std_cmake_args, "-DBUILD_DOC=ON"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <openjpeg.h>
 
       int main () {
@@ -45,7 +41,7 @@ class Openjpeg < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "-I#{include}/openjpeg-2.1", "-L#{lib}", "-lopenjp2",
+    system ENV.cc, "-I#{include.children.first}", "-L#{lib}", "-lopenjp2",
            testpath/"test.c", "-o", "test"
     system "./test"
   end

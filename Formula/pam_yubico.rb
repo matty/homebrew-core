@@ -1,18 +1,22 @@
 class PamYubico < Formula
   desc "Yubico pluggable authentication module"
   homepage "https://developers.yubico.com/yubico-pam/"
-  url "https://developers.yubico.com/yubico-pam/Releases/pam_yubico-2.23.tar.gz"
-  sha256 "bc7193ed10c8fb7a2878088af859a24a7e6a456e1728a914eb5ed47cdff0ecb8"
+  url "https://developers.yubico.com/yubico-pam/Releases/pam_yubico-2.26.tar.gz"
+  sha256 "2de96495963fefd72b98243952ca5d5ec513e702c596e54bc667ef6b5e252966"
+  license "BSD-2-Clause"
+  revision 1
+
+  livecheck do
+    url "https://developers.yubico.com/yubico-pam/Releases/"
+    regex(/href=.*?pam_yubico[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "96f7147fccca005c066d53b1e6ba2bee6013c847b6bc0ec188d8af22e337870a" => :sierra
-    sha256 "5d9cb094345cede6f701f686f6660ae59c47b03192e85fa8701e6730ce859027" => :el_capitan
-    sha256 "93769c01776befd585bfcbd1f07992c695e5e3d65f33b8b656a04a4d1ddfb7c9" => :yosemite
-    sha256 "8b68985a95c26661f9cad4467449a60e826cbbf95e67c20a2edbbcf474cf13f6" => :mavericks
+    sha256 "6e4eb4afca28e15098998d561b21ab65930ab57898fcf26ed0ba657263d2f130" => :catalina
+    sha256 "3679137d1149195219a4cc36154356f8d749b757d47ec7ab75850ae9eace84e8" => :mojave
+    sha256 "a321eb909c66465f67e0a25e9e38df33cc2d76c6e9ac9c834cb7ba17b247597f" => :high_sierra
   end
-
-  option :universal
 
   depends_on "pkg-config" => :build
   depends_on "libyubikey"
@@ -20,7 +24,6 @@ class PamYubico < Formula
   depends_on "ykpers"
 
   def install
-    ENV.universal_binary if build.universal?
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     system "./configure", "--prefix=#{prefix}",

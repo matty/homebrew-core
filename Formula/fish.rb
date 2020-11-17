@@ -1,54 +1,51 @@
 class Fish < Formula
   desc "User-friendly command-line shell for UNIX-like operating systems"
   homepage "https://fishshell.com"
+  url "https://github.com/fish-shell/fish-shell/releases/download/3.1.2/fish-3.1.2.tar.gz"
+  sha256 "d5b927203b5ca95da16f514969e2a91a537b2f75bec9b21a584c4cd1c7aa74ed"
+  license "GPL-2.0"
 
-  stable do
-    url "https://github.com/fish-shell/fish-shell/releases/download/2.5.0/fish-2.5.0.tar.gz"
-    mirror "https://fishshell.com/files/2.5.0/fish-2.5.0.tar.gz"
-    sha256 "f8c0edadca2de379ccf305aeace660a9255fa2180c72e85e97705a24c256b2a5"
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
   bottle do
-    sha256 "d012c7b4d1dce5e766fe9990f19ec7ac0ae5c4a69fc15e01cf123e8f88c1910f" => :sierra
-    sha256 "2b28972cc66472fa11782b344c64b51569a43d0fd8b098ad4b787a1c79aca2b1" => :el_capitan
-    sha256 "385def41fe9c29237b7319218ae0184f64b6b750e525f92ee6913cf20c478a69" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "ef7f5a2fd69ba2baed78d02ee162cc8fb85644161dd765d47b570b56db9569cf" => :big_sur
+    sha256 "b158b7f8640feb7c622ff3ca92b1bd88565f274f3e761499f5926bb124eeff7d" => :catalina
+    sha256 "6797636eaba364d0cbbc0459103a8767598e985f01846cca6cb57c986dfee7b8" => :mojave
+    sha256 "2609577a0d9f6b661331adccf5d1d8e010662ffe128869757e0af9a6760e26fb" => :high_sierra
   end
 
   head do
-    url "https://github.com/fish-shell/fish-shell.git", :shallow => false
+    url "https://github.com/fish-shell/fish-shell.git", shallow: false
 
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "doxygen" => :build
+    depends_on "sphinx-doc" => :build
   end
 
+  depends_on "cmake" => :build
   depends_on "pcre2"
 
+  uses_from_macos "ncurses"
+
   def install
-    system "autoreconf", "--no-recursive" if build.head?
+    # Disable code signing in cmake, so we can codesign ourselves in brew
+    # Backport of https://github.com/fish-shell/fish-shell/issues/6952
+    # See https://github.com/fish-shell/fish-shell/issues/7467
+    # Remove in 3.2.0
+    inreplace "CMakeLists.txt", "CODESIGN_ON_MAC(${target})", "" if build.stable?
 
     # In Homebrew's 'superenv' sed's path will be incompatible, so
     # the correct path is passed into configure here.
     args = %W[
-      --prefix=#{prefix}
-      --with-extra-functionsdir=#{HOMEBREW_PREFIX}/share/fish/vendor_functions.d
-      --with-extra-completionsdir=#{HOMEBREW_PREFIX}/share/fish/vendor_completions.d
-      --with-extra-confdir=#{HOMEBREW_PREFIX}/share/fish/vendor_conf.d
-      SED=/usr/bin/sed
+      -Dextra_functionsdir=#{HOMEBREW_PREFIX}/share/fish/vendor_functions.d
+      -Dextra_completionsdir=#{HOMEBREW_PREFIX}/share/fish/vendor_completions.d
+      -Dextra_confdir=#{HOMEBREW_PREFIX}/share/fish/vendor_conf.d
+      -DSED=/usr/bin/sed
     ]
-    system "./configure", *args
+    system "cmake", ".", *std_cmake_args, *args
     system "make", "install"
-  end
-
-  def caveats; <<-EOS.undent
-    You will need to add:
-      #{HOMEBREW_PREFIX}/bin/fish
-    to /etc/shells.
-
-    Then run:
-      chsh -s #{HOMEBREW_PREFIX}/bin/fish
-    to make fish your default shell.
-    EOS
   end
 
   def post_install

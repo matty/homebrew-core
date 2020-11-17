@@ -1,24 +1,74 @@
 class Geckodriver < Formula
   desc "WebDriver <-> Marionette proxy"
   homepage "https://github.com/mozilla/geckodriver"
-  url "https://github.com/mozilla/geckodriver/archive/v0.14.0.tar.gz"
-  sha256 "d9a5d240895ee11ff2034cfcaad1bc2e83169e2c9700913485546c452e3d57ee"
+  license "MPL-2.0"
+  head "https://hg.mozilla.org/mozilla-central/", using: :hg
+
+  stable do
+    # Get the hg_revision for stable releases from https://github.com/mozilla/geckodriver/releases
+    hg_revision = "c00d2b6acd3fb1b197b25662fba0a96c11669b66"
+    url "https://hg.mozilla.org/mozilla-central/archive/#{hg_revision}.zip/testing/geckodriver/"
+    version "0.28.0"
+    sha256 "278b0f57b4659c82a22be260e754a38d0e61fc28cb76bf8a4b672020456c2f08"
+
+    resource "webdriver" do
+      url "https://hg.mozilla.org/mozilla-central/archive/#{hg_revision}.zip/testing/webdriver/"
+      sha256 "eddf228980cd00a357f549435e5225a7d291305583c1d5010b0930039f6ddfb7"
+    end
+
+    resource "mozbase" do
+      url "https://hg.mozilla.org/mozilla-central/archive/#{hg_revision}.zip/testing/mozbase/rust/"
+      sha256 "1049fa9f18ffc7bb03da0523d782c6f52f12bdee8b5ee3d705ee618a1e95011e"
+    end
+
+    resource "Cargo.lock" do
+      url "https://hg.mozilla.org/mozilla-central/raw-file/#{hg_revision}/Cargo.lock"
+      sha256 "e2b6ba6af118d2fde12cdc05dfd0feca0d1d583f8bd083255dd48544fd416ca9"
+    end
+  end
+
+  livecheck do
+    url "https://github.com/mozilla/geckodriver.git"
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    sha256 "6e7521051120fd647e9445722b7f49f55459527c4398f8c7767ed411c34ed107" => :sierra
-    sha256 "0291e5251836f29e8ef67fa8aecb2aa3d81b9327b7eeb030f1781e0e6ef2d82d" => :el_capitan
-    sha256 "5cd25abbf348da927e9b772a702ee4d11e4629d2e98d93480f5215a599b66038" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "7fa8c7402cf7b076094ca1ef3286236866641530b270dda9f4e11ad2f4d93ba6" => :big_sur
+    sha256 "a20476cfe9b256bdceb599e58e0d8364d9407c7c83a49a9a7c7933367c14de56" => :catalina
+    sha256 "06808179a65aebbddcea493ba1c6002cd0abb396473f01947a11e2789f9354d2" => :mojave
+    sha256 "986d06965c069a00d36246a8d12bcf73d5869433519919e64edfc6076b236d97" => :high_sierra
   end
 
   depends_on "rust" => :build
 
+  uses_from_macos "unzip"
+
   def install
-    system "cargo", "build"
-    bin.install "target/debug/geckodriver"
+    unless build.head?
+      # we need to do this, because all archives are containing a top level testing directory
+      %w[webdriver mozbase].each do |r|
+        (buildpath/"staging").install resource(r)
+        mv buildpath/"staging"/"testing"/r, buildpath/"testing"
+        rm_rf buildpath/"staging"/"testing"
+      end
+      rm_rf buildpath/"staging"
+      (buildpath/"testing"/"geckodriver").install resource("Cargo.lock")
+    end
+
+    cd "testing/geckodriver" do
+      system "cargo", "install", *std_cargo_args
+    end
     bin.install_symlink bin/"geckodriver" => "wires"
   end
 
   test do
-    system bin/"geckodriver", "--help"
+    test_port = free_port
+    fork do
+      exec "#{bin}/geckodriver --port #{test_port}"
+    end
+    sleep 2
+
+    system "nc", "-z", "localhost", test_port
   end
 end

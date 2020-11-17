@@ -1,21 +1,23 @@
 class Pc6001vx < Formula
   desc "PC-6001 emulator"
-  homepage "http://eighttails.seesaa.net/"
-  url "http://eighttails.up.seesaa.net/bin/PC6001VX_2.30.0_src.tar.gz"
-  sha256 "51347ba79b05c66fe029cfc430ba2a4661b61d25ec3b03bc405b52a2fac97021"
-  revision 1
+  homepage "https://eighttails.seesaa.net/"
+  url "https://eighttails.up.seesaa.net/bin/PC6001VX_3.5.3_src.tar.gz"
+  sha256 "7473055dbcd9c288c0d303a0dbead82a6e4e0d9c351785284b96a2a28a733d70"
+  license "LGPL-2.1"
   head "https://github.com/eighttails/PC6001VX.git"
 
   bottle do
     cellar :any
-    sha256 "62597b7614b42265ec27189f70ab0771f8187e1072061a250d2c155943d60e72" => :sierra
-    sha256 "d9747be7031f6711e5776af469f2512b385e6fc88bfa55c331f702adb119eeea" => :el_capitan
-    sha256 "5489050ae24f64f057cd68e5afdecd2b1a52c83ac6a709cfb0cdf2e2fc863757" => :yosemite
+    sha256 "3442ef43b00439c58b714acd3e701c57f79608e32fe9e97875979f83c44b1ea0" => :big_sur
+    sha256 "041a6c242ad02363b601a7d60e09cecd300cfea7e4f9306c2f88dba49e95f8af" => :catalina
+    sha256 "b581bdbe91848b915bf05d4517c821b93ecc7b3e5d5e2256c3f0c5636e9bfb09" => :mojave
+    sha256 "d877ea218e51d60d7a48d48c7f27c2260e9c56db4714b9b861330a36ee1462f3" => :high_sierra
   end
 
-  depends_on "qt@5.7"
-  depends_on "sdl2"
+  depends_on "pkg-config" => :build
   depends_on "ffmpeg"
+  depends_on "qt"
+  depends_on "sdl2"
 
   def install
     # Need to explicitly set up include directories
@@ -25,6 +27,7 @@ class Pc6001vx < Formula
     ENV.append_to_cflags "-Wno-reserved-user-defined-literal"
     # Use libc++ explicitly, otherwise build fails
     ENV.append_to_cflags "-stdlib=libc++" if ENV.compiler == :clang
+
     system "qmake", "PREFIX=#{prefix}", "QMAKE_CXXFLAGS=#{ENV.cxxflags}", "CONFIG+=c++11"
     system "make"
     prefix.install "PC6001VX.app"

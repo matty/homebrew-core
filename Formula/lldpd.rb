@@ -1,42 +1,43 @@
 class Lldpd < Formula
   desc "Implementation of IEEE 802.1ab (LLDP)"
   homepage "https://vincentbernat.github.io/lldpd/"
-  url "https://media.luffy.cx/files/lldpd/lldpd-0.9.4.tar.gz"
-  sha256 "eb1f5beff2ff5c13c5e0342b5b9da815ed4a63866262445e1168a79ee65c9079"
-  revision 2
+  url "https://media.luffy.cx/files/lldpd/lldpd-1.0.7.tar.gz"
+  sha256 "1df79179d489c841b49265f2ab5ff05f284a647e95862d2f3c02b3fb079a87e1"
+  license "ISC"
 
-  bottle do
-    sha256 "68513191e42cb6c5b8c0b17eb07d553d1d5b9f949dc82ba3e3c94ab02907820b" => :sierra
-    sha256 "91db17ee1b90ebfe754dce063443d6ce1e0315b3b6b202685773983be3250f07" => :el_capitan
-    sha256 "b2810c86f3cafe0d9771bb56fcc93b05189f2842e77c82ff159266ca33ba1b05" => :yosemite
+  livecheck do
+    url "https://github.com/vincentbernat/lldpd.git"
   end
 
-  option "with-snmp", "Build SNMP subagent support"
-  option "with-json", "Build JSON support for lldpcli"
+  bottle do
+    sha256 "5d984d695c1fd07140da9eb2076e859339ccee48e132a6f76a6272c8be5a116a" => :big_sur
+    sha256 "b4445feaa32fb902e0619923d19c0368be1ec4a1f6ce24d6933e03d5b5e0b21f" => :catalina
+    sha256 "59afd24eb756f886e6c8b8d357bbff4bb1becb22b98fea94986ff287964f8d6f" => :mojave
+    sha256 "944ba7de01a2f0eb90536b7bd711f077c39a1a608b240d466f53eb40b4c17214" => :high_sierra
+  end
 
   depends_on "pkg-config" => :build
-  depends_on "readline"
   depends_on "libevent"
-  depends_on "net-snmp" if build.with? "snmp"
-  depends_on "jansson" if build.with? "json"
+  depends_on "readline"
+
+  uses_from_macos "libxml2"
 
   def install
     readline = Formula["readline"]
-    args = [
-      "--prefix=#{prefix}",
-      "--sysconfdir=#{etc}",
-      "--localstatedir=#{var}",
-      "--with-xml",
-      "--with-readline",
-      "--with-privsep-chroot=/var/empty",
-      "--with-privsep-user=nobody",
-      "--with-privsep-group=nogroup",
-      "--with-launchddaemonsdir=no",
-      "CPPFLAGS=-I#{readline.include} -DRONLY=1",
-      "LDFLAGS=-L#{readline.lib}",
+    args = %W[
+      --prefix=#{prefix}
+      --sysconfdir=#{etc}
+      --localstatedir=#{var}
+      --with-launchddaemonsdir=no
+      --with-privsep-chroot=/var/empty
+      --with-privsep-group=nogroup
+      --with-privsep-user=nobody
+      --with-readline
+      --with-xml
+      --without-snmp
+      CPPFLAGS=-I#{readline.include}\ -DRONLY=1
+      LDFLAGS=-L#{readline.lib}
     ]
-    args << (build.with?("snmp") ? "--with-snmp" : "--without-snmp")
-    args << (build.with?("json") ? "--with-json" : "--without-json")
 
     system "./configure", *args
     system "make"
@@ -47,29 +48,24 @@ class Lldpd < Formula
     (var/"run").mkpath
   end
 
-  plist_options :startup => true
+  plist_options startup: true
 
   def plist
-    additional_args = ""
-    if build.with? "snmp"
-      additional_args += "<string>-x</string>"
-    end
-    <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_sbin}/lldpd</string>
-        #{additional_args}
-      </array>
-      <key>RunAtLoad</key><true/>
-      <key>KeepAlive</key><true/>
-    </dict>
-    </plist>
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_sbin}/lldpd</string>
+        </array>
+        <key>RunAtLoad</key><true/>
+        <key>KeepAlive</key><true/>
+      </dict>
+      </plist>
     EOS
   end
 end

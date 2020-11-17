@@ -1,76 +1,98 @@
-class FrameworkPythonRequirement < Requirement
-  fatal true
-
-  satisfy do
-    q = `python -c "import distutils.sysconfig as c; print(c.get_config_var('PYTHONFRAMEWORK'))"`
-    !q.chomp.empty?
-  end
-
-  def message
-    "Python needs to be built as a framework."
-  end
-end
-
 class Wxpython < Formula
+  include Language::Python::Virtualenv
+
   desc "Python bindings for wxWidgets"
-  homepage "https://www.wxwidgets.org/"
-  url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
-  sha256 "d54129e5fbea4fb8091c87b2980760b72c22a386cb3b9dd2eebc928ef5e8df61"
+  homepage "https://www.wxpython.org/"
+  url "https://files.pythonhosted.org/packages/cb/4f/1e21d3c079c973ba862a18f3be73c2bbe2e6bc25c96d94df605b5cbb494d/wxPython-4.1.0.tar.gz"
+  sha256 "2e2475cb755ac8d93d2f9335c39c060b4d17ecb5d4e0e86626d1e2834b64a48b"
+  license "LGPL-2.0-or-later" => { with: "WxWindows-exception-3.1" }
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "0e095b7b61f71c23d36bcd795b9d0ce605adb073db1dc60978dfb0481306b345" => :sierra
-    sha256 "9956afc649ebc394fbae40dd55d3ce367ab42abe6be43ef01c35c1c6d0a8e225" => :el_capitan
-    sha256 "04d8dfeab6dbb7a1c099c8e866f35e6d5d528ea69ef283d556c545347882abe2" => :yosemite
-    sha256 "41ec8003758d804b8c426ce654a87f2d9f4be3be40fcbcb3d5686e3ecabaddbc" => :mavericks
+    sha256 "b79c369698d4b810127ec00ee1de52151cfabf651e2b4e6064c9bdf45659d24d" => :big_sur
+    sha256 "a9646e690310c718f071dd0b5e4188a93c839588af80647c3f4e8b84ab30021d" => :catalina
+    sha256 "aa2a899b27b94c5c2fc99d18eee8f82b6b1a372aaf07a087096ed379597d1f8d" => :mojave
+    sha256 "94fe1e101973190e7ddb04f4b5c3bfe7343014ed3439b4a4c8f588b00541c500" => :high_sierra
   end
 
-  option :universal
+  depends_on "freetype"
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libtiff"
+  depends_on "numpy"
+  depends_on "python@3.9"
 
-  if MacOS.version <= :snow_leopard
-    depends_on :python
-    depends_on FrameworkPythonRequirement
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "pkg-config" => :build
+    depends_on "gtk+3"
   end
-  depends_on "wxmac"
+
+  resource "Pillow" do
+    url "https://files.pythonhosted.org/packages/3e/02/b09732ca4b14405ff159c470a612979acfc6e8645dc32f83ea0129709f7a/Pillow-7.2.0.tar.gz"
+    sha256 "97f9e7953a77d5a70f49b9a48da7776dc51e9b738151b22dacf101641594a626"
+  end
+
+  resource "six" do
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
+  end
 
   def install
-    ENV["WXWIN"] = buildpath
-
-    if build.universal?
-      ENV.universal_binary
-    else
-      ENV.append_to_cflags "-arch #{MacOS.preferred_arch}"
+    # Fix build of included wxwidgets:
+    # https://github.com/wxWidgets/Phoenix/issues/1247
+    # https://github.com/Homebrew/homebrew-core/pull/58988
+    inreplace "buildtools/build_wxwidgets.py" do |s|
+      s.gsub! "#wxpy_configure_opts.append(\"--enable-monolithic\")",
+              "wxpy_configure_opts.append(\"--disable-precomp-headers\")"
+      s.gsub! "--with-macosx-version-min=10.9",
+              "--with-macosx-version-min=#{MacOS.version}"
     end
 
-    # wxPython is hardcoded to install headers in wx's prefix;
-    # set it to use wxPython's prefix instead
-    # See #47187.
-    inreplace %w[wxPython/config.py wxPython/wx/build/config.py],
-      "WXPREFIX +", "'#{prefix}' +"
+    inreplace "wscript", "MACOSX_DEPLOYMENT_TARGET = \"10.6\"",
+                         "MACOSX_DEPLOYMENT_TARGET = \"#{MacOS.version}\""
 
-    args = [
-      "WXPORT=osx_cocoa",
-      # Reference our wx-config
-      "WX_CONFIG=#{Formula["wxmac"].opt_bin}/wx-config",
-      # At this time Wxmac is installed Unicode only
-      "UNICODE=1",
-      # Some scripts (e.g. matplotlib) expect to `import wxversion`, which is
-      # only available on a multiversion build.
-      "INSTALL_MULTIVERSION=1",
-      # OpenGL and stuff
-      "BUILD_GLCANVAS=1",
-      "BUILD_GIZMOS=1",
-      "BUILD_STC=1",
-    ]
+    venv = virtualenv_create(libexec, Formula["python@3.9"].opt_bin/"python3")
 
-    cd "wxPython" do
-      system "python", "setup.py", "install", "--prefix=#{prefix}", *args
+    resource("Pillow").stage do
+      inreplace "setup.py" do |s|
+        sdkprefix = MacOS.sdk_path_if_needed ? MacOS.sdk_path : ""
+        s.gsub! "openjpeg.h", "probably_not_a_header_called_this_eh.h"
+        s.gsub! "xcb.h", "probably_not_a_header_called_this_eh.h"
+        s.gsub! "ZLIB_ROOT = None",
+          "ZLIB_ROOT = ('#{sdkprefix}/usr/lib', '#{sdkprefix}/usr/include')"
+        s.gsub! "JPEG_ROOT = None",
+          "JPEG_ROOT = ('#{Formula["jpeg"].opt_prefix}/lib', '#{Formula["jpeg"].opt_prefix}/include')"
+        s.gsub! "FREETYPE_ROOT = None",
+          "FREETYPE_ROOT = ('#{Formula["freetype"].opt_prefix}/lib', '#{Formula["freetype"].opt_prefix}/include')"
+      end
+
+      # avoid triggering "helpful" distutils code that doesn't recognize Xcode 7 .tbd stubs
+      unless MacOS::CLT.installed?
+        ENV.append "CFLAGS", "-I#{MacOS.sdk_path}/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers"
+      end
+      venv.pip_install Pathname.pwd
     end
+
+    res = resources.map(&:name).to_set - ["Pillow"]
+    res.each do |r|
+      venv.pip_install resource(r)
+    end
+
+    venv.pip_install_and_link buildpath
   end
 
   test do
-    output = shell_output("python -c 'import wx ; print wx.version()'")
+    xy = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+    ENV.prepend_path "PYTHONPATH", libexec/"lib/python#{xy}/site-packages"
+
+    output = shell_output("#{Formula["python@3.9"].opt_bin}/python3 -c 'import wx ; print(wx.__version__)'")
     assert_match version.to_s, output
   end
 end

@@ -1,22 +1,51 @@
 class Jags < Formula
   desc "Just Another Gibbs Sampler for Bayesian MCMC simulation"
   homepage "https://mcmc-jags.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/mcmc-jags/JAGS/4.x/Source/JAGS-4.2.0.tar.gz"
-  sha256 "af3e9d2896d3e712f99e2a0c81091c6b08f096650af6aa9d0c631c0790409cf7"
+  url "https://downloads.sourceforge.net/project/mcmc-jags/JAGS/4.x/Source/JAGS-4.3.0.tar.gz"
+  sha256 "8ac5dd57982bfd7d5f0ee384499d62f3e0bb35b5f1660feb368545f1186371fc"
+  revision 2
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/JAGS[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "970d19cdeacd18ba4fe09348cdff25dec0c6307c7f7e6493ab4d17b17e4b5b5b" => :sierra
-    sha256 "3a097289424b68d96d21eebaba46c72919d14fd69d696ce2bd879d309dd3a662" => :el_capitan
-    sha256 "998b753d66f973ac321b95c73a630ff325e5543f911ad2c66b782bb6d36fa63e" => :yosemite
-    sha256 "07da5d6b1faff0492d3e808d08529b1466dada956ce0454fbe89b522e3dfda9f" => :mavericks
+    sha256 "5e15b0663aa9a2b8bdd795beaec52b84e1ddf00f3af5768c6621d2b47a9ef977" => :big_sur
+    sha256 "f40e6af27e11d70df8d967dfdf56b9f51f97b6d7b26922efc1e0a7c564d6a82e" => :catalina
+    sha256 "73dd05de303d75d9a252fd9cf40242036d6227d20ff0e40bdad8a9b4fb5ac093" => :mojave
+    sha256 "6f3e40e482b03deb728487e3b9c7089d900f1aa518c74de0859a2877833b16b0" => :high_sierra
+    sha256 "0651db81905348bb0c48c20529c5bab0d4eb735da50fcc9ec26aef38672cf26f" => :sierra
+    sha256 "6c82f61d6cacec46e7863f9b9cb92f33eac63339822fd196e6a029a75dfb01f7" => :el_capitan
   end
 
-  depends_on :fortran
+  depends_on "gcc" # for gfortran
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"model.bug").write <<~EOS
+      data {
+        obs <- 1
+      }
+      model {
+        parameter ~ dunif(0,1)
+        obs ~ dbern(parameter)
+      }
+    EOS
+    (testpath/"script").write <<~EOS
+      model in model.bug
+      compile
+      initialize
+      monitor parameter
+      update 100
+      coda *
+    EOS
+    system "#{bin}/jags", "script"
   end
 end

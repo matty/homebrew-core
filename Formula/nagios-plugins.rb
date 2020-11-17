@@ -1,43 +1,52 @@
 class NagiosPlugins < Formula
   desc "Plugins for the nagios network monitoring system"
   homepage "https://www.nagios-plugins.org/"
-  url "https://www.nagios-plugins.org/download/nagios-plugins-2.1.4.tar.gz"
-  sha256 "4355b5daede0fa72bbb55d805d724dfa3d05e7f66592ad71b4e047c6d9cdd090"
+  url "https://www.nagios-plugins.org/download/nagios-plugins-2.3.3.tar.gz"
+  sha256 "07859071632ded58c5135d613438137022232da75f8bdc1687f3f75da2fe597f"
+  license "GPL-3.0"
+  head "https://github.com/nagios-plugins/nagios-plugins.git"
 
-  bottle do
-    sha256 "33f3ad7bc229a5c98a91f1dc60fc5e113afdccb63e3e0c824c631062403c91ac" => :sierra
-    sha256 "8a45819e58f06a9cea8f34d2f13d79c22a73ea6fa77eef231681127b6227185a" => :el_capitan
-    sha256 "1cf4050b3043c6f74ccadb02ccdfe7b438994bfafad3758eafe625a7539c19db" => :yosemite
+  livecheck do
+    url "https://nagios-plugins.org/download/"
+    regex(/href=.*?nagios-plugins[._-]v?([\d.]+)\.t/i)
   end
 
-  depends_on "openssl"
-  depends_on "postgresql" => :optional
-  depends_on :mysql => :optional
+  bottle do
+    cellar :any
+    sha256 "b90c6f268ed5a5310a797855d87730f016c5d5077fa7b131c929aee042a1ee6c" => :catalina
+    sha256 "9dc95d628b0ca0e63df426e933f2be374442fa6ea3c6db0ea24ffb5967d098b1" => :mojave
+    sha256 "873811a29453153cd0ace61f92be73ae33b4a5bec1a4ece13baf128b32250e6e" => :high_sierra
+  end
+
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "openssl@1.1"
+
+  conflicts_with "monitoring-plugins", because: "both install their plugins to the same folder"
 
   def install
     args = %W[
       --disable-dependency-tracking
       --prefix=#{libexec}
       --libexecdir=#{libexec}/sbin
-      --with-openssl=#{Formula["openssl"].opt_prefix}
+      --with-openssl=#{Formula["openssl@1.1"].opt_prefix}
     ]
 
-    args << "--with-pgsql=#{Formula["postgresql"].opt_prefix}" if build.with? "postgresql"
-
+    system "./tools/setup" if build.head?
     system "./configure", *args
     system "make", "install"
     sbin.write_exec_script Dir["#{libexec}/sbin/*"]
   end
 
   def caveats
-    <<-EOS.undent
-    All plugins have been installed in:
-      #{HOMEBREW_PREFIX}/sbin
+    <<~EOS
+      All plugins have been installed in:
+        #{HOMEBREW_PREFIX}/sbin
     EOS
   end
 
   test do
-    output = shell_output("#{sbin}/check_dns -H 8.8.8.8 -t 3")
-    assert_match "google-public-dns", output
+    output = shell_output("#{sbin}/check_dns -H brew.sh -s 8.8.8.8 -t 3")
+    assert_match "DNS OK", output
   end
 end

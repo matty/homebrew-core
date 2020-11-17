@@ -1,36 +1,44 @@
 class Librdkafka < Formula
-  desc "The Apache Kafka C/C++ library"
+  desc "Apache Kafka C/C++ library"
   homepage "https://github.com/edenhill/librdkafka"
-  url "https://github.com/edenhill/librdkafka/archive/v0.9.3.tar.gz"
-  sha256 "745ead036f0d5b732e1cd035a1f31fc23665f2982bf9d799742034e0a1bd0be9"
-
+  url "https://github.com/edenhill/librdkafka/archive/v1.5.2.tar.gz"
+  sha256 "ca3db90d04ef81ca791e55e9eed67e004b547b7adedf11df6c24ac377d4840c6"
+  license "BSD-2-Clause"
   head "https://github.com/edenhill/librdkafka.git"
 
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
+
   bottle do
-    cellar :any
-    sha256 "24fa8334f54dff2cca4dfec93352550de92ee0f38ab4fc04c9fdf69c5968af59" => :sierra
-    sha256 "79253c4ca04908ec37e171c191138ebbe9dc7376971b0de29d57599b13d84e74" => :el_capitan
-    sha256 "1d42f6ff44c79b0a94475e6f5c216a63c8edffc4fd779b106ba7c1ad1dd45a96" => :yosemite
+    sha256 "832ed31ebd9fb44415bc5cc6d91edaa094db929c3fe2686589eaee6cf64c88cb" => :big_sur
+    sha256 "9aaa1cfe08a116ae3c064062bc2120a98baddc460f956219bac775d8f6ae5209" => :catalina
+    sha256 "edc1ad30e18104d2fe4f0e94c457c65231a6c03a7ccddcd71d1486cad86d2816" => :mojave
+    sha256 "cd7f63a0dcee584b97bdbf93d56ed0f097c00ec4dc2a1e6dab38368e569118c7" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "python@3.9" => :build
+  depends_on "lz4"
   depends_on "lzlib"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+  depends_on "zstd"
 
   def install
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
+    system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <librdkafka/rdkafka.h>
 
       int main (int argc, char **argv)
       {
         int partition = RD_KAFKA_PARTITION_UA; /* random */
+        int version = rd_kafka_version();
         return 0;
       }
     EOS

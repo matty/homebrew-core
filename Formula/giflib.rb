@@ -1,46 +1,36 @@
-# Please check & build every `brew uses giflib` locally prior to
-# submitting 5.x.x. Many formulae requiring giflib haven't
-# updated to use 5.x.x yet.
-# Can `brew install homebrew/versions/giflib5` for now.
 class Giflib < Formula
-  desc "GIF library using patented LZW algorithm"
+  desc "Library and utilities for processing GIFs"
   homepage "https://giflib.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/giflib/giflib-4.x/giflib-4.2.3.tar.bz2"
-  sha256 "0ac8d56726f77c8bc9648c93bbb4d6185d32b15ba7bdb702415990f96f3cb766"
+  url "https://downloads.sourceforge.net/project/giflib/giflib-5.2.1.tar.gz"
+  sha256 "31da5562f44c5f15d63340a09a4fd62b48c45620cd302f77a6d9acf0077879bd"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/giflib[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "ec490b9508f82db67963575a91a8079ea0a3f05a65aae0ac12e0efe6005f56e1" => :sierra
-    sha256 "2abbeb99b0dec772fa020ec4cecd0df512813a223ab3e32bc760180367af4138" => :el_capitan
-    sha256 "3180706f4a94e7ede8c66299474ada34165b2947c262316186e424b1b9d25aba" => :yosemite
-    sha256 "74316a4dd9b94ca052b6f784c9764764d0b24dd8dc1f3f29b5681a374989979a" => :mavericks
-    sha256 "76953a4ac103ff0931f2e4f70dafe9283c9289de2dda7f800e8ca3b47b6830db" => :mountain_lion
+    sha256 "dc23500f50d599c4dbfcea0107b643bef41538c2f5fd162b049f82d21e3d32d5" => :big_sur
+    sha256 "ad97d175fa77f7afb4a1c215538d8ae9eff30435de7feaa6a5d2e29fca7fef4d" => :catalina
+    sha256 "42d2f8a6e9dbf9d4c22a2e64581c7170cc7dcb2a0e66df383efc67b7bc96238d" => :mojave
+    sha256 "e1a30a20ad93cd9ec003027d7fba43a7e04ced0bff4156614818cccfc9dec6c9" => :high_sierra
   end
 
-  option :universal
-
-  depends_on :x11 => :optional
+  # Upstream has stripped out the previous autotools-based build system and their
+  # Makefile doesn't work on macOS. See https://sourceforge.net/p/giflib/bugs/133/
+  patch :p0 do
+    url "https://sourceforge.net/p/giflib/bugs/_discuss/thread/4e811ad29b/c323/attachment/Makefile.patch"
+    sha256 "a94e7bdd8840a31cecacc301684dfdbf7b98773ad824aeaab611fabfdc513036"
+  end
 
   def install
-    ENV.universal_binary if build.universal?
-
-    args = %W[
-      --prefix=#{prefix}
-      --disable-dependency-tracking
-    ]
-
-    if build.without? "x11"
-      args << "--disable-x11" << "--without-x"
-    else
-      args << "--with-x" << "--enable-x11"
-    end
-
-    system "./configure", *args
-    system "make", "install"
+    system "make", "all"
+    system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
-    assert_match /Size: 1x1/, shell_output("#{bin}/gifinfo #{test_fixtures("test.gif")}")
+    output = shell_output("#{bin}/giftext #{test_fixtures("test.gif")}")
+    assert_match "Screen Size - Width = 1, Height = 1", output
   end
 end

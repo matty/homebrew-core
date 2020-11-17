@@ -1,54 +1,36 @@
 class Hub < Formula
   desc "Add GitHub support to git on the command-line"
   homepage "https://hub.github.com/"
-  url "https://github.com/github/hub/archive/v2.2.9.tar.gz"
-  sha256 "b3cf227e38a34a56e37b7705a60bec258cea52174d8e030b559f74af647a70d6"
-
+  url "https://github.com/github/hub/archive/v2.14.2.tar.gz"
+  sha256 "e19e0fdfd1c69c401e1c24dd2d4ecf3fd9044aa4bd3f8d6fd942ed1b2b2ad21a"
+  license "MIT"
   head "https://github.com/github/hub.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6c23abd1255f04855fc1dfb8d44706337b728b5785e5b79f2319637575be93c7" => :sierra
-    sha256 "3452a355c8e4ef25714be7105d8946e01319e7760ffe97f7df3fc9dd21c89c76" => :el_capitan
-    sha256 "3f116b4c0587ab5d2a87d9d2f013ea058407ac2f9e845461d4970f36548e6be4" => :yosemite
+    sha256 "7c480f3de5f449a741f88718194c129d597f0fe0db8b2130c1ccf4daa9a8dfca" => :big_sur
+    sha256 "fdf05855839a9d7ec6e7bee6796e3cb5fc473500cffc002366cf98c09a805b69" => :catalina
+    sha256 "bcbae9c683d76f3395665467ba0f0c00c60c12c84022f72faba4b8981724b563" => :mojave
+    sha256 "8800cda4532784bf764ea6116a06c81d8d90bb3d36d8ecf295e64f9dd647c4ad" => :high_sierra
   end
-
-  devel do
-    url "https://github.com/github/hub/archive/v2.3.0-pre9.tar.gz"
-    version "2.3.0-pre9"
-    sha256 "3246a5e3a071a7ccb06c30230a720b6457837bd6b97b32ab248dfb2b2222dbfb"
-  end
-
-  option "without-completions", "Disable bash/zsh completions"
-  option "without-docs", "Don't install man pages"
 
   depends_on "go" => :build
 
-  def install
-    if build.stable?
-      system "script/build", "-o", "hub"
-      bin.install "hub"
-      man1.install Dir["man/*"] if build.with? "docs"
-    elsif build.with? "docs"
-      begin
-        deleted = ENV.delete "SDKROOT"
-        ENV["GEM_HOME"] = buildpath/"gem_home"
-        system "gem", "install", "bundler"
-        ENV.prepend_path "PATH", buildpath/"gem_home/bin"
-        system "make", "man-pages"
-      ensure
-        ENV["SDKROOT"] = deleted
-      end
-      system "make", "install", "prefix=#{prefix}"
-    else
-      system "script/build", "-o", "hub"
-      bin.install "hub"
-    end
+  uses_from_macos "groff" => :build
+  uses_from_macos "ruby" => :build
 
-    if build.with? "completions"
-      bash_completion.install "etc/hub.bash_completion.sh"
-      zsh_completion.install "etc/hub.zsh_completion" => "_hub"
-    end
+  on_linux do
+    depends_on "util-linux"
+  end
+
+  def install
+    system "make", "install", "prefix=#{prefix}"
+
+    prefix.install_metafiles
+
+    bash_completion.install "etc/hub.bash_completion.sh"
+    zsh_completion.install "etc/hub.zsh_completion" => "_hub"
+    fish_completion.install "etc/hub.fish_completion" => "hub.fish"
   end
 
   test do

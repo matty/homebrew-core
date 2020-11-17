@@ -1,16 +1,17 @@
 class Gifsicle < Formula
   desc "GIF image/animation creator/editor"
   homepage "https://www.lcdf.org/gifsicle/"
-  url "https://www.lcdf.org/gifsicle/gifsicle-1.88.tar.gz"
-  sha256 "4585d2e683d7f68eb8fcb15504732d71d7ede48ab5963e61915201f9e68305be"
+  url "https://www.lcdf.org/gifsicle/gifsicle-1.92.tar.gz"
+  sha256 "5ab556c01d65fddf980749e3ccf50b7fd40de738b6df679999294cc5fabfce65"
+  license "GPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "2c99fa43de4ecd237798feaad2fab1e83b22d2f84170f3b954dd84dfd6869a9d" => :sierra
-    sha256 "2d40a7dc8d0f2a39134872a99ab8e8c3f5e5dc6381826abdd8d4f89c3fe287d0" => :el_capitan
-    sha256 "f4699986ab815c25764b4c7049fc067d6209922bcfd8b841bb19f2ae41c66f8d" => :yosemite
-    sha256 "29af107b09e41c0e40a10411565345cb636e724cd28e9d2f4e58c5dc0dd819c9" => :mavericks
+    sha256 "cb3eefd1feccd5bda0979aa5ccf1cc1198b599654a43d33328912733c6644f91" => :big_sur
+    sha256 "5c39ab6736846e30082db190167bc498e78d03e523f642057eadc29f854c71b1" => :catalina
+    sha256 "52be1cd49246909777199147dcbbeb6f490580558615138ae063b6149cfbe53c" => :mojave
+    sha256 "a7cfb607906023c5bdb56a49f8a75ce0b3e2c76a971266bb530d04ed29be74f9" => :high_sierra
+    sha256 "746d071f268950c6af18704590b981f5f965d35e2adf6c202aa3df0f13e943e9" => :sierra
   end
 
   head do
@@ -20,20 +21,15 @@ class Gifsicle < Formula
     depends_on "automake" => :build
   end
 
-  option "with-x11", "Install gifview"
-
-  depends_on :x11 => :optional
-
   conflicts_with "giflossy",
-    :because => "both install an `gifsicle` binary"
+    because: "both install an `gifsicle` binary"
 
   def install
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
+      --disable-gifview
     ]
-
-    args << "--disable-gifview" if build.without? "x11"
 
     system "./bootstrap.sh" if build.head?
     system "./configure", *args

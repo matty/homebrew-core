@@ -1,33 +1,29 @@
 class Fribidi < Formula
   desc "Implementation of the Unicode BiDi algorithm"
-  homepage "https://fribidi.org/"
-  url "https://fribidi.org/download/fribidi-0.19.7.tar.bz2"
-  sha256 "08222a6212bbc2276a2d55c3bf370109ae4a35b689acbc66571ad2a670595a8e"
-  revision 1
+  homepage "https://github.com/fribidi/fribidi"
+  url "https://github.com/fribidi/fribidi/releases/download/v1.0.10/fribidi-1.0.10.tar.xz"
+  sha256 "7f1c687c7831499bcacae5e8675945a39bacbad16ecaa945e9454a32df653c01"
+  license "LGPL-2.1"
 
   bottle do
     cellar :any
-    sha256 "5d1e95fc89934750643b1a684cd6738839ecc2d05721282dcf72b9c3481092fd" => :sierra
-    sha256 "6ba76553f8ec26d4de32e84ce0a99e758d1bb5b7272ac2a985ff71322957d1ac" => :el_capitan
-    sha256 "e414b99827d9a472609639ab5030bf5344077763bc178ce743a082008874f232" => :yosemite
-    sha256 "70caed8cb2f44044c41e0b91c2645111b9f177d98b4d49cef01fb0d8558c0f98" => :mavericks
+    sha256 "edc35b607a4be54edba895c367f4f7df356d863fd9abaf34323206ac46fe5655" => :big_sur
+    sha256 "c3799c193fb513a5c66a6e9fa950c1bdd15c12f931b9421dbf8e1c8e994f41e3" => :catalina
+    sha256 "a53aef8adec171a839a2ea0f7d90655f385215d4a6c45c0ffc2a97c75a297fb5" => :mojave
+    sha256 "83253b57bd1621e9340bfdb86ba147ff0a095e006ef53ad0c5421107557475a0" => :high_sierra
   end
 
-  option :universal
-
-  depends_on "pkg-config" => :build
-  depends_on "glib"
-  depends_on "pcre"
-
   def install
-    ENV.universal_binary if build.universal?
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                          "--with-glib", "--prefix=#{prefix}"
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--disable-silent-rules",
+                          "--prefix=#{prefix}",
+                          "--enable-static"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.input").write <<-EOS.undent
+    (testpath/"test.input").write <<~EOS
       a _lsimple _RteST_o th_oat
     EOS
 

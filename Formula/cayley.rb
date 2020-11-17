@@ -1,43 +1,48 @@
 class Cayley < Formula
   desc "Graph database inspired by Freebase and Knowledge Graph"
   homepage "https://github.com/cayleygraph/cayley"
-  url "https://github.com/cayleygraph/cayley/archive/v0.6.0.tar.gz"
-  sha256 "b55d6b02567dd0a1c51001cb25d5bde602358f621cdf78ba40bdf8a8c51422b0"
-  head "https://github.com/google/cayley.git"
+  url "https://github.com/cayleygraph/cayley.git",
+    tag:      "v0.7.7",
+    revision: "dcf764fef381f19ee49fad186b4e00024709f148"
+  license "Apache-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "06e628c51dffbcebc9cc881e1179c9174d445940877bba122759d2c8c67e6dbb" => :sierra
-    sha256 "452f7b30fe5159cf9ef3775b8f2ecaf930b21b84c635ecd54fc003aad8ae183f" => :el_capitan
-    sha256 "e3895acb97793b73d523db3060a6aa12d92460e37f2c8dbc40262bc60ab63b76" => :yosemite
+    rebuild 2
+    sha256 "7fe446d8eaa6ed43ae226027feec3878e437708d4a59c5aab761ab249bc9ba56" => :catalina
+    sha256 "7084bd5b3b7dc66c9c50266f2831951f995901f2a326905c760646ebe66a3b96" => :mojave
+    sha256 "0dc598decbc9c70660d22fc670f71581e7fec09e5c9d9bc13ccee4c88c758338" => :high_sierra
   end
 
-  option "without-samples", "Don't install sample data"
-
   depends_on "bazaar" => :build
-  depends_on :hg => :build
-  depends_on "glide" => :build
   depends_on "go" => :build
+  depends_on "mercurial" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    ENV["GLIDE_HOME"] = HOMEBREW_CACHE/"glide_home/#{name}"
+    dir = buildpath/"src/github.com/cayleygraph/cayley"
+    dir.install buildpath.children
 
-    (buildpath/"src/github.com/cayleygraph/cayley").install buildpath.children
-    cd "src/github.com/cayleygraph/cayley" do
-      system "glide", "install"
-      system "go", "build", "-o", bin/"cayley", "-ldflags",
-             "-X main.Version=#{version}", ".../cmd/cayley"
+    cd dir do
+      # Run packr to generate .go files that pack the static files into bytes that can be bundled into the Go binary.
+      system "go", "run", "github.com/gobuffalo/packr/v2/packr2"
 
-      inreplace "cayley.cfg.example", "/tmp/cayley_test", var/"cayley"
-      etc.install "cayley.cfg.example" => "cayley.conf"
+      commit = Utils.safe_popen_read("git", "rev-parse", "--short", "HEAD").chomp
 
-      (pkgshare/"assets").install "docs", "static", "templates"
+      ldflags = %W[
+        -s -w
+        -X github.com/cayleygraph/cayley/version.Version=#{version}
+        -X github.com/cayleygraph/cayley/version.GitHash=#{commit}
+      ]
 
-      if build.with? "samples"
-        system "gzip", "-d", "data/30kmoviedata.nq.gz"
-        (pkgshare/"samples").install "data/testdata.nq", "data/30kmoviedata.nq"
-      end
+      # Build the binary
+      system "go", "build", "-o", bin/"cayley", "-ldflags", ldflags.join(" "), "./cmd/cayley"
+
+      inreplace "cayley_example.yml", "./cayley.db", var/"cayley/cayley.db"
+      etc.install "cayley_example.yml" => "cayley.yml"
+
+      # Install samples
+      system "gzip", "-d", "data/30kmoviedata.nq.gz"
+      (pkgshare/"samples").install "data/testdata.nq", "data/30kmoviedata.nq"
     end
   end
 
@@ -46,45 +51,53 @@ class Cayley < Formula
       (var/"cayley").mkpath
 
       # Initialize the database
-      system bin/"cayley", "init", "--config=#{etc}/cayley.conf"
+      system bin/"cayley", "init", "--config=#{etc}/cayley.yml"
     end
   end
 
-  plist_options :manual => "cayley http --assets=#{HOMEBREW_PREFIX}/share/cayley/assets --config=#{HOMEBREW_PREFIX}/etc/cayley.conf"
+  plist_options manual: "cayley http --config=#{HOMEBREW_PREFIX}/etc/cayley.conf"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
         <dict>
-          <key>SuccessfulExit</key>
-          <false/>
+          <key>KeepAlive</key>
+          <dict>
+            <key>SuccessfulExit</key>
+            <false/>
+          </dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/cayley</string>
+            <string>http</string>
+            <string>--config=#{etc}/cayley.conf</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>WorkingDirectory</key>
+          <string>#{var}/cayley</string>
+          <key>StandardErrorPath</key>
+          <string>#{var}/log/cayley.log</string>
+          <key>StandardOutPath</key>
+          <string>#{var}/log/cayley.log</string>
         </dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/cayley</string>
-          <string>http</string>
-          <string>--assets=#{opt_pkgshare}/assets</string>
-          <string>--config=#{etc}/cayley.conf</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>WorkingDirectory</key>
-        <string>#{var}/cayley</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/cayley.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/cayley.log</string>
-      </dict>
-    </plist>
+      </plist>
     EOS
   end
 
   test do
     assert_match version.to_s, shell_output("#{bin}/cayley version")
+
+    http_port = free_port
+    fork do
+      exec "#{bin}/cayley", "http", "--host=127.0.0.1:#{http_port}"
+    end
+    sleep 3
+    response = shell_output("curl -s -i 127.0.0.1:#{http_port}")
+    assert_match "HTTP\/1.1 200 OK", response
   end
 end

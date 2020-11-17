@@ -1,26 +1,33 @@
 class Unpaper < Formula
   desc "Post-processing for scanned/photocopied books"
-  homepage "https://www.flameeyes.eu/projects/unpaper"
-  url "https://www.flameeyes.eu/files/unpaper-6.1.tar.xz"
+  homepage "https://www.flameeyes.com/projects/unpaper"
+  url "https://www.flameeyes.com/files/unpaper-6.1.tar.xz"
   sha256 "237c84f5da544b3f7709827f9f12c37c346cdf029b1128fb4633f9bafa5cb930"
-  revision 1
+  revision 6
 
   bottle do
     cellar :any
-    sha256 "f37e1cc563b2eaa5bfde892d775200c86fcabd4261745a62e76f4ff175fad8c6" => :sierra
-    sha256 "7332b87cd5d0e087774f41fd0df69d5f26c616ca469a1d33cdfdcf4baa6153ff" => :el_capitan
-    sha256 "c84f37be3e99fcf3d47bf4bbffba7192d451761a31056705f11d6a4a19dcd45a" => :yosemite
-    sha256 "318d0e90644880ee357818a8d6d144d7ccc4873cca90a1ff77f1031f20994b93" => :mavericks
+    sha256 "4272a437e23c502b03ceea130c0ea2c2d1312a11834452638862251d395e0ecc" => :big_sur
+    sha256 "20b2e6bf4adebadfeb7705f2a3b6437aac39cbec0eeeac0a924a2985d15f014d" => :catalina
+    sha256 "722874cb52df909ea30a72d519f3db40a9c98389281629b4910aeefbdf88b959" => :mojave
+    sha256 "649ba3d0be5c4c2ce5e32f32c2023ea3296bb59ff0473f641092173f8a664552" => :high_sierra
   end
 
   head do
     url "https://github.com/Flameeyes/unpaper.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
   depends_on "pkg-config" => :build
   depends_on "ffmpeg"
+
+  uses_from_macos "libxslt"
+
+  on_linux do
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+  end
 
   def install
     system "autoreconf", "-i" if build.head?
@@ -29,7 +36,7 @@ class Unpaper < Formula
   end
 
   test do
-    (testpath/"test.pbm").write <<-EOS.undent
+    (testpath/"test.pbm").write <<~EOS
       P1
       6 10
       0 0 0 0 1 0
@@ -44,6 +51,6 @@ class Unpaper < Formula
       0 0 0 0 0 0
     EOS
     system bin/"unpaper", testpath/"test.pbm", testpath/"out.pbm"
-    File.exist? testpath/"out.pbm"
+    assert_predicate testpath/"out.pbm", :exist?
   end
 end

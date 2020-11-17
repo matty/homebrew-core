@@ -1,18 +1,29 @@
+require "language/perl"
+
 class Kpcli < Formula
-  desc "command-line interface to KeePass database files"
+  include Language::Perl::Shebang
+
+  desc "Command-line interface to KeePass database files"
   homepage "https://kpcli.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/kpcli/kpcli-3.1.pl"
-  sha256 "f1f07704a30d0eae126717d5dae0d24ccced43c316454e4a7b868fe0a239a21a"
-  revision 1
+  url "https://downloads.sourceforge.net/project/kpcli/kpcli-3.6.pl"
+  sha256 "01f23882d458dfffc176fe5f268ced13c667de22b7fbf60d488eca87f3362deb"
+  license any_of: ["Artistic-1.0-Perl", "GPL-1.0-or-later"]
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/kpcli[._-]v?(\d+(?:\.\d+)+)\.pl}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "56d487c750f8aceb848fe38847d4f9f93cf9aece7d1cce2c06b1375a7269f41e" => :sierra
-    sha256 "e94898161025e19fe681f2874ab8139850d28003f2d689dbc48e827457fcbbdb" => :el_capitan
-    sha256 "163ec79488cdf951eb248fc9ca45cba2c8c1f095669d54494452d2e16f931478" => :yosemite
+    sha256 "6193bb5123810dbe1332a60545e101eb75a68d013054baaa16651f829d0a19b6" => :catalina
+    sha256 "a2a1aaa9f96cc3d748f0ca0a048e052eddc69b1ae9fbe51c0c3e212e99be3497" => :mojave
+    sha256 "50d956c615d763c6088c774f568e758a365fe7a6d7432df442cff9b3d1d99133" => :high_sierra
   end
 
   depends_on "readline"
+
+  uses_from_macos "perl"
 
   resource "File::KeePass" do
     url "https://cpan.metacpan.org/authors/id/R/RH/RHANDOM/File-KeePass-2.03.tar.gz"
@@ -20,8 +31,8 @@ class Kpcli < Formula
   end
 
   resource "Crypt::Rijndael" do
-    url "https://cpan.metacpan.org/authors/id/L/LE/LEONT/Crypt-Rijndael-1.13.tar.gz"
-    sha256 "cd7209a6dfe0a3dc8caffe1aa2233b0e6effec7572d76a7a93feefffe636214e"
+    url "https://cpan.metacpan.org/authors/id/L/LE/LEONT/Crypt-Rijndael-1.14.tar.gz"
+    sha256 "6451c3dffe8703523be2bb08d1adca97e77df2a8a4dd46944d18a99330b7850e"
   end
 
   resource "Sort::Naturally" do
@@ -35,8 +46,8 @@ class Kpcli < Formula
   end
 
   resource "Term::Readline::Gnu" do
-    url "https://cpan.metacpan.org/authors/id/H/HA/HAYASHI/Term-ReadLine-Gnu-1.34.tar.gz"
-    sha256 "a965fd0601bea84cb65e0c5e6a1eb3469fe2d99772be235faccbc49c57edf6cd"
+    url "https://cpan.metacpan.org/authors/id/H/HA/HAYASHI/Term-ReadLine-Gnu-1.36.tar.gz"
+    sha256 "9a08f7a4013c9b865541c10dbba1210779eb9128b961250b746d26702bab6925"
   end
 
   resource "Data::Password" do
@@ -45,18 +56,18 @@ class Kpcli < Formula
   end
 
   resource "Clipboard" do
-    url "https://cpan.metacpan.org/authors/id/K/KI/KING/Clipboard-0.13.tar.gz"
-    sha256 "eebf1c9cb2484be850abdae017147967cf47f8ccd99293771517674b0046ec8a"
+    url "https://cpan.metacpan.org/authors/id/S/SH/SHLOMIF/Clipboard-0.23.tar.gz"
+    sha256 "0ec64d9c443bb7f713dce841a00817be50758d43ad07154541b5be7053779264"
   end
 
   resource "Mac::Pasteboard" do
-    url "https://cpan.metacpan.org/authors/id/W/WY/WYANT/Mac-Pasteboard-0.008.tar.gz"
-    sha256 "62e5f55c423d033f8f5caff5d1678bb0b327144655aeaeb48a11cf633baa8f15"
+    url "https://cpan.metacpan.org/authors/id/W/WY/WYANT/Mac-Pasteboard-0.011.tar.gz"
+    sha256 "bd8c4510b1e805c43e4b55155c0beaf002b649fe30b6a7841ff05e7399ba02a9"
   end
 
   resource "Capture::Tiny" do
-    url "https://cpan.metacpan.org/authors/id/D/DA/DAGOLDEN/Capture-Tiny-0.44.tar.gz"
-    sha256 "3ad2bb950a112c282a90018e91e60ddc4c4d2d351de2869d46a8c3db5b611160"
+    url "https://cpan.metacpan.org/authors/id/D/DA/DAGOLDEN/Capture-Tiny-0.48.tar.gz"
+    sha256 "6c23113e87bad393308c90a207013e505f659274736638d8c79bac9c67cc3e19"
   end
 
   def install
@@ -81,18 +92,20 @@ class Kpcli < Formula
     end
 
     resource("Term::Readline::Gnu").stage do
-      args = %W[
-        INSTALL_BASE=#{libexec}
-        --includedir=#{Formula["readline"].opt_include}
-        --libdir=#{Formula["readline"].opt_lib}
-      ]
-      system "perl", "Makefile.PL", *args
+      # Prevent the Makefile to try and build universal binaries
+      ENV.refurbish_args
+
+      system "perl", "Makefile.PL", "INSTALL_BASE=#{libexec}",
+                     "--includedir=#{Formula["readline"].opt_include}",
+                     "--libdir=#{Formula["readline"].opt_lib}"
       system "make", "install"
     end
 
+    rewrite_shebang detected_perl_shebang, "kpcli-#{version}.pl"
+
     libexec.install "kpcli-#{version}.pl" => "kpcli"
     chmod 0755, libexec/"kpcli"
-    (bin/"kpcli").write_env_script("#{libexec}/kpcli", :PERL5LIB => ENV["PERL5LIB"])
+    (bin/"kpcli").write_env_script("#{libexec}/kpcli", PERL5LIB: ENV["PERL5LIB"])
   end
 
   test do

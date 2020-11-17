@@ -1,15 +1,16 @@
 class Confuse < Formula
   desc "Configuration file parser library written in C"
   homepage "https://github.com/martinh/libconfuse"
-  url "https://github.com/martinh/libconfuse/releases/download/v3.0/confuse-3.0.tar.xz"
-  sha256 "bb75174e02aa8b44fa1a872a47beeea1f5fe715ab669694c97803eb6127cc861"
+  url "https://github.com/martinh/libconfuse/releases/download/v3.3/confuse-3.3.tar.xz"
+  sha256 "1dd50a0320e135a55025b23fcdbb3f0a81913b6d0b0a9df8cc2fdf3b3dc67010"
+  license "ISC"
 
   bottle do
     cellar :any
-    sha256 "7ac949e802fef398b1b6a36e3c66e1f15f218dc71f1a9a925d9961fca676e659" => :sierra
-    sha256 "bccc3cbebb15df2eddeb4167924e691d02ebdf8c92e91f18d11bcd3aa2d6fed8" => :el_capitan
-    sha256 "1e354b584efd29bed60120d9979fd796ff7f0070881f8c38683b940480150f7c" => :yosemite
-    sha256 "25662250293bb36d1c3fb99bca9a4b3ece7f9857e5ffdfa59dad5e627fcf15c4" => :mavericks
+    sha256 "370cd5df07249d44cbf0a848001be19d41341f404d229dcdcb3b5ae6ead4300c" => :big_sur
+    sha256 "13ad01ca606e746ab7f6bcd42b0da08abdcc29ccaaa9e8106f9d28bfe96bffd7" => :catalina
+    sha256 "d6038fe2a7fcfea4ba6e3c29174cb6201ce7d05e22ef4c76b881b9f12dabcff6" => :mojave
+    sha256 "371f699488d7e4459251c55e4ef4d9087b08e07b4fedfc553476bc30070ca9c1" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
@@ -22,7 +23,7 @@ class Confuse < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <confuse.h>
       #include <stdio.h>
 
@@ -41,7 +42,7 @@ class Confuse < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-lconfuse", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-lconfuse", "-o", "test"
     assert_match /world/, shell_output("./test")
   end
 end

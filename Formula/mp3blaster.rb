@@ -1,14 +1,22 @@
 class Mp3blaster < Formula
   desc "Text-based mp3 player"
   homepage "https://mp3blaster.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/mp3blaster/mp3blaster/mp3blaster-3.2.5/mp3blaster-3.2.5.tar.gz"
-  sha256 "129115742c77362cc3508eb7782702cfb44af2463a5453e8d19ea68abccedc29"
+  url "https://downloads.sourceforge.net/project/mp3blaster/mp3blaster/mp3blaster-3.2.6/mp3blaster-3.2.6.tar.gz"
+  sha256 "43d9f656367d16aaac163f93dc323e9843c3dd565401567edef3e1e72b9e1ee0"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "7bb86d54a00ebdb133382a31ffa022d819cadbd0d33b074c4f08a92f7814aa06" => :sierra
-    sha256 "0891dec8324c89e46dfa22975db73c9e08d6c5d6c21741c48aa2542073dd32da" => :el_capitan
-    sha256 "42a28275b2dad976d812cfd93e47fd56c9aacacae16575b7669bf8d3fe0ef153" => :yosemite
-    sha256 "aa8d1b1d12b171f77093530807529c57fc510c6f6f29f0bc2b6d4170028acedd" => :mavericks
+    sha256 "7a507393848bbaa8d06f64be1b528256589a3627577f1298dea50353f3303cef" => :big_sur
+    sha256 "5345ef5c262adc849318b2ee1cb092d794be9b9b952ebf23b0dbf666f8a5f460" => :catalina
+    sha256 "8d7c349befa2a093cee2b1fea30ece26393069c19508defb4582a5f7e8200dda" => :mojave
+    sha256 "da013614ce379f9037f2e6fc684adfe51918e40659577650a229dbd1c6f53847" => :high_sierra
+    sha256 "6dd3817fae76ae7d928688836c580a46e0a6c2f3111507ea6c7a5ae17a1728a7" => :sierra
+    sha256 "a9e7e56d97d45cd2e06819f15dedc2db738b70836a5897fb23a682202e2fb5b5" => :el_capitan
+    sha256 "87ba8218ac7bceab2d0f388aae88e6c6a0f6dba2aad11b434d2370ab8ce8251a" => :yosemite
   end
 
   depends_on "sdl"

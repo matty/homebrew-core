@@ -1,20 +1,27 @@
 class Tldr < Formula
   desc "Simplified and community-driven man pages"
-  homepage "https://tldr-pages.github.io"
-  url "https://github.com/tldr-pages/tldr-cpp-client/archive/v1.3.0.tar.gz"
-  sha256 "6210ece3f5d8f8e55b404e2f6c84be50bfdde9f0d194a271bce751a3ed6141be"
-  head "https://github.com/tldr-pages/tldr-cpp-client.git"
+  homepage "https://tldr.sh/"
+  url "https://github.com/tldr-pages/tldr-c-client/archive/v1.3.0.tar.gz"
+  sha256 "7e7f67f4c3cf7d448847e837df2122069b0cc8f7ed6963431e914b7929655efe"
+  license "MIT"
+  revision 2
+  head "https://github.com/tldr-pages/tldr-c-client.git"
 
   bottle do
     cellar :any
-    sha256 "3e843db1b1f35c9fb0e3cdd47f2eacaaf0411a8158d3c13a8826cccb0692ce7d" => :sierra
-    sha256 "3f98b7a5abcf565a4bce8c674b1f8d0ac5f79075a96f8695eab627a162b8154b" => :el_capitan
-    sha256 "9124b5e08e84aaf28cefb7a13ca37c969eb42edb3801ad73c6cb0e9a9092bc49" => :yosemite
-    sha256 "6087f487eb4de38affd318f610b95af55724624ea376ba0010e451f2bffc82bd" => :mavericks
+    rebuild 1
+    sha256 "3369bd7f8eeb65d058ae02878d1c2f0d20f3754934aba468c4b2646040e6e7dd" => :big_sur
+    sha256 "41a6db2e28eeae00ff6d1888948d8b7d0f01cd67b3f271341b856cded07ba6ca" => :catalina
+    sha256 "7f10022d0c6648741457c2562bc5e521d8dd88dfc4c4d68d1c886739ffd7eb45" => :mojave
+    sha256 "c932bd8516b6690c45dcbf90ced6ad94d4a0aa5a366de532fe90c4ab82b9a2ad" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "libzip"
+
+  uses_from_macos "curl"
+
+  conflicts_with "tealdeer", because: "both install `tldr` binaries"
 
   def install
     system "make", "PREFIX=#{prefix}", "install"

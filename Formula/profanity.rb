@@ -1,17 +1,19 @@
 class Profanity < Formula
   desc "Console based XMPP client"
-  homepage "http://www.profanity.im/"
-  url "http://www.profanity.im/profanity-0.5.1.tar.gz"
-  sha256 "e3513713e74ec3363fbdbac2919bdc17e249988780cc5a4589d1425807a7feb8"
+  homepage "https://profanity-im.github.io"
+  url "https://profanity-im.github.io/profanity-0.9.5.tar.gz"
+  sha256 "23f7b2e5c6cf85913b9e7a228802bca9ecb1d1cf3bf8f8f285e9676176a24902"
+  license "GPL-3.0"
 
   bottle do
-    sha256 "6c25fa2f09c53b761f1d5ec9e30ff729fada4b1496e4852ae54b42ec8abee62c" => :sierra
-    sha256 "7b71f78407ab50478f50ed07a5f5e559ba177530d4358626681abcb28552529f" => :el_capitan
-    sha256 "539594946baa70bf330cd995fa65217aa6d3b02c0523227fd833be704c010b37" => :yosemite
+    sha256 "e674dc595aef44e934d0ae9ca90b46a42b2b10295b8dcd732f55475cb20c1acb" => :big_sur
+    sha256 "b53f7fbd103d911f55337861bf36957cfaead39e8c38478ed03eceb41b507872" => :catalina
+    sha256 "7112d51c1a187ca47b6d245d5600b46b3f0765efd5f2a215ce1a2d2327f2b884" => :mojave
+    sha256 "21837ee57161928d0389dcd7170245b61e0d2f2c8b2f702dc6127bd98380b477" => :high_sierra
   end
 
   head do
-    url "https://github.com/boothj5/profanity.git"
+    url "https://github.com/profanity-im/profanity.git"
 
     depends_on "autoconf" => :build
     depends_on "autoconf-archive" => :build
@@ -20,21 +22,25 @@ class Profanity < Formula
   end
 
   depends_on "pkg-config" => :build
-  depends_on "ossp-uuid"
-  depends_on "libstrophe"
-  depends_on "readline"
   depends_on "glib"
-  depends_on "openssl"
   depends_on "gnutls"
-  depends_on "libotr" => :recommended
-  depends_on "gpgme" => :recommended
-  depends_on "terminal-notifier" => :optional
+  depends_on "gpgme"
+  depends_on "libotr"
+  depends_on "libsignal-protocol-c"
+  depends_on "libstrophe"
+  depends_on "openssl@1.1"
+  depends_on "readline"
+
+  uses_from_macos "curl"
+
+  on_macos do
+    depends_on "terminal-notifier"
+  end
 
   def install
     system "./bootstrap.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
-                          "--disable-python-plugins",
                           "--prefix=#{prefix}"
     system "make", "install"
   end

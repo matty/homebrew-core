@@ -1,14 +1,16 @@
 class Tcpreplay < Formula
   desc "Replay saved tcpdump files at arbitrary speeds"
-  homepage "http://tcpreplay.appneta.com"
-  url "https://github.com/appneta/tcpreplay/releases/download/v4.1.2/tcpreplay-4.1.2.tar.gz"
-  sha256 "da483347e83a9b5df0e0dbb0f822a2d37236e79dda35f4bc4e6684fa827f25ea"
+  homepage "https://tcpreplay.appneta.com/"
+  url "https://github.com/appneta/tcpreplay/releases/download/v4.3.3/tcpreplay-4.3.3.tar.gz"
+  sha256 "ed2402caa9434ff5c74b2e7b31178c73e7c7c5c4ea1e1d0e2e39a7dc46958fde"
+  license "GPL-3.0"
 
   bottle do
     cellar :any
-    sha256 "34d2cfd1ed56a88cca3fd312753e62c58794e7ceb0c26e76f78b874687cd90d3" => :sierra
-    sha256 "ca612c298303139b0367532ed670e62abe6ae19b8b2c1e15cddba759b90a04a4" => :el_capitan
-    sha256 "abe3cbe315a9f0d0091ac11320afa48261fedc989d25915aac4f0aeb1c575071" => :yosemite
+    sha256 "772815bcf05a81fb36acf09acb31bc2eb467cf3b90815461e94fc7babd584d2d" => :big_sur
+    sha256 "a4b41c27929bfd52016d1cc576089a9cb42dfd0e595c3078a40b26bd39fbd65f" => :catalina
+    sha256 "0ec1b2260c108d103d4d594a8fff9482656833e5308690b90c5ef0a05a155546" => :mojave
+    sha256 "439ed368cf28fb710cefec00f88de8d32e0d039abed0f8761f1a1ae4731dac53" => :high_sierra
   end
 
   depends_on "libdnet"

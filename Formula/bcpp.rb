@@ -1,16 +1,22 @@
 class Bcpp < Formula
   desc "C(++) beautifier"
-  homepage "http://invisible-island.net/bcpp/"
-  url "ftp://invisible-island.net/bcpp/bcpp-20131209.tgz"
-  sha256 "4732d606c9b5857d0ea2cee2f2b54eb3b8928f547f8a0c6b89096b674c6bd7f7"
+  homepage "https://invisible-island.net/bcpp/"
+  url "https://invisible-mirror.net/archives/bcpp/bcpp-20200922.tgz"
+  mirror "https://dl.bintray.com/homebrew/mirror/bcpp-20200922.tgz"
+  sha256 "ec29f91b46d217933abb13f077b4de05bc5cf21b26550623ab196f360cebf10e"
+  license "MIT"
+
+  livecheck do
+    url "https://invisible-island.net/bcpp/CHANGES.html"
+    regex(/id=.*?t(\d{6,8})["' >]/im)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6d10a515f6173652ea39d12ff248fedc71bf6985d2d1121ce55d3c86d7e597ff" => :sierra
-    sha256 "e9cbefdb72acc228f8e31afc7d6dabf3dcc1fac321aa88cd0834687afd15c9d1" => :el_capitan
-    sha256 "55695704fc182a79be6761a720b18c0be3f416ef2602ea0048c8f2a00422bfa9" => :yosemite
-    sha256 "5a8b1bf857e52ca6b30c4ef31547b23d807364075aec50a47c7ce16fdfc8b59d" => :mavericks
-    sha256 "5cbc5e640e0c8ebcfeee4091364855bd0f67a54663a819a9f875f648e7cb48b9" => :mountain_lion
+    sha256 "b80a4d382855b882ec893247f9398aac9a6fd8bca0d8068062dc40895451942d" => :big_sur
+    sha256 "e7c25aa0608c77248f3414b49ebfa7808673b4afea1925e57323c9b1384d8c03" => :catalina
+    sha256 "75cfd0b4bf87b30217e8d36c29d083fd961425583e322b5fdfdf16f189009048" => :mojave
+    sha256 "7bd443a2afe3a8bccdc39c0744de2e7b3f9c6d45ff11030c9757e434d4767b85" => :high_sierra
   end
 
   def install
@@ -20,14 +26,14 @@ class Bcpp < Formula
   end
 
   test do
-    (testpath/"test.txt").write <<-EOS.undent
-              test
-                 test
+    (testpath/"test.txt").write <<~EOS
           test
-                test
+             test
+      test
+            test
     EOS
     system bin/"bcpp", "test.txt", "-fnc", "#{etc}/bcpp.cfg"
-    assert File.exist?("test.txt.orig")
-    assert File.exist?("test.txt")
+    assert_predicate testpath/"test.txt.orig", :exist?
+    assert_predicate testpath/"test.txt", :exist?
   end
 end

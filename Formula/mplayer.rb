@@ -1,34 +1,36 @@
 class Mplayer < Formula
   desc "UNIX movie player"
-  homepage "https://www.mplayerhq.hu/"
-  url "https://www.mplayerhq.hu/MPlayer/releases/MPlayer-1.3.0.tar.xz"
-  sha256 "3ad0846c92d89ab2e4e6fb83bf991ea677e7aa2ea775845814cbceb608b09843"
+  homepage "https://mplayerhq.hu/"
+  url "https://mplayerhq.hu/MPlayer/releases/MPlayer-1.4.tar.xz"
+  sha256 "82596ed558478d28248c7bc3828eb09e6948c099bbd76bb7ee745a0e3275b548"
+
+  livecheck do
+    url "https://mplayerhq.hu/MPlayer/releases/"
+    regex(/href=.*?MPlayer[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "52b4e6e55808d69ff34210337e86359e766c6065da3e43117357d378970cffcf" => :sierra
-    sha256 "6cee95b050e52a0f09e2807d6feda1f798d3f43166fbad1e3fb2ec5fe2c11f99" => :el_capitan
-    sha256 "8bb05f0875afca69802634411d8e67af5f42e4461b66c640de3c152e049c7843" => :yosemite
-    sha256 "d3833fa49709d2857337eebcbd956002f20309cbd676b27070940f84888ebb65" => :mavericks
+    cellar :any
+    sha256 "63fb6ec4952313df37a928d3e450e070c551a9e880711be27370cbaa3dcfe5e6" => :big_sur
+    sha256 "d46c9afd22fbdda5423877d2583732e6c88ee9bd52b26c8b79ea8e90c9af7d59" => :catalina
+    sha256 "72da2446b0077085121da3cc3437a3e07d0bd2136529dd7dfba79d05bca1b405" => :mojave
+    sha256 "11c01635f619e3aa77a85cd095be0b302d2b25fdd4362f47340c93122a113775" => :high_sierra
+    sha256 "225e2628b4edf16a4ffea768e03587a8cc1c3f67544c92cb3fb8f3332feee51d" => :sierra
   end
 
   head do
     url "svn://svn.mplayerhq.hu/mplayer/trunk"
-    depends_on "subversion" => :build if MacOS.version <= :leopard
 
     # When building SVN, configure prompts the user to pull FFmpeg from git.
     # Don't do that.
     patch :DATA
   end
 
+  depends_on "pkg-config" => :build
   depends_on "yasm" => :build
-  depends_on "libcaca" => :optional
-
-  unless MacOS.prefer_64_bit?
-    fails_with :clang do
-      build 211
-      cause "Inline asm errors during compile on 32bit Snow Leopard."
-    end
-  end
+  depends_on "fontconfig"
+  depends_on "freetype"
+  depends_on "libcaca"
 
   def install
     # we disable cdparanoia because homebrew's version is hacked to work on macOS
@@ -41,10 +43,9 @@ class Mplayer < Formula
       --disable-cdparanoia
       --prefix=#{prefix}
       --disable-x11
+      --enable-caca
+      --enable-freetype
     ]
-
-    args << "--enable-caca" if build.with? "libcaca"
-
     system "./configure", *args
     system "make"
     system "make", "install"

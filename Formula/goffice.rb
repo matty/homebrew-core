@@ -1,20 +1,25 @@
 class Goffice < Formula
   desc "Gnumeric spreadsheet program"
   homepage "https://developer.gnome.org/goffice/"
-  url "https://download.gnome.org/sources/goffice/0.10/goffice-0.10.33.tar.xz"
-  sha256 "f12c4e8ceebd4e1f93dea50e3ebef5337757b16cc7c8b8b1b7d98d4d45461add"
+  url "https://download.gnome.org/sources/goffice/0.10/goffice-0.10.48.tar.xz"
+  sha256 "a439162fa26a0e58117e07b82b37000a7f421088ad379eb1f6a1cdee101ecefc"
+  license any_of: ["GPL-3.0-only", "GPL-2.0-only"]
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "f25af41b0a1923aa8a6a7894efa6bafe61df6bc1ee5ca1ca90fff425c14f3557" => :sierra
-    sha256 "59a3fe61b22b4e54d64a6817ec4205f5afaeb4a8a0f3af86b88d76b446b07347" => :el_capitan
-    sha256 "26e5135a313a78d4bafe20517e2c4ff90e96e28e20e1d800f553d452b24c0010" => :yosemite
+    sha256 "314d34ff359e1d6eb5d5935ac6e2778b47e360e6e13a6c3b98f99b7071e4c961" => :big_sur
+    sha256 "3e05167a37c42bfa01acf4be7055a52e3c2a03c990536ae5562b2c0aa4812e42" => :catalina
+    sha256 "9edf36fd2ffb0a116e4e5f69cd00a04dd29eda04c1a3069b0e4da8950573c0a4" => :mojave
+    sha256 "7043808e39862444e7aaae796137b30fadefb142dea291f9d8ce23228d635264" => :high_sierra
   end
 
   head do
     url "https://github.com/GNOME/goffice.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
-    depends_on "gnome-common" => :build
+    depends_on "automake" => :build
     depends_on "gtk-doc" => :build
     depends_on "libtool" => :build
   end
@@ -23,13 +28,15 @@ class Goffice < Formula
   depends_on "pkg-config" => :build
   depends_on "atk"
   depends_on "cairo"
-  depends_on "gettext"
   depends_on "gdk-pixbuf"
+  depends_on "gettext"
   depends_on "gtk+3"
   depends_on "libgsf"
   depends_on "librsvg"
   depends_on "pango"
   depends_on "pcre"
+
+  uses_from_macos "libxslt"
 
   def install
     args = %W[--disable-dependency-tracking --prefix=#{prefix}]
@@ -42,7 +49,7 @@ class Goffice < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <goffice/goffice.h>
       int main()
       {
@@ -56,8 +63,9 @@ class Goffice < Formula
     system ENV.cc, "-I#{include}/libgoffice-0.10",
            "-I#{Formula["glib"].opt_include}/glib-2.0",
            "-I#{Formula["glib"].opt_lib}/glib-2.0/include",
+           "-I#{Formula["harfbuzz"].opt_include}/harfbuzz",
            "-I#{Formula["libgsf"].opt_include}/libgsf-1",
-           "-I/usr/include/libxml2",
+           "-I#{MacOS.sdk_path}/usr/include/libxml2",
            "-I#{Formula["gtk+3"].opt_include}/gtk-3.0",
            "-I#{Formula["pango"].opt_include}/pango-1.0",
            "-I#{Formula["cairo"].opt_include}/cairo",

@@ -1,21 +1,26 @@
 class BootClj < Formula
   desc "Build tooling for Clojure"
-  homepage "http://boot-clj.com"
-  url "https://github.com/boot-clj/boot-bin/releases/download/2.5.2/boot.sh",
-      :using => :nounzip
-  sha256 "895def8ef37f4b78bb37a26566ce970dc24219e880154a18ef7ade5a778d3a2f"
+  homepage "https://boot-clj.com/"
+  url "https://github.com/boot-clj/boot/releases/download/2.8.3/boot.jar"
+  sha256 "31f001988f580456b55a9462d95a8bf8b439956906c8aca65d3656206aa42ec7"
+  license "EPL-1.0"
+  revision 2
 
   bottle :unneeded
 
-  depends_on :java
+  depends_on "openjdk"
 
   def install
-    bin.install "boot.sh" => "boot"
+    libexec.install "boot.jar"
+    (bin/"boot").write <<~EOS
+      #!/bin/bash
+      export JAVA_HOME="${JAVA_HOME:-#{Formula["openjdk"].opt_prefix}}"
+      declare -a "options=($BOOT_JVM_OPTIONS)"
+      exec "${JAVA_HOME}/bin/java" "${options[@]}" -Dboot.app.path="#{bin}/boot" -jar "#{libexec}/boot.jar" "$@"
+    EOS
   end
 
   test do
-    ENV.java_cache
-
     system "#{bin}/boot", "repl", "-e", "(System/exit 0)"
   end
 end

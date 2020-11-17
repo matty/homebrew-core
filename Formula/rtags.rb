@@ -1,30 +1,24 @@
 class Rtags < Formula
-  desc "ctags-like source code cross-referencer with a clang frontend"
+  desc "Source code cross-referencer like ctags with a clang frontend"
   homepage "https://github.com/Andersbakken/rtags"
+  url "https://github.com/Andersbakken/rtags.git",
+      tag:      "v2.38",
+      revision: "9687ccdb9e539981e7934e768ea5c84464a61139"
+  license "GPL-3.0"
   head "https://github.com/Andersbakken/rtags.git"
 
-  stable do
-    url "https://github.com/Andersbakken/rtags.git",
-        :tag => "v2.8",
-        :revision => "6ac7740eaf05cdd9b699185f71cc2d1f634a761b"
-
-    # Fix test failure "couldn't find process for pid"
-    # Upstream commit from 4 Jan 2017 "Copy environment from indexmessage"
-    patch do
-      url "https://github.com/Andersbakken/rtags/commit/cddf96a.patch"
-      sha256 "c7d2c62cba6ef8180ac6214af6dfdf2d0f6425b9453de7b55053ddcc74ce5fe2"
-    end
-  end
-
   bottle do
-    sha256 "3e2649ceda64ae71a42c1907c34ba186b9b6937faaee13cec239c60f134c30f7" => :sierra
-    sha256 "c221421644f29d5f2680d7fe6375d6c7c46f2b4eeb5665707ca29a26541cf50e" => :el_capitan
-    sha256 "d875068e438884f4166a7a859fad9affbcb7a12c4164df38277fd548e6dc203b" => :yosemite
+    cellar :any
+    sha256 "8412892ed1cfce17e4575a7bad34fd208fcc80d44b263460bb75c2d8d9346f3c" => :big_sur
+    sha256 "332ba278034061d8789e8bcfc2d06120c122f0912de030524ee44d73089bdda6" => :catalina
+    sha256 "a9b3b3f280643e151a9d98438ae1bef2bf77eda3a3412d07c1781d60b6e13a25" => :mojave
+    sha256 "b1f34a462f2473d7059b8db4d78ff85f3bc18e5df25e2d597ce95052d15da132" => :high_sierra
   end
 
   depends_on "cmake" => :build
+  depends_on "emacs"
   depends_on "llvm"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     # Homebrew llvm libc++.dylib doesn't correctly reexport libc++abi
@@ -32,7 +26,7 @@ class Rtags < Formula
 
     args = std_cmake_args << "-DRTAGS_NO_BUILD_CLANG=ON"
 
-    if MacOS.version == "10.11" && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
+    if MacOS.version == "10.11" && MacOS::Xcode.version >= "8.0"
       args << "-DHAVE_CLOCK_MONOTONIC_RAW:INTERNAL=0"
       args << "-DHAVE_CLOCK_MONOTONIC:INTERNAL=0"
     end
@@ -44,48 +38,49 @@ class Rtags < Formula
     end
   end
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/bin/rdm --verbose --inactivity-timeout=300 --log-file=#{HOMEBREW_PREFIX}/var/log/rtags.log"
+  plist_options manual: "#{HOMEBREW_PREFIX}/bin/rdm --verbose --inactivity-timeout=300 --log-file=#{HOMEBREW_PREFIX}/var/log/rtags.log"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{bin}/rdm</string>
-        <string>--verbose</string>
-        <string>--launchd</string>
-        <string>--inactivity-timeout=300</string>
-        <string>--log-file=#{var}/log/rtags.log</string>
-      </array>
-      <key>Sockets</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
       <dict>
-        <key>Listener</key>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{bin}/rdm</string>
+          <string>--verbose</string>
+          <string>--launchd</string>
+          <string>--inactivity-timeout=300</string>
+          <string>--log-file=#{var}/log/rtags.log</string>
+        </array>
+        <key>Sockets</key>
         <dict>
-          <key>SockPathName</key>
-          <string>#{ENV["HOME"]}/.rdm</string>
+          <key>Listener</key>
+          <dict>
+            <key>SockPathName</key>
+            <string>#{ENV["HOME"]}/.rdm</string>
+          </dict>
         </dict>
       </dict>
-    </dict>
-    </plist>
+      </plist>
     EOS
   end
 
   test do
     mkpath testpath/"src"
-    (testpath/"src/foo.c").write <<-EOS.undent
-        void zaphod() {
-        }
+    (testpath/"src/foo.c").write <<~EOS
+      void zaphod() {
+      }
 
-        void beeblebrox() {
-          zaphod();
-        }
+      void beeblebrox() {
+        zaphod();
+      }
     EOS
-    (testpath/"src/README").write <<-EOS.undent
-        42
+    (testpath/"src/README").write <<~EOS
+      42
     EOS
 
     rdm = fork do

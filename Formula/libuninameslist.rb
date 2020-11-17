@@ -1,22 +1,23 @@
 class Libuninameslist < Formula
   desc "Library of Unicode names and annotation data"
   homepage "https://github.com/fontforge/libuninameslist"
-  url "https://github.com/fontforge/libuninameslist/releases/download/20160701/libuninameslist-20160701.tar.gz"
-  sha256 "1981701b4b44455a9cc5ab203172014137ec5b77e3ebc3cbf79294c8a26ee6f6"
+  url "https://github.com/fontforge/libuninameslist/releases/download/20200413/libuninameslist-dist-20200413.tar.gz"
+  sha256 "5c0283b2e18d101e58b70a026119d66c9d3e749e4537def7799bba0bc8998f62"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any
-    sha256 "abe252a972b156dc8187e0ab89cdcb49c274bf6d79f4c3552b50f37f7b54eb31" => :sierra
-    sha256 "d5cacf981764a6d5ea93f0ae4ecbc05ca406b3226b53065d7dcecdfa1c2abdc0" => :el_capitan
-    sha256 "160cc64ecac03e2243b5c8943f7b67380d6595c84c7e4bd8d3d748abb6a6aa25" => :yosemite
-    sha256 "008830e4f830024cd9725a004963ca3d8bb87134cab7281b29d836988f981ba9" => :mavericks
+    sha256 "1eb14661a5be9d815bf273854935e0004392881a8946fb1e2470283d3938c036" => :big_sur
+    sha256 "38e3ba23a50f2acdebdf4a6419b8e5d996650f9fd9c4e081eb18c77b57dc08ac" => :catalina
+    sha256 "5bbf66b5f23f99f833b95fae6462084c98838e79142e66a0e602ad7a70dc13f6" => :mojave
+    sha256 "9e6875ea89497fb8f3c8c4121f9142f7ca23f85a4d2ae8b3845d49db4194cf51" => :high_sierra
   end
 
   head do
     url "https://github.com/fontforge/libuninameslist.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
@@ -31,7 +32,7 @@ class Libuninameslist < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <uninameslist.h>
 
       int main() {

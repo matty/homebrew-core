@@ -1,30 +1,54 @@
 class Mlt < Formula
   desc "Author, manage, and run multitrack audio/video compositions"
   homepage "https://www.mltframework.org/"
-  url "https://github.com/mltframework/mlt/archive/v6.4.1.tar.gz"
-  sha256 "87583af552695b2235f4ee3fc1e645d69e31702b109331d7e8785fb180cfa382"
+  license "LGPL-2.1-only"
+  revision 3
+  head "https://github.com/mltframework/mlt.git"
+
+  stable do
+    url "https://github.com/mltframework/mlt/archive/v6.22.1.tar.gz"
+    sha256 "a3debdf0b8811f0d20c902cc3df3d05dad7d3ff36d1db16c0a7338d0d5989998"
+
+    # fix compilaton with opencv4
+    patch do
+      url "https://github.com/mltframework/mlt/commit/08ed33a9551a0e4c0685e13da3b98bf37e08ecad.patch?full_index=1"
+      sha256 "86aa10881ce223f67e93ae7c051287744c01416bbc0cedf75224262b33a2175d"
+    end
+  end
 
   bottle do
-    sha256 "0f48ee12e037716c9a5ef2d6349a3fa205d646a8275ee0c7f9dd0ffdd8c0f6be" => :sierra
-    sha256 "0b0fd8855c2c3f02504d182aa95878f310bae9a12558da8b46614e24b6d6fdc4" => :el_capitan
-    sha256 "967717d68301e59bf269f48ca9af1b08773517ade99e55683ef62e994398c441" => :yosemite
+    sha256 "6009bac52fe24d7179c1568615853b166f86c30ac9cf6253ddbd596331ac1798" => :big_sur
+    sha256 "794d6664650f0c5215c8b22af27c26aafdfbd5665dc198f0defc12a1c869c5ef" => :catalina
+    sha256 "3d2e1ff77fba374f3b57b6e7022001fad3d294ba34ff319440c81fba01a93d56" => :mojave
+    sha256 "1b7ac52ac214cd75f5da3a91cdb4d3f8d35d451c2bb612dd2ae61a2c15274baf" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "ffmpeg"
+  depends_on "fftw"
   depends_on "frei0r"
+  depends_on "gdk-pixbuf"
   depends_on "libdv"
+  depends_on "libexif"
   depends_on "libsamplerate"
   depends_on "libvorbis"
-  depends_on "sdl"
+  depends_on "opencv"
+  depends_on "pango"
+  depends_on "qt"
+  depends_on "sdl2"
   depends_on "sox"
 
   def install
-    system "./configure", "--prefix=#{prefix}",
-                          "--disable-jackrack",
-                          "--disable-swfdec",
-                          "--disable-gtk",
-                          "--enable-gpl"
+    args = ["--prefix=#{prefix}",
+            "--disable-jackrack",
+            "--disable-swfdec",
+            "--disable-sdl",
+            "--enable-motion_est",
+            "--enable-gpl",
+            "--enable-gpl3",
+            "--enable-opencv"]
+
+    system "./configure", *args
     system "make"
     system "make", "install"
   end

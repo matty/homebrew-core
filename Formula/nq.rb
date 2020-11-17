@@ -1,19 +1,20 @@
 class Nq < Formula
   desc "Unix command-line queue utility"
   homepage "https://github.com/chneukirchen/nq"
-  url "https://github.com/chneukirchen/nq/archive/v0.1.tar.gz"
-  sha256 "e0962a5e6a2cbf799bba7a79af22c40d21e5a80605df42c8bba37d3d8efb1793"
-
+  url "https://github.com/chneukirchen/nq/archive/v0.3.1.tar.gz"
+  sha256 "8897a747843fe246a6f8a43e181ae79ef286122a596214480781a02ef4ea304b"
+  license "CC0-1.0"
   head "https://github.com/chneukirchen/nq.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f321a091c031ca3870cfd10844835ddbef55bd82c8c6ecf5275ae3323b9b4897" => :sierra
-    sha256 "5ce475e389f345a2f1a0376a4253cf59672393f58b88e5a03b25f4c3c7d14ba6" => :el_capitan
-    sha256 "1d6d53c0c53a230a600ee3be346c07625d7deffd2c134c46eb61d429d4392722" => :yosemite
+    sha256 "97df5cbf63b142bf49bbbe683f869a96b003ab3c30eee3ae36ad0ee741744b1c" => :big_sur
+    sha256 "95011ee6d48728704ee95480374c545d3c2bcea8f4482cecd9b8dbbab9a2407b" => :catalina
+    sha256 "b5b3f7b76cc79a5bc6d4a55e4fb3e018b08052dc7faa173300b1ddf2e16e6bee" => :mojave
+    sha256 "a6d18f2d7f1fafd661a5d145599969707efe71969ccc6ac34593f3f60c59081a" => :high_sierra
+    sha256 "0e8d6557f7713be4c1e5074ea909d36cd12e2e17d85a1c0a1141ac64f06953d3" => :sierra
+    sha256 "67374f5db8a35f877a16e0fdbd313276fb269db81ce49e7654fb61fa865417cd" => :el_capitan
   end
-
-  depends_on :macos => :yosemite
 
   def install
     system "make", "all", "PREFIX=#{prefix}"
@@ -23,6 +24,6 @@ class Nq < Formula
   test do
     system "#{bin}/nq", "touch", "TEST"
     assert_match /exited with status 0/, shell_output("#{bin}/fq -a")
-    assert File.exist?("TEST")
+    assert_predicate testpath/"TEST", :exist?
   end
 end

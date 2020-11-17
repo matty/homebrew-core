@@ -1,28 +1,34 @@
 class Ponysay < Formula
   desc "Cowsay but with ponies"
-  homepage "http://erkin.co/ponysay/"
-  url "https://github.com/erkin/ponysay/archive/3.0.2.tar.gz"
-  sha256 "69e98a7966353de2f232cbdaccd8ef7dbc5d0bcede9bf7280a676793e8625b0d"
-  revision 1
+  homepage "https://github.com/erkin/ponysay/"
+  license "GPL-3.0"
+  revision 6
+  head "https://github.com/erkin/ponysay.git"
+
+  stable do
+    url "https://github.com/erkin/ponysay/archive/3.0.3.tar.gz"
+    sha256 "c382d7f299fa63667d1a4469e1ffbf10b6813dcd29e861de6be55e56dc52b28a"
+
+    # upstream commit 16 Nov 2019, `fix: do not compare literal with "is not"`
+    patch do
+      url "https://github.com/erkin/ponysay/commit/69c23e3a.patch?full_index=1"
+      sha256 "2c58d5785186d1f891474258ee87450a88f799408e3039a1dc4a62784de91b63"
+    end
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4209ab259798a33086ee4af39fd260b1ed7f6ac3dc9a8b2b44cb9935129f17a5" => :sierra
-    sha256 "69e2eb767ee25491e2a30893478bfdeff72023369ad4d9999f4b274e11b732f3" => :el_capitan
-    sha256 "157fe5f14e1be281708d2c59987331484c40bd4d49d82c208bb7220503ba113a" => :yosemite
-    sha256 "6c8ec0c8031407d5035f6cb7355deed95e6443c7200276ea5419ac31f2db4082" => :mavericks
-    sha256 "45f26bc2439d8195651578ceee7f0b5cff318c2ba6b258b0533ce57ba6342ab0" => :mountain_lion
+    sha256 "6a50e86cb011bd455d76f6478f230a543759fd622132914ac35c2423f63f410f" => :big_sur
+    sha256 "8c53b69ff726780b68fa8d644a13325bf46b80ae13eb198804f0eb7aa601a893" => :catalina
+    sha256 "d91ddb61651ee73e49f565095257cf8226d66585d8032783fe208ee359448912" => :mojave
+    sha256 "ba848b6de300211972228d752805e4d4bed7ba44af9356e0f56fc6bdd9f23f79" => :high_sierra
   end
 
-  depends_on :python3
+  depends_on "gzip" => :build
   depends_on "coreutils"
+  depends_on "python@3.9"
 
-  # fix shell completion install paths
-  # https://github.com/erkin/ponysay/pull/225
-  patch do
-    url "https://github.com/tdsmith/ponysay/commit/44fb0f85821eb34a811abb27d2c601a5d30af1f1.diff"
-    sha256 "0570b94a1179c189291cd9bad28cb93762aeed5ad6bbc3536027e178d0e6b9df"
-  end
+  uses_from_macos "texinfo" => :build
 
   def install
     system "./setup.py",
@@ -30,10 +36,13 @@ class Ponysay < Formula
            "--prefix=#{prefix}",
            "--cache-dir=#{prefix}/var/cache",
            "--sysconf-dir=#{prefix}/etc",
+           "--with-custom-env-python=#{Formula["python@3.9"].opt_bin}/python3",
            "install"
   end
 
   test do
-    system "#{bin}/ponysay", "-A"
+    output = shell_output("#{bin}/ponysay test")
+    assert_match "test", output
+    assert_match "____", output
   end
 end

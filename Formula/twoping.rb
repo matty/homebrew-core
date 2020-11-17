@@ -1,58 +1,67 @@
 class Twoping < Formula
   desc "Ping utility to determine directional packet loss"
-  homepage "http://www.finnie.org/software/2ping/"
-  url "http://www.finnie.org/software/2ping/2ping-3.2.1.tar.gz"
-  sha256 "2e53efd33d0f8b98fcc9c5ece26e87119a6bbbc7c4820a9563610143d46712a6"
-  head "https://github.com/rfinnie/2ping.git"
+  homepage "https://www.finnie.org/software/2ping/"
+  url "https://www.finnie.org/software/2ping/2ping-4.5.tar.gz"
+  sha256 "867009928bf767d36279f90ff8f891855804c0004849f9554ac77fcd7f0fdb7b"
+  license "GPL-2.0"
+  revision 1
+  head "https://github.com/rfinnie/2ping.git", branch: "main"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "64585890285513e5c21395248cdde5cbeae6bcf24b2ba74cbf8f7d6d2548b81a" => :sierra
-    sha256 "9145b21b5192af21907a215bebcebbda617fd4ac7634e4cd1c4b865b7902e1ed" => :el_capitan
-    sha256 "fbd70a9e67ed894056f22aff65a2a22cdea219884f1b562dc3cb2a8e83d4fed5" => :yosemite
-    sha256 "455058787cef02cf7fb4cd2b1d289764a6863b06caa32868259048947d7fdbd2" => :mavericks
+    sha256 "afc820a8d8805247357685e70a6537ff4698ac7ede216c82ced88b2cc33825ef" => :big_sur
+    sha256 "7628092d50cccc8ca82ce8cc452e1642a583331bcc80d072fb259c8d121ddbe1" => :catalina
+    sha256 "142e2753a32f3b55338238c5cef360c1edb1cbd013a9c36b8c7bb98e2e86a76f" => :mojave
+    sha256 "02f9e697dc2cd30675db1006ab304c3c7a4f2e02dbff217fbbbd7d6511ccbe17" => :high_sierra
   end
 
+  depends_on "python@3.9"
+
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
+    pyver = Language::Python.major_minor_version "python3"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{pyver}/site-packages"
+    system "python3", *Language::Python.setup_install_args(libexec)
     man1.install "doc/2ping.1"
     man1.install_symlink "2ping.1" => "2ping6.1"
     bin.install Dir["#{libexec}/bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
   end
 
-  plist_options :manual => "2ping --listen", :startup => true
+  plist_options manual: "2ping --listen", startup: true
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/2ping</string>
-          <string>--listen</string>
-          <string>--quiet</string>
-        </array>
-        <key>UserName</key>
-        <string>nobody</string>
-        <key>StandardErrorPath</key>
-        <string>/dev/null</string>
-        <key>StandardOutPath</key>
-        <string>/dev/null</string>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <true/>
-      </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/2ping</string>
+            <string>--listen</string>
+            <string>--quiet</string>
+          </array>
+          <key>UserName</key>
+          <string>nobody</string>
+          <key>StandardErrorPath</key>
+          <string>/dev/null</string>
+          <key>StandardOutPath</key>
+          <string>/dev/null</string>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <true/>
+        </dict>
+      </plist>
     EOS
   end
 
   test do
-    system bin/"2ping", "-c", "5", "test.2ping.net"
+    assert_match "OK 2PING", shell_output(
+      "#{bin}/2ping --count=10 --interval=0.2 --port=-1 --interface-address=127.0.0.1 "\
+      "--listen --nagios=1000,5%,1000,5% 127.0.0.1",
+    )
   end
 end

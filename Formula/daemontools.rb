@@ -3,21 +3,64 @@ class Daemontools < Formula
   homepage "https://cr.yp.to/daemontools.html"
   url "https://cr.yp.to/daemontools/daemontools-0.76.tar.gz"
   sha256 "a55535012b2be7a52dcd9eccabb9a198b13be50d0384143bd3b32b8710df4c1f"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "70a81dd6720df74647f233ea5ae6222a2b101ed1b13d92784c84570c24b2b3f3" => :sierra
-    sha256 "64afdd71688797e0bfef29f8db63a82a13b514e30b52b32180c17f9d895fa07c" => :el_capitan
-    sha256 "4a8fe9b0e5038230c90f2a38b40f3d66d103c18969e28ce5465499bbd78ec867" => :yosemite
-    sha256 "75757ef94d879092ea4b82dd36c17336fb6a85eb1d5980e3f01c7bf2a140ec1b" => :mavericks
+    sha256 "9481a0cc89388de2cb60631505e1a9f865ee33b1ae3600a054d2cfab9826eaa8" => :big_sur
+    sha256 "650688484d7de25a026916c90a0109f05d33ec8401cc007e6ae805d2cedb9a16" => :catalina
+    sha256 "d34c1e242009de743a2d58fc52bf56cd24a69eb940f74bf8af2b168f76010dd1" => :mojave
+    sha256 "a5a9bd96a04e3cbcbb15170bb7af3b7128e85d1e9c23b18bf0a76922f3beaff0" => :high_sierra
   end
 
   def install
     cd "daemontools-#{version}" do
+      inreplace ["package/run", "src/svscanboot.sh"] do |s|
+        s.gsub! "/service", "#{etc}/service"
+      end
+
       system "package/compile"
       bin.install Dir["command/*"]
     end
+  end
+
+  def post_install
+    (etc/"service").mkpath
+
+    Pathname.glob("/service/*") do |original|
+      target = "#{etc}/service/#{original.basename}"
+      ln_s original, target unless File.exist?(target)
+    end
+  end
+
+  def caveats
+    <<~EOS
+      Services are stored in:
+        #{etc}/service/
+    EOS
+  end
+
+  plist_options startup: true
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/svscanboot</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do

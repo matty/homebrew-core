@@ -1,45 +1,40 @@
 class Gwenhywfar < Formula
   desc "Utility library required by aqbanking and related software"
-  homepage "http://www.aqbanking.de/"
-  url "http://www2.aquamaniac.de/sites/download/download.php?package=01&release=201&file=01&dummy=gwenhywfar-4.15.3.tar.gz"
-  sha256 "6a0e8787c99620414da6140e567c616b55856c5edf8825a9ebc67431923ee63a"
+  homepage "https://www.aquamaniac.de/"
+  url "https://www.aquamaniac.de/rdm/attachments/download/344/gwenhywfar-5.4.1.tar.gz"
+  sha256 "fbfd403410e3c1cf7e2957738cf51c6a01ceeec6ab4d2f546512c255d3c08a9b"
+  license "LGPL-2.1-or-later"
 
-  head "http://git.aqbanking.de/git/gwenhywfar.git"
-
-  bottle do
-    sha256 "4134a1899f551ec91f6495d69a3939c9aa30d38f292291f00869709d0f299020" => :sierra
-    sha256 "9b78e775989003bfe9e79bc745ef477b2c485c58d4aaff947cf4a44e86f1fc9b" => :el_capitan
-    sha256 "f0beb1b72cafab6696ab63c5a0ae5aa22040095bd6ae8997121f1725e7a11d5f" => :yosemite
-    sha256 "ef8ea6c7fa80e6e89faf9dbbc3f2aa7ef89fd31e16b940abd64ed036a7b1069a" => :mavericks
+  livecheck do
+    url "https://www.aquamaniac.de/rdm/projects/gwenhywfar/files"
+    regex(/href=.*?gwenhywfar[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  option "without-cocoa", "Build without cocoa support"
-  option "with-test", "Run build-time check"
+  bottle do
+    sha256 "94677112862b163f17bf3b66973f8f38ef5c7c9281edff9f35bd9ab63fc87f9b" => :big_sur
+    sha256 "0ecd6df52f49623e27d2272ac3f2b047df7fed883fa75dec1fc794df03192805" => :catalina
+    sha256 "6b52b25cbac6e88c2db675085762c22998897731181d550ff2c46ecc8ac93533" => :mojave
+    sha256 "71f2b5747cd620a2330e62a5e99f673e65049bb0282781f3e7e66a245f78e712" => :high_sierra
+  end
 
-  deprecated_option "with-check" => "with-test"
-
-  depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "gnutls"
-  depends_on "openssl"
   depends_on "libgcrypt"
-  depends_on "gtk+" => :optional
+  depends_on "openssl@1.1"
+  depends_on "pkg-config" # gwenhywfar-config needs pkg-config for execution
 
   def install
-    guis = []
-    guis << "gtk2" if build.with? "gtk+"
-    guis << "cocoa" if build.with? "cocoa"
-
+    inreplace "gwenhywfar-config.in.in", "@PKG_CONFIG@", "pkg-config"
+    system "autoreconf", "-fiv" if build.head?
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--with-guis=#{guis.join(" ")}"
-    system "make", "check" if build.with? "test"
+                          "--with-guis=cocoa"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gwenhywfar/gwenhywfar.h>
 
       int main()
@@ -48,7 +43,7 @@ class Gwenhywfar < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-I#{include}/gwenhywfar4", "-L#{lib}", "-lgwenhywfar", "-o", "test"
+    system ENV.cc, "test.c", "-I#{include}/gwenhywfar5", "-L#{lib}", "-lgwenhywfar", "-o", "test"
     system "./test"
   end
 end

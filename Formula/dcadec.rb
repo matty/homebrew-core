@@ -2,12 +2,17 @@ class Dcadec < Formula
   desc "DTS Coherent Acoustics decoder with support for HD extensions"
   homepage "https://github.com/foo86/dcadec"
   url "https://github.com/foo86/dcadec.git",
-    :tag => "v0.2.0",
-    :revision => "0e074384c9569e921f8facfe3863912cdb400596"
+      tag:      "v0.2.0",
+      revision: "0e074384c9569e921f8facfe3863912cdb400596"
+  license "LGPL-2.1"
   head "https://github.com/foo86/dcadec.git"
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "2679a012566efff2d1ad05021648975dc2960d2ff42720d53b001631311d4a51" => :big_sur
+    sha256 "0622b87f5b7f7c71346443f12d5e3d6eabd02aa63dce433c7248d405a9fbc036" => :catalina
+    sha256 "68b350a3ec6a1ab7384eac3341a03762e8233dec742c35f8dc2afc213b3db567" => :mojave
+    sha256 "7f938bcd68b9078df3dc6e67d82e08beb55b10228a808d91543a6ed2d15a2002" => :high_sierra
     sha256 "7a51fb1bfa07f08c45176df419087429e9ffce945cbcd28d71e403c456762c74" => :sierra
     sha256 "89ddc5e9a5cfd72e604bdff54ee1f09f9ad4ec281fc79c93201971bbd380ccdd" => :el_capitan
     sha256 "640914a5ce466bbb91b551bdb35a385e4a8b08c25f78509a16c016c654963805" => :yosemite
@@ -26,8 +31,8 @@ class Dcadec < Formula
   end
 
   test do
-    resource("sample").stage do |r|
-      system "#{bin}/dcadec", r.cached_download
+    resource("sample").stage do
+      system "#{bin}/dcadec", resource("sample").cached_download
     end
   end
 end

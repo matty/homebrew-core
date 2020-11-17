@@ -3,14 +3,16 @@ class Ncp < Formula
   homepage "https://www.fefe.de/ncp/"
   url "https://dl.fefe.de/ncp-1.2.4.tar.bz2"
   sha256 "6cfa72edd5f7717bf7a4a93ccc74c4abd89892360e2e0bb095a73c24b9359b88"
-  head ":pserver:cvs:@cvs.fefe.de:/cvs", :using => :cvs
+  head ":pserver:cvs:@cvs.fefe.de:/cvs", using: :cvs
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "29980e597d19c6dc4f9f700334a0b5f8874a2e2f3b65d5c934994c15c6e92a27" => :sierra
-    sha256 "edc952c838f359516da24ae55930d1461f057703dcacbe14ce44bde3300b24e2" => :el_capitan
-    sha256 "6b6bcdcb90f1ca2b9c06d928d71900ef7b88a2bbc6e0f522be2af863bf99c542" => :yosemite
-    sha256 "12957fec74020f5b58975f575a1c812f9c0eec5de640d98404f2bd1429fb0b00" => :mavericks
+    rebuild 1
+    sha256 "26d9db0b0da97a1556e5b20afd08c82be35fd7f8530ab63110d83fb1ba542ac2" => :catalina
+    sha256 "345fcd7aaa3fbe0352a0109c986389db0cec91b4603829b4f36998ad866e5aca" => :mojave
+    sha256 "2c56e482f1608eeb3925f4db0b1ef782fb1644d2a7318e522a4a3c7ba7efcdd4" => :high_sierra
+    sha256 "d261de84549f890b4a3ca4c9f9d72ec25dd5a66c77fbccf6c29577c49a3c0866" => :sierra
+    sha256 "08f17ef57ee62eb3ca90c7c033fba68edc2822d93689ddabdcaa49913c98f369" => :el_capitan
   end
 
   depends_on "libowfat"

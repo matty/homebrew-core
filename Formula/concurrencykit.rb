@@ -1,18 +1,17 @@
 class Concurrencykit < Formula
   desc "Aid design and implementation of concurrent systems"
-  homepage "http://concurrencykit.org"
-  url "http://concurrencykit.org/releases/ck-0.5.2.tar.gz"
-  mirror "https://github.com/concurrencykit/ck/archive/0.5.2.tar.gz"
-  sha256 "5cf44b33f9279c653ec9b2b085d628c86336e4da18897be449f074283e5c5b3a"
-
+  homepage "http://concurrencykit.org/"
+  url "https://github.com/concurrencykit/ck/archive/0.7.0.tar.gz"
+  sha256 "e730cb448fb0ecf9d19bf4c7efe9efc3c04dd9127311d87d8f91484742b0da24"
+  license "BSD-2-Clause"
   head "https://github.com/concurrencykit/ck.git"
 
   bottle do
     cellar :any
-    sha256 "84b9e7044b51c5ff9312a0b7b2237ed1c790033725d826e71444e74c84a01e9c" => :sierra
-    sha256 "77f8ad1f44e7f018e17040ffa144e8cc279ec39e9db47e348a84d0631d638d83" => :el_capitan
-    sha256 "c981b82030b838517ca87d261cf160eb141ba91fcede5b68583c4a1b26c4b864" => :yosemite
-    sha256 "a45619fb3062e79e786b16839de5ebd6b8abe33e004092309d535b17cb90ea2e" => :mavericks
+    sha256 "2834fffaf1b10eb3ee40fa9f01bfbe72a5df37161cbf78f8dd016f73aaf16966" => :big_sur
+    sha256 "12788eda54c82375102f2f33e28f533151b4d3f6fa9042ea7c7aa03fb25c3e3a" => :catalina
+    sha256 "357062d84adf8f0c8d1a92a7fda6fb9278b6264edf061935d595342e0c334aed" => :mojave
+    sha256 "c8def7655e173d45ff8ec94bc78750507235fa9eb8b79be639bf250698d59761" => :high_sierra
   end
 
   def install
@@ -22,11 +21,13 @@ class Concurrencykit < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <ck_spinlock.h>
       int main()
       {
-          return 0;
+        ck_spinlock_t spinlock;
+        ck_spinlock_init(&spinlock);
+        return 0;
       }
     EOS
     system ENV.cc, "-I#{include}", "-L#{lib}", "-lck",

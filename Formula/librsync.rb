@@ -1,30 +1,21 @@
 class Librsync < Formula
   desc "Library that implements the rsync remote-delta algorithm"
-  homepage "https://librsync.sourcefrog.net/"
-  url "https://github.com/librsync/librsync/archive/v2.0.0.tar.gz"
-  sha256 "b5c4dd114289832039397789e42d4ff0d1108ada89ce74f1999398593fae2169"
-  revision 1
+  homepage "https://librsync.github.io/"
+  url "https://github.com/librsync/librsync/archive/v2.3.1.tar.gz"
+  sha256 "dbd7eb643665691bdf4009174461463737b19b4814b789baad62914cabfe4569"
+  license "LGPL-2.1"
 
   bottle do
-    sha256 "f17fa395aecc8198c3a09d6eb483a45d0a2b091280f18b5c6576cf3c7b54557e" => :sierra
-    sha256 "f9b52eb45dd0cc166e5d31e3a90cd02bd99c619a5893dd3c8129757528e410cb" => :el_capitan
-    sha256 "31709e2fe6f0480a825209e7aa13602f768db43be57477738e2f7f7150213869" => :yosemite
-    sha256 "bc7ada34fb6aae7fcb9a303a3daeda5861ab11e0a966425aaed2e549fd88e6b9" => :mavericks
+    sha256 "718cdee2aa974cb87367e5fcf26eee51e4d77552a9033622a8c3584e09f99f0e" => :big_sur
+    sha256 "eb1526a88a99556f1ae98c7fa008a8c17ddbe2efe2e55de0192ccbccf9840937" => :catalina
+    sha256 "27f16505bf1b37a9701d70701e708451d47743a3b4d453dcc1d4048065af05af" => :mojave
+    sha256 "20fd33975022b7caaa12b9906b726f1b9dd9a792d9291170e72298a351650610" => :high_sierra
   end
-
-  option :universal
 
   depends_on "cmake" => :build
   depends_on "popt"
 
   def install
-    ENV.universal_binary if build.universal?
-
-    # https://github.com/librsync/librsync/commit/1765ad0d416
-    # https://github.com/librsync/librsync/issues/50
-    # Safe to remove when the next stable release is cut.
-    inreplace "src/search.c", "if (l == r) {", "if ((l == r) && (l <= bucket->r)) {"
-
     system "cmake", ".", *std_cmake_args
     system "make", "install"
     man1.install "doc/rdiff.1"

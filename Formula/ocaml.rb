@@ -3,20 +3,33 @@
 # also updated by incrementing their revisions.
 #
 # Specific packages to pay attention to include:
-# - camlp4
-# - opam
+# - camlp5
+# - lablgtk
 #
 # Applications that really shouldn't break on a compiler update are:
-# - mldonkey
 # - coq
 # - coccinelle
 # - unison
 class Ocaml < Formula
   desc "General purpose programming language in the ML family"
   homepage "https://ocaml.org/"
-  url "http://caml.inria.fr/pub/distrib/ocaml-4.04/ocaml-4.04.0.tar.xz"
-  sha256 "64ed6dad2316d5dff7440cea89f0f0abe07ce508b9104d1bfadf3782e79856b4"
-  head "http://caml.inria.fr/svn/ocaml/trunk", :using => :svn
+  url "https://caml.inria.fr/pub/distrib/ocaml-4.10/ocaml-4.10.0.tar.xz"
+  sha256 "30734db17b609fdd1609c39a05912325c299023968a2c783e5955dd5163dfeb7"
+  license "LGPL-2.1"
+  head "https://github.com/ocaml/ocaml.git", branch: "trunk"
+
+  livecheck do
+    url "https://ocaml.org/releases/"
+    regex(/href=.*?v?(\d+(?:\.\d+)+)\.html/i)
+  end
+
+  bottle do
+    cellar :any
+    sha256 "e6258cd7012b9c0d8e961eb661cc11bc42c388d2153a9f8b9f0a37cf4e63a0f7" => :big_sur
+    sha256 "0870fc3042b3725fb2c6f131c4d6f78aec9f19d553e054ba4890773ef69e45a7" => :catalina
+    sha256 "b43a7247e3d3848d5f20d2432d4996e41049e79c738762f1026f4376ec7e80d3" => :mojave
+    sha256 "a534347814298cc8e66e321384f16eac85f2a59aaa2f536e542fb4870386bc2b" => :high_sierra
+  end
 
   pour_bottle? do
     # The ocaml compilers embed prefix information in weird ways that the default
@@ -25,29 +38,18 @@ class Ocaml < Formula
     satisfy { HOMEBREW_PREFIX.to_s == "/usr/local" }
   end
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "b7448dcd0685f7e129ace58707f821f53a89fb436edba86d20e86a203c2deb5e" => :sierra
-    sha256 "cba95bfb38d7f4466830906b67e69f63463ae90fdf28ef05abbf6234760c8d9a" => :el_capitan
-    sha256 "fe05592478358e1ffab4f83c03ad6567865978e52341544131c66da1e9917a02" => :yosemite
-  end
-
-  option "with-x11", "Install with the Graphics module"
-  option "with-flambda", "Install with flambda support"
-
-  depends_on :x11 => :optional
-
   def install
     ENV.deparallelize # Builds are not parallel-safe, esp. with many cores
 
     # the ./configure in this package is NOT a GNU autoconf script!
-    args = ["-prefix", HOMEBREW_PREFIX.to_s, "-with-debug-runtime", "-mandir", man]
-    args << "-no-graph" if build.without? "x11"
-    args << "-flambda" if build.with? "flambda"
+    args = %W[
+      --prefix=#{HOMEBREW_PREFIX}
+      --enable-debug-runtime
+      --mandir=#{man}
+    ]
     system "./configure", *args
-
     system "make", "world.opt"
-    system "make", "install", "PREFIX=#{prefix}"
+    system "make", "prefix=#{prefix}", "install"
   end
 
   test do

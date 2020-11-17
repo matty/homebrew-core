@@ -3,9 +3,19 @@ class Ifstat < Formula
   homepage "http://gael.roualland.free.fr/ifstat/"
   url "http://gael.roualland.free.fr/ifstat/ifstat-1.1.tar.gz"
   sha256 "8599063b7c398f9cfef7a9ec699659b25b1c14d2bc0f535aed05ce32b7d9f507"
+  license "GPL-2.0"
+
+  livecheck do
+    url :homepage
+    regex(/href=["']?ifstat[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "e78cdbeab6d2b938879ae80e9a611ea2042cf2806f9d2447b6117518d545083b" => :big_sur
+    sha256 "bc3d531dc3b4f6ff78a4acac901a9e6afc21a7994d7cbc3403839a5ae68b68b3" => :catalina
+    sha256 "cd3e855e0608177b9aebf545faeb17a4bad84e093a8ed6a84193b9583a94dc92" => :mojave
+    sha256 "8e385a8fdf00266e63bd7a3af17cdcf07da3cb86a08bd3431cfa3b4cc88bb7a5" => :high_sierra
     sha256 "99eada14bfc555bd8f64d447bddd8a53c7325afed40446e5edbcfb5d7bdc7dd6" => :sierra
     sha256 "e3b3f843c9fba2770a49dd7abcdacc30aa6b5e57f06b5ed96f09d20ada58bd6f" => :el_capitan
     sha256 "ecce408a9ae1a82c7b2457e5a5263ec760096e7e0e71cf0da1ce98523787bcbc" => :yosemite
@@ -20,6 +30,10 @@ class Ifstat < Formula
                           "--prefix=#{prefix}",
                           "--mandir=#{man}"
     system "make", "install"
+  end
+
+  test do
+    system "#{bin}/ifstat", "-v"
   end
 end
 

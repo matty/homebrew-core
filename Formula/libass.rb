@@ -1,14 +1,16 @@
 class Libass < Formula
   desc "Subtitle renderer for the ASS/SSA subtitle format"
   homepage "https://github.com/libass/libass"
-  url "https://github.com/libass/libass/releases/download/0.13.6/libass-0.13.6.tar.gz"
-  sha256 "62070da83b2139c1875c9db65ece37f80f955097227b7d46ade680221efdff4b"
+  url "https://github.com/libass/libass/releases/download/0.15.0/libass-0.15.0.tar.xz"
+  sha256 "9f09230c9a0aa68ef7aa6a9e2ab709ca957020f842e52c5b2e52b801a7d9e833"
+  license "ISC"
 
   bottle do
     cellar :any
-    sha256 "21f04f3347abcb82c3d0710bbe47a8e1e61943f38d15f361d5165a92632fee93" => :sierra
-    sha256 "cb6084560a8a866727c0957bd327ab575bf6e7ea906ccc0693946a2d18b5bca7" => :el_capitan
-    sha256 "e5a92d4cbc9ff8ca1bfac7862dd0f7926417155a8afb9e3b2ff9376b96dce9e9" => :yosemite
+    sha256 "e95df755d6236cb7a56140c4bc12faad1d87023d23412b9f245bbda60073bf00" => :big_sur
+    sha256 "427b18a8c9c8c5331553c0e814bf4e4c6f965cc53715d89a0ad3ba66b8e231c4" => :catalina
+    sha256 "64f2a67f35510fe088f3e6e18075d5e08e93081d958fcee6b65ee29ab3b730ad" => :mojave
+    sha256 "881db49f437027abdae60f4c849097b720216bcfa197589aea373b5f3451f9ef" => :high_sierra
   end
 
   head do
@@ -19,27 +21,26 @@ class Libass < Formula
     depends_on "libtool" => :build
   end
 
-  option "with-fontconfig", "Disable CoreText backend in favor of the more traditional fontconfig"
-
+  depends_on "nasm" => :build
   depends_on "pkg-config" => :build
-  depends_on "yasm" => :build
-
   depends_on "freetype"
   depends_on "fribidi"
-  depends_on "harfbuzz" => :recommended
-  depends_on "fontconfig" => :optional
+  depends_on "harfbuzz"
+
+  on_linux do
+    depends_on "fontconfig"
+  end
 
   def install
-    args = %W[--disable-dependency-tracking --prefix=#{prefix}]
-    args << "--disable-coretext" if build.with? "fontconfig"
-
     system "autoreconf", "-i" if build.head?
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--disable-fontconfig"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include "ass/ass.h"
       int main() {
         ASS_Library *library;

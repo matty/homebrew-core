@@ -1,36 +1,24 @@
-require "language/go"
-
 class Aurora < Formula
   desc "Beanstalkd queue server console"
   homepage "https://xuri.me/aurora"
-  url "https://github.com/Luxurioust/aurora/archive/2.0.tar.gz"
-  sha256 "b1c9bfbc41b1e94824c64634d36f11ca7dc928635456cf258bd21f099edb3e22"
+  url "https://github.com/xuri/aurora/archive/2.2.tar.gz"
+  sha256 "90ac08b7c960aa24ee0c8e60759e398ef205f5b48c2293dd81d9c2f17b24ca42"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "b3818dbfb08b076da83da55b4a34ff7b7e44e9b0b6c4a30c86a0c453241da60a" => :sierra
-    sha256 "98475705d9202a9634a1ec530acb6715b6e1c853ffec430da730e96e5b7bef7c" => :el_capitan
-    sha256 "8a9886f3bf81184f237cba2e121926b99c2ad2af1c6f9ad9abba9617b54146c6" => :yosemite
+    rebuild 2
+    sha256 "714b7116c80107b6ffb0f5b8abba41ae5aa88708fe688e61144ca3a636b7fc4f" => :big_sur
+    sha256 "f3b45006b5b5c6f15166d11d1a740fb14f3b22c1d64b3b64397ed2958e9c882d" => :catalina
+    sha256 "21abebb582fbac2ebb400328b455c890206f78ae0910f75ded8019bfc6a40c1f" => :mojave
+    sha256 "e3e9b06b4b9053afb4b75b48d90555d00fcc8404309d8b2b2b336538810746cb" => :high_sierra
   end
 
   depends_on "go" => :build
 
-  go_resource "github.com/BurntSushi/toml" do
-    url "https://github.com/BurntSushi/toml.git",
-        :revision => "99064174e013895bbd9b025c31100bd1d9b590ca"
-  end
-
-  go_resource "github.com/rakyll/statik" do
-    url "https://github.com/rakyll/statik.git",
-        :revision => "e383bbf6b2ec1a2fb8492dfd152d945fb88919b6"
-  end
-
   def install
-    ENV["GOPATH"] = buildpath
-    Language::Go.stage_deps resources, buildpath/"src"
-    mkdir_p "src/github.com/Luxurioust"
-    ln_s buildpath, "src/github.com/Luxurioust/aurora"
-    system "go", "build", "-o", bin/"aurora"
+    system "go", "build", "-ldflags", "-s -w", "-trimpath", "-o", bin/"aurora"
+    prefix.install_metafiles
   end
 
   test do

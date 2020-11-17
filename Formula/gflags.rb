@@ -1,31 +1,56 @@
 class Gflags < Formula
   desc "Library for processing command-line flags"
   homepage "https://gflags.github.io/gflags/"
-  url "https://github.com/gflags/gflags/archive/v2.2.0.tar.gz"
-  sha256 "466c36c6508a451734e4f4d76825cf9cd9b8716d2b70ef36479ae40f08271f88"
+  url "https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"
+  sha256 "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any
-    sha256 "1574a42aa01d89d14396cd7e914c572dfd03aeedacf3b1fde7aa70a3354ad8ae" => :sierra
-    sha256 "ee9cd12657a11df873e606421d0d070fe97a216dad2167914f52dbb36086603d" => :el_capitan
-    sha256 "f02436e09a92c37d315f12a6336d6e2ee78602ed5221668e331af040ee791722" => :yosemite
+    rebuild 1
+    sha256 "013d34b7e3e9ef0b1ebae5c0bad9661cf1462a4fddec2e31c27dbacb5e8697b9" => :big_sur
+    sha256 "ebc7b6a9b5c14419f01a763f8b5d178525231d0fb4f5a4768673745a893f3b0b" => :catalina
+    sha256 "e3176e449321b1e2070a9fabc796e6820f2f0f1f4db1c3916f58e6cdd52e510e" => :mojave
+    sha256 "4beffa84f47bdfd9a1a90d9e591d9af4616db464d63046018ef0c58936d58366" => :high_sierra
+    sha256 "6f06466ca55f2174daecbc935e0bca1f2aed9bfb94a92f21d52fb4db1e07cd4a" => :sierra
   end
-
-  option "with-debug", "Build debug version"
-  option "with-static", "Build gflags as a static (instead of shared) library."
 
   depends_on "cmake" => :build
 
   def install
-    args = std_cmake_args
-    if build.with? "static"
-      args << "-DBUILD_SHARED_LIBS=OFF"
-    else
-      args << "-DBUILD_SHARED_LIBS=ON"
-    end
     mkdir "buildroot" do
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args, "-DBUILD_SHARED_LIBS=ON"
       system "make", "install"
     end
+  end
+
+  test do
+    (testpath/"test.cpp").write <<~EOS
+      #include <iostream>
+      #include "gflags/gflags.h"
+
+      DEFINE_bool(verbose, false, "Display program name before message");
+      DEFINE_string(message, "Hello world!", "Message to print");
+
+      static bool IsNonEmptyMessage(const char *flagname, const std::string &value)
+      {
+        return value[0] != '\0';
+      }
+      DEFINE_validator(message, &IsNonEmptyMessage);
+
+      int main(int argc, char *argv[])
+      {
+        gflags::SetUsageMessage("some usage message");
+        gflags::SetVersionString("1.0.0");
+        gflags::ParseCommandLineFlags(&argc, &argv, true);
+        if (FLAGS_verbose) std::cout << gflags::ProgramInvocationShortName() << ": ";
+        std::cout << FLAGS_message;
+        gflags::ShutDownCommandLineFlags();
+        return 0;
+      }
+    EOS
+    system ENV.cxx, "-L#{lib}", "-lgflags", "test.cpp", "-o", "test"
+    assert_match "Hello world!", shell_output("./test")
+    assert_match "Foo bar!", shell_output("./test --message='Foo bar!'")
   end
 end

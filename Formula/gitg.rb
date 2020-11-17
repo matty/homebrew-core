@@ -1,43 +1,55 @@
 class Gitg < Formula
   desc "GNOME GUI client to view git repositories"
   homepage "https://wiki.gnome.org/Apps/Gitg"
-  url "https://download.gnome.org/sources/gitg/3.22/gitg-3.22.0.tar.xz"
-  sha256 "ba6895f85c18748294075980a5e03e0936ad4e84534dbb0d8f9e29aa874ddeaf"
-  revision 1
+  url "https://download.gnome.org/sources/gitg/3.32/gitg-3.32.1.tar.xz"
+  sha256 "24a4aabf8a42aa2e783e1fb5996ebb3c2a82a01b9689269f1329517ef124ef5a"
+  revision 5
 
-  bottle do
-    sha256 "4132836f7275773fc4fc52017295455416e067d044b75e610070ddb6448d6903" => :sierra
-    sha256 "326c39b1aef24d993dbf6897ed2e0166a6e0e403fbae6c808e1eb90c4b1c613d" => :el_capitan
-    sha256 "36b4f56fb22dbb3375f926adc2eed61254070eb6793c4b8add14e9d0db4a5a9a" => :yosemite
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "232a57ce6c0dd8bde19be8b7fe3dc62727d7c8e9bc37621acec5b759f6579821" => :big_sur
+    sha256 "ddbda9989373dd4d36950e681e9816e92eeadcf0dbe6f8cc93c2b608b4a28947" => :catalina
+    sha256 "a9de95c66bb3f82a89a00646650aa356077b5546a6b666195f0328f9eb303a61" => :mojave
+    sha256 "ef8b47fccaf050ac613f4e2c43d75c7903d424daf114128d23666b8e68495785" => :high_sierra
+  end
+
+  depends_on "intltool" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "vala" => :build
-  depends_on "intltool" => :build
-  depends_on "gtksourceview3"
+  depends_on "adwaita-icon-theme"
   depends_on "gobject-introspection"
-  depends_on "libgit2-glib"
-  depends_on "gsettings-desktop-schemas"
-  depends_on "libgee"
-  depends_on "json-glib"
-  depends_on "libsecret"
-  depends_on "libpeas"
-  depends_on "libsoup"
+  depends_on "gtk+3"
+  depends_on "gtksourceview3"
   depends_on "gtkspell3"
   depends_on "hicolor-icon-theme"
-  depends_on "gnome-icon-theme"
-  depends_on :python3 => :optional
-  depends_on "pygobject3" => "with-python3" if build.with?("python3")
+  depends_on "libdazzle"
+  depends_on "libgee"
+  depends_on "libgit2"
+  depends_on "libgit2-glib"
+  depends_on "libpeas"
+  depends_on "libsecret"
+  depends_on "libsoup"
+
+  # Fix libgitg compile on macOS from https://gitlab.gnome.org/GNOME/gitg/-/merge_requests/142
+  # Remove for next version
+  patch do
+    url "https://gitlab.gnome.org/GNOME/gitg/-/commit/67f5cd6925e8bf1e4c7e5b65fe9370c2cdd1d273.patch"
+    sha256 "e81c59f77aceb8c1ae3914ffebf24f5a0287bd2cf9511996eb8a3f4282e8542d"
+  end
 
   def install
-    ENV.prepend_path "PKG_CONFIG_PATH", Formula["libgit2-glib"].opt_libexec/"libgit2/lib/pkgconfig"
+    ENV["DESTDIR"] = "/"
 
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}",
-                          "--disable-schemas-compile"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, "-Dpython=false", ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   def post_install
@@ -49,7 +61,7 @@ class Gitg < Formula
     # test executable
     assert_match version.to_s, shell_output("#{bin}/gitg --version")
     # test API
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libgitg/libgitg.h>
 
       int main(int argc, char *argv[]) {
@@ -70,13 +82,12 @@ class Gitg < Formula
     libepoxy = Formula["libepoxy"]
     libffi = Formula["libffi"]
     libgee = Formula["libgee"]
-    libgit2 = Formula["libgit2-glib"].opt_libexec/"libgit2"
+    libgit2 = Formula["libgit2"]
     libgit2_glib = Formula["libgit2-glib"]
     libpng = Formula["libpng"]
     libsoup = Formula["libsoup"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    webkitgtk = Formula["webkitgtk"]
     flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
@@ -100,7 +111,6 @@ class Gitg < Formula
       -I#{libsoup.opt_include}/libsoup-2.4
       -I#{pango.opt_include}/pango-1.0
       -I#{pixman.opt_include}/pixman-1
-      -I#{webkitgtk.opt_include}/webkitgtk-4.0
       -DGIT_SSH=1
       -D_REENTRANT
       -L#{atk.opt_lib}
@@ -111,12 +121,11 @@ class Gitg < Formula
       -L#{gobject_introspection.opt_lib}
       -L#{gtkx3.opt_lib}
       -L#{libgee.opt_lib}
-      -L#{libgit2}/lib
+      -L#{libgit2.opt_lib}
       -L#{libgit2_glib.opt_lib}
       -L#{libsoup.opt_lib}
       -L#{lib}
       -L#{pango.opt_lib}
-      -L#{webkitgtk.opt_lib}
       -latk-1.0
       -lcairo
       -lcairo-gobject

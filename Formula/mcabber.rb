@@ -1,35 +1,32 @@
 class Mcabber < Formula
   desc "Console Jabber client"
   homepage "https://mcabber.com/"
-  url "https://mcabber.com/files/mcabber-1.0.5.tar.bz2"
-  sha256 "a0f200817d2b6196fe4d37918ce16f6fed83a3cef861d7165161e8b1cafcad47"
+  url "https://mcabber.com/files/mcabber-1.1.2.tar.bz2"
+  sha256 "c4a1413be37434b6ba7d577d94afb362ce89e2dc5c6384b4fa55c3e7992a3160"
+  license "GPL-2.0-or-later"
 
   bottle do
-    sha256 "809dca7d8e2f2ed7071db7d27f36632911b0d0f1d7f1c962b081751122e15048" => :sierra
-    sha256 "99877d1d1808737d8752c5d72d702cc0119e9a1b35266f146d8c4cf705ca0615" => :el_capitan
-    sha256 "3a253108087149fcd756b108dace85cb59c85ed662f655b89662a50a206ccaa7" => :yosemite
+    sha256 "639edfef4ad26bdaea6a714b18acbda1d4d240f658ee8813b9b49f17f85952c4" => :big_sur
+    sha256 "f5296e7fffbc0702dcce5794e2f47c77a998f002b0852416c8411ac5ad44b31e" => :catalina
+    sha256 "301d1883a89bcf494b5ab8c2c6dc4f267b29124d479d47483f562e8c3739d531" => :mojave
+    sha256 "73d4da3e1e562308e3d4a3b3318f2b5de951d50a44eec9115780170f282022b6" => :high_sierra
   end
 
   head do
-    url "https://mcabber.com/hg/", :using => :hg
+    url "https://mcabber.com/hg/", using: :hg
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  deprecated_option "enable-aspell" => "with-aspell"
-  deprecated_option "enable-enchant" => "with-enchant"
-
   depends_on "pkg-config" => :build
   depends_on "glib"
-  depends_on "loudmouth"
   depends_on "gpgme"
   depends_on "libgcrypt"
-  depends_on "libotr"
   depends_on "libidn"
-  depends_on "aspell" => :optional
-  depends_on "enchant" => :optional
+  depends_on "libotr"
+  depends_on "loudmouth"
 
   def install
     if build.head?
@@ -38,24 +35,21 @@ class Mcabber < Formula
       system "./autogen.sh"
     end
 
-    args = ["--disable-debug", "--disable-dependency-tracking",
-            "--prefix=#{prefix}",
-            "--enable-otr"]
-
-    args << "--enable-aspell" if build.with? "aspell"
-    args << "--enable-enchant" if build.with? "enchant"
-
-    system "./configure", *args
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--enable-otr"
     system "make", "install"
 
     pkgshare.install %w[mcabberrc.example contrib]
   end
 
-  def caveats; <<-EOS.undent
-    A configuration file is necessary to start mcabber.  The template is here:
-      #{pkgshare}/mcabber/mcabberrc.example
-    And there is a Getting Started Guide you will need to setup Mcabber:
-      http://wiki.mcabber.com/index.php/Getting_started
+  def caveats
+    <<~EOS
+      A configuration file is necessary to start mcabber.  The template is here:
+        #{opt_pkgshare}/mcabberrc.example
+      And there is a Getting Started Guide you will need to setup Mcabber:
+        https://wiki.mcabber.com/#index2h1
     EOS
   end
 

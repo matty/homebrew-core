@@ -1,14 +1,21 @@
 class ScummvmTools < Formula
   desc "Collection of tools for ScummVM"
-  homepage "http://www.scummvm.org/"
-  url "http://www.scummvm.org/frs/scummvm-tools/1.9.0/scummvm-tools-1.9.0.tar.xz"
-  sha256 "b7ab2e03c5a0efb71bb0c84434aa481331739b2b8759361d467e076b8410f938"
+  homepage "https://www.scummvm.org/"
+  url "https://www.scummvm.org/frs/scummvm-tools/2.2.0/scummvm-tools-2.2.0.tar.xz"
+  sha256 "1e72aa8f21009c1f7447c755e7f4cf499fe9b8ba3d53db681ea9295666cb48a4"
+  license "GPL-2.0-or-later"
   head "https://github.com/scummvm/scummvm-tools.git"
 
+  livecheck do
+    url "https://www.scummvm.org/downloads/"
+    regex(/href=.*?scummvm-tools[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
+
   bottle do
-    sha256 "5f8a8406cb7e147e6685b071b8a191a23e41d7b92e3baae224aadcec0a3b2f14" => :sierra
-    sha256 "c080f7bee0508417bdf00197bfb85d5efb57b0db227116c953da214e6d018acd" => :el_capitan
-    sha256 "b3f53f0d44c12cb87f00de13bdbff91b4e3ea5c7f7049fa61a5abe6e3cf4f287" => :yosemite
+    cellar :any
+    sha256 "4d43c5933986b4c011c5cf9f45bd853cf0faabb652aab2ce53f9e5cfc5d95ae0" => :catalina
+    sha256 "64cce3aa4cfbb11ee9223bb1037cf85e8cec3ab78d2206aeb93f2605ea7cf327" => :mojave
+    sha256 "0c207fc3e8ee9b54b1c6f85d1461458cbe3ba05b591f87807ff4e534c4baec17" => :high_sierra
   end
 
   depends_on "boost"
@@ -17,7 +24,7 @@ class ScummvmTools < Formula
   depends_on "libpng"
   depends_on "libvorbis"
   depends_on "mad"
-  depends_on "wxmac" => :recommended
+  depends_on "wxmac"
 
   def install
     system "./configure", "--prefix=#{prefix}"

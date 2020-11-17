@@ -3,21 +3,27 @@ class Cairomm < Formula
   homepage "https://cairographics.org/cairomm/"
   url "https://cairographics.org/releases/cairomm-1.12.2.tar.gz"
   sha256 "45c47fd4d0aa77464a75cdca011143fea3ef795c4753f6e860057da5fb8bd599"
+  license "LGPL-2.0"
+  revision 1
+
+  livecheck do
+    url "https://cairographics.org/releases/?C=M&O=D"
+    regex(/href=.*?cairomm[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "da41ea7c4cd90ab7183f4eba82f6921fd70b8a3ad0301054f2152214efe33373" => :sierra
-    sha256 "4fec10a5e15cceceee0b93e11bf000d9f6365cfc1c97dbc255b4a4d7d7d6c8dd" => :el_capitan
-    sha256 "ce58504dbe14cd1a27aeecd7eed1d95c6fa7819b8ff6ab451e02462cdc699e83" => :yosemite
+    sha256 "a7e5e1838390320a4894316c4e4e1e714dc3d7c65efffb5d58b6772fd6774578" => :big_sur
+    sha256 "58ce00547bc4f0210b0236b3e3df344b372e801bc129ba32091a5396334af7f8" => :catalina
+    sha256 "2a77a830256c2da441f636fddbdc2bd4ad390e920fc223b4ea33821ec1265195" => :mojave
+    sha256 "08a29b621ee8173cb17452f2e7a62adb83a60a65f0758cab545ddc0c53ecf681" => :high_sierra
+    sha256 "1845ba3e5dd9364551980e16b446620e4088f1fe90517b5af7cd81435b60cc08" => :sierra
   end
 
-  needs :cxx11
-
   depends_on "pkg-config" => :build
-  depends_on "libsigc++"
-
-  depends_on "libpng"
   depends_on "cairo"
+  depends_on "libpng"
+  depends_on "libsigc++@2"
 
   def install
     ENV.cxx11
@@ -27,7 +33,7 @@ class Cairomm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <cairomm/cairomm.h>
 
       int main(int argc, char *argv[])
@@ -43,7 +49,7 @@ class Cairomm < Formula
     gettext = Formula["gettext"]
     glib = Formula["glib"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     pixman = Formula["pixman"]
     flags = %W[
       -I#{cairo.opt_include}/cairo

@@ -1,39 +1,41 @@
 class Moreutils < Formula
   desc "Collection of tools that nobody wrote when UNIX was young"
   homepage "https://joeyh.name/code/moreutils/"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/m/moreutils/moreutils_0.60.orig.tar.xz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/m/moreutils/moreutils_0.60.orig.tar.xz"
-  sha256 "e42d18bacbd2d003779a55fb3542befa5d1d217ee37c1874e8c497581ebc17c5"
-  head "git://git.joeyh.name/moreutils"
+  url "https://git.joeyh.name/git/moreutils.git",
+      tag:      "0.64",
+      revision: "859c6e47b53410dbdcdc714385516bcb81710075"
+  license all_of: [
+    "GPL-2.0-or-later",
+    { any_of: ["GPL-2.0-only", "Artistic-2.0"] },
+  ]
+  head "https://git.joeyh.name/git/moreutils.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ae130c5fa715e6c9cf338201f5318f58bfa98910b67b26bcf4f68a247dc36083" => :sierra
-    sha256 "b9865588c4d434d5e35d19cdf2b39b36031d6b6cd77835e182fd5e76fa7cba48" => :el_capitan
-    sha256 "b39209ebca05c0aa733dbf01c615be42db78f9438431e82df52f7f3914c9788a" => :yosemite
-    sha256 "512b618f6a652f673485616677c6207a8645a3dcfe98b619787e58c3cb5a5811" => :mavericks
+    sha256 "daeab56a9a063d9a81a3b39d3cd8e9c7fa39871b6f9738ced5bd2c780a5e583e" => :big_sur
+    sha256 "2acce86bfb602b3da4577cf429080a138b7a2e587e394b175889c4d190ef3bae" => :catalina
+    sha256 "e4d2496b670b5f4c8fcac0baaaa41afeced3b04ac962ce4963752cc233d68273" => :mojave
+    sha256 "80057e9363725a85da1200dfe87fe669a5dab3980375ad83330ce4b61cbac13c" => :high_sierra
   end
-
-  option "without-parallel", "Build without the 'parallel' tool."
-  option "without-errno", "Build without the 'errno' tool, for compatibility with 'pwntools'."
-  option "without-ts", "Build without the 'ts' tool, for compatibility with 'task-spooler'."
 
   depends_on "docbook-xsl" => :build
 
-  conflicts_with "parallel", :because => "Both install a `parallel` executable." if build.with? "parallel"
-  conflicts_with "pwntools", :because => "Both install an `errno` executable." if build.with? "errno"
-  conflicts_with "task-spooler", :because => "Both install a `ts` executable." if build.with? "ts"
+  uses_from_macos "libxml2" => :build
+  uses_from_macos "libxslt" => :build
+
+  conflicts_with "parallel", because: "both install a `parallel` executable"
+  conflicts_with "pwntools", because: "both install an `errno` executable"
+  conflicts_with "sponge", because: "both install a `sponge` executable"
+  conflicts_with "task-spooler", because: "both install a `ts` executable"
 
   resource "Time::Duration" do
-    url "https://cpan.metacpan.org/authors/id/N/NE/NEILB/Time-Duration-1.20.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/N/NE/NEILB/Time-Duration-1.20.tar.gz"
-    sha256 "458205b528818e741757b2854afac5f9af257f983000aae0c0b1d04b5a9cbbb8"
+    url "https://cpan.metacpan.org/authors/id/N/NE/NEILB/Time-Duration-1.21.tar.gz"
+    sha256 "fe340eba8765f9263694674e5dff14833443e19865e5ff427bbd79b7b5f8a9b8"
   end
 
   resource "IPC::Run" do
-    url "https://cpan.metacpan.org/authors/id/T/TO/TODDR/IPC-Run-0.94.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/T/TO/TODDR/IPC-Run-0.94.tar.gz"
-    sha256 "2eb336c91a2b7ea61f98e5b2282d91020d39a484f16041e2365ffd30f8a5605b"
+    url "https://cpan.metacpan.org/authors/id/T/TO/TODDR/IPC-Run-20200505.0.tar.gz"
+    sha256 "816ebf217fa0df99c583d73c0acc6ced78ac773787c664c75cbf140bb7e4c901"
   end
 
   def install
@@ -52,17 +54,10 @@ class Moreutils < Formula
     inreplace "Makefile" do |s|
       s.gsub! "/usr/share/xml/docbook/stylesheet/docbook-xsl",
               "#{Formula["docbook-xsl"].opt_prefix}/docbook-xsl"
-      %w[parallel errno ts].each do |util|
-        next if build.with? util
-        s.gsub! /^BINS=.*\K#{util}/, "", false
-        s.gsub! /^MANS=.*\K#{util}\.1/, ""
-        s.gsub! /^PERLSCRIPTS=.*\K#{util}/, "", false
-      end
     end
     system "make", "all"
-    system "make", "check"
     system "make", "install", "PREFIX=#{prefix}"
-    bin.env_script_all_files(libexec/"bin", :PERL5LIB => ENV["PERL5LIB"])
+    bin.env_script_all_files(libexec/"bin", PERL5LIB: ENV["PERL5LIB"])
   end
 
   test do

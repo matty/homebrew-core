@@ -1,37 +1,40 @@
 class Scummvm < Formula
   desc "Graphic adventure game interpreter"
   homepage "https://www.scummvm.org/"
-  url "https://www.scummvm.org/frs/scummvm/1.9.0/scummvm-1.9.0.tar.xz"
-  sha256 "2417edcb1ad51ca05a817c58aeee610bc6db5442984e8cf28e8a5fd914e8ae05"
+  url "https://www.scummvm.org/frs/scummvm/2.2.0/scummvm-2.2.0.tar.xz"
+  sha256 "1469657e593bd8acbcfac0b839b086f640ebf120633e93f116cab652b5b27387"
+  license "GPL-2.0-or-later"
   head "https://github.com/scummvm/scummvm.git"
 
-  bottle do
-    sha256 "34e01d9f579230ff887a801722d9bd2d4dd4f7245ae5c96ef3d6a0c3a13003bf" => :sierra
-    sha256 "300612434290d59de56fde9715ca32ee8b8671d76625c3b79197cf44c81b2201" => :el_capitan
-    sha256 "213a1905e6d46cfe685e0cf25f0d7bb164bace5abbaff9497f4c1e40f794240d" => :yosemite
+  livecheck do
+    url "https://www.scummvm.org/frs/scummvm/"
+    regex(%r{href=.*?v?(\d+(?:\.\d+)+)/?["']}i)
   end
 
-  option "with-all-engines", "Enable all engines (including broken or unsupported)"
+  bottle do
+    sha256 "bfdd3aa29ce7738729b03c1c58844a9085df58de2e8042db880519dcb3d61aeb" => :big_sur
+    sha256 "b48fb222871740414480cb4a1789c1c1b379b30dafac2970656ec8802deb205b" => :catalina
+    sha256 "0e359a79ab9835cd3511d1aa7e617349b50fcb0a3241c2d700d2341f321a90b7" => :mojave
+    sha256 "dafe75e762c2ccee797055f3bf6dda13d08f3e1efcd2c7017dc734db41a1acef" => :high_sierra
+  end
 
+  depends_on "a52dec"
+  depends_on "faad2"
+  depends_on "flac"
+  depends_on "fluid-synth"
+  depends_on "freetype"
+  depends_on "jpeg-turbo"
+  depends_on "libmpeg2"
+  depends_on "libpng"
+  depends_on "libvorbis"
+  depends_on "mad"
   depends_on "sdl2"
-  depends_on "libvorbis" => :recommended
-  depends_on "mad" => :recommended
-  depends_on "flac" => :recommended
-  depends_on "libmpeg2" => :optional
-  depends_on "jpeg" => :recommended
-  depends_on "libpng" => :recommended
-  depends_on "theora" => :recommended
-  depends_on "faad2" => :recommended
-  depends_on "fluid-synth" => :recommended
-  depends_on "freetype" => :recommended
+  depends_on "theora"
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --enable-release
-    ]
-    args << "--enable-all-engines" if build.with? "all-engines"
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}",
+                          "--enable-release",
+                          "--with-sdl-prefix=#{Formula["sdl2"].opt_prefix}"
     system "make"
     system "make", "install"
     (share+"pixmaps").rmtree

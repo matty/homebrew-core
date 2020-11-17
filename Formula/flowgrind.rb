@@ -1,22 +1,30 @@
 class Flowgrind < Formula
   desc "TCP measurement tool, similar to iperf or netperf"
   homepage "https://launchpad.net/flowgrind"
-  url "https://launchpad.net/flowgrind/trunk/flowgrind-0.7.5/+download/flowgrind-0.7.5.tar.bz2"
-  sha256 "7d7fec5e62d34422a7cadeab4a5d65eb3ffb600e8e6861fd3cbf16c29b550ae4"
+  url "https://launchpad.net/flowgrind/trunk/flowgrind-0.8.0/+download/flowgrind-0.8.0.tar.bz2"
+  sha256 "2e8b58fc919bb1dae8f79535e21931336355b4831d8b5bf75cf43eacd1921d04"
   revision 2
+
+  livecheck do
+    url :stable
+    regex(%r{<div class="version">\s*Latest version is flowgrind[._-]v?(\d+(?:\.\d+)+)\s*</div>}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "57550eebc62d8a105cc82856571e4d31f6b9fcca83390ec5b24ae29bb6fa9d1b" => :sierra
-    sha256 "aeaf5c5a359cd07f13a9ef8c38ee75ff7bff94a86e751bf990f9741943ee8066" => :el_capitan
-    sha256 "a11e7064945a39adafcc5ba607ac2522bc928b130bcf92e575e65b5feca82a80" => :yosemite
-    sha256 "8fec1cceaea769c8f98bcbd423bab0bb69003288ba1f0932c7d6de1b64845789" => :mavericks
+    sha256 "631e7fc8316f75178ac6d6dd82f750ccd5d61b60be2d02735af82f3a19009ccd" => :big_sur
+    sha256 "e598d94bf046253c93bfb394d532584bca417b69e63b70b851f0ab4f9adf3089" => :catalina
+    sha256 "652a07d073f21ae8158fed8b7a34c739a88a0e594c32408a83d48e80a93df944" => :mojave
+    sha256 "4b723ca4f7f92a354bf8226d67fd8537a13c07223ff5d05ebd9da82491cb546a" => :high_sierra
   end
 
   depends_on "gsl"
   depends_on "xmlrpc-c"
 
   def install
+    # Fix "ld: file not found: /usr/lib/system/libsystem_darwin.dylib" for lxml
+    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra
+
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",

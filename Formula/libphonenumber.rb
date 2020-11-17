@@ -1,48 +1,39 @@
 class Libphonenumber < Formula
   desc "C++ Phone Number library by Google"
-  homepage "https://github.com/googlei18n/libphonenumber"
-  url "https://github.com/googlei18n/libphonenumber/archive/v8.3.0.tar.gz"
-  sha256 "3114faa60973c817253194a56119c5795063ccd2f336d945c774f8e4f99b70a4"
+  homepage "https://github.com/google/libphonenumber"
+  url "https://github.com/google/libphonenumber/archive/v8.12.13.tar.gz"
+  sha256 "1d0dab61ab0d4ffa9d86fd93a46b0f4df7ab159bf8b8f08416dc211a753747b2"
+  license "Apache-2.0"
 
   bottle do
     cellar :any
-    sha256 "f881f5ee7f01c132cdc5033bb11e43a6b6d7b3f8babcc785596ee69da343d515" => :sierra
-    sha256 "f655f3700ea2294ee8d1a62688e840d49b92bb59b7b906453c2504f885a2a9dc" => :el_capitan
-    sha256 "85da4aa7ee587122ae86b2e56528309044447bdb4630880aecdefc5fe38ab1dd" => :yosemite
+    sha256 "bf5f29f12a085be747c54c078e8fbc6afe512f1952fcc7685929f23c3767474a" => :catalina
+    sha256 "36874b577c7eda835b7c8561b115c60913fa53c84f01c1edd3ed405c6ccb5e1e" => :mojave
+    sha256 "b59a99ce42330f148f70086e08a20577108a5572dd1f9e2f3503c86fe25fe6bd" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on :java => "1.7+"
+  depends_on "boost"
   depends_on "icu4c"
   depends_on "protobuf"
-  depends_on "boost"
   depends_on "re2"
 
   resource "gtest" do
-    url "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/googletest/gtest-1.7.0.zip"
-    sha256 "247ca18dd83f53deb1328be17e4b1be31514cedfc1e3424f672bf11fd7e0d60d"
+    url "https://github.com/google/googletest/archive/release-1.10.0.tar.gz"
+    sha256 "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb"
   end
 
   def install
+    ENV.cxx11
     (buildpath/"gtest").install resource("gtest")
-
-    cd "gtest" do
-      system "cmake", ".", *std_cmake_args
-      system "make"
-    end
-
-    args = std_cmake_args + %W[
-      -DGTEST_INCLUDE_DIR:PATH=#{buildpath}/gtest/include
-      -DGTEST_LIB:PATH=#{buildpath}/gtest/libgtest.a
-      -DGTEST_SOURCE_DIR:PATH=#{buildpath}/gtest/src
-    ]
-
-    system "cmake", "cpp", *args
+    system "cmake", "cpp", "-DGTEST_SOURCE_DIR=gtest/googletest",
+                           "-DGTEST_INCLUDE_DIR=gtest/googletest/include",
+                           *std_cmake_args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <phonenumbers/phonenumberutil.h>
       #include <phonenumbers/phonenumber.pb.h>
       #include <iostream>
@@ -64,7 +55,7 @@ class Libphonenumber < Formula
         }
       }
     EOS
-    system ENV.cxx, "test.cpp", "-L#{lib}", "-lphonenumber", "-o", "test"
+    system ENV.cxx, "-std=c++11", "test.cpp", "-L#{lib}", "-lphonenumber", "-o", "test"
     system "./test"
   end
 end

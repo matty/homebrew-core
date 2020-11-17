@@ -1,32 +1,44 @@
 class Expat < Formula
   desc "XML 1.0 parser"
-  homepage "https://expat.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/expat/expat/2.2.0/expat-2.2.0.tar.bz2"
-  mirror "https://fossies.org/linux/www/expat-2.2.0.tar.bz2"
-  sha256 "d9e50ff2d19b3538bd2127902a89987474e1a4db8e43a66a4d1a712ab9a504ff"
-  head ":pserver:anonymous:@expat.cvs.sourceforge.net:/cvsroot/expat", :using => :cvs
+  homepage "https://libexpat.github.io/"
+  url "https://github.com/libexpat/libexpat/releases/download/R_2_2_10/expat-2.2.10.tar.xz"
+  sha256 "5dfe538f8b5b63f03e98edac520d7d9a6a4d22e482e5c96d4d06fcc5485c25f2"
+  license "MIT"
+
+  livecheck do
+    url "https://github.com/libexpat/libexpat/releases/latest"
+    regex(/href=.*?expat[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "5e88f87911f6bc4da80d7c184bdda34e6c8de41740f6536602517a933e9ea9bb" => :sierra
-    sha256 "b12ee86df3f1faa5eb07e2624ab464428d9b96fb09cadc25a20fe7a065459f54" => :el_capitan
-    sha256 "228e8d539fc0447150a0f1508cad4ab33347e45178964966df0802389b0c5a3d" => :yosemite
-    sha256 "48dcc5c1d0dedd3ebac9e238ff5e5cf1d725577062f5902cb58cfcb9f105d5f2" => :mavericks
+    sha256 "bdc39dc9c66e5efa771a59842102be8f35e8bab1f11f2b2353af0d986df95ec0" => :big_sur
+    sha256 "1a8b10b3ce11187fbc9d26013ac5939d69f53ad7e0768ecb3d026ae6007005ac" => :catalina
+    sha256 "0715be3a1c1f7472cb662c640b263ed8c78da9cc20ebadb3f8df40e2300a87a8" => :mojave
+    sha256 "f1d65a87a4535918db8fb7cae639335e70e0a0ac780a000f5ddb4685a47526e2" => :high_sierra
   end
 
-  keg_only :provided_by_osx, "macOS includes Expat 1.5."
+  head do
+    url "https://github.com/libexpat/libexpat.git"
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "docbook2x" => :build
+    depends_on "libtool" => :build
+  end
 
-  option :universal
+  keg_only :provided_by_macos
 
   def install
-    ENV.universal_binary if build.universal?
-    system "./configure", "--prefix=#{prefix}",
-                          "--mandir=#{man}"
+    cd "expat" if build.head?
+    system "autoreconf", "-fiv" if build.head?
+    args = ["--prefix=#{prefix}", "--mandir=#{man}"]
+    args << "--with-docbook" if build.head?
+    system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include "expat.h"
 

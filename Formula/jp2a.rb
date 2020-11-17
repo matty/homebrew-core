@@ -1,29 +1,36 @@
 class Jp2a < Formula
   desc "Convert JPG images to ASCII"
-  homepage "http://csl.sublevel3.org/jp2a/"
+  homepage "https://csl.name/jp2a/"
+  # Do not change source from SourceForge to GitHub until this issue is resolved:
+  # https://github.com/cslarsen/jp2a/issues/8
+  # Currently, GitHub only has jp2a v1.0.7, which is broken as described above.
+  # jp2a v1.0.6 is stable, but it is only available on SourceForge, not GitHub.
   url "https://downloads.sourceforge.net/project/jp2a/jp2a/1.0.6/jp2a-1.0.6.tar.gz"
   sha256 "0930ac8a9545c8a8a65dd30ff80b1ae0d3b603f2ef83b04226da0475c7ccce1c"
+  license "GPL-2.0"
+  revision 1
+  version_scheme 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "34f358dbc4335ba01acb74b65a2c12965af1317b2d46d5815bf6aadc299c98bc" => :sierra
-    sha256 "d1c7db27a0b2704c0f5f3584fe7891e40ac1d26b175a85cbf8899c139330d4bc" => :el_capitan
-    sha256 "1a16fd055a4c68ef949df2f37f690259860d0c3d97962fc1b0bc5b8654f1b442" => :yosemite
-    sha256 "b31b7564584f3e91dc73c4f511d74c26341d621a5b6e0533541237400acfca84" => :mavericks
-    sha256 "d2f2828c5ed021cac439243a6c5fbb29b9ec460fc96d7fa19c69bec7838d4689" => :mountain_lion
+    rebuild 1
+    sha256 "8ab042d2d660fbc55e4a055e0618d85fbbd32029f703d35c59f3d12c0b000936" => :big_sur
+    sha256 "a9aa7c8893c63ad5621788af3813ed9758e09e0c79b9ba3a8262d5c17b2272f9" => :catalina
+    sha256 "4e62b310889a384daf9058267ac0b1bdc73d2cb408f05b9e3d3072be52355bfd" => :mojave
+    sha256 "8400fccf2a4459fe37ce0f3856459127f4f66ff002c356f36942462c0c9c3809" => :high_sierra
   end
-
-  option "without-test", "Skip compile-time tests"
-
-  deprecated_option "without-check" => "without-test"
 
   depends_on "jpeg"
 
   def install
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
+                          "--disable-silent-rules",
                           "--prefix=#{prefix}"
-    system "make", "test" if build.with? "test"
     system "make", "install"
   end
 

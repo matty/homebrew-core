@@ -1,34 +1,42 @@
 class Libchamplain < Formula
   desc "ClutterActor for displaying maps"
   homepage "https://wiki.gnome.org/Projects/libchamplain"
-  url "https://download.gnome.org/sources/libchamplain/0.12/libchamplain-0.12.12.tar.xz"
-  sha256 "e7de797200a91dba07bd8ba6583a672e1b3dcee842b9b100798925ebde8254a6"
+  url "https://download.gnome.org/sources/libchamplain/0.12/libchamplain-0.12.20.tar.xz"
+  sha256 "0232b4bfcd130a1c5bda7b6aec266bf2d06e701e8093df1886f1e26bc1ba3066"
+  license "LGPL-2.1"
+  revision 2
 
-  bottle do
-    sha256 "d4552bdf2859480550459fb0be2658269ad98328d08c4ad8078eff44f2a0bcf6" => :sierra
-    sha256 "c489324cfd7be98817af7ab6d1cc1645dad41803566ccafef8b30c78ad383190" => :el_capitan
-    sha256 "302278ca1ccc1e91cd705b9af97c0b0f61a0f4cf3f7d956d9ce279ea199b25cb" => :yosemite
-    sha256 "e14e6a06013cc796cdf0d09ea8491e59cd9ecf52d4be1327621bd765667f8051" => :mavericks
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    cellar :any
+    sha256 "cb5f211f8fa37e711a6e8888e4dfc873599defae9bad26f2d4310d798d0df98f" => :catalina
+    sha256 "451b57e103a89cbd80b18fe98012f5ff2a56de6ef0fbca9d0b2e49279c0f06dd" => :mojave
+    sha256 "139ae58e12b28abeeeddedebd802c5183761048c3745f3cb042458f2be3f9602" => :high_sierra
+  end
+
+  depends_on "gnome-common" => :build
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "clutter"
-  depends_on "libsoup"
-  depends_on "gobject-introspection"
-  depends_on "gtk+3"
   depends_on "clutter-gtk"
-  depends_on "vala" => :optional
+  depends_on "gtk+3"
+  depends_on "libsoup"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, "-Ddocs=false", ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <champlain/champlain.h>
 
       int main(int argc, char *argv[]) {
@@ -68,7 +76,7 @@ class Libchamplain < Formula
       -I#{glib.opt_lib}/glib-2.0/include
       -I#{gtkx3.opt_include}/gtk-3.0
       -I#{harfbuzz.opt_include}/harfbuzz
-      -I#{include}/libchamplain-0.12
+      -I#{include}/champlain-0.12
       -I#{json_glib.opt_include}/json-glib-1.0
       -I#{libepoxy.opt_include}
       -I#{libpng.opt_include}/libpng16

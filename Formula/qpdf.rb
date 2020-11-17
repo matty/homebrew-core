@@ -1,23 +1,23 @@
 class Qpdf < Formula
   desc "Tools for and transforming and inspecting PDF files"
-  homepage "https://qpdf.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/qpdf/qpdf/6.0.0/qpdf-6.0.0.tar.gz"
-  sha256 "a9fdc7e94d38fcd3831f37b6e0fe36492bf79aa6d54f8f66062cf7f9c4155233"
+  homepage "https://github.com/qpdf/qpdf"
+  url "https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.0.3/qpdf-10.0.3.tar.gz"
+  sha256 "51e96e2e5507f52993e0cc4d04726f0614f6d6dad04eaddcb527cd3f4190a8f2"
+  license "Apache-2.0"
 
   bottle do
     cellar :any
-    sha256 "e13fed06dbbb7aae8b6c4c7a32e1975603d18a61203ebb6b15094cd992cf9e16" => :sierra
-    sha256 "de523886e15f79209dbe270043dc252ebd2856649ac94f98141f37c3436ed20e" => :el_capitan
-    sha256 "d352cf417a9ee038157343f138ff3f341e5aa5d9e91757c3ce88950b4509aba3" => :yosemite
-    sha256 "f7059fb9d944230b06ad8ddb34528e4090161ee0a3ddee7068a86046c61d4b04" => :mavericks
+    sha256 "622b938f59652a03977c6faa6b51df6124b74ee60a610cbe5833bc8af6c26b60" => :big_sur
+    sha256 "dd31dda8bb5b39fc025fc52951661a22e5ce87604393271a941151cb592837d3" => :catalina
+    sha256 "34d03d5740b508c2c90db74cc1f59a17ef1dbff5d5e24c96de316bcc78fdbc1e" => :mojave
+    sha256 "0e58fbc2dc0feb2d68f922ebf1885786ad4d3a89759d6bbcdf3f8319a021ac2e" => :high_sierra
   end
 
-  depends_on "pcre"
+  depends_on "jpeg"
+
+  uses_from_macos "zlib"
 
   def install
-    # find Homebrew's libpcre
-    ENV.append "LDFLAGS", "-L#{Formula["pcre"].opt_lib}"
-
     system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make", "install"

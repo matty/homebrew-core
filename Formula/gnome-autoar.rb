@@ -1,18 +1,24 @@
 class GnomeAutoar < Formula
   desc "GNOME library for archive handling"
   homepage "https://github.com/GNOME/gnome-autoar"
-  url "https://download.gnome.org/sources/gnome-autoar/0.1/gnome-autoar-0.1.1.tar.xz"
-  sha256 "f65cb810b562dc038ced739fbf59739fd5df1a8e848636e21f363ded9f349ac9"
+  url "https://download.gnome.org/sources/gnome-autoar/0.2/gnome-autoar-0.2.4.tar.xz"
+  sha256 "0a34c377f8841abbf4c29bc848b301fbd8e4e20c03d7318c777c58432033657a"
+  license "LGPL-2.1"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "45812c9e3e758dd5d6e5fb4357a4e6b35b1de7aeb7a46b821dbc326a6506f440" => :sierra
-    sha256 "4df813bf0adedd8b079991de35e2efa8def78640c959b24840c12c06f9463298" => :el_capitan
-    sha256 "ce143626e83d030de0fae3d6257301c3ec0c7ff8230bce78422178fe8b97ff54" => :yosemite
+    sha256 "2bdebb42be1484a3a5decffd2f562581caf03547b607f0ef55b814d35941371c" => :big_sur
+    sha256 "0870f71b2ae98836272892f740e3a92a9adceb8f1a1b0a9f1df1b9cc5b1a0899" => :catalina
+    sha256 "fc7946a447ce73a5ca5ea122805bc47fe41eb751d8f6a28d1db6ff2756503dfb" => :mojave
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libarchive"
   depends_on "gtk+3"
+  depends_on "libarchive"
 
   def install
     system "./configure", "--disable-debug",
@@ -29,7 +35,7 @@ class GnomeAutoar < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gnome-autoar/gnome-autoar.h>
 
       int main(int argc, char *argv[]) {

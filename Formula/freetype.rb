@@ -1,33 +1,33 @@
 class Freetype < Formula
   desc "Software library to render fonts"
   homepage "https://www.freetype.org/"
-  url "https://downloads.sf.net/project/freetype/freetype2/2.7.1/freetype-2.7.1.tar.bz2"
-  mirror "https://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.bz2"
-  sha256 "3a3bb2c4e15ffb433f2032f50a5b5a92558206822e22bfe8cbe339af4aa82f88"
+  url "https://downloads.sourceforge.net/project/freetype/freetype2/2.10.4/freetype-2.10.4.tar.xz"
+  mirror "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.xz"
+  sha256 "86a854d8905b19698bbc8f23b860bc104246ce4854dcea8e3b0fb21284f75784"
+  license "FTL"
+
+  livecheck do
+    url :stable
+    regex(/url=.*?freetype[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "13627ffdf46a1236bc702b1656f1fc8d95a503b515ff1b212bb4d1851d19e097" => :sierra
-    sha256 "63f3945987b8dc90dc6bf456f5406b2ba70160a80a65c94caaeb2b3e0c04b2d3" => :el_capitan
-    sha256 "14588ddd46a90c9df9591d1cff02953bc639b96ffec0e8274ab7703f4b9361b2" => :yosemite
+    sha256 "01b464b98584ba5777d8fc4605121c7a46e713a2f58d729197b82afef1b5f2b9" => :big_sur
+    sha256 "b4e7683ae202c49280024faac4ac7437e690cb5dd83edb806fac368bc2b7de35" => :catalina
+    sha256 "81c65539bcc98d171fdff7a6e80cdddd7dc4bc9ed34e739c4361ab66f3391991" => :mojave
+    sha256 "666892404720bcd855d866976e1cb9beecc3151ca595c3dd115a0daa6bb6c7e1" => :high_sierra
   end
-
-  keg_only :provided_pre_mountain_lion
-
-  option :universal
-  option "without-subpixel", "Disable sub-pixel rendering (a.k.a. LCD rendering, or ClearType)"
 
   depends_on "libpng"
 
-  def install
-    if build.with? "subpixel"
-      inreplace "include/freetype/config/ftoption.h",
-          "/* #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING */",
-          "#define FT_CONFIG_OPTION_SUBPIXEL_RENDERING"
-    end
+  uses_from_macos "bzip2"
+  uses_from_macos "zlib"
 
-    ENV.universal_binary if build.universal?
-    system "./configure", "--prefix=#{prefix}", "--without-harfbuzz"
+  def install
+    system "./configure", "--prefix=#{prefix}",
+                          "--enable-freetype-config",
+                          "--without-harfbuzz"
     system "make"
     system "make", "install"
 

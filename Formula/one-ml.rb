@@ -3,27 +3,33 @@ class OneMl < Formula
   homepage "https://www.mpi-sws.org/~rossberg/1ml/"
   url "https://www.mpi-sws.org/~rossberg/1ml/1ml-0.1.zip"
   sha256 "64c40c497f48355811fc198a2f515d46c1bb5031957b87f6a297822b07bb9c9a"
-  revision 1
+  license "Apache-2.0"
+  revision 2
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "84e3117aaf277d154ed4aef11c51f9317d401b44b2af1bb19c40a300876154e2" => :sierra
-    sha256 "f494747ba756eef47b6ed68b6886549b531f0e684ba09b43e71a3c1b2736de26" => :el_capitan
-    sha256 "cc73f66afbba3987c55fcf9f1f285c8597c81390dcead47a65023e6d44aa6b02" => :yosemite
-    sha256 "8697e17bf008608f3f81b8b561ec8ed82e3cdf9b06850a88c213b06f87b2abba" => :mavericks
-    sha256 "d9cc9f66611ddf1d255a3090886d84f76ecd90c82fc1b6833a9c736f372dc484" => :mountain_lion
+    rebuild 1
+    sha256 "309111ca64b6c6fa02f1a93dcdc83858d74bc4d7e6a1bcb898443b72e2fa62fc" => :catalina
+    sha256 "ddd62944bea4f0182b771d405d2255c1d5cdd9e217a2bc00891018de9458b7c2" => :mojave
+    sha256 "d377a804f2f05d9f48869a6822bb42070be94b225d1d24ee0f4a3e23019532c8" => :high_sierra
   end
 
   depends_on "ocaml" => :build
 
+  # OCaml 4.06 and later compatibility
+  patch do
+    url "https://github.com/rossberg/1ml/commit/f99c0b3497c1f18c950dfb2ae3989573f90eaafd.patch?full_index=1"
+    sha256 "778c9635f170a29fa6a53358e65fe85f32320eb678683ddd23e0e2c6139e7a6e"
+  end
+
   def install
     system "make"
     bin.install "1ml"
-    (share/"one-ml/stdlib").install Dir.glob("*.1ml")
+    (pkgshare/"stdlib").install Dir.glob("*.1ml")
     doc.install "README.txt"
   end
 
   test do
-    system "#{bin}/1ml", "#{share}/one-ml/stdlib/prelude.1ml", "#{share}/one-ml/stdlib/paper.1ml"
+    system "#{bin}/1ml", "#{pkgshare}/stdlib/prelude.1ml", "#{pkgshare}/stdlib/paper.1ml"
   end
 end

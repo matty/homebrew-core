@@ -3,42 +3,60 @@ class SdlMixer < Formula
   homepage "https://www.libsdl.org/projects/SDL_mixer/"
   url "https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.tar.gz"
   sha256 "1644308279a975799049e4826af2cfc787cad2abb11aa14562e402521f86992a"
-  revision 1
+  license "Zlib"
+  revision 4
+
+  livecheck do
+    url "https://www.libsdl.org/projects/SDL_mixer/release/"
+    regex(/href=.*?SDL_mixer[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "568e373cf4e876779e63e36258be20c0e6acb6df81a81653ff09cb9b09deca99" => :sierra
-    sha256 "e2398010d90664403b7f9c306b46876deec07e6d970371a47c7f7484ffa201f8" => :el_capitan
-    sha256 "559377bb70595dc716d1f0c703e986ea4bc30666085812756230b00194b97d87" => :yosemite
+    sha256 "0bd16f40744f277701a46fda52b3df4aecff40371e3ae84b09556ec3e2a3bc63" => :big_sur
+    sha256 "9b63c289fadc5382e5c77d77ba5e04d05f30532508a1512a6e5a7afb6e2c472a" => :catalina
+    sha256 "dd69b75165f502ff2540c6e6fa72645049b8bc25ed1794b36d3757a8bc74eb97" => :mojave
+    sha256 "a6e0ff3e96a41f88892cf1fcee7d8c21fd816094f48d376640f77184a8c78e06" => :high_sierra
   end
 
-  option :universal
-
   depends_on "pkg-config" => :build
+  depends_on "flac"
+  depends_on "libmikmod"
+  depends_on "libogg"
+  depends_on "libvorbis"
   depends_on "sdl"
-  depends_on "flac" => :optional
-  depends_on "fluid-synth" => :optional
-  depends_on "smpeg" => :optional
-  depends_on "libmikmod" => :optional
-  depends_on "libvorbis" => :optional
+
+  # Source file for sdl_mixer example
+  resource "playwave" do
+    url "https://hg.libsdl.org/SDL_mixer/raw-file/a4e9c53d9c30/playwave.c"
+    sha256 "92f686d313f603f3b58431ec1a3a6bf29a36e5f792fb78417ac3d5d5a72b76c9"
+  end
 
   def install
     inreplace "SDL_mixer.pc.in", "@prefix@", HOMEBREW_PREFIX
 
-    ENV.universal_binary if build.universal?
-
     args = %W[
       --prefix=#{prefix}
       --disable-dependency-tracking
+      --enable-music-ogg
+      --enable-music-flac
+      --disable-music-ogg-shared
+      --disable-music-mod-shared
     ]
-
-    args << "--disable-music-mod-shared" if build.with? "libmikmod"
-    args << "--disable-music-fluidsynth-shared" if build.with? "fluid-synth"
-    args << "--disable-music-ogg-shared" if build.with? "libvorbis"
-    args << "--disable-music-flac-shared" if build.with? "flac"
-    args << "--disable-music-mp3-shared" if build.with? "smpeg"
 
     system "./configure", *args
     system "make", "install"
+  end
+
+  test do
+    testpath.install resource("playwave")
+    system ENV.cc, "-o", "playwave", "playwave.c", "-I#{include}/SDL",
+                   "-I#{Formula["sdl"].opt_include}/SDL",
+                   "-L#{lib}", "-lSDL_mixer",
+                   "-L#{Formula["sdl"].lib}", "-lSDLmain", "-lSDL",
+                   "-Wl,-framework,Cocoa"
+    Utils.safe_popen_read({ "SDL_VIDEODRIVER" => "dummy", "SDL_AUDIODRIVER" => "disk" },
+                          "./playwave", test_fixtures("test.wav"))
+    assert_predicate testpath/"sdlaudio.raw", :exist?
   end
 end

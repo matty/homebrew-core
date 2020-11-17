@@ -1,23 +1,52 @@
 class Softhsm < Formula
   desc "Cryptographic store accessible through a PKCS#11 interface"
   homepage "https://www.opendnssec.org/softhsm/"
-  url "https://dist.opendnssec.org/source/softhsm-2.1.0.tar.gz"
-  sha256 "0399b06f196fbfaebe73b4aeff2e2d65d0dc1901161513d0d6a94f031dcd827e"
+  url "https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz"
+  sha256 "61249473054bcd1811519ef9a989a880a7bdcc36d317c9c25457fc614df475f2"
+  license "BSD-2-Clause"
 
-  bottle do
-    sha256 "6d50085c72282396e0d850a440c307130dae3087cc7ed21376d219184278c258" => :sierra
-    sha256 "562ec5baec50d318c7eae4a2f12def095008c19d24d359d05e794e0fa17212fa" => :el_capitan
-    sha256 "39f1bc348f541d122a8bd03d978be09ca971f7e9373707c26e9ba82eee262563" => :yosemite
+  # We check the GitHub repo tags instead of https://dist.opendnssec.org/source/
+  # since the aforementioned first-party URL has a tendency to lead to an
+  # `execution expired` error.
+  livecheck do
+    url "https://github.com/opendnssec/SoftHSMv2.git"
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
-  depends_on "botan"
+  bottle do
+    rebuild 1
+    sha256 "08a0d7a61d2b8d4f12253d3e5404ce43456fbb864dc9fb88999132f96a15c267" => :big_sur
+    sha256 "6da111cdadbcf0127882e2bec5b3844454fd9b4e00a08d1fa49aa2f389b7062c" => :catalina
+    sha256 "b7abd86dfec3d10f5e5cde00f2bcd5e0e19e2d9674c50a431db1195c4655dfec" => :mojave
+    sha256 "73c40f26209dbf29280c16aefdfb492c749d8e14e4cbf83dc2a5b566c22f6bc9" => :high_sierra
+  end
+
+  head do
+    url "https://github.com/opendnssec/SoftHSMv2.git", branch: "develop"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
+    depends_on "pkg-config" => :build
+  end
+
+  depends_on "openssl@1.1"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
+    system "sh", "./autogen.sh" if build.head?
+    system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
-                          "--prefix=#{prefix}"
+                          "--prefix=#{prefix}",
+                          "--sysconfdir=#{etc}/softhsm",
+                          "--localstatedir=#{var}",
+                          "--with-crypto-backend=openssl",
+                          "--with-openssl=#{Formula["openssl@1.1"].opt_prefix}",
+                          "--disable-gost"
     system "make", "install"
+  end
+
+  def post_install
+    (var/"lib/softhsm/tokens").mkpath
   end
 
   test do

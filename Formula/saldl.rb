@@ -1,29 +1,26 @@
 class Saldl < Formula
-  desc "CLI downloader optimized for speed and early preview."
-  homepage "https://saldl.github.io"
-  url "https://github.com/saldl/saldl/archive/v35.tar.gz"
-  sha256 "6b5f45a8f7782bcad124df4a24876c8b3c47d45aa25d0b09b2030837c6ece82c"
-
-  head "https://github.com/saldl/saldl.git", :shallow => false
+  desc "CLI downloader optimized for speed and early preview"
+  homepage "https://saldl.github.io/"
+  url "https://github.com/saldl/saldl/archive/v40.tar.gz"
+  sha256 "1cb7950848517fb82ec39561bf36c8cbc0a0caf8fa85355a5b76cac0281346ce"
+  license "AGPL-3.0"
+  revision 1
+  head "https://github.com/saldl/saldl.git", shallow: false
 
   bottle do
     cellar :any
-    sha256 "723d7e0181ea35f4b6643682db7731434411454239ef7c61a9393cd8cf5c9a08" => :sierra
-    sha256 "f006aa31bd31f9410a5579a92354c3d4acba5a7ac2102564423120ba1b45ef06" => :el_capitan
-    sha256 "689d5ea91227117ad5c43d52925456a8e75b069e4900a15a5853a6de96b8ffd5" => :yosemite
+    sha256 "98f348fdc98c856bce1374e98a0ec917584d2e760af3140429b7e49bcbef5912" => :big_sur
+    sha256 "2b377713f93e2cd853b9ef6a31a881215cffe3a35416309af31a13648cbf6f7d" => :catalina
+    sha256 "7fd875e38f9506d4ca5cca0e14815cea29ba40bf61385f53f93c8a587d5b50d3" => :mojave
+    sha256 "1c2f3b014669b8a19a1f3be6f654d8c438e62d5ed64e2c72b4f54a33e0f67b88" => :high_sierra
+    sha256 "7fbb71dbced4c48d0586f5f58fd4d64b87b39f4e3f78ad1188f11edb7c4af9a5" => :sierra
   end
 
-  depends_on "pkg-config" => :build
   depends_on "asciidoc" => :build
   depends_on "docbook-xsl" => :build
+  depends_on "pkg-config" => :build
+  depends_on "curl" # curl >= 7.55 is required
   depends_on "libevent"
-
-  if MacOS.version <= :mavericks
-    # curl >= 7.42 is required
-    depends_on "curl"
-  else
-    depends_on "curl" => :optional
-  end
 
   def install
     ENV.refurbish_args
@@ -42,7 +39,7 @@ class Saldl < Formula
   end
 
   test do
-    system "#{bin}/saldl", "http://brew.sh/index.html"
-    assert File.exist? "index.html"
+    system "#{bin}/saldl", "https://brew.sh/index.html"
+    assert_predicate testpath/"index.html", :exist?
   end
 end

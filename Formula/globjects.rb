@@ -1,22 +1,22 @@
 class Globjects < Formula
   desc "C++ library strictly wrapping OpenGL objects"
   homepage "https://github.com/cginternals/globjects"
-  url "https://github.com/cginternals/globjects/archive/v1.0.0.tar.gz"
-  sha256 "be2f95b4e98eef61a57925985735af266fef667eec63a39f65def5d5d808a30a"
+  url "https://github.com/cginternals/globjects/archive/v1.1.0.tar.gz"
+  sha256 "68fa218c1478c09b555e44f2209a066b28be025312e0bab6e3a0b142a01ebbc6"
+  license "MIT"
   head "https://github.com/cginternals/globjects.git"
 
   bottle do
     cellar :any
-    sha256 "fd8e1291e9e46a57116ce1533a8ef9243f1949f18b866f655cd0c245e8d7849d" => :sierra
-    sha256 "4e2d49ddfc4c868561ea4a4970eb9447c8b0c951dd58e5057ced8ce5c2c90e4b" => :el_capitan
-    sha256 "06d967f26d47c9c6532ee24485e5cde3eeb5d74feccdfde46811048c97a18b5a" => :yosemite
+    sha256 "8093cb17f6c1ba5ce345d3a89f0a2330cbdbb88100ad241be0dd8611a6ad52d9" => :catalina
+    sha256 "9bbf36b86602a7b0c7bf66bb911e200e4f7b94f05c304afb261781edebf119ce" => :mojave
+    sha256 "baae740c033bc384454f81c0abba246f935765ec7decf408777d318d60cbe565" => :high_sierra
+    sha256 "dacabb07360fa768e54e9436f071a6ac2a56d0fc9da0d72b491fb8a645f48c33" => :sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "glm"
   depends_on "glbinding"
-
-  needs :cxx11
+  depends_on "glm"
 
   def install
     ENV.cxx11
@@ -25,15 +25,16 @@ class Globjects < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <globjects/globjects.h>
       int main(void)
       {
         globjects::init();
       }
-      EOS
+    EOS
     system ENV.cxx, "-o", "test", "test.cpp", "-std=c++11", "-stdlib=libc++",
            "-I#{include}/globjects", "-I#{Formula["glm"].include}/glm", "-I#{lib}/globjects",
+           "-L#{lib}", "-L#{Formula["glbinding"].opt_lib}",
            "-lglobjects", "-lglbinding", *ENV.cflags.to_s.split
     system "./test"
   end

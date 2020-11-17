@@ -1,15 +1,18 @@
 class Emp < Formula
-  desc "CLI for Empire."
+  desc "CLI for Empire"
   homepage "https://github.com/remind101/empire"
-  url "https://github.com/remind101/empire/archive/v0.11.0.tar.gz"
-  sha256 "b091b07a7f6ed15a432201fed379de4b7aec0d481b9f9323ac060683b7dacf21"
+  url "https://github.com/remind101/empire/archive/v0.13.0.tar.gz"
+  sha256 "1294de5b02eaec211549199c5595ab0dbbcfdeb99f670b66e7890c8ba11db22b"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "66c8d1094a5ce20c5435eb4aaff4c65414b8edace797968650f174cec24639d9" => :sierra
-    sha256 "8d21d95eb949b7aca853943ee4227aa26c3b8325fd48ad1277a8a30f7dcd13af" => :el_capitan
-    sha256 "00637bd97dda4c10484accdb9056e378a015ec89a1b0dcf2d4cb541d42d8f106" => :yosemite
-    sha256 "b65f09cab767d30c51eebf8f1994c89b73e78228ee63f0f1d35ddad9b778e2c9" => :mavericks
+    sha256 "fc362d246942141f91da093183c54a8ff679bf263f0a4326d5bed7f94cbc8f59" => :big_sur
+    sha256 "8c4bca6eca037bbef2b1a65d1974b43b36c81274e20597a76e87703ec477ee1a" => :catalina
+    sha256 "33eafe903efc393c0964ac05ab684508b98e72a4ee2f26272ee16eee159cd514" => :mojave
+    sha256 "d96c6b3f2ee49480ddc0dac10484284e7620dce5499482bdaf12c26f42f93a13" => :high_sierra
+    sha256 "2a45cd98d7345ff1872137576f97a028729ff4c0d62994d1ce6d573e3835e9db" => :sierra
+    sha256 "af64990b64d29f8383db471092279e9d039c7c81b6294099bb456890b6b5161b" => :el_capitan
   end
 
   depends_on "go" => :build
@@ -26,17 +29,17 @@ class Emp < Formula
   test do
     require "webrick"
 
-    server = WEBrick::HTTPServer.new :Port => 8035
+    server = WEBrick::HTTPServer.new Port: 8035
     server.mount_proc "/apps/foo/releases" do |_req, res|
       resp = {
-        "created_at" => "2015-10-12T0:00:00.00000000-00:00",
+        "created_at"  => "2015-10-12T0:00:00.00000000-00:00",
         "description" => "my awesome release",
-        "id" => "v1",
-        "user" => {
-          "id" => "zab",
+        "id"          => "v1",
+        "user"        => {
+          "id"    => "zab",
           "email" => "zab@waba.com",
         },
-        "version" => 1,
+        "version"     => 1,
       }
       res.body = JSON.generate([resp])
     end

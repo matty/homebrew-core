@@ -3,41 +3,45 @@ class Choose < Formula
   homepage "https://github.com/geier/choose"
   url "https://github.com/geier/choose/archive/v0.1.0.tar.gz"
   sha256 "d09a679920480e66bff36c76dd4d33e8ad739a53eace505d01051c114a829633"
-
+  license "MIT"
+  revision 3
   head "https://github.com/geier/choose.git"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "f1f78c46406518bfb8197922d199737d5ae44913e86e1753df84a759c6670556" => :sierra
-    sha256 "0e597243f20f7a5a0699d72dcd4d0395976e481a1fc32c24725c2a4b4fee6992" => :el_capitan
-    sha256 "24a9edea9e97823c333d0352244d7b30f72ddb0c8df291706463f8c76a0ca2e9" => :yosemite
-    sha256 "47d5c12604878a2f3eb75da8c80a15d991b47129a17684fde8f02fe97f16e78b" => :mavericks
+    sha256 "108d84aff61c4374011202cab8203770cdee57c0445ad40735c1f41513140606" => :big_sur
+    sha256 "086ebca8f9bff4d065e788c9076bfe204b958f96b8da0cce142f3c890c38cb75" => :catalina
+    sha256 "bef5f7490cf4a45398bfdef4867163957675227e74bab1494ea0da56cda2cda6" => :mojave
+    sha256 "f860816e00292d161ed6f6617cef47c3297eb91e9231f3c125ce12b16ad7d220" => :high_sierra
   end
 
-  conflicts_with "choose-gui", :because => "both install a `choose` binary"
+  depends_on "python@3.9"
+
+  conflicts_with "choose-gui", because: "both install a `choose` binary"
+  conflicts_with "choose-rust", because: "both install a `choose` binary"
 
   resource "urwid" do
-    url "https://pypi.python.org/packages/source/u/urwid/urwid-1.2.1.tar.gz"
-    sha256 "9b9b5dabb7df6c0f12e84feed488f9a9ddd5c2d66d1b7c7c087055720b87c68c"
+    url "https://files.pythonhosted.org/packages/45/dd/d57924f77b0914f8a61c81222647888fbb583f89168a376ffeb5613b02a6/urwid-2.1.0.tar.gz"
+    sha256 "0896f36060beb6bf3801cb554303fef336a79661401797551ba106d23ab4cd86"
   end
 
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
+    xy = Language::Python.major_minor_version "python3"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{xy}/site-packages"
 
     resource("urwid").stage do
-      system "python", *Language::Python.setup_install_args(libexec)
+      system "python3", *Language::Python.setup_install_args(libexec)
     end
 
     bin.install "choose"
 
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
   end
 
   test do
     # There isn't really a better test than that the executable exists
     # and is executable because you can't run it without producing an
     # interactive selection ui.
-    File.executable?("#{bin}/choose")
+    assert_predicate bin/"choose", :executable?
   end
 end

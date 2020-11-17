@@ -1,43 +1,36 @@
 class Zstd < Formula
   desc "Zstandard is a real-time compression algorithm"
-  homepage "http://zstd.net/"
-  url "https://github.com/facebook/zstd/archive/v1.1.2.tar.gz"
-  sha256 "980b8febb0118e22f6ed70d23b5b3e600995dbf7489c1f6d6122c1411cdda8d8"
+  homepage "https://facebook.github.io/zstd/"
+  url "https://github.com/facebook/zstd/archive/v1.4.5.tar.gz"
+  sha256 "734d1f565c42f691f8420c8d06783ad818060fc390dee43ae0a89f86d0a4f8c2"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any
-    sha256 "d580d2f02d822ba7cd5fc25183eab8ce585f2e9da54590eb0cd4fcca35ac3e24" => :sierra
-    sha256 "d4a30605999fdfb4a087c17d2dc0f8dca37803faa828e5e60b39bdd82caca3c7" => :el_capitan
-    sha256 "8f799ce0d821b6a3781971d520dfb9ac2142edd5a5e010a5aec61cc8dc3c6db6" => :yosemite
+    sha256 "4143146aa691738893d19f6dc7de4ae983dbbf7023717094df8ff2d36cb839b5" => :big_sur
+    sha256 "2375c206a934090c4ba53362d038e4e191d8dd09eec734e8e72106089aa24e9d" => :catalina
+    sha256 "86b04bfd318315486d772b29d30b361e734a74269ae48805eeb3eae1d562b984" => :mojave
+    sha256 "61de5a45183f4d029c66024d645ad44b0a625d58f9f583b47af42346a7c90fe5" => :high_sierra
   end
-
-  option "without-pzstd", "Build without parallel (de-)compression tool"
 
   depends_on "cmake" => :build
 
-  # https://github.com/facebook/zstd/pull/497
-  patch do
-    url "https://github.com/facebook/zstd/pull/497.patch"
-    sha256 "2bf9d85a083af66da3323f43b815fe41e21ebdab126dbbbe4d1e5f47d2e05036"
-  end
+  uses_from_macos "zlib"
 
   def install
     system "make", "install", "PREFIX=#{prefix}/"
 
-    if build.with? "pzstd"
-      system "make", "-C", "contrib/pzstd", "googletest"
-      system "make", "-C", "contrib/pzstd", "PREFIX=#{prefix}"
-      bin.install "contrib/pzstd/pzstd"
-    end
+    # Build parallel version
+    system "make", "-C", "contrib/pzstd", "googletest"
+    system "make", "-C", "contrib/pzstd", "PREFIX=#{prefix}"
+    bin.install "contrib/pzstd/pzstd"
   end
 
   test do
     assert_equal "hello\n",
       pipe_output("#{bin}/zstd | #{bin}/zstd -d", "hello\n", 0)
 
-    if build.with? "pzstd"
-      assert_equal "hello\n",
-        pipe_output("#{bin}/pzstd | #{bin}/pzstd -d", "hello\n", 0)
-    end
+    assert_equal "hello\n",
+      pipe_output("#{bin}/pzstd | #{bin}/pzstd -d", "hello\n", 0)
   end
 end

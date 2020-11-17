@@ -1,16 +1,18 @@
 class Pdf2svg < Formula
   desc "PDF converter to SVG"
-  homepage "http://www.cityinthesky.co.uk/opensource/pdf2svg"
+  homepage "https://cityinthesky.co.uk/opensource/pdf2svg"
   url "https://github.com/db9052/pdf2svg/archive/v0.2.3.tar.gz"
   sha256 "4fb186070b3e7d33a51821e3307dce57300a062570d028feccd4e628d50dea8a"
+  license "GPL-2.0"
+  revision 5
 
   bottle do
     cellar :any
-    sha256 "5dc857315e0833882c51d0814dd38c6cdede0979937e3838b31cdbadd4dd279e" => :sierra
-    sha256 "0c3e08bcf229edd83952486a7a8d7398c25fce0bb5c2ec6c72e50c33ce31fcbd" => :el_capitan
-    sha256 "786c55feabe3accf358cd8749e5579cabab96c8c33098ab8f4164227c864bd01" => :yosemite
-    sha256 "7d4235fa396d76c58637be177306ab52ac8b97e2d8fd4010349f8f447117426e" => :mavericks
-    sha256 "1a85e25f7769ec7a37357fb628953959e8a8216f875df894bc64bb400ed808a7" => :mountain_lion
+    sha256 "8c3412a41015f7155602d6e91eceec825fc4ca7ec1866245c1388dcd950fad24" => :big_sur
+    sha256 "8350da4f06838454cf26788b9ea27cbd9255d567be906d4fde5dea332b035734" => :catalina
+    sha256 "3999f52a6638bd2090feabd62cf91112a6b98bf6577a112771941ec6781eabd8" => :mojave
+    sha256 "9477928316e8a5cb7edc7d03568a22a2f2fb87e1440a96e100c79695c1b5cde9" => :high_sierra
+    sha256 "ec7f985d7a62787268265f4e05c87d59926a7f242c22972e32418e7cfaa5448e" => :sierra
   end
 
   depends_on "pkg-config" => :build

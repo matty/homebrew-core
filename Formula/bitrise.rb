@@ -1,14 +1,16 @@
 class Bitrise < Formula
   desc "Command-line automation tool"
   homepage "https://github.com/bitrise-io/bitrise"
-  url "https://github.com/bitrise-io/bitrise/archive/1.5.4.tar.gz"
-  sha256 "2b9f99c06c642fabcd8ddcb8b92eeb2ec6a8b956c0af2fe8924ad2078c881140"
+  url "https://github.com/bitrise-io/bitrise/archive/1.44.0.tar.gz"
+  sha256 "f71d01b4dc1ba8f6719c01859526f23edd1d7b493f8ab098e2b32e9d1c84aa9b"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "658c73fc441b41a72dc88e9ed065ce2e90eea96d842bf2bf2179b6ba3bece3c4" => :sierra
-    sha256 "57ed000fc0b37edcf25eabb0aa0ac1dba0932a4af23a9dae79f2302e5365f5ba" => :el_capitan
-    sha256 "eb89fb54e0e7a1d3b4db8bf10fa3d33732f85a9a891a3c0a21f75b3b6e62bd18" => :yosemite
+    sha256 "1e6ee861f087d4f292102006d30f8e65e941c640188efebf29c1c303f2bdd07c" => :big_sur
+    sha256 "5ac037f160d5e1501559883a2e768d27a2a9cdf6e64db72db5f917d771d58ce0" => :catalina
+    sha256 "194a587583c0a716b1f0d789c559c71e744f48d4d4f3aa7004e60043b07e32ce" => :mojave
+    sha256 "019485b3aa3aefd9d274d4499f1b9bcf9dbaf7a2d6bf996bfd79f01974b5f462" => :high_sierra
   end
 
   depends_on "go" => :build
@@ -28,7 +30,7 @@ class Bitrise < Formula
   end
 
   test do
-    (testpath/"bitrise.yml").write <<-EOS.undent
+    (testpath/"bitrise.yml").write <<~EOS
       format_version: 1.3.1
       default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
       workflows:

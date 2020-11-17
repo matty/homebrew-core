@@ -1,24 +1,28 @@
 class PythonMarkdown < Formula
+  include Language::Python::Virtualenv
+
   desc "Python implementation of Markdown"
   homepage "https://pypi.python.org/pypi/Markdown"
-  url "https://pypi.python.org/packages/source/M/Markdown/Markdown-2.6.5.tar.gz"
-  sha256 "8d94cf6273606f76753fcb1324623792b3738c7612c2b180c85cc5e88642e560"
+  url "https://github.com/Python-Markdown/markdown/archive/3.3.3.tar.gz"
+  sha256 "45cd8917edfc46a24ad9203d8f13a6b7032a9e109afc0a944dbde8e25a7f0eeb"
+  license "BSD-3-Clause"
+  head "https://github.com/Python-Markdown/markdown.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4673d2636e4327ee243f52fda84ba374b536cebf347cff430106b28a4d799f20" => :sierra
-    sha256 "ed951b7e851bdbf329a9718aea5b71b9ba0c49c1bb2898a81fcf095ccef00d33" => :el_capitan
-    sha256 "629aa5a47ad91c7d43d016129ec5acb20d535840975d606241a38d7fe8961a4b" => :yosemite
-    sha256 "2b0f3ce418e7e695f1e1d00d9b31abb61704b8a41761387bdc290e07202e308e" => :mavericks
+    sha256 "7f270600b53d2b1aefe29154c16ca306b772b39f6d377ae7d82ae20425059545" => :catalina
+    sha256 "405c7b2f8a352431037b0bd826a27860048802d64ebe358784a90e89c49fe96f" => :mojave
+    sha256 "c3ae8ee427fc9a6b2ac86dab378ec1b6b408e82022ebb6123a94c94e910b94fc" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
 
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
-    bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    virtualenv_install_with_resources
   end
 
   test do

@@ -1,19 +1,28 @@
 class Le < Formula
   desc "Text editor with block and binary operations"
   homepage "https://github.com/lavv17/le"
-  url "http://lav.yar.ru/download/le/le-1.16.3.tar.xz"
-  sha256 "0be61306efd1e6b511c86d35c128e482e277e626ad949a56cb295489ef65d7b9"
+  url "https://github.com/lavv17/le/releases/download/v1.16.7/le-1.16.7.tar.gz"
+  sha256 "1cbe081eba31e693363c9b8a8464af107e4babfd2354a09a17dc315b3605af41"
+  license "GPL-3.0"
 
-  bottle do
-    sha256 "34f40cb44d65d5673e8fd6e7eb89ee895f918d54085cba1f0801d8ef140c2483" => :sierra
-    sha256 "a1c7c17792d36b71d8d638df984e7583e873ada961e3a9f95adf43c83005b00d" => :el_capitan
-    sha256 "36884568ab31a33098a472994adb9d2a5950fc713a1aeed9dae1ba5ff3fad81d" => :yosemite
-    sha256 "e8afe5fcbb5b40311216d0026b2b74caef69ea2289ae971ad29664290a10d8b7" => :mavericks
+  livecheck do
+    url "https://github.com/lavv17/le/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
-  conflicts_with "logentries", :because => "both install a le binary"
+  bottle do
+    sha256 "5e783b96b482837243218a8c69f0bf5be7a7afa3ed19cb9950fc88342dd65e5a" => :big_sur
+    sha256 "704e7762fb13634aa7b2fe4cc271747894d8ffcf5028abd0d27497bceb6bc378" => :catalina
+    sha256 "aa1144661f13ab5fbe4eb132415da66785ab1b903c8d517df03f40826d08632f" => :mojave
+    sha256 "b6fad9458d040f9a47a0d3ff003ab5f77cdb9508a5b653c3cddc201cfb5310e2" => :high_sierra
+  end
 
   def install
+    # Configure script makes bad assumptions about curses locations.
+    # Future versions allow this to be manually specified:
+    # https://github.com/lavv17/le/commit/d921a3cdb3e1a0b50624d17e5efeb5a76d64f29d
+    inreplace "configure", "/usr/local/include/ncurses", "#{MacOS.sdk_path}/usr/include"
+
     ENV.deparallelize
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"

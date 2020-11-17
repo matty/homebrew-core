@@ -1,20 +1,28 @@
 class Libsass < Formula
   desc "C implementation of a Sass compiler"
   homepage "https://github.com/sass/libsass"
-  url "https://github.com/sass/libsass.git", :tag => "3.4.3", :revision => "b28de01270a663b3e89427a18816732c4d573c1d"
+  url "https://github.com/sass/libsass.git",
+      tag:      "3.6.4",
+      revision: "8d312a1c91bb7dd22883ebdfc829003f75a82396"
+  license "MIT"
   head "https://github.com/sass/libsass.git"
+
+  livecheck do
+    url "https://github.com/sass/libsass/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "1bf8fdd91e81a6ae71c0b285bf9bda4892d2d5fa152ed9cd9eb99c8a0588bcf6" => :sierra
-    sha256 "d6818e9a5872d39f02be581e6d31cc8942c158abfc428d8e662454248ae97c87" => :el_capitan
-    sha256 "030c6b49661b482562fb1ce2d2e2ca383dada5124a78439a4b7afa2eb7e6312d" => :yosemite
+    sha256 "4c85f5604989fa56a518e2e0fecd1d05e7046e4ea383998710ab5b51e1c83c7c" => :big_sur
+    sha256 "a674d8155125a1659499c689b2c3ecc4d37c8196667a93b4463f65dfa77a686c" => :catalina
+    sha256 "45e5e4f4eb76253127712dcef15df520064db0bd712e3fea9f349fa6ebee79a5" => :mojave
+    sha256 "85722d303754f2d6d07c4c704cf81c9aa827473f7d6130c66d90da984862c47d" => :high_sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  needs :cxx11
 
   def install
     ENV.cxx11
@@ -26,7 +34,7 @@ class Libsass < Formula
 
   test do
     # This will need to be updated when devel = stable due to API changes.
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <sass/context.h>
       #include <string.h>
 
@@ -48,7 +56,7 @@ class Libsass < Formula
         }
       }
     EOS
-    system ENV.cc, "-o", "test", "test.c", "-lsass"
+    system ENV.cc, "-o", "test", "test.c", "-L#{lib}", "-lsass"
     system "./test"
   end
 end

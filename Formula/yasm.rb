@@ -1,16 +1,18 @@
 class Yasm < Formula
   desc "Modular BSD reimplementation of NASM"
-  homepage "http://yasm.tortall.net/"
+  homepage "https://yasm.tortall.net/"
   url "https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz"
+  mirror "https://ftp.openbsd.org/pub/OpenBSD/distfiles/yasm-1.3.0.tar.gz"
   sha256 "3dce6601b495f5b3d45b59f7d2492a340ee7e84b5beca17e48f862502bd5603f"
+  revision 2
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 2
-    sha256 "64fcf11922e264c548239b9c4d146a99d5d3962284bd310d4ee3bf1bbad1f6db" => :sierra
-    sha256 "7dc741b8006e58498622b846151270d1d958d9cff7d4dc2aade0cdad532639d5" => :el_capitan
-    sha256 "5c5191c5a6b6c523334cdf43ff1af761f2fee1ee94111652a7f0dd369e9153e5" => :yosemite
-    sha256 "734b4d3d218323417b7b5aa1edf2e47c4309e37207bcaf5f9e13da96aa6201d9" => :mavericks
+    rebuild 1
+    sha256 "ca95cb3c02508796ff4e60d54146b03016b93e80837916359912ebf737a37562" => :big_sur
+    sha256 "9aa61930f25fe305dc5364e72f539b0a225702b5f1dc222a9dde1216e901f7ab" => :catalina
+    sha256 "0dc797b72ee3bad9c6a52276c871ac745207b5626722e805fa642d7a872847fc" => :mojave
+    sha256 "7f31deeff91c5929f2cd52eca6b636669f9c8966f6d4777e89fa4b04e541ad85" => :high_sierra
   end
 
   head do
@@ -21,30 +23,14 @@ class Yasm < Formula
     depends_on "gettext"
   end
 
-  depends_on :python => :optional
-
-  resource "cython" do
-    url "https://files.pythonhosted.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
-    sha256 "84808fda00508757928e1feadcf41c9f78e9a9b7167b6649ab0933b76f75e7b9"
-  end
-
   def install
     args = %W[
       --disable-debug
       --prefix=#{prefix}
+      --disable-python
     ]
 
-    if build.with? "python"
-      ENV.prepend_create_path "PYTHONPATH", buildpath+"lib/python2.7/site-packages"
-      resource("cython").stage do
-        system "python", "setup.py", "build", "install", "--prefix=#{buildpath}"
-      end
-
-      args << "--enable-python"
-      args << "--enable-python-bindings"
-    end
-
-    # https://github.com/Homebrew/homebrew/pull/19593
+    # https://github.com/Homebrew/legacy-homebrew/pull/19593
     ENV.deparallelize
 
     system "./autogen.sh" if build.head?
@@ -53,7 +39,7 @@ class Yasm < Formula
   end
 
   test do
-    (testpath/"test.asm").write <<-EOS.undent
+    (testpath/"test.asm").write <<~EOS
       global start
       section .text
       start:
@@ -70,7 +56,7 @@ class Yasm < Formula
       .len:   equ     $ - msg
     EOS
     system "#{bin}/yasm", "-f", "macho64", "test.asm"
-    system "/usr/bin/ld", "-macosx_version_min", "10.7.0", "-lSystem", "-o", "test", "test.o"
+    system "/usr/bin/ld", "-macosx_version_min", "10.8.0", "-static", "-o", "test", "test.o"
     system "./test"
   end
 end

@@ -3,19 +3,32 @@ class Sshuttle < Formula
 
   desc "Proxy server that works as a poor man's VPN"
   homepage "https://github.com/sshuttle/sshuttle"
-  url "https://files.pythonhosted.org/packages/48/be/c1c9ead0c38383c4b2a192de4679f09413ddc6701988ca56bd220c64ec50/sshuttle-0.78.1.tar.gz"
-  sha256 "03a71648ce476de06a075bd9a972492d494b414ae51304bf535b80ff22be2d3c"
+  url "https://github.com/sshuttle/sshuttle.git",
+      tag:      "v1.0.4",
+      revision: "abb48f199656f776be0f05601ff5746f36df3370"
+  license "LGPL-2.1-or-later"
+  revision 1
   head "https://github.com/sshuttle/sshuttle.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "11492c4d73a18bf5adcce436361fcd9ff5c37d416f110d6a3c1e3ce8dc745936" => :sierra
-    sha256 "d07d306b5b13f9f6c9b9d9ff6b35b73cffc2c9fe9c429ac121b5d4b3fbfa1d33" => :el_capitan
-    sha256 "d03433ae8b8530a36885ffc70d1c73acb71063940afb413a1bb7287e06fbbe5c" => :yosemite
-    sha256 "d70d49fa20f1bd9b4504c1476e88f46ce03f0d1efeb2086d4de547aea9eeb6e1" => :mavericks
+    sha256 "465a87922822f59c5e3cbc014a2eb15e3dde2fa30064db8ec8eda3752fe58be1" => :big_sur
+    sha256 "41b9c52318318597e31403c66bc1fff91fd3da97047e6d82344f406118d06d17" => :catalina
+    sha256 "5ee6b7d0f0afdd178a769213c1da1c1caea53228e8a21dcd4571b7fcc643deef" => :mojave
+    sha256 "ddc86c2b17f9b3caedd813a8f2d11b9154637f5783b73a031276aef78909b1c1" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.9"
+
+  resource "psutil" do
+    url "https://files.pythonhosted.org/packages/aa/3e/d18f2c04cf2b528e18515999b0c8e698c136db78f62df34eee89cee205f1/psutil-5.7.2.tar.gz"
+    sha256 "90990af1c3c67195c44c9a889184f84f5b2320dce3ee3acbd054e3ba0b4a7beb"
+  end
+
+  resource "psutil" do
+    url "https://files.pythonhosted.org/packages/aa/3e/d18f2c04cf2b528e18515999b0c8e698c136db78f62df34eee89cee205f1/psutil-5.7.2.tar.gz"
+    sha256 "90990af1c3c67195c44c9a889184f84f5b2320dce3ee3acbd054e3ba0b4a7beb"
+  end
 
   def install
     # Building the docs requires installing

@@ -1,29 +1,28 @@
 class Srtp < Formula
-  desc "Implementation of the Secure Real-time Transport Protocol (SRTP)"
+  desc "Implementation of the Secure Real-time Transport Protocol"
   homepage "https://github.com/cisco/libsrtp"
-  url "https://github.com/cisco/libsrtp/archive/v2.0.0.tar.gz"
-  sha256 "2296d132fd8cadd691d1fffeabbc1b9c42ec09e9e780a0d9bd8234a98e63a5a1"
+  url "https://github.com/cisco/libsrtp/archive/v2.3.0.tar.gz"
+  sha256 "94093a5d04c5f4743e8d81182b76938374df6d393b45322f24960d250b0110e8"
+  license "BSD-3-Clause"
   head "https://github.com/cisco/libsrtp.git"
+
+  livecheck do
+    url "https://github.com/cisco/libsrtp/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "edc628518330f632e92ef467d52cff87d15892fd0b6f01e8fd69b2a4934e4689" => :sierra
-    sha256 "ef1eaaf4b9570c996126650e6d7f4d67af899385d6fcc8801e2ed82e802b74ed" => :el_capitan
-    sha256 "5f5ce6bf99c16c7575e9c7d7c0596ad1c7e7b1933ac65efc4b42c2f6a1925d7d" => :yosemite
-    sha256 "963b5974e985f0b2c42691c5bc0052a6a467c5516e158b7af3534492feef1785" => :mavericks
+    sha256 "c7d718635bf47976fd6458c37a3373be978e0254811d5249477a83bf4b885388" => :big_sur
+    sha256 "b96d4c3bb159a6f43d5bdd9cc0be0d8deecb06c95df19f2d9cc1f517ffc64ad6" => :catalina
+    sha256 "4bbad999b46dd545aa32882e968d441f5d5e709dc8549ef79e3885dd49fcb964" => :mojave
+    sha256 "5c70c41484064bbe25c31a19fc2cffc5cbea3de27e837a039b17767aeb1b57b8" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "openssl" => :optional
 
   def install
-    args = %W[
-      --disable-debug
-      --prefix=#{prefix}
-    ]
-    args << "--enable-openssl" if build.with? "openssl"
-
-    system "./configure", *args
+    system "./configure", "--disable-debug", "--prefix=#{prefix}"
     system "make", "test"
     system "make", "shared_library"
     system "make", "install" # Can't go in parallel of building the dylib

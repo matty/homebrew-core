@@ -2,18 +2,22 @@ class DockerMachine < Formula
   desc "Create Docker hosts locally and on cloud providers"
   homepage "https://docs.docker.com/machine"
   url "https://github.com/docker/machine.git",
-      :tag => "v0.9.0",
-      :revision => "15fd4c70403bab784d91031af02d9e169ce66412"
+      tag:      "v0.16.2",
+      revision: "bd45ab13d88c32a3dd701485983354514abc41fa"
+  license "Apache-2.0"
   head "https://github.com/docker/machine.git"
 
   bottle do
-    sha256 "cf9aa048df163c7bf1cde4cfc15f6248b51b330fdeb6926932b8a216e1edca9a" => :sierra
-    sha256 "b7bbc291d88b686cd8a25bae602d1aee7849291a03ab2a96b36b1ae1521fed85" => :el_capitan
-    sha256 "c0c44b5dd98da265f8042d936697781cb280c811fee215407eef96c9fcf37c4f" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "c1645c52f9548d7b5e69d061952a2b4aec93459e749c87f7e63599b990dd22f1" => :big_sur
+    sha256 "99b50d9809a0aa881e01686e3356fbd17fa61e5a5e8cb937a2a9e9ff103be097" => :catalina
+    sha256 "cc56a9c37702ecaeea1a5034326d87fa145fbc4cb613d151756571b78ca8f1ab" => :mojave
+    sha256 "320ef0f8b7fba8e679c784f854155314c7bdcbc4e7d43fd11dbce6e0e3e0f85b" => :high_sierra
+    sha256 "23a2165e741ea1a9321476d3037a5d76bc24bd494ae0bd8b16f35e3248c0aa77" => :sierra
   end
 
-  depends_on "go" => :build
   depends_on "automake" => :build
+  depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
@@ -27,33 +31,34 @@ class DockerMachine < Formula
     end
   end
 
-  plist_options :manual => "docker-machine start"
+  plist_options manual: "docker-machine start"
 
-  def plist; <<-EOS.undent
-     <?xml version="1.0" encoding="UTF-8"?>
-     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-     <plist version="1.0">
-       <dict>
-         <key>EnvironmentVariables</key>
-         <dict>
-             <key>PATH</key>
-             <string>/usr/bin:/bin:/usr/sbin:/sbin:#{HOMEBREW_PREFIX}/bin</string>
-         </dict>
-         <key>Label</key>
-         <string>#{plist_name}</string>
-         <key>ProgramArguments</key>
-         <array>
-             <string>#{opt_bin}/docker-machine</string>
-             <string>start</string>
-             <string>default</string>
-         </array>
-         <key>RunAtLoad</key>
-         <true/>
-         <key>WorkingDirectory</key>
-         <string>#{HOMEBREW_PREFIX}</string>
-       </dict>
-     </plist>
-     EOS
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>EnvironmentVariables</key>
+          <dict>
+              <key>PATH</key>
+              <string>/usr/bin:/bin:/usr/sbin:/sbin:#{HOMEBREW_PREFIX}/bin</string>
+          </dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+              <string>#{opt_bin}/docker-machine</string>
+              <string>start</string>
+              <string>default</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>WorkingDirectory</key>
+          <string>#{HOMEBREW_PREFIX}</string>
+        </dict>
+      </plist>
+    EOS
   end
 
   test do

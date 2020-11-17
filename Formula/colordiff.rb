@@ -1,25 +1,31 @@
 class Colordiff < Formula
   desc "Color-highlighted diff(1) output"
-  homepage "http://www.colordiff.org/"
-  url "http://www.colordiff.org/colordiff-1.0.16.tar.gz"
-  sha256 "eaf1cfe17dd0e820d38a0b24b0a402eba68b32e9bf9e7791ca2d1831029f138b"
+  homepage "https://www.colordiff.org/"
+  url "https://www.colordiff.org/colordiff-1.0.19.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/colordiff-1.0.19.tar.gz"
+  sha256 "46e8c14d87f6c4b77a273cdd97020fda88d5b2be42cf015d5d84aca3dfff3b19"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?colordiff[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
     rebuild 1
-    sha256 "c13ee346954c7819b4c798a5c8855516ff151841d14c51c63a8f14b39ef97545" => :sierra
-    sha256 "745965f6a9e37d91242b421a17697ce67328d390d2d94dd5b449d5c0dbae9e65" => :el_capitan
-    sha256 "e0e8a697a98972c3f336a867d4da2124b5b997bfd9c77a2fdca84d0cd1de541f" => :yosemite
-    sha256 "add0c4af1ad602b31f674b921435aa826951e125480220b6f66b8de406123345" => :mavericks
+    sha256 "945737122c0c542218c0ab89a1e923174033f27dd92760f102ca38c565c5485d" => :big_sur
+    sha256 "a591ec70f59b8f5ff3cde4c0a8cd58d920db324f9c3001e218bdcfc8966aca15" => :catalina
+    sha256 "f5b78a778860c7d37a370287c3821e17243a37e5e568cf58fd2aa3df3e3ce409" => :mojave
+    sha256 "305a7dfd6940d463d89473c1f2864c5f5b1bd7ed01f838929c3901ad94f4586d" => :high_sierra
   end
 
-  conflicts_with "cdiff", :because => "both install `cdiff` binaries"
-
-  patch :DATA
+  depends_on "coreutils" => :build # GNU install
 
   def install
     man1.mkpath
-    system "make", "INSTALL_DIR=#{bin}",
+    system "make", "INSTALL=ginstall",
+                   "INSTALL_DIR=#{bin}",
                    "ETC_DIR=#{etc}",
                    "MAN_DIR=#{man1}",
                    "install"
@@ -31,28 +37,3 @@ class Colordiff < Formula
     system "#{bin}/colordiff", "brew1", "brew2"
   end
 end
-
-__END__
-diff --git a/Makefile b/Makefile
-index 6ccbfc7..e5d64e7 100644
---- a/Makefile
-+++ b/Makefile
-@@ -28,8 +29,8 @@ install:
- 	if [ ! -f ${DESTDIR}${INSTALL_DIR}/cdiff ] ; then \
- 	  install cdiff.sh ${DESTDIR}${INSTALL_DIR}/cdiff; \
- 	fi
--	install -Dm 644 colordiff.1 ${DESTDIR}${MAN_DIR}/colordiff.1
--	install -Dm 644 cdiff.1 ${DESTDIR}${MAN_DIR}/cdiff.1
-+	install -m 644 colordiff.1 ${DESTDIR}${MAN_DIR}/colordiff.1
-+	install -m 644 cdiff.1 ${DESTDIR}${MAN_DIR}/cdiff.1
- 	if [ -f ${DESTDIR}${ETC_DIR}/colordiffrc ]; then \
- 	  mv -f ${DESTDIR}${ETC_DIR}/colordiffrc \
- 	    ${DESTDIR}${ETC_DIR}/colordiffrc.old; \
-@@ -37,7 +38,6 @@ install:
- 	  install -d ${DESTDIR}${ETC_DIR}; \
- 	fi
- 	cp colordiffrc ${DESTDIR}${ETC_DIR}/colordiffrc
--	-chown root.root ${DESTDIR}${ETC_DIR}/colordiffrc
- 	chmod 644 ${DESTDIR}${ETC_DIR}/colordiffrc
-
- uninstall:

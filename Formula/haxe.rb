@@ -1,58 +1,68 @@
 class Haxe < Formula
   desc "Multi-platform programming language"
   homepage "https://haxe.org/"
-  head "https://github.com/HaxeFoundation/haxe.git", :branch => "development"
+  url "https://github.com/HaxeFoundation/haxe.git",
+      tag:      "4.1.4",
+      revision: "7d0faa039ffe5e618587e2417323b59044282177"
+  head "https://github.com/HaxeFoundation/haxe.git", branch: "development"
 
-  stable do
-    url "https://github.com/HaxeFoundation/haxe.git",
-      :tag => "3.4.0",
-      :revision => "54090a4ed730c3aa04fa5ed845cadc737c15cac8"
-    # To workaround issue https://github.com/HaxeFoundation/neko/issues/130
-    # It is a commit already applied to the upstream, modified to apply in extra/haxelib_src
-    # https://github.com/HaxeFoundation/haxelib/commit/eff059a50da4200635f3a22c5fc992b3fbf80e79
-    patch :DATA
+  livecheck do
+    url "https://github.com/HaxeFoundation/haxe/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
   bottle do
     cellar :any
-    sha256 "7e98883ce8d4e985f90dc53fcff567593c071cfe563f52932d7390ad2c22185a" => :sierra
-    sha256 "6887bea23db0e6ace873cc01330b956f9d24babb01cd0c8c2471f1be7138e0b4" => :el_capitan
-    sha256 "ef9c72f4a2b47cfc412f86879ba6d30c369eef843cae9c1d0b1585ad1161311c" => :yosemite
+    sha256 "4d198b6fe5ad9addbaadd2aba3a43e4f0a356cfd632e389af76c83a8eb1246a6" => :catalina
+    sha256 "077d47ef86c0c3ccdc5f4c7c92b5485e76727afc3096d19bf149125e60ad5ce3" => :mojave
+    sha256 "3c8e7a07d745f290ef54154a05b730440cb319ec84319e6117e59936510b3234" => :high_sierra
   end
 
-  depends_on "ocaml" => :build
-  depends_on "camlp4" => :build
   depends_on "cmake" => :build
+  depends_on "ocaml" => :build
+  depends_on "opam" => :build
+  depends_on "pkg-config" => :build
+  depends_on "mbedtls"
   depends_on "neko"
   depends_on "pcre"
+
+  uses_from_macos "m4" => :build
+  uses_from_macos "unzip" => :build
 
   def install
     # Build requires targets to be built in specific order
     ENV.deparallelize
-    args = ["OCAMLOPT=ocamlopt.opt"]
-    args << "ADD_REVISION=1" if build.head?
-    system "make", *args
+
+    Dir.mktmpdir("opamroot") do |opamroot|
+      ENV["OPAMROOT"] = opamroot
+      ENV["OPAMYES"] = "1"
+      ENV["ADD_REVISION"] = "1" if build.head?
+      system "opam", "init", "--no-setup", "--disable-sandboxing"
+      system "opam", "config", "exec", "--",
+             "opam", "pin", "add", "haxe", buildpath, "--no-action"
+      system "opam", "config", "exec", "--",
+             "opam", "install", "haxe", "--deps-only"
+      system "opam", "config", "exec", "--",
+             "make"
+    end
 
     # Rebuild haxelib as a valid binary
-    Dir.chdir("extra/haxelib_src") do
-      system "cmake", "."
+    cd "extra/haxelib_src" do
+      system "cmake", ".", *std_cmake_args
       system "make"
     end
     rm "haxelib"
     cp "extra/haxelib_src/haxelib", "haxelib"
 
     bin.mkpath
-    system "make", "install", "INSTALL_BIN_DIR=#{bin}", "INSTALL_LIB_DIR=#{lib}/haxe"
-
-    # Replace the absolute symlink by a relative one,
-    # such that binary package created by homebrew will work in non-/usr/local locations.
-    rm bin/"haxe"
-    bin.install_symlink lib/"haxe/haxe"
+    system "make", "install", "INSTALL_BIN_DIR=#{bin}",
+           "INSTALL_LIB_DIR=#{lib}/haxe", "INSTALL_STD_DIR=#{lib}/haxe/std"
   end
 
-  def caveats; <<-EOS.undent
-    Add the following line to your .bashrc or equivalent:
-      export HAXE_STD_PATH="#{HOMEBREW_PREFIX}/lib/haxe/std"
+  def caveats
+    <<~EOS
+      Add the following line to your .bashrc or equivalent:
+        export HAXE_STD_PATH="#{HOMEBREW_PREFIX}/lib/haxe/std"
     EOS
   end
 
@@ -60,79 +70,16 @@ class Haxe < Formula
     ENV["HAXE_STD_PATH"] = "#{HOMEBREW_PREFIX}/lib/haxe/std"
     system "#{bin}/haxe", "-v", "Std"
     system "#{bin}/haxelib", "version"
+
+    (testpath/"HelloWorld.hx").write <<~EOS
+      import js.html.Console;
+
+      class HelloWorld {
+          static function main() Console.log("Hello world!");
+      }
+    EOS
+    system "#{bin}/haxe", "-js", "out.js", "-main", "HelloWorld"
+    _, stderr, = Open3.capture3("osascript -so -lJavaScript out.js")
+    assert_match /^Hello world!$/, stderr
   end
 end
-
-__END__
-From eff059a50da4200635f3a22c5fc992b3fbf80e79 Mon Sep 17 00:00:00 2001
-From: Andy Li <andy@onthewings.net>
-Date: Fri, 3 Feb 2017 17:38:35 +0800
-Subject: [PATCH] Added a CMakeLists.txt that can produce valid binary using
- `nekotools boot -c ...`.
-
-Re. https://github.com/HaxeFoundation/neko/issues/130
----
- CMakeLists.txt | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- create mode 100644 CMakeLists.txt
-
-diff --git a/extra/haxelib_src/CMakeLists.txt b/extra/haxelib_src/CMakeLists.txt
-new file mode 100644
-index 0000000..bb66d90
---- /dev/null
-+++ b/extra/haxelib_src/CMakeLists.txt
-@@ -0,0 +1,55 @@
-+cmake_minimum_required(VERSION 2.8.7)
-+
-+include(GNUInstallDirs)
-+project(Haxelib C)
-+
-+# put output in ${CMAKE_BINARY_DIR}
-+
-+set(OUTPUT_DIR ${CMAKE_BINARY_DIR})
-+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
-+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIR})
-+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
-+
-+# avoid the extra "Debug", "Release" directories
-+# http://stackoverflow.com/questions/7747857/in-cmake-how-do-i-work-around-the-debug-and-release-directories-visual-studio-2
-+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-+ string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-+ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-+ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-+ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-+
-+# find Haxe and Neko
-+
-+find_program(HAXE_COMPILER haxe)
-+
-+find_path(NEKO_INCLUDE_DIRS neko.h)
-+find_library(NEKO_LIBRARIES neko)
-+find_program(NEKO neko)
-+find_program(NEKOTOOLS nekotools)
-+
-+message(STATUS "HAXE_COMPILER: ${HAXE_COMPILER}")
-+message(STATUS "NEKO_INCLUDE_DIRS: ${NEKO_INCLUDE_DIRS}")
-+message(STATUS "NEKO_LIBRARIES: ${NEKO_LIBRARIES}")
-+message(STATUS "NEKOTOOLS: ${NEKOTOOLS}")
-+
-+include_directories(${NEKO_INCLUDE_DIRS})
-+
-+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/run.n
-+    COMMAND ${HAXE_COMPILER} client.hxml
-+    VERBATIM
-+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-+)
-+
-+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/run.c
-+    COMMAND ${NEKOTOOLS} boot -c run.n
-+    VERBATIM
-+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-+    DEPENDS ${CMAKE_SOURCE_DIR}/run.n
-+)
-+
-+add_executable(haxelib
-+    ${CMAKE_SOURCE_DIR}/run.c
-+)
-+
-+target_link_libraries(haxelib ${NEKO_LIBRARIES})

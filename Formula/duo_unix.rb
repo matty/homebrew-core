@@ -1,26 +1,34 @@
 class DuoUnix < Formula
   desc "Two-factor authentication for SSH"
   homepage "https://www.duosecurity.com/docs/duounix"
-  url "https://dl.duosecurity.com/duo_unix-1.9.17.tar.gz"
-  sha256 "d841fb7cf48013d25c2abe882aa1888f230b8414b71ef5898ca988d000b5953a"
+  url "https://github.com/duosecurity/duo_unix/archive/duo_unix-1.11.4.tar.gz"
+  sha256 "2fcba3e50fd477699d013c789ffc73a0b10c204d25c455abe7c81a2ecd886579"
+  license "GPL-2.0"
 
-  bottle do
-    cellar :any
-    sha256 "a6a7712ba1023e7553ccf9b89df767d8d5c29abe5b58f543035d4d58346b1224" => :sierra
-    sha256 "49ce5dcbf9d025796dfe9cd5d7c1b8123c4418cdafab8bb3b910c5218b939e4f" => :el_capitan
-    sha256 "055e5643825f5b581a6f57eb5f8a1b7cfcbf450f0e19201cf82a68c5545bfb04" => :yosemite
-    sha256 "acbe2c050efc8127721e50879d00b56aa0ff2050f22facced4803d3671df11e7" => :mavericks
+  livecheck do
+    url "https://github.com/duosecurity/duo_unix.git"
   end
 
-  depends_on "openssl"
+  bottle do
+    sha256 "dece3829732fe41b3346b5de6f04b921ab22641c39eb45b87e91a0795a384e67" => :big_sur
+    sha256 "67a6ff6605578e287fc862f6fb2ee9360dea7c22f8fbaa97a1bf18dd13db5ec0" => :catalina
+    sha256 "753e3f0d60c4c0404a6e347d052bc1ed4bd1e66b43170675549a36d4fe736f25" => :mojave
+    sha256 "8e707bc378fa13dfd92fb39e0de055c58f2470973fe80edc41bf500e4863128a" => :high_sierra
+  end
+
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "openssl@1.1"
 
   def install
+    system "./bootstrap"
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--sysconfdir=#{etc}",
                           "--includedir=#{include}/duo",
-                          "--with-openssl=#{Formula["openssl"].opt_prefix}",
+                          "--with-openssl=#{Formula["openssl@1.1"].opt_prefix}",
                           "--with-pam=#{lib}/pam/"
     system "make", "install"
   end

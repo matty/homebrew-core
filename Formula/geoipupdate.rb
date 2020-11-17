@@ -1,34 +1,30 @@
 class Geoipupdate < Formula
   desc "Automatic updates of GeoIP2 and GeoIP Legacy databases"
   homepage "https://github.com/maxmind/geoipupdate"
-  url "https://github.com/maxmind/geoipupdate/releases/download/v2.3.1/geoipupdate-2.3.1.tar.gz"
-  sha256 "4f71e911774c4fd32e217889c242d2c311fa5ffd3df56be48a2d1aedfe2e671c"
+  url "https://github.com/maxmind/geoipupdate/archive/v4.5.0.tar.gz"
+  sha256 "dfa3ecebebe23923735612fc442388c5d8e02991b316012ab7d2738b3a48e9d4"
+  license "Apache-2.0"
+  head "https://github.com/maxmind/geoipupdate.git"
 
   bottle do
-    sha256 "4138b18781d3e1c26f0b225f6a8e1ecb53882584fbab3c01cab05b387d3fefb9" => :sierra
-    sha256 "526cddf88ba06b7a90702ad4b6602e9f63b7646e0904e244d86bf8992c908fb8" => :el_capitan
-    sha256 "6f1396a383de18597334f0b10486d0c447ac1426fbf640804603b3c82745d250" => :yosemite
+    sha256 "97e31b482981f2027c4223e8392b6e4d1bb6f5845abc4a92fd2f31fe60092bad" => :catalina
+    sha256 "94cf0c34c2e48c8976efd32281b8b899ffb984f9828ab7e5fdfd92dcd8122d1b" => :mojave
+    sha256 "371eed40eee1c2e15a20c9b9c942cd55f5a67b9875bfb57fc6ff905af8e19300" => :high_sierra
   end
 
-  head do
-    url "https://github.com/maxmind/geoipupdate.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
+  depends_on "go" => :build
+  depends_on "pandoc" => :build
 
-  option :universal
+  uses_from_macos "curl"
+  uses_from_macos "zlib"
 
   def install
-    ENV.universal_binary if build.universal?
+    system "make", "CONFFILE=#{etc}/GeoIP.conf", "DATADIR=#{var}/GeoIP", "VERSION=#{version} (homebrew)"
 
-    system "./bootstrap" if build.head?
-
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--datadir=#{var}",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    bin.install  "build/geoipupdate"
+    etc.install  "build/GeoIP.conf"
+    man1.install "build/geoipupdate.1"
+    man5.install "build/GeoIP.conf.5"
   end
 
   def post_install

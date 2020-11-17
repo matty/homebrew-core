@@ -1,27 +1,36 @@
 class Flawfinder < Formula
-  desc "Examines code and reports possible security weaknesses"
-  homepage "http://www.dwheeler.com/flawfinder/"
-  url "http://www.dwheeler.com/flawfinder/flawfinder-1.31.tar.gz"
-  mirror "https://downloads.sourceforge.net/project/flawfinder/flawfinder-1.31.tar.gz"
-  sha256 "bca7256fdf71d778eb59c9d61fc22b95792b997cc632b222baf79cfc04887c30"
+  include Language::Python::Shebang
 
-  head "git://git.code.sf.net/p/flawfinder/code"
+  desc "Examines code and reports possible security weaknesses"
+  homepage "https://www.dwheeler.com/flawfinder/"
+  url "https://www.dwheeler.com/flawfinder/flawfinder-2.0.11.tar.gz"
+  sha256 "9b4929fca5c6703880d95f201e470b7f19262ff63e991b3ac4ea3257f712f5ec"
+  license "GPL-2.0"
+  revision 2
+  head "https://github.com/david-a-wheeler/flawfinder.git"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?flawfinder[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ec6ef745112c16c51a95b23d07f732217cd566fb2a9540e76d0faa810f5f87ed" => :sierra
-    sha256 "e09de8c54903a470777109b927e9ebef62732c25de525112ed9e30f2bdc468bb" => :el_capitan
-    sha256 "3e70dda4b6166ace3bf38b5a0d84a6e8b8b83301fee2b1a8d76cc0e50ae16654" => :yosemite
-    sha256 "6c254ed71ea0023b5964e6aa723671e815ce225a0a035437d61122e4701098d8" => :mavericks
-    sha256 "54738b160ec86432cc37393facdd6be55cbc54c2dd080e26ee57493d72d8b6da" => :mountain_lion
+    sha256 "79d63099bc5b10544dd3a42ea7f2b71247ed13569846917537bd992241051fed" => :big_sur
+    sha256 "c4b2f7f2353d8d032e0e1f352860f69c23c21092dc718f4d4832bc1dbe20a2f1" => :catalina
+    sha256 "ba1a903081761bfb7ba492ac5fc84300da3ffc20819ed240a6854c3441b69eff" => :mojave
+    sha256 "38fc9609b4526463f7d4d3d4dd1377fb979a64208562de1a5d4d6f1ff9237c67" => :high_sierra
   end
 
+  depends_on "python@3.9"
+
   resource "flaws" do
-    url "http://www.dwheeler.com/flawfinder/test.c"
+    url "https://www.dwheeler.com/flawfinder/test.c"
     sha256 "4a9687a091b87eed864d3e35a864146a85a3467eb2ae0800a72e330496f0aec3"
   end
 
   def install
+    rewrite_shebang detected_python_shebang, "flawfinder"
     system "make", "prefix=#{prefix}", "install"
   end
 

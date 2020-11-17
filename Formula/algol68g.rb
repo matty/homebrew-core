@@ -1,17 +1,29 @@
 class Algol68g < Formula
   desc "Algol 68 compiler-interpreter"
   homepage "https://jmvdveer.home.xs4all.nl/algol.html"
-  url "https://jmvdveer.home.xs4all.nl/algol68g-2.8.3.tar.gz"
-  sha256 "568bc93950463f8a70c3973097360945a4dfb300c422a8410cfc638d6ba548e7"
+  url "https://jmvdveer.home.xs4all.nl/algol68g-2.8.5.tar.gz"
+  sha256 "0f757c64a8342fe38ec501bde68b61d26d051dffd45742ca58b7288a99c7e2d8"
+  license "GPL-3.0"
 
-  bottle do
-    sha256 "35d3ba002e09ec60ff236c6d0a6fcc815ea49f5e9b40f0155057b22da87e1245" => :sierra
-    sha256 "467a5892fd9cdd854eaabb2b298dbc55bc8dec961960ef54e5730f6854d388f8" => :el_capitan
-    sha256 "6f4ba5db40637d0a5d10d0f416854e2497d59ec43abc108484a3420f36903323" => :yosemite
-    sha256 "5ec387dbb47eeeca93019a449ced1e7e5472f0ada413e19258c81cb3ec41d76d" => :mavericks
+  # The homepage hasn't been updated for the latest release (2.8.5), even though
+  # the related archive is available on the site. Until the website is updated
+  # (and seems like it will continue to be updated for new releases), we're
+  # checking a third-party source for new releases as an interim solution.
+  livecheck do
+    url "https://openports.se/lang/algol68g"
+    regex(/href=.*?algol68g[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "gsl" => :optional
+  bottle do
+    sha256 "7b7bb03b6cbe89d253b5e88294ecc4edf61a0687c4534f26ffb7422efe22e52d" => :big_sur
+    sha256 "046ba5e9ec0d0856557085fdf1acde227cd829d9955da28046e98c9a5ee84c09" => :catalina
+    sha256 "7e1acd53615ebc407aaae64eb23af6047dbbd42f967e422b3fcfa0c6d01307b6" => :mojave
+    sha256 "18013401e3eed914022e0a34c6b9b1ed415ec679113de78970d74aa52b0a35e8" => :high_sierra
+  end
+
+  on_linux do
+    depends_on "postgresql"
+  end
 
   def install
     system "./configure", "--prefix=#{prefix}"
@@ -20,7 +32,7 @@ class Algol68g < Formula
 
   test do
     path = testpath/"hello.alg"
-    path.write <<-EOS.undent
+    path.write <<~EOS
       print("Hello World")
     EOS
 

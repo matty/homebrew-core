@@ -1,29 +1,38 @@
 class XmlSecurityC < Formula
   desc "Implementation of primary security standards for XML"
   homepage "https://santuario.apache.org/"
-  url "https://www.apache.org/dyn/closer.cgi?path=/santuario/c-library/xml-security-c-1.7.3.tar.gz"
-  sha256 "e5226e7319d44f6fd9147a13fb853f5c711b9e75bf60ec273a0ef8a190592583"
+  url "https://www.apache.org/dyn/closer.lua?path=santuario/c-library/xml-security-c-2.0.2.tar.bz2"
+  mirror "https://archive.apache.org/dist/santuario/c-library/xml-security-c-2.0.2.tar.bz2"
+  sha256 "39e963ab4da477b7bda058f06db37228664c68fe68902d86e334614dd06e046b"
+  license "Apache-2.0"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "6fc5691a1dddd4014f13cfb6d858d4d45b1aeda8731cca0b7e523f4bf0cfa0d7" => :sierra
-    sha256 "974d81e0d9a98cccdaccb343fea0e42d868eb56f08cb56c43689970aa5be51f7" => :el_capitan
-    sha256 "d80d8ce35414c2afcd87013b5c0279e42ce4d4e22ceb15c904e9750fa3c2aa1f" => :yosemite
-    sha256 "c5b52cc0a050efe40157c92cc856cebe5061f3863bc3a872ec8c566da3652326" => :mavericks
-    sha256 "5c17003e3418804b1b854177d8ce55eac1686a6c3642d31dbc64494a2d5b930a" => :mountain_lion
+    sha256 "ed512d0c411b694e5835b4b33338e9e347ceea4e564a5caeecc9e41e26b5fc53" => :big_sur
+    sha256 "ce0f62697cff7004fa7498ebc0dcc917206be09847847fa2ec31285b81ed04ce" => :catalina
+    sha256 "eec2216263c3bb21b52418d18232034aacc69335d3e14624225627fe5364347c" => :mojave
+    sha256 "5ee66d19898cd50085e90392313d3a1f45204bd111f32019251af89ee84f1ca5" => :high_sierra
+    sha256 "bd1e4d4b5768f869d28850ad440e32d417f6db5d182c6049afc87575bb36ccc9" => :sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "openssl@1.1"
   depends_on "xerces-c"
-  depends_on "openssl"
 
   def install
+    ENV.cxx11
+
     system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking",
-                          "--with-openssl=#{Formula["openssl"].opt_prefix}"
+                          "--with-openssl=#{Formula["openssl@1.1"].opt_prefix}"
     system "make", "install"
   end
 
   test do
-    assert_match /All tests passed/, pipe_output("#{bin}/xtest 2>&1")
+    assert_match /All tests passed/, pipe_output("#{bin}/xsec-xtest 2>&1")
   end
 end

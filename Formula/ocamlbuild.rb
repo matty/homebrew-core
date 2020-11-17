@@ -1,21 +1,28 @@
 class Ocamlbuild < Formula
   desc "Generic build tool for OCaml"
   homepage "https://github.com/ocaml/ocamlbuild"
-  url "https://github.com/ocaml/ocamlbuild/archive/0.9.3.tar.gz"
-  sha256 "32e4824906888c61244909eab0d2c22d31f18fc9579873a070a4cf7947c2c0a9"
-  revision 1
+  url "https://github.com/ocaml/ocamlbuild/archive/0.14.0.tar.gz"
+  sha256 "87b29ce96958096c0a1a8eeafeb6268077b2d11e1bf2b3de0f5ebc9cf8d42e78"
+  license "LGPL-2.0"
+  revision 2
   head "https://github.com/ocaml/ocamlbuild.git"
 
+  livecheck do
+    url "https://github.com/ocaml/ocamlbuild/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
+
   bottle do
-    sha256 "db18212dbf85bca4e50400ab75d5ba45fffbb924dcf842fe5a5b7b7cbc040553" => :sierra
-    sha256 "094d83c43ad3f010b485e255e4018e8d2c270e02ff3c0f261bbab04d8297626a" => :el_capitan
-    sha256 "43b9081e69d0432f4c61d6d618bfa64f93f4ecf47a028d70332e4d092f919d9f" => :yosemite
+    sha256 "3daa705ce9d023a2679f609671d06de48e8dd1dd13ece8db46068802abbdd41f" => :big_sur
+    sha256 "8f6fc7e7413b24faa041b7651349a3128f9eadefae5c9aa0c50f0d1a56e010f6" => :catalina
+    sha256 "04fed811edb4dd3903f742ec6678643f9959e85c4fcb763972c8779dec059515" => :mojave
+    sha256 "e4cd0274f9657874e29add30545055af4ea8697d426ed95f799ddce63aef5cfe" => :high_sierra
   end
 
   depends_on "ocaml"
 
   def install
-    system "make", "configure", "OCAMLBUILD_BINDIR=#{bin}", "OCAMLBUILD_LIBDIR=#{lib}"
+    system "make", "configure", "OCAMLBUILD_BINDIR=#{bin}", "OCAMLBUILD_LIBDIR=#{lib}", "OCAMLBUILD_MANDIR=#{man}"
     system "make"
     system "make", "install"
   end

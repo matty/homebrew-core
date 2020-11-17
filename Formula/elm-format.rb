@@ -1,40 +1,51 @@
-require "language/haskell"
-
 class ElmFormat < Formula
-  include Language::Haskell::Cabal
-  desc "Elm source code formatter, inspired by gofmt."
+  desc "Elm source code formatter, inspired by gofmt"
   homepage "https://github.com/avh4/elm-format"
-  url "https://github.com/avh4/elm-format/archive/0.5.2-alpha.tar.gz"
-  version "0.5.2-alpha"
-  sha256 "3bf9d54298333139609a991364a3d8549766cf4462cb25021c65b7f5c5bc0bf3"
+  url "https://github.com/avh4/elm-format.git",
+      tag:      "0.8.4",
+      revision: "5bd4fbe591fe8b456160c180cb875ef60bc57890"
+  license "BSD-3-Clause"
   head "https://github.com/avh4/elm-format.git"
 
   bottle do
-    sha256 "61ad938bc44efb57e575b7ae1da584d81e07ab114979bd54d294933675d4c12b" => :sierra
-    sha256 "ddcfbf0941cd76df534000aa01062c354f2d8788ca7b2ef93e37fcf8ed029b88" => :el_capitan
-    sha256 "6b1b4cbb6da1aad3a80cd61190694b2e8ab19f5114eae8641ad1b0fc6ceaa1ed" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "dca23c0c1e66cfc6208ff891611ba8c38fdddd1d90d2a8b32bafe69dc3701b91" => :catalina
+    sha256 "0e196d773546e0d476c079a434c57f1b49a2966410397bb33747fa2d9e57ffe1" => :mojave
+    sha256 "a8f9aa324518559cdd5b7617f5453f629e90f6897cd72e38f5ab84165e7ddae0" => :high_sierra
   end
 
-  depends_on "ghc" => :build
   depends_on "cabal-install" => :build
+  depends_on "ghc@8.8" => :build
+
+  def build_elm_format_conf
+    <<~EOS
+      module Build_elm_format where
+
+      gitDescribe :: String
+      gitDescribe = "#{version}"
+    EOS
+  end
 
   def install
+    defaults = buildpath/"generated/Build_elm_format.hs"
+    defaults.write(build_elm_format_conf)
+
     (buildpath/"elm-format").install Dir["*"]
 
-    cabal_sandbox do
-      cabal_sandbox_add_source "elm-format"
-      cabal_install "--only-dependencies", "elm-format"
-      cabal_install "--prefix=#{prefix}", "elm-format"
+    cd "elm-format" do
+      system "cabal", "v2-update"
+      system "cabal", "v2-install", *std_cabal_v2_args
     end
   end
 
   test do
     src_path = testpath/"Hello.elm"
-    src_path.write <<-EOS.undent
+    src_path.write <<~EOS
       import Html exposing (text)
       main = text "Hello, world!"
     EOS
 
-    system bin/"elm-format-0.17", testpath/"Hello.elm", "--yes"
+    system bin/"elm-format", "--elm-version=0.18", testpath/"Hello.elm", "--yes"
+    system bin/"elm-format", "--elm-version=0.19", testpath/"Hello.elm", "--yes"
   end
 end

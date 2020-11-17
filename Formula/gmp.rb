@@ -1,43 +1,59 @@
 class Gmp < Formula
   desc "GNU multiple precision arithmetic library"
   homepage "https://gmplib.org/"
-  url "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz"
-  sha256 "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"
+  url "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
+  mirror "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
+  sha256 "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
+  license any_of: ["LGPL-3.0-or-later", "GPL-2.0-or-later"]
+
+  livecheck do
+    url "https://gmplib.org/download/gmp/"
+    regex(/href=.*?gmp[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "cd4a916966007092af477a76655cc1f66546d00bf5e581a5dfef334f8436aeb0" => :sierra
-    sha256 "01b24de832db7aa24ee14159feb5a16e0e3e18932e6f38d221331bb45feb6a1a" => :el_capitan
-    sha256 "3752709f0bab1999fa9d5407bcd3135a873b48fc34d5e6ea123fd68c4cf3644d" => :yosemite
+    sha256 "6a44705536f25c4b9f8547d44d129ae3b3657755039966ad2b86b821e187c32c" => :big_sur
+    sha256 "35e9f82d80708ae8dea2d6b0646dcd86d692321b96effaa76b7fad4d6cffa5be" => :catalina
+    sha256 "00fb998dc2abbd09ee9f2ad733ae1adc185924fb01be8814e69a57ef750b1a32" => :mojave
+    sha256 "54191ce7fa888df64b9c52870531ac0ce2e8cbd40a7c4cdec74cb2c4a421af97" => :high_sierra
   end
 
-  option :cxx11
+  uses_from_macos "m4" => :build
 
   def install
-    ENV.cxx11 if build.cxx11?
-    args = %W[--prefix=#{prefix} --enable-cxx]
-    args << "--build=core2-apple-darwin#{`uname -r`.to_i}" if build.bottle?
-    system "./configure", *args
+    cpu = Hardware::CPU.arm? ? "aarch64" : Hardware.oldest_cpu
+    system "./configure", "--prefix=#{prefix}",
+                          "--enable-cxx",
+                          # Enable --with-pic to avoid linking issues with the static library
+                          "--with-pic",
+                          "--build=#{cpu}-apple-darwin#{OS.kernel_version.major}"
     system "make"
     system "make", "check"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gmp.h>
+      #include <stdlib.h>
 
-      int main()
-      {
-        mpz_t integ;
-        mpz_init (integ);
-        mpz_clear (integ);
+      int main() {
+        mpz_t i, j, k;
+        mpz_init_set_str (i, "1a", 16);
+        mpz_init (j);
+        mpz_init (k);
+        mpz_sqrtrem (j, k, i);
+        if (mpz_get_si (j) != 5 || mpz_get_si (k) != 1) abort();
         return 0;
       }
     EOS
+
     system ENV.cc, "test.c", "-L#{lib}", "-lgmp", "-o", "test"
+    system "./test"
+
+    # Test the static library to catch potential linking issues
+    system ENV.cc, "test.c", "#{lib}/libgmp.a", "-o", "test"
     system "./test"
   end
 end

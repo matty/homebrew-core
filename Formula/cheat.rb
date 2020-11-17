@@ -1,39 +1,33 @@
 class Cheat < Formula
-  include Language::Python::Virtualenv
-
   desc "Create and view interactive cheat sheets for *nix commands"
-  homepage "https://github.com/chrisallenlane/cheat"
-  url "https://github.com/chrisallenlane/cheat/archive/2.1.27.tar.gz"
-  sha256 "5c18ee475c0cd6116d5d686d644d54c36c037444f27b0a47c6d9f98a4d2112e6"
-  head "https://github.com/chrisallenlane/cheat.git"
+  homepage "https://github.com/cheat/cheat"
+  url "https://github.com/cheat/cheat/archive/4.1.1.tar.gz"
+  sha256 "76e1d3f720864721f5a74a41825fcac709a2eb9b01d8fdd23d27d3b59ca143a9"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "7ad89bb3b3ec83a71c22ea0764eed95e30a8f0c0a1f1c864f649a075ae17cb79" => :sierra
-    sha256 "b2495cdcfe52f5325eb6e8339d4c0398d628c7d3b29294f345259fc829f86547" => :el_capitan
-    sha256 "f5eb7610ce0847b9185e69fca91c2f2fe2fde5f3d52d683e352f2f2518e8a076" => :yosemite
+    sha256 "3672ea47c80e0bde75aaa322e19c56e8fca97ec02e5de38fd307891dba7d9856" => :big_sur
+    sha256 "c8157571d901d5b1a92214a29e70202829f1a336523782a1f63fc8ccce520a96" => :catalina
+    sha256 "aa58b40807dbee5f5127a66f5fa0b244da42344d88ceb67dd0ee8d03e1915618" => :mojave
+    sha256 "d0f7dbb233a37fffa2c76fd3bded84af3f6a95d5a56bc1bd0e36551dbbe8c9b8" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "go" => :build
 
-  resource "docopt" do
-    url "https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz"
-    sha256 "49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"
-  end
-
-  resource "Pygments" do
-    url "https://files.pythonhosted.org/packages/b8/67/ab177979be1c81bc99c8d0592ef22d547e70bb4c6815c383286ed5dec504/Pygments-2.1.3.tar.gz"
-    sha256 "88e4c8a91b2af5962bfa5ea2447ec6dd357018e86e94c7d14bd8cacbc5b55d81"
-  end
+  conflicts_with "bash-snippets", because: "both install a `cheat` executable"
 
   def install
-    virtualenv_install_with_resources
+    system "go", "build", "-mod", "vendor", "-o", bin/"cheat", "./cmd/cheat"
 
-    bash_completion.install "cheat/autocompletion/cheat.bash"
-    zsh_completion.install "cheat/autocompletion/cheat.zsh" => "_cheat"
+    bash_completion.install "scripts/cheat.bash"
+    fish_completion.install "scripts/cheat.fish"
   end
 
   test do
-    system bin/"cheat", "tar"
+    assert_match version.to_s, shell_output("#{bin}/cheat --version")
+
+    output = shell_output("#{bin}/cheat --init 2>&1")
+    assert_match "editor: vim", output
   end
 end

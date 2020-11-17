@@ -1,48 +1,37 @@
 class Libcouchbase < Formula
   desc "C library for Couchbase"
-  homepage "https://developer.couchbase.com/documentation/server/4.5/sdk/c/start-using-sdk.html"
-  url "https://s3.amazonaws.com/packages.couchbase.com/clients/c/libcouchbase-2.7.1.tar.gz"
-  sha256 "cd1d219e6cee21a665c61d6949f3c0cdce52526ecea878a3b73feb3ee32d6ab8"
-  revision 1
-
+  homepage "https://docs.couchbase.com/c-sdk/3.0/hello-world/start-using-sdk.html"
+  url "https://packages.couchbase.com/clients/c/libcouchbase-3.0.6.tar.gz"
+  sha256 "5e5879207cfe655759ba12378be6e5500546a52aae06ce446d86e639c3a40ab9"
+  license "Apache-2.0"
   head "https://github.com/couchbase/libcouchbase.git"
 
   bottle do
-    sha256 "cba376ad2874f6bc503fa8b88da030dff1a1797d086f63c3f5a735e28a002a6b" => :sierra
-    sha256 "0f22ba69c7f3e39626ff39d7577be600f5785564a54ff66ac7bb1b264bcf0c81" => :el_capitan
-    sha256 "ccf3208241fdc5a101f70668687800ed7b9982138ba2e56affc5bf5cbd2218d5" => :yosemite
+    sha256 "59e24917012c238b11f15e4c42fbabad93cefc82c738f643864beeeb29bf2f9a" => :big_sur
+    sha256 "cac82c27a7b0fffddaa3d5ff60fdd13a8436f3e5870c39fc74355fb6afc166fa" => :catalina
+    sha256 "0b065a2160a48ee2f9d5085180842dbc27976152ed503b24af93abfba500cd9f" => :mojave
+    sha256 "01935cfa1eed4ca89fa1247a501093d647f9a88749c4209976f5babdc6f3c677" => :high_sierra
   end
 
-  option "with-libev", "Build libev plugin"
-  option "without-libevent", "Do not build libevent plugin"
-
-  deprecated_option "with-libev-plugin" => "with-libev"
-  deprecated_option "without-libevent-plugin" => "without-libevent"
-
-  depends_on "libev" => :optional
-  depends_on "libuv" => :optional
-  depends_on "libevent" => :recommended
-  depends_on "openssl"
   depends_on "cmake" => :build
+  depends_on "libev"
+  depends_on "libevent"
+  depends_on "libuv"
+  depends_on "openssl@1.1"
 
   def install
-    args = std_cmake_args
-    args << "-DLCB_NO_TESTS=1"
-
-    ["libev", "libevent", "libuv"].each do |dep|
-      args << "-DLCB_BUILD_#{dep.upcase}=" + (build.with?(dep) ? "ON" : "OFF")
-    end
-    if build.without?("libev") && build.without?("libuv") && build.without?("libevent")
-      args << "-DLCB_NO_PLUGINS=1"
-    end
-
-    mkdir "LCB-BUILD" do
-      system "cmake", "..", *args
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args,
+                            "-DLCB_NO_TESTS=1",
+                            "-DLCB_BUILD_LIBEVENT=ON",
+                            "-DLCB_BUILD_LIBEV=ON",
+                            "-DLCB_BUILD_LIBUV=ON"
       system "make", "install"
     end
   end
 
   test do
-    system "#{bin}/cbc", "version"
+    assert_match /LCB_ERR_CONNECTION_REFUSED/,
+      shell_output("#{bin}/cbc cat document_id -U couchbase://localhost:1 2>&1", 1).strip
   end
 end

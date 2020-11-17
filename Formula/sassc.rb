@@ -1,14 +1,19 @@
 class Sassc < Formula
   desc "Wrapper around libsass that helps to create command-line apps"
   homepage "https://github.com/sass/sassc"
-  url "https://github.com/sass/sassc.git", :tag => "3.4.2", :revision => "19d97ea089c558a07e61566142f59f88b7a1cc99"
+  url "https://github.com/sass/sassc.git",
+      tag:      "3.6.1",
+      revision: "46748216ba0b60545e814c07846ca10c9fefc5b6"
+  license "MIT"
   head "https://github.com/sass/sassc.git"
 
   bottle do
     cellar :any
-    sha256 "ffb473796b1059906d32198692771f83bc216563b11a12a76591107f9303007c" => :sierra
-    sha256 "bd9c09912ddc844b1b5c547c250216eec2d0c765a212dce9b5748e28d8708b58" => :el_capitan
-    sha256 "4bb83df2c2b4473741b31b0cd84e1ae9bb09d75e47eb8fdb91fbce28519a89fc" => :yosemite
+    sha256 "81448c2610a270d7a77a24f63c4f587a81e1b03186456a3dd8345f002a5474fc" => :big_sur
+    sha256 "b3e76afb48cf7789113e29f01389bdc5d7f13faf3e9b7f28f4bf9ef352363b0f" => :catalina
+    sha256 "34e0739d4967b537d4836780cefcb47910ce8c5b8201e9f864d10c3d34801237" => :mojave
+    sha256 "4461eb8cf88f6fbbfe0d15b0efd0449cc95e3e46873af0f972769594786c32ea" => :high_sierra
+    sha256 "e54c8d0ddc93a8212c9c39f9e8c853a6b19ae1fc2ba3bee650785215441aa60e" => :sierra
   end
 
   depends_on "autoconf" => :build
@@ -25,7 +30,7 @@ class Sassc < Formula
   end
 
   test do
-    (testpath/"input.scss").write <<-EOS.undent
+    (testpath/"input.scss").write <<~EOS
       div {
         img {
           border: 0px;

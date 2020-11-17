@@ -1,28 +1,36 @@
 class GupnpTools < Formula
-  desc "Free replacements of Intel's UPnP tools."
+  desc "Free replacements of Intel's UPnP tools"
   homepage "https://wiki.gnome.org/GUPnP/"
-  url "https://download.gnome.org/sources/gupnp-tools/0.8/gupnp-tools-0.8.13.tar.xz"
-  sha256 "aa3decb9d532c0e2e505adc592f431fd81c0231ded2981129e87da13712479ed"
+  url "https://download.gnome.org/sources/gupnp-tools/0.10/gupnp-tools-0.10.0.tar.xz"
+  sha256 "41da7ff5ba8e2425adcb64ca5e04c81f57ca20ec6fdb84923939fdad42c6a18d"
+  revision 4
 
-  bottle do
-    sha256 "1dbf58cfb3c0a52e8032312e6090e88c4c0ddb2bb93de11dd9e0bb4feb9a8a55" => :sierra
-    sha256 "8920d8009d36e84e71e4d55ded1c5f8d3141bb4d9729b476c1dd49375c065dcd" => :el_capitan
-    sha256 "ab31a427466e442cb51e337572428cbc3c36a390e2043a6c150f1decb16eb59b" => :yosemite
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "4100de40650880fa3ad8023c65e07c651aaf1286da8865a3e865f55016eb330e" => :catalina
+    sha256 "6a4d56ae6c680111619ad67125ffe3ee96944404771bbfdf7cdf6db0322a5379" => :mojave
+    sha256 "b4e8473364799562c90c9637f33b5ef999c53d7404eac8f6ce2921f62d056324" => :high_sierra
+  end
+
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "intltool" => :build
   depends_on "gettext"
+  depends_on "gtk+3"
+  depends_on "gtksourceview4"
   depends_on "gupnp"
   depends_on "gupnp-av"
-  depends_on "gtk+3"
-  depends_on "gtksourceview3"
-  depends_on "ossp-uuid"
+  depends_on "libsoup"
 
   def install
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   test do

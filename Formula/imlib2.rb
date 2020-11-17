@@ -1,34 +1,39 @@
 class Imlib2 < Formula
   desc "Image loading and rendering library"
   homepage "https://sourceforge.net/projects/enlightenment/"
-  url "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.4.9/imlib2-1.4.9.tar.bz2"
-  sha256 "7d2864972801823ce44ca8d5584a67a88f0e54e2bf47fa8cf4a514317b4f0021"
+  url "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.7.0/imlib2-1.7.0.tar.bz2"
+  sha256 "1976ca3db48cbae79cd0fc737dabe39cc81494fc2560e1d22821e7dc9c22b37d"
+  license "Imlib2"
+  revision 3
 
-  bottle do
-    sha256 "8a30dde8a2a7dbe5ed86007927ec16e940fb45fca8aab1f0317d236c08c1b577" => :sierra
-    sha256 "cb81653f464c76523b160cb8ed8bc29bffec49e77605f96ff83cd7ea80efbdd7" => :el_capitan
-    sha256 "1dab9c3cd20b6ba45898738e0fd00f5840bdd8b8158d6e73190ce4c949df68d8" => :yosemite
-    sha256 "203d17ecfed7a366efe67e3c246c8e88cddaedc41b4fa8981b861dd6064fd3ac" => :mavericks
+  livecheck do
+    url :stable
   end
 
-  deprecated_option "without-x" => "without-x11"
+  bottle do
+    sha256 "968e5cb051e8a58d8d6a1118a7bcf60903a8895af6a8e97f7a1bd2994a433bf2" => :big_sur
+    sha256 "f12cf90a6a2d30419b0d30e030406f1e5bc5d5adda7a7a0f7efb7fc5946ca0d6" => :catalina
+    sha256 "6abc2f07f038830a81b3e8ace017c34920c7949e07552ab319a9defb0dfd6599" => :mojave
+    sha256 "4484afd5b50f13946e5b12571582d06fa9ac5443f9b32482eab26a20aec2e81a" => :high_sierra
+  end
 
   depends_on "pkg-config" => :build
   depends_on "freetype"
-  depends_on "libpng" => :recommended
-  depends_on "jpeg" => :recommended
-  depends_on "giflib" => :recommended
-  depends_on "libtiff" => :recommended
-  depends_on "libid3tag" => :optional
-  depends_on :x11 => :recommended
+  depends_on "giflib"
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libtiff"
+  depends_on "libx11"
+  depends_on "libxcb"
+  depends_on "libxext"
 
   def install
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
       --enable-amd64=no
+      --without-id3
     ]
-    args << "--without-x" if build.without? "x11"
 
     system "./configure", *args
     system "make", "install"

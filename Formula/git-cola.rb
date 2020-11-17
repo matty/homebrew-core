@@ -1,31 +1,30 @@
 class GitCola < Formula
   desc "Highly caffeinated git GUI"
   homepage "https://git-cola.github.io/"
-  url "https://github.com/git-cola/git-cola/archive/v2.10.tar.gz"
-  sha256 "fd310087ad4c4ccd22829ae319d9409ea3ff872f5391b999de130faaf77f4e1c"
+  url "https://github.com/git-cola/git-cola/archive/v3.8.tar.gz"
+  sha256 "ea482ca32fe142ddba500d2edf3a05f11e31cf193e5d7a944f3fe28c9ab123d4"
+  license "GPL-2.0-or-later"
   revision 1
   head "https://github.com/git-cola/git-cola.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "749064be00fa1040b2ec94c4e0c98e9b21fd87f4ff7a046c1673318ffad64cb6" => :sierra
-    sha256 "b3b07496defb7064c0b0944f1baf59da4e968400c085055f139b11b6ff3922a8" => :el_capitan
-    sha256 "749064be00fa1040b2ec94c4e0c98e9b21fd87f4ff7a046c1673318ffad64cb6" => :yosemite
+    sha256 "ef1c8b2bcaf9de6249a46bfc97ab24f048f5b9051c2d8290614fce3d5c8edfef" => :catalina
+    sha256 "18ff1bd2601835ab966f635680470031912913593d8a28cdeba9e92effcb7418" => :mojave
+    sha256 "64f4ec4531a6f96370748a586dfe81fe134ae24c0292f7429043e8eeb7ac64f3" => :high_sierra
   end
 
-  option "with-docs", "Build manpages and HTML docs"
+  depends_on "sphinx-doc" => :build
+  depends_on "pyqt"
+  depends_on "python@3.9"
 
-  depends_on "pyqt5"
-  depends_on :python3
-  depends_on "sphinx-doc" => :build if build.with? "docs"
+  uses_from_macos "rsync"
 
   def install
-    system "make", "PYTHON=python3", "prefix=#{prefix}", "install"
-
-    if build.with? "docs"
-      system "make", "install-doc", "PYTHON=python3", "prefix=#{prefix}",
-             "SPHINXBUILD=#{Formula["sphinx-doc"].opt_bin}/sphinx-build"
-    end
+    ENV.delete("PYTHONPATH")
+    system "make", "PYTHON=#{Formula["python@3.9"].opt_bin}/python3", "prefix=#{prefix}", "install"
+    system "make", "install-doc", "PYTHON=#{Formula["python@3.9"].opt_bin}/python3}", "prefix=#{prefix}",
+           "SPHINXBUILD=#{Formula["sphinx-doc"].opt_bin}/sphinx-build"
   end
 
   test do

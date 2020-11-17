@@ -1,20 +1,26 @@
 class Gdl < Formula
   desc "GNOME Docking Library provides docking features for GTK+ 3"
   homepage "https://developer.gnome.org/gdl/"
-  url "https://download.gnome.org/sources/gdl/3.22/gdl-3.22.0.tar.xz"
-  sha256 "cc5b360e1392292186924f0f9a8efc0f4db7e6e56dc7042037466b5cc839660c"
+  url "https://download.gnome.org/sources/gdl/3.34/gdl-3.34.0.tar.xz"
+  sha256 "858b30f0cdce4c4cb3e8365a7d54ce57c388beff38ea583be5449bc78dda8d02"
+  revision 2
 
-  bottle do
-    sha256 "4bdf77d9f10c16879ec6b1dc67040c526a05bb6ab262e4cb00d363509599af33" => :sierra
-    sha256 "e3869391f2fc13d9354f4f8744d140c9d5415fad9121a5effeeb2c8609518b30" => :el_capitan
-    sha256 "6f4885ff8ef490c46e49eee7415133c494c7e1a77585ce2c0a818f9aaa0982e5" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "30164281abee8e2047138cddc735d9a9e1ec520f673d468a601b6cfbc988cdd3" => :big_sur
+    sha256 "5acba250d8c77d17be5ff312bf11d6aa33cb609c4c351b2a1cd1bf565e73e81a" => :catalina
+    sha256 "2e2e04543eaf7ee02a791433fbab570d3b5f44651cec8dd56a40a519c2a38d24" => :mojave
+    sha256 "abd9360935baecd914847697e5a21e7b7d91b94c0d5878509921cdb2ba72799c" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "intltool" => :build
+  depends_on "pkg-config" => :build
   depends_on "gtk+3"
   depends_on "libxml2"
-  depends_on "gobject-introspection"
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -24,7 +30,7 @@ class Gdl < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gdl/gdl.h>
 
       int main(int argc, char *argv[]) {
@@ -41,6 +47,7 @@ class Gdl < Formula
     gettext = Formula["gettext"]
     glib = Formula["glib"]
     gtkx3 = Formula["gtk+3"]
+    harfbuzz = Formula["harfbuzz"]
     libepoxy = Formula["libepoxy"]
     libpng = Formula["libpng"]
     pango = Formula["pango"]
@@ -56,6 +63,7 @@ class Gdl < Formula
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
       -I#{gtkx3.opt_include}/gtk-3.0
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/libgdl-3.0
       -I#{libepoxy.opt_include}
       -I#{libpng.opt_include}/libpng16

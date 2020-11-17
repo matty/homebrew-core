@@ -1,16 +1,16 @@
 class Julius < Formula
   desc "Two-pass large vocabulary continuous speech recognition engine"
-  homepage "https://julius.osdn.jp"
-  url "http://dl.osdn.jp/julius/60273/julius-4.3.1.tar.gz"
-  sha256 "4bf77c7b91f4bb0686c375c70bd4f2077e7de7db44f60716af9f3660f65a6253"
+  homepage "https://github.com/julius-speech/julius"
+  url "https://github.com/julius-speech/julius/archive/v4.6.tar.gz"
+  sha256 "74447d7adb3bd119adae7915ba9422b7da553556f979ac4ee53a262d94d47b47"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any
-    sha256 "1951aa8bcb7dd03c77dee80c0bcc402c72147e9ebb9442701fdf1b51594036ad" => :sierra
-    sha256 "c11e98646dcdc34f2da621298cbef01429d91c81f8f44068518c0599ee4ff144" => :el_capitan
-    sha256 "42b7494d1a3f3d74cef3363a329c93df0cfb5903399193892c5834a7d482c394" => :yosemite
-    sha256 "e4cdb2839882a69a95e9136e232e616e8e4ee20766dbb7ed480cde333ba50527" => :mavericks
-    sha256 "14c430143ee00b9981e39e91450be1c2442636b4f37d9c51e432d3377f747449" => :mountain_lion
+    sha256 "4b8251857584f844fe5469a0283a773428383053f8d80eaeff885b745578aa1d" => :big_sur
+    sha256 "b06b9ca71df4cccff10e36a4a75a55f7d5bdb009f4dba9f940044da6ba0c258d" => :catalina
+    sha256 "041d7a3185850375ef67148a74ab9513e9a4eb6de05deeb3595f3941c41010d6" => :mojave
+    sha256 "d699dbf645c69f795421569e21c9d676e0db534a8d72fabfb721d5864e391549" => :high_sierra
   end
 
   depends_on "libsndfile"
@@ -21,10 +21,11 @@ class Julius < Formula
                           "--disable-silent-rules",
                           "--mandir=#{man}",
                           "--prefix=#{prefix}"
+    system "make"
     system "make", "install"
   end
 
   test do
-    shell_output("#{bin}/julius.dSYM --help", 1)
+    shell_output("#{bin}/julius --help", 1)
   end
 end

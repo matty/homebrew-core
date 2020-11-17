@@ -1,35 +1,40 @@
 class Fop < Formula
   desc "XSL-FO print formatter for making PDF or PS documents"
   homepage "https://xmlgraphics.apache.org/fop/index.html"
-  url "https://www.apache.org/dyn/closer.cgi?path=/xmlgraphics/fop/binaries/fop-2.1-bin.tar.gz"
-  sha256 "a93b59aa4d0b6d573c9090d8f21dee6c7d0c449a4bd2d48a1723e233dfb423ea"
+  url "https://www.apache.org/dyn/closer.lua?path=xmlgraphics/fop/binaries/fop-2.5-bin.tar.gz"
+  mirror "https://archive.apache.org/dist/xmlgraphics/fop/binaries/fop-2.5-bin.tar.gz"
+  sha256 "6a3c5f8915be5ef90fff202c818152d8252bb45b96d9c5d6550594903739e5ed"
+  license "Apache-2.0"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "0fad00e377ebc241a84d27f7cc8e25250a0f57b5247895c10c47416fe4cce284" => :sierra
-    sha256 "657c88e138769d842e0f48daf3abd3798194eca420a3327fa5b0b667e7dfbece" => :el_capitan
-    sha256 "a3ce519cfe5f54a0823515e2e75f878373d47e8174f9d470976db9ca2f792759" => :yosemite
-    sha256 "38602cef629a33f05149c3411ea6b82451deec872aa6cbe1fa8203ad2ee875fb" => :mavericks
+  livecheck do
+    url :stable
   end
 
-  depends_on :java => "1.6+"
+  bottle :unneeded
+
+  depends_on "openjdk"
 
   resource "hyph" do
-    url "https://downloads.sourceforge.net/project/offo/offo-hyphenation-utf8/0.1/offo-hyphenation-fop-stable-utf8.zip"
-    sha256 "0b4e074635605b47a7b82892d68e90b6ba90fd2af83142d05878d75762510128"
+    url "https://downloads.sourceforge.net/project/offo/offo-hyphenation/2.2/offo-hyphenation-compiled.zip"
+    sha256 "3b503122b488bd30f658e9757c3b3066dd7a59f56c3a9bbb3eaae2d23b7d883f"
   end
 
   def install
+    rm_rf Dir["fop/*.bat"] # Remove Windows files.
     libexec.install Dir["*"]
-    bin.write_exec_script libexec/"fop"
+
+    executable = libexec/"fop/fop"
+    executable.chmod 0555
+    (bin/"fop").write_env_script executable, JAVA_HOME: Formula["openjdk"].opt_prefix
+
     resource("hyph").stage do
-      (libexec/"build").install "fop-hyph.jar"
+      (libexec/"fop/build").install "fop-hyph.jar"
     end
   end
 
   test do
     (testpath/"test.xml").write "<name>Homebrew</name>"
-    (testpath/"test.xsl").write <<-EOS.undent
+    (testpath/"test.xsl").write <<~EOS
       <?xml version="1.0" encoding="utf-8"?>
       <xsl:stylesheet version="1.0"
             xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -55,6 +60,6 @@ class Fop < Formula
       </xsl:stylesheet>
     EOS
     system bin/"fop", "-xml", "test.xml", "-xsl", "test.xsl", "-pdf", "test.pdf"
-    File.exist? testpath/"test.pdf"
+    assert_predicate testpath/"test.pdf", :exist?
   end
 end

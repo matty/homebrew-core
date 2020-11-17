@@ -1,15 +1,16 @@
 class Rtmidi < Formula
   desc "C++ classes that provide a common API for realtime MIDI input/output"
   homepage "https://www.music.mcgill.ca/~gary/rtmidi/"
-  url "https://github.com/thestk/rtmidi/archive/2.1.1.tar.gz"
-  sha256 "a015fbed67c777c7bc7bbcb96c07386ba3a8ff21006b411331e6f0b9f3f14d11"
+  url "https://www.music.mcgill.ca/~gary/rtmidi/release/rtmidi-4.0.0.tar.gz"
+  sha256 "370cfe710f43fbeba8d2b8c8bc310f314338c519c2cf2865e2d2737b251526cd"
 
   bottle do
     cellar :any
-    sha256 "700e8a7768437ed27b87b9ee0642553a01d572556c21b8551bc62576d9e21f5e" => :sierra
-    sha256 "cd2de94d4142db7007d85e48ee11568101d7addd164a80340c6d198744059feb" => :el_capitan
-    sha256 "2c13437c6b86ed8332cea90bb0d666f15706daf728fabc0200878bd3f1870874" => :yosemite
-    sha256 "0718f6114ed75db09006bf375abf1c14e1142e716030de05d9843f63a70c3759" => :mavericks
+    sha256 "2eee6c3a73e0621703d2cff69249bdbc6cb6f46c91b2599bb74953d0292f5277" => :big_sur
+    sha256 "527496c834c7c98aca105255a39cf80ddaa074c7073e24d3325eb66ab4b07754" => :catalina
+    sha256 "5cb51ca3774a1e22d2388f01ccb514d091519b9d8cbc5f4805437be1be7dba30" => :mojave
+    sha256 "8744fb2c8d9952b0e14e50f2fed7982e715843746506378645211a178a3163e0" => :high_sierra
+    sha256 "4eab0eb4ede3d1035d7918bd84e2aede8f648c2ebcf449ac6f9ce15c0c744988" => :sierra
   end
 
   depends_on "autoconf" => :build
@@ -25,7 +26,7 @@ class Rtmidi < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include "RtMidi.h"
       int main(int argc, char **argv, char **env) {
         RtMidiIn midiin;

@@ -1,26 +1,27 @@
 class Mg < Formula
   desc "Small Emacs-like editor"
-  homepage "https://devio.us/~bcallah/mg/"
-  url "https://devio.us/~bcallah/mg/mg-20161016.tar.gz"
-  sha256 "bcb4be59aaa30ae8dd0e9aed3c0a5ff8bf2dae6e6768396d37c11aaaab29d370"
+  homepage "https://github.com/ibara/mg"
+  url "https://github.com/ibara/mg/releases/download/mg-6.7/mg-6.7.tar.gz"
+  sha256 "02583d90df743e994fb1e411befbd23488fd1eaeb82c9db1fd4957d1a8f1abde"
+  version_scheme 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "231f0f356fb33dbb14a21c5605b9049d834285cd7b78a6647580eb7548e823d2" => :sierra
-    sha256 "510b4da455b8018934cd19d70952fe39633af1978d9f7b0bcc41d7b714dc1dcc" => :el_capitan
-    sha256 "90283bf60bd3bd0f287514fc30857903f138c5177affed345962cfa9ffbb1d07" => :yosemite
+    sha256 "975bb4daa585692060eeb257abebc4380a1a7851f376521b9d39cb21180afe37" => :big_sur
+    sha256 "44271237cfb495988cd88029e0ac465a46e14bdb583ac09c1acdf73f95bd4fc4" => :catalina
+    sha256 "ac5ac7054d3feb7aaef8746482678e66380893958299a36eeff1101cfa407d92" => :mojave
+    sha256 "dfff27703d404052738009ab8c19a6d94b3a784c346962001eb80fa5cd9de4c4" => :high_sierra
   end
 
-  depends_on :macos => :yosemite # older versions don't support fstatat(2)
-
-  conflicts_with "mg3a", :because => "both install `mg` binaries"
-
   def install
-    system "make", "install", "PREFIX=#{prefix}", "MANDIR=#{man}"
+    system "./configure", "--prefix=#{prefix}",
+                          "--mandir=#{man}"
+    system "make"
+    system "make", "install"
   end
 
   test do
-    (testpath/"command.sh").write <<-EOS.undent
+    (testpath/"command.sh").write <<~EOS
       #!/usr/bin/expect -f
       set timeout -1
       spawn #{bin}/mg

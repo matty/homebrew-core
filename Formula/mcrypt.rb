@@ -3,19 +3,23 @@ class Mcrypt < Formula
   homepage "https://mcrypt.sourceforge.io"
   url "https://downloads.sourceforge.net/project/mcrypt/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz"
   sha256 "5145aa844e54cca89ddab6fb7dd9e5952811d8d787c4f4bf27eb261e6c182098"
+  license "GPL-3.0"
 
-  bottle do
-    rebuild 1
-    sha256 "c2d358a3e8b7c547c2b136bcd8c7e53c095ca9902ccc81c7af56cc007bfd1202" => :sierra
-    sha256 "3cac7c430b1673877ba52bada82c3f710024dbd9f8dd0ff230c17c4623987beb" => :el_capitan
-    sha256 "d7b36cbc7affc0e1851861381e92677abce2b011f184ab39234ff6cfbf021413" => :yosemite
-    sha256 "6c060224061c43733929524f3e45010192d5fc4ece1972fbce7259f96f514fa2" => :mavericks
-    sha256 "b6dd5f1210d4b0fffa7b14e4fce445c11d6245840fd38f08255149b6e27832c2" => :mountain_lion
+  livecheck do
+    url :stable
   end
 
-  option :universal
+  bottle do
+    cellar :any
+    rebuild 2
+    sha256 "c9d3313218375e8bca6e22b00fcb47f11550c386ae64422bb59869af161cf6eb" => :catalina
+    sha256 "b79e4ba583c523e382d1cc08430c96252c8e048cc1661ab3a9bed90468c8b06c" => :mojave
+    sha256 "e11c2a7a1caf26c2a1d3d171d3291888e065ba0328f6934882cffcaec72475cd" => :high_sierra
+  end
 
   depends_on "mhash"
+
+  uses_from_macos "zlib"
 
   resource "libmcrypt" do
     url "https://downloads.sourceforge.net/project/mcrypt/Libmcrypt/2.5.8/libmcrypt-2.5.8.tar.gz"
@@ -27,8 +31,6 @@ class Mcrypt < Formula
   patch :DATA
 
   def install
-    ENV.universal_binary if build.universal?
-
     resource("libmcrypt").stage do
       system "./configure", "--prefix=#{prefix}",
                             "--mandir=#{man}"
@@ -42,7 +44,7 @@ class Mcrypt < Formula
   end
 
   test do
-    (testpath/"test.txt").write <<-EOS.undent
+    (testpath/"test.txt").write <<~EOS
       Hello, world!
     EOS
     system bin/"mcrypt", "--key", "TestPassword", "--force", "test.txt"

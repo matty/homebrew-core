@@ -1,20 +1,28 @@
 class AutoconfArchive < Formula
   desc "Collection of over 500 reusable autoconf macros"
   homepage "https://savannah.gnu.org/projects/autoconf-archive/"
-  url "https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2016.09.16.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2016.09.16.tar.xz"
-  sha256 "e8f2efd235f842bad2f6938bf4a72240a5e5fcd248e8444335e63beb60fabd82"
+  url "https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2019.01.06.tar.xz"
+  mirror "https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2019.01.06.tar.xz"
+  sha256 "17195c833098da79de5778ee90948f4c5d90ed1a0cf8391b4ab348e2ec511e3f"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "45734c6b3d192455d2acc3869dbb94ae2bc09a55fb86a348ff62769d71c16cbd" => :sierra
-    sha256 "7ae05e07723ff6ac37e0847f1233b7021b0fd25496a4d52a4198fa9ba6b48942" => :el_capitan
-    sha256 "c03a8439f143550e2fd7f94ea8053c00a6023f794faadd0ce6a6b0ebe654f225" => :yosemite
-    sha256 "c03a8439f143550e2fd7f94ea8053c00a6023f794faadd0ce6a6b0ebe654f225" => :mavericks
+    rebuild 1
+    sha256 "4927fe28a3553eb7b369ae1c8f4c4ae52a8897f2409ca0438c2a334466c89163" => :big_sur
+    sha256 "75309bbf34fa9694b048206e2f79c477e8259c22df8173b43b9ec4294cff0f63" => :catalina
+    sha256 "18bec44cb2eb240971a855df50102aa6d5e6eadab4a325b3b562a04057991d0c" => :mojave
+    sha256 "ef88538afd7d325b368f15e592a62e087b4bddc66f09e65551cc3597fb3da7a3" => :high_sierra
   end
 
   # autoconf-archive is useless without autoconf
-  depends_on "autoconf" => :run
+  depends_on "autoconf"
+
+  conflicts_with "gnome-common", because: "both install ax_check_enable_debug.m4 and ax_code_coverage.m4"
 
   def install
     system "./configure", "--prefix=#{prefix}"
@@ -22,7 +30,7 @@ class AutoconfArchive < Formula
   end
 
   test do
-    (testpath/"test.m4").write <<-EOS.undent
+    (testpath/"test.m4").write <<~EOS
       AC_INIT(myconfig, version-0.1)
       AC_MSG_NOTICE([Hello, world.])
 

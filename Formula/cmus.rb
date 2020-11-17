@@ -1,29 +1,29 @@
 class Cmus < Formula
   desc "Music player with an ncurses based interface"
   homepage "https://cmus.github.io/"
-  url "https://github.com/cmus/cmus/archive/v2.7.1.tar.gz"
-  sha256 "8179a7a843d257ddb585f4c65599844bc0e516fe85e97f6f87a7ceade4eb5165"
-  revision 2
+  url "https://github.com/cmus/cmus/archive/v2.8.0.tar.gz"
+  sha256 "756ce2c6241b2104dc19097488225de559ac1802a175be0233cfb6fbc02f3bd2"
+  license "GPL-2.0"
+  revision 4
   head "https://github.com/cmus/cmus.git"
 
   bottle do
-    sha256 "48171d7e6cd31ec1451a14c1c5275249f872c68c493910b39b1fa1d49eda04ad" => :sierra
-    sha256 "deeed1d9ef93f0a8263b18a08239cab7a22983afe4278310f9944b79ab3df560" => :el_capitan
-    sha256 "150534ed291aeb39a6c1a84a6efa6f1e4b518c0e3eae4e18efac9a5496e826af" => :yosemite
+    sha256 "996682e532cf6e402b37ce42807eb876703db84f2b73c019ce0180052cbf21cc" => :big_sur
+    sha256 "63e046f82a65d23949d3c147ca484490aee9f41eb75bec24178c9ebf0928a02a" => :catalina
+    sha256 "87ae24805f1363afd8f409c05fd9b2b684c599838e40f4a7e1bb5f0ef1264c7d" => :mojave
+    sha256 "d11dc1c6d34f9caf2cfd0de6893d14013a4e2e50f9414598603ca55d91198b2c" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libao"
-  depends_on "mad"
+  depends_on "faad2"
+  depends_on "ffmpeg"
+  depends_on "flac"
+  depends_on "libcue"
   depends_on "libogg"
   depends_on "libvorbis"
-  depends_on "faad2"
-  depends_on "flac"
+  depends_on "mad"
   depends_on "mp4v2"
-  depends_on "libcue"
-  depends_on "ffmpeg" => :optional
-  depends_on "opusfile" => :optional
-  depends_on "jack" => :optional
+  depends_on "opusfile"
 
   def install
     system "./configure", "prefix=#{prefix}", "mandir=#{man}"

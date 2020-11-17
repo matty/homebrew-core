@@ -1,14 +1,20 @@
 class Lft < Formula
   desc "Layer Four Traceroute (LFT), an advanced traceroute tool"
-  homepage "http://pwhois.org/lft/"
-  url "http://pwhois.org/dl/index.who?file=lft-3.77.tar.gz"
-  sha256 "d182d6774e64dcdeb19ed1a598fa588e57ddb6cbb6847d9277c405d3a4597d89"
+  homepage "https://pwhois.org/lft/"
+  url "https://pwhois.org/dl/index.who?file=lft-3.91.tar.gz"
+  sha256 "aad13e671adcfc471ab99417161964882d147893a54664f3f465ec5c8398e6af"
+
+  livecheck do
+    url :homepage
+    regex(/value=.*?lft[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cf7e88c74aeb7ffaabd9e417ec4ae308ab590d9f3504ff91affa2310c5b64fda" => :sierra
-    sha256 "ba0daf2f7061bb4627c931ffc8f5d80f9941727fd575576e37bca6acf7e65904" => :el_capitan
-    sha256 "b7356272883fe608b6c5f56ed4ac468edc234f842a7f0307079720f06226a886" => :yosemite
+    sha256 "d54a6ac61b9a1f7d1106dc0d8fbff8223b606baeb2ccca9a325f8f79e443fb77" => :big_sur
+    sha256 "c0b69000709a507f2ec0cc2ff286910e6f2629169367828cfdc26e184654f787" => :catalina
+    sha256 "83d6fa2b78fb9780fecb9287407825d1731f1c91da30bb75b15f26e632e0720b" => :mojave
+    sha256 "e0370a6053bedd5c24f62583c2d19c3d0d2fab2fa5cf9003561e60694dad8642" => :high_sierra
   end
 
   def install
@@ -18,6 +24,6 @@ class Lft < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/lft -v 2>&1")
+    assert_match "isn't available to LFT", shell_output("#{bin}/lft -S -d 443 brew.sh 2>&1")
   end
 end

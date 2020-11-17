@@ -1,33 +1,47 @@
 class Fpc < Formula
   desc "Free Pascal: multi-architecture Pascal compiler"
-  homepage "http://www.freepascal.org/"
-  url "https://downloads.sourceforge.net/project/freepascal/Source/3.0.0/fpc-3.0.0.source.tar.gz"
-  sha256 "46354862cefab8011bcfe3bc2942c435f96a8958b245c42e10283ec3e44be2dd"
+  homepage "https://www.freepascal.org/"
+  url "https://downloads.sourceforge.net/project/freepascal/Source/3.2.0/fpc-3.2.0.source.tar.gz"
+  sha256 "d595b72de7ed9e53299694ee15534e5046a62efa57908314efa02d5cc3b1cf75"
+  license "GPL-2.0-or-later"
+
+  # fpc releases involve so many files that the tarball is pushed out of the
+  # RSS feed and we can't rely on the SourceForge strategy.
+  livecheck do
+    url "https://sourceforge.net/projects/freepascal/files/Source/"
+    strategy :page_match
+    regex(%r{href=(?:["']|.*?Source/)?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    rebuild 2
-    sha256 "35b53c70f590c62145692322625cfd3a3701efb579e6ccc6b64a6983560617d2" => :sierra
-    sha256 "90bd14eab6b3f2acf161c6d80a4db97164ea42686a5d0cb8bf259c1ef3eeab27" => :el_capitan
-    sha256 "5bb1a1b7dcc76bb2fd5457df3a811f2db4f0c536ce5d1210aec64f27fd02ce44" => :yosemite
+    cellar :any
+    rebuild 1
+    sha256 "f9bdd01fdd59d08c5f4084fde70e4416f13e31625a4134ea7d55828d8bb476b2" => :big_sur
+    sha256 "2a17877832cf7554835fd5c35d27931c4197604f9ea8161411bfa49746e8ad60" => :catalina
+    sha256 "84a01f7ad8382fab6aa36bad5378009be66d1d0cd8870fe235b2f5d22102c4fd" => :mojave
+    sha256 "96603ce0f998b1eb7c5b0e15b4ad49bbcca2b9943276ddf46d224f844f04582d" => :high_sierra
   end
 
   resource "bootstrap" do
-    url "https://downloads.sourceforge.net/project/freepascal/Bootstrap/2.6.4/universal-macosx-10.5-ppcuniversal.tar.bz2"
-    sha256 "e7243e83e6a04de147ebab7530754ec92cd1fbabbc9b6b00a3f90a796312f3e9"
+    url "https://downloads.sourceforge.net/project/freepascal/Mac%20OS%20X/3.0.4/fpc-3.0.4a.intel-macosx.dmg"
+    sha256 "56b870fbce8dc9b098ecff3c585f366ad3e156ca32a6bf3b20091accfb252616"
   end
 
+  # Help fpc find the startup files (crt1.o and friends) with 10.14 SDK
+  patch :DATA
+
   def install
-    # The bootstrap binary does not recognize anything above 10.9
-    # http://bugs.freepascal.org/view.php?id=30711
-    # https://github.com/Homebrew/homebrew-core/issues/5732
-    ENV["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
-
     fpc_bootstrap = buildpath/"bootstrap"
-    resource("bootstrap").stage { fpc_bootstrap.install Dir["*"] }
+    resource("bootstrap").stage do
+      system "pkgutil", "--expand-full", "fpc-3.0.4a.intel-macosx.pkg", "contents"
+      (fpc_bootstrap/"fpc-3.0.4a").install Dir["contents/fpc-3.0.4a.intel-macosx.pkg/Payload/usr/local/*"]
+    end
+    fpc_compiler = fpc_bootstrap/"fpc-3.0.4a/bin/ppcx64"
 
-    fpc_compiler = fpc_bootstrap/"ppcuniversal"
-    system "make", "build", "PP=#{fpc_compiler}"
+    # Help fpc find the startup files (crt1.o and friends) with 10.14 SDK
+    args = (MacOS.version >= :mojave) ? ['OPT="-XR/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"'] : []
+
+    system "make", "build", "PP=#{fpc_compiler}", *args
     system "make", "install", "PP=#{fpc_compiler}", "PREFIX=#{prefix}"
 
     bin.install_symlink lib/"#{name}/#{version}/ppcx64"
@@ -40,7 +54,7 @@ class Fpc < Formula
   end
 
   test do
-    hello = <<-EOS.undent
+    hello = <<~EOS
       program Hello;
       uses GL;
       begin
@@ -52,3 +66,21 @@ class Fpc < Formula
     assert_equal "Hello Homebrew", `./hello`.strip
   end
 end
+
+__END__
+diff --git a/compiler/systems/t_bsd.pas b/compiler/systems/t_bsd.pas
+index b35a78ae..61d0817d 100644
+--- a/compiler/systems/t_bsd.pas
++++ b/compiler/systems/t_bsd.pas
+@@ -465,7 +465,10 @@ begin
+   if startupfile<>'' then
+     begin
+      if not librarysearchpath.FindFile(startupfile,false,result) then
+-       result:='/usr/lib/'+startupfile;
++       if sysutils.fileexists('/usr/lib/'+startupfile) then
++         result:='/usr/lib/'+startupfile
++       else if sysutils.fileexists('/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/') then
++         result:='/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/'+startupfile;
+     end;
+   result:=maybequoted(result);
+ end;

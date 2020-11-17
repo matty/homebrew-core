@@ -1,18 +1,25 @@
 class Pdftohtml < Formula
-  desc "PDF to HTML converter (based on xpdf)"
+  desc "Utility which converts PDF files into HTML and XML formats"
   homepage "https://pdftohtml.sourceforge.io/"
   url "https://downloads.sourceforge.net/project/pdftohtml/Experimental%20Versions/pdftohtml%200.40/pdftohtml-0.40a.tar.gz"
   sha256 "277ec1c75231b0073a458b1bfa2f98b7a115f5565e53494822ec7f0bcd8d4655"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "e896f26ac73f3a272aa17ee1815f3b173b94fa59680a8db3c0a814865da86afc" => :sierra
-    sha256 "622c66d77a35af1bbf94ee35ecba358d8868e187f664c68da729da0d3bead266" => :el_capitan
-    sha256 "9d222cce9a02a311248083aead8e4b55e9ac98ce98035a13d021b48d05eb5119" => :yosemite
-    sha256 "9dc35272d91c790627d21a93ca058c038ab660b9a6e619f35758a10c02e7dea9" => :mavericks
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/pdftohtml[._-]v?(\d+(?:\.\d+)+[a-z]?)\.t}i)
   end
 
-  conflicts_with "poppler", :because => "both install `pdftohtml` binaries"
+  bottle do
+    cellar :any_skip_relocation
+    rebuild 2
+    sha256 "17a699cdc73b7674f537adec7ea8ad696374921c84a52dfaacaa05882f5696da" => :big_sur
+    sha256 "d8a6e5bb1d84ee766898543d77307b4a9a6e6f826ebe9cc48ce6db8bb24c8923" => :catalina
+    sha256 "c49245634c48c7c24501cfb848a98e4b6a281ff0cf89235bb7a7ce09619e66ad" => :mojave
+    sha256 "200be428031e013f58b792b092b56e74743d6362d747b0c883bb95269d7a5e72" => :high_sierra
+  end
+
+  conflicts_with "pdf2image", "poppler", "xpdf",
+    because: "poppler, pdftohtml, pdf2image, and xpdf install conflicting executables"
 
   def install
     system "make"

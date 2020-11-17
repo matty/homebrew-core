@@ -1,26 +1,29 @@
 class Verilator < Formula
   desc "Verilog simulator"
-  homepage "http://www.veripool.org/wiki/verilator"
-  url "http://www.veripool.org/ftp/verilator-3.886.tgz"
-  sha256 "d21c882e0c079ade4b155cb4a763f7d246decead8b38d2d0aad8d1dd03e0f77d"
+  homepage "https://www.veripool.org/wiki/verilator"
+  url "https://www.veripool.org/ftp/verilator-4.104.tgz"
+  sha256 "3c65e11b6dbd8f3119ee580f404b6db733f57f7ba167e7140ba03371e489dd72"
+  license any_of: ["LGPL-3.0-only", "Artistic-2.0"]
+
+  livecheck do
+    url "https://github.com/verilator/verilator.git"
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    sha256 "15e76edd90d337938bc7ab4aa65262f84bea0e829c518f0130277e7c7c83efff" => :sierra
-    sha256 "4c588bfd844073b06b638c543cd7b77a994702afde965a2943bcee7b46dbead2" => :el_capitan
-    sha256 "29b48507f10e9a315d93b6acc55cb4eb0b5f7e67ba74c67be5bb74c45a33e7b2" => :yosemite
+    sha256 "ea8c9caf40da955aa8065aa4534a11e08dc9d15e8259641c80957892f436773c" => :big_sur
+    sha256 "153467ee24bd576ec7718de5ea1057cb10d15cf5686d1b8ff70f7cfb2691b17a" => :catalina
+    sha256 "f0962c5147a546b2849ae1bd16aa1e572c8f5c99cf84ba741f015920092c6291" => :mojave
+    sha256 "e11bc7fdd33209a6dfbb9d86cbee60569178a876fc690fa02a01013a51e841d7" => :high_sierra
   end
 
   head do
-    url "http://git.veripool.org/git/verilator", :using => :git
-    depends_on "automake" => :build
+    url "https://git.veripool.org/git/verilator", using: :git
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
   skip_clean "bin" # Allows perl scripts to keep their executable flag
-
-  # Needs a newer flex on Lion (and presumably below)
-  # http://www.veripool.org/issues/720-Verilator-verilator-not-building-on-Mac-OS-X-Lion-10-7-
-  depends_on "flex" if MacOS.version <= :lion
 
   def install
     system "autoconf" if build.head?
@@ -31,12 +34,12 @@ class Verilator < Formula
   end
 
   test do
-    (testpath/"test.v").write <<-EOS.undent
+    (testpath/"test.v").write <<~EOS
       module test;
          initial begin $display("Hello World"); $finish; end
       endmodule
     EOS
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include "Vtest.h"
       #include "verilated.h"
       int main(int argc, char **argv, char **env) {
@@ -50,7 +53,7 @@ class Verilator < Formula
     system "/usr/bin/perl", bin/"verilator", "-Wall", "--cc", "test.v", "--exe", "test.cpp"
     cd "obj_dir" do
       system "make", "-j", "-f", "Vtest.mk", "Vtest"
-      expected = <<-EOS.undent
+      expected = <<~EOS
         Hello World
         - test.v:2: Verilog $finish
       EOS

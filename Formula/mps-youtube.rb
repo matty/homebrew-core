@@ -3,36 +3,50 @@ class MpsYoutube < Formula
 
   desc "Terminal based YouTube player and downloader"
   homepage "https://github.com/mps-youtube/mps-youtube"
-  url "https://github.com/mps-youtube/mps-youtube/archive/v0.2.7.1.tar.gz"
-  sha256 "917958ab02f8dace9c84974f510bd8838f905814c1a05a91fb1a38d37d19f0e8"
-  revision 1
+  url "https://github.com/mps-youtube/mps-youtube/archive/v0.2.8.tar.gz"
+  sha256 "d5f2c4bc1f57f0566242c4a0a721a5ceaa6d6d407f9d6dd29009a714a0abec74"
+  license "GPL-3.0"
+  revision 11
 
   bottle do
-    sha256 "0fdbafcf9d54293d91247cb2b933e5fe6c3a48264a7c1c8ca69aff1564f93213" => :sierra
-    sha256 "d1358944ddad37923e7d083c2d231917de0973f69900ebdb92768c4a9c3c5f0f" => :el_capitan
-    sha256 "38082e784faea2d029a703bbac65e0bdb114313104872baeadcb00125888188e" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "18d91d027af3797a33a1dce5cd5677045539a1c9664fd5d1e70b000f3baa0298" => :catalina
+    sha256 "51c856bc1f5cdfe4b71c8315277d17fdfb3202afcc20c0816a1c884b14b10fde" => :mojave
+    sha256 "812e64456b7e8cce5ede6fb043c904d78d6b16c8d92c8d33f620b7b85ac10984" => :high_sierra
   end
 
-  depends_on "python3"
-  depends_on "mpv" => :recommended
-  depends_on "mplayer" => :optional
+  depends_on "mplayer"
+  depends_on "python@3.9"
 
   resource "pafy" do
-    url "https://pypi.python.org/packages/23/74/0e32a671b445107f34fa785ea2ac3658b0e80aef5446538a6181eba7c2e7/pafy-0.5.3.1.tar.gz"
-    sha256 "35e64ff495b5d62f31f65a31ac0ca6dc1ab39e1dbde4d07b1e04845a52eceda8"
+    url "https://files.pythonhosted.org/packages/7e/02/b70f4d2ad64bbc7d2a00018c6545d9b9039208553358534e73e6dd5bbaf6/pafy-0.5.5.tar.gz"
+    sha256 "364f1d1312c89582d97dc7225cf6858cde27cb11dfd64a9c2bab1a2f32133b1e"
   end
 
   resource "youtube_dl" do
-    url "https://pypi.python.org/packages/5e/28/f2aeaaf0e2b5a97c8072ebea282f2318c46327a6c07e2854c16744a0e548/youtube_dl-2017.1.31.tar.gz"
-    sha256 "9edabc7881d13849f8a88aca47da7612ed8675b8706b99adca3aa46cadf71c95"
+    url "https://files.pythonhosted.org/packages/51/80/d3938814a40163d3598f8a1ced6abd02d591d9bb38e66b3229aebe1e2cd0/youtube_dl-2020.5.3.tar.gz"
+    sha256 "e7a400a61e35b7cb010296864953c992122db4b0d6c9c6e2630f3e0b9a655043"
   end
 
   def install
-    virtualenv_install_with_resources
+    venv = virtualenv_create(libexec, "python3")
+
+    %w[youtube_dl pafy].each do |r|
+      venv.pip_install resource(r)
+    end
+
+    venv.pip_install_and_link buildpath
+  end
+
+  def caveats
+    <<~EOS
+      Install the optional mpv app with Homebrew Cask:
+        brew cask install mpv
+    EOS
   end
 
   test do
-    Open3.popen3("#{bin}/mpsyt", "/september,", "da 1,", "q") do |_, _, stderr|
+    Open3.popen3("#{bin}/mpsyt", "/Drop4Drop x Ed Sheeran,", "da 1,", "q") do |_, _, stderr|
       assert_empty stderr.read, "Some warnings were raised"
     end
   end

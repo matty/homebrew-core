@@ -1,19 +1,26 @@
 class Libgee < Formula
   desc "Collection library providing GObject-based interfaces"
   homepage "https://wiki.gnome.org/Projects/Libgee"
-  url "https://download.gnome.org/sources/libgee/0.18/libgee-0.18.1.tar.xz"
-  sha256 "99686bbe5a9c89ba9502c25f61314ee8efa0dd2a1159c9a639afc1458c2839a2"
+  url "https://download.gnome.org/sources/libgee/0.20/libgee-0.20.3.tar.xz"
+  sha256 "d0b5edefc88cbca5f1709d19fa62aef490922c6577a14ac4e7b085507911a5de"
+  license "LGPL-2.1"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "1ff99c3fcc93d1445540219b4327c9b05f1ae6c59f9c0b84f660c3c78ca07c74" => :sierra
-    sha256 "16f97389ce63e4b9bbd37c7d83caf273dfb723001895d7af17dfa5fed8713172" => :el_capitan
-    sha256 "f559db2d7dabd1d6b5fc63d6e86afec93346e74b14d7eb11f02128e3fc70f8ab" => :yosemite
+    sha256 "cf79729c731beefa274a0c8dc88569a3e2a748ca28f660dde939768c4fdd03ae" => :big_sur
+    sha256 "f05da401040a1fd6372ebb26550d13b3779309d7e393bb109b9c362e8fcb0a0b" => :catalina
+    sha256 "ea8b92ad2fc0f9c4191e83d3a4ace603dd99b2d95da665ac699f0805394595e3" => :mojave
+    sha256 "321db1d8698ebe090ee354090920a614d95fb65fa7a38fad01f15fbfc6d2ea53" => :high_sierra
   end
 
+  depends_on "gobject-introspection" => :build
   depends_on "pkg-config" => :build
   depends_on "vala" => :build
-  depends_on "gobject-introspection"
+  depends_on "glib"
 
   def install
     # ensures that the gobject-introspection files remain within the keg
@@ -30,7 +37,7 @@ class Libgee < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gee.h>
 
       int main(int argc, char *argv[]) {

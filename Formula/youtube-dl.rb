@@ -1,41 +1,29 @@
-# Please only update to versions that are published on PyPi as there are too
-# many releases for us to update to every single one:
-# https://pypi.python.org/pypi/youtube_dl
 class YoutubeDl < Formula
+  include Language::Python::Virtualenv
+
   desc "Download YouTube videos from the command-line"
-  homepage "https://rg3.github.io/youtube-dl/"
-  url "https://github.com/rg3/youtube-dl/releases/download/2017.02.17/youtube-dl-2017.02.17.tar.gz"
-  sha256 "4b1c3f05fb816e9d02dc3f0188e16200031cc0bc4fd40df904ee0806f478601a"
+  homepage "https://youtube-dl.org/"
+  url "https://files.pythonhosted.org/packages/a0/71/7120a61017be8237c4584c2ac6776045d553958794c8565ea9c9b842fc88/youtube_dl-2020.11.17.tar.gz"
+  sha256 "933519ab7d2fa05bd28f8443a2115d21efd0355c051986548af9f233e300db0b"
+  license "Unlicense"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9e6f408c74080619096c4efb726f6e63e413568c0d17c7a7d53f77e54f2a2b38" => :sierra
-    sha256 "9e6f408c74080619096c4efb726f6e63e413568c0d17c7a7d53f77e54f2a2b38" => :el_capitan
-    sha256 "9e6f408c74080619096c4efb726f6e63e413568c0d17c7a7d53f77e54f2a2b38" => :yosemite
+    sha256 "68bea91f5a45510551eab56885138cf9f84a21e4a7ca62119fab5b3923c2baae" => :big_sur
+    sha256 "b92dd1921c1b0524621eec246263e45fed6394e4e12d7f36f7b7ce1b97dfd061" => :catalina
+    sha256 "6722f9c1a59e8325e3e2b39d08fdf30faeddee7722f5d50705acf2c3576482dc" => :mojave
   end
 
-  head do
-    url "https://github.com/rg3/youtube-dl.git"
-    depends_on "pandoc" => :build
-  end
-
-  depends_on "rtmpdump" => :optional
+  depends_on "python@3.9"
 
   def install
-    system "make", "PREFIX=#{prefix}"
-    bin.install "youtube-dl"
-    man1.install "youtube-dl.1"
-    bash_completion.install "youtube-dl.bash-completion"
-    zsh_completion.install "youtube-dl.zsh" => "_youtube-dl"
-    fish_completion.install "youtube-dl.fish"
-  end
-
-  def caveats
-    "To use post-processing options, `brew install ffmpeg` or `brew install libav`."
+    virtualenv_install_with_resources
   end
 
   test do
-    system "#{bin}/youtube-dl", "--simulate", "https://www.youtube.com/watch?v=he2a4xK8ctk"
-    system "#{bin}/youtube-dl", "--simulate", "--yes-playlist", "https://www.youtube.com/watch?v=AEhULv4ruL4&list=PLZdCLR02grLrl5ie970A24kvti21hGiOf"
+    # commit history of homebrew-core repo
+    system "#{bin}/youtube-dl", "--simulate", "https://www.youtube.com/watch?v=pOtd1cbOP7k"
+    # homebrew playlist
+    system "#{bin}/youtube-dl", "--simulate", "--yes-playlist", "https://www.youtube.com/watch?v=pOtd1cbOP7k&list=PLMsZ739TZDoLj9u_nob8jBKSC-mZb0Nhj"
   end
 end

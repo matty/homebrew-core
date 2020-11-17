@@ -1,36 +1,41 @@
 class Nasm < Formula
   desc "Netwide Assembler (NASM) is an 80x86 assembler"
-  homepage "http://www.nasm.us/"
-  url "http://www.nasm.us/pub/nasm/releasebuilds/2.12.02/nasm-2.12.02.tar.xz"
-  sha256 "4c866b60c0b1c4ebc715205d007b4640ff4e36af637c9a7deb87b2900e544321"
+  homepage "https://www.nasm.us/"
+  url "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz"
+  sha256 "3caf6729c1073bf96629b57cee31eeb54f4f8129b01902c73428836550b30a3f"
+  license "BSD-2-Clause"
+
+  livecheck do
+    url "https://www.nasm.us/pub/nasm/releasebuilds/"
+    regex(%r{href=.*?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c653c00ed3df6a74b59f66586f3cf570b2ec27f97e5ab90dc8b2284f2fd166aa" => :sierra
-    sha256 "d8763b4360c196f58d978d35b2aa59873c00ebf7b4859092a6b5f0c57f80bba3" => :el_capitan
-    sha256 "b5e0065fbda4bc95c00bb43e157698fd853cba2eaddfa77b15d2c5349d38d416" => :yosemite
-    sha256 "6e0a8849f85a2c2f7729c270bf42ac4525188eda1a524287a061d18240c13f52" => :mavericks
+    sha256 "cc45793ac9f3fedd01dd08bbbf766137a40bf22e18c43742498b0a542aa319e8" => :big_sur
+    sha256 "1875e67160bac1675dd505d66a6b78469767d2dfe8baab2652409f91ac0549ef" => :catalina
+    sha256 "4b3614f857264edfa9aeab961c523b3910cdef0ceccaf9957888b477c1c512f4" => :mojave
+    sha256 "8f8c181994b1f05bf425a4034f76d6973c9e1a85ecb64af7f67d47556f23a0d6" => :high_sierra
   end
 
   head do
-    url "git://repo.or.cz/nasm.git"
-    depends_on "autoconf" => :build
+    url "https://github.com/netwide-assembler/nasm.git"
     depends_on "asciidoc" => :build
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "xmlto" => :build
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
     system "./autogen.sh" if build.head?
     system "./configure", "--prefix=#{prefix}"
     system "make", "manpages" if build.head?
+    system "make", "rdf"
     system "make", "install", "install_rdf"
   end
 
   test do
-    (testpath/"foo.s").write <<-EOS
+    (testpath/"foo.s").write <<~EOS
       mov eax, 0
       mov ebx, 0
       int 0x80

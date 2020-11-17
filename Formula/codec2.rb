@@ -1,15 +1,17 @@
 class Codec2 < Formula
-  desc "Open source speech codec."
-  homepage "http://www.rowetel.com/blog/?page_id=452"
-  url "https://files.freedv.org/codec2/codec2-0.5.tar.xz"
-  sha256 "1ffda04ec6629f5ad5a38349c6d9d38d29bfbc1c677c12014ff20d480a343f17"
+  desc "Open source speech codec"
+  homepage "https://www.rowetel.com/?page_id=452"
+  # Linked from https://freedv.org/
+  url "https://github.com/drowe67/codec2/archive/v0.9.2.tar.gz"
+  sha256 "19181a446f4df3e6d616b50cabdac4485abb9cd3242cf312a0785f892ed4c76c"
+  license "LGPL-2.1"
 
   bottle do
     cellar :any
-    sha256 "ebc1dfbe27cba68d3dc83ebcfcbe595f536075a1a0af9a43d0ffb6c99d8846a8" => :sierra
-    sha256 "0a385047266db01ce5ee29c112454efd18c5036f8bdca96ec018a5fb1c10064a" => :el_capitan
-    sha256 "9cfba02811b48abea043b61e8594e6bc810b6b378aceeb3ba6f51b9a0bb6e966" => :yosemite
-    sha256 "3763c18aa7cb38b36a9b8770acae0b222f114b7cabd7035736fefa833536f614" => :mavericks
+    sha256 "c28da7a7d230e8505859eafa28d9238ccadd97c4847f5ee5c269ffa24245ba49" => :big_sur
+    sha256 "d41040646585e5b91438818ff4dfdccc94b3a2567d31d6960710f8f2455bab04" => :catalina
+    sha256 "460c2febeb64e913796ee3f161b8fa50bbc00904c99228d5122324ebadd91fe9" => :mojave
+    sha256 "5f4530a54adbc38253b993bdbb21da86b4d11725b2edcbec79e43ed739875208" => :high_sierra
   end
 
   depends_on "cmake" => :build

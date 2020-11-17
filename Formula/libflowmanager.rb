@@ -1,15 +1,21 @@
 class Libflowmanager < Formula
   desc "Flow-based measurement tasks with packet-based inputs"
-  homepage "http://research.wand.net.nz/software/libflowmanager.php"
-  url "http://research.wand.net.nz/software/libflowmanager/libflowmanager-2.0.5.tar.gz"
-  sha256 "00cae0a13ac0a486a6b8db2c98a909099fd22bd8e688571e2833cf3ee7ad457e"
+  homepage "https://research.wand.net.nz/software/libflowmanager.php"
+  url "https://research.wand.net.nz/software/libflowmanager/libflowmanager-3.0.0.tar.gz"
+  sha256 "0866adfcdc223426ba17d6133a657d94928b4f8e12392533a27387b982178373"
   revision 1
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?libflowmanager[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "456098a2fa42176dd28c40be96b857569ed0b674e2b789f3f532f5c446e1494b" => :sierra
-    sha256 "21d694144204f4067bea98e9d9c9f6919febe32c162dd6c309bf3efb7323ce24" => :el_capitan
-    sha256 "8bd1c6137570f83f81bde7a0efc28d7521c4102086c8c721cd9ad7ff5f8c8ab8" => :yosemite
+    sha256 "b5b2cf44362d857c11161d326e6b0a1721e9f2e2123351f06b242a3e3c7c0b9d" => :big_sur
+    sha256 "41c5f69289236b3362062b471654f0cc9446f93d90066c001a1bda56d9b9b4f3" => :catalina
+    sha256 "64843e32762b175f497e00e332bee33dbe2c5e77384ccb64a0957e9a6c2bd40b" => :mojave
+    sha256 "156b302b5feade664f79f10358bc7888f9db14da53bd3549f90864b1bd9056f5" => :high_sierra
   end
 
   depends_on "libtrace"

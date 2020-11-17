@@ -1,15 +1,17 @@
 class Uncrustify < Formula
   desc "Source code beautifier"
   homepage "https://uncrustify.sourceforge.io/"
-  url "https://github.com/uncrustify/uncrustify/archive/uncrustify-0.64.tar.gz"
-  sha256 "2a8cb3ab82ca53202d50fc2c2cec0edd11caa584def58d356c1c759b57db0b32"
+  url "https://github.com/uncrustify/uncrustify/archive/uncrustify-0.72.0.tar.gz"
+  sha256 "d6fff70bc7823fac4c77013055333b79a4839909094e8eee8a14ee8f1777374e"
+  license "GPL-2.0-or-later"
   head "https://github.com/uncrustify/uncrustify.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0ed95c1838ebb4da3dbebfceb89db2f159cdaf289ad6871fc71ce4d83af35562" => :sierra
-    sha256 "3e2d5dddcbedbb8aa1a7ba063a38c572bea7369ec38a9eedf02433cccd715194" => :el_capitan
-    sha256 "89213a509c0ba50028359fc635956aff035cd36e598a3ec75221ce0fb2626be2" => :yosemite
+    sha256 "ee6e6b6d193ed163cd8365382bc56dd621f5c8f6c3776f52e4b0b2aeb1b90329" => :big_sur
+    sha256 "c22df6af4af60a023f95f2cdce327fffe740264e44382e5bcd97e6ea9245bdb7" => :catalina
+    sha256 "3340dd41ba1ad700ba8014225ac005c9a171d16b990ff275257f9c4f30097861" => :mojave
+    sha256 "2af96b34e949ec3034f0c66c90918ac69b6b3f312e32ce4c27b0dfe158bfef40" => :high_sierra
   end
 
   depends_on "cmake" => :build
@@ -23,11 +25,11 @@ class Uncrustify < Formula
   end
 
   test do
-    (testpath/"t.c").write <<-EOS.undent
+    (testpath/"t.c").write <<~EOS
       #include <stdio.h>
       int main(void) {return 0;}
     EOS
-    expected = <<-EOS.undent
+    expected = <<~EOS
       #include <stdio.h>
       int main(void) {
       \treturn 0;

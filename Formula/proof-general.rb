@@ -3,17 +3,21 @@ class ProofGeneral < Formula
   homepage "https://proofgeneral.github.io"
   url "https://github.com/ProofGeneral/PG/archive/v4.4.tar.gz"
   sha256 "1ba236d81768a87afa0287f49d4b2223097bc61d180468cbd997d46ab6132e7e"
+  license "GPL-2.0"
+  revision 2
   head "https://github.com/ProofGeneral/PG.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3a4a747470f8d159bc0e9e266ae3dd84444862adae85e2a01e0228de7936c43b" => :sierra
-    sha256 "3a4a747470f8d159bc0e9e266ae3dd84444862adae85e2a01e0228de7936c43b" => :el_capitan
-    sha256 "3a4a747470f8d159bc0e9e266ae3dd84444862adae85e2a01e0228de7936c43b" => :yosemite
+    rebuild 3
+    sha256 "ccc115760830d046c9e53277a571f451eb251c9b10c09589c627f146f4a9a4dd" => :catalina
+    sha256 "ccc115760830d046c9e53277a571f451eb251c9b10c09589c627f146f4a9a4dd" => :mojave
+    sha256 "ccc115760830d046c9e53277a571f451eb251c9b10c09589c627f146f4a9a4dd" => :high_sierra
   end
 
   depends_on "texi2html" => :build
-  depends_on :emacs => "22.3"
+  depends_on "texinfo" => :build
+  depends_on "emacs"
 
   def install
     ENV.deparallelize # Otherwise lisp compilation can result in 0-byte files
@@ -36,8 +40,9 @@ class ProofGeneral < Formula
     doc.install "doc/ProofGeneral", "doc/PG-adapting"
   end
 
-  def caveats; <<-EOS.undent
-    HTML documentation is available in: #{HOMEBREW_PREFIX}/share/doc/proof-general
+  def caveats
+    <<~EOS
+      HTML documentation is available in: #{HOMEBREW_PREFIX}/share/doc/proof-general
     EOS
   end
 

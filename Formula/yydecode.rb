@@ -3,16 +3,27 @@ class Yydecode < Formula
   homepage "https://yydecode.sourceforge.io"
   url "https://downloads.sourceforge.net/project/yydecode/yydecode/0.2.10/yydecode-0.2.10.tar.gz"
   sha256 "bd4879643f6539770fd23d1a51dc6a91ba3de2823cf14d047a40c630b3c7ba66"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9a9b97e5fdab56cbcd96ba00c10c81624e8ccb2a61bcf4a41cd104e04318fa4e" => :sierra
-    sha256 "db29c3ce942cd4134eaad4ae01084a08311a91b6fbad4f7de0650d77fa77c5aa" => :el_capitan
-    sha256 "d9b85d4bb42f2adfb87e3211c39f115d5db3a36afa26c2c4bb233e0a734e84fb" => :yosemite
-    sha256 "b9ddc4524b9578b6b7b0809e895ba333f4af7ed06dc24ee3ef874eedd535c6b4" => :mavericks
+    rebuild 1
+    sha256 "206152a71458e053c332c7ca52f6db716b146e993c08384afb98e56a43c043b6" => :catalina
+    sha256 "18d815befe31bcdeaac8edff43cb878f53c34a608fa946c13a14143139bf887a" => :mojave
+    sha256 "e2e7285f1f2b18b4b99800602d15932dba435f6480c5776e5b57b734727f652f" => :high_sierra
+    sha256 "91dc4fe34931d45fcebaead39ce505116322c7866e786cf86a7065f9e57b42ac" => :sierra
+    sha256 "07aa31cabc4f2533df3b5670beed1ba99e3e7dcc3ffb3cf55fff56866e7bf11e" => :el_capitan
   end
 
   def install
+    # Redefinition of type found in 10.13 system headers
+    # https://sourceforge.net/p/yydecode/bugs/5/
+    inreplace "src/crc32.h", "typedef unsigned long int u_int32_t;", "" if DevelopmentTools.clang_build_version >= 900
+
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--mandir=#{man}"

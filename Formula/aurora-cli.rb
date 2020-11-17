@@ -1,24 +1,30 @@
 class AuroraCli < Formula
   desc "Apache Aurora Scheduler Client"
   homepage "https://aurora.apache.org"
-  url "https://www.apache.org/dyn/closer.cgi?path=/aurora/0.16.0/apache-aurora-0.16.0.tar.gz"
-  sha256 "e8249acd03e2f7597e65d90eb6808ad878b14b36da190a1f30085a2c2e25329e"
+  url "https://www.apache.org/dyn/closer.lua?path=aurora/0.22.0/apache-aurora-0.22.0.tar.gz"
+  mirror "https://archive.apache.org/dist/aurora/0.22.0/apache-aurora-0.22.0.tar.gz"
+  sha256 "d3c20a09dcc62cac98cb83889099e845ce48a1727ca562d80b9a9274da2cfa12"
+  license "Apache-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "96f4818d2b60d039b5b329de3a0c535abe9d357cf2568ce5e6a03331f381831f" => :sierra
-    sha256 "a040d213930834e440fee818c7608aa915cb95781cf33426355ac929c92947f5" => :el_capitan
-    sha256 "f81dbf4693ca54388d6c1e1d21baab81c128240d7b82e97e9669641112c27fda" => :yosemite
+    sha256 "b3b61ca0da323c10be32bfb19af28a48b7cf393729076c3ce6608c69d79bff7d" => :catalina
+    sha256 "4aec30f08b06a40ec584c4c570181e5e04909009e4bc8ce2d18f84a0e282629d" => :mojave
+    sha256 "0a1b506e5d75c9fa8d587bfc9945e78c9cb5342c17a4062d18aafb942e111eca" => :high_sierra
   end
 
-  # Update binary_util OS map for OSX Sierra.
-  patch do
-    url "https://github.com/thinker0/aurora/commit/a92876a1.patch"
-    sha256 "b846045b2916c9d82a149bda06d98a2dabdbac435c16ba2943a90344bf55f344"
-  end
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python@3.7"
+
+  # Does not build on Catalina
+  # Has been moved to the Apache Attic: https://github.com/apache/attic-aurora
+  disable! because: :does_not_build
 
   def install
+    # No pants yet for Mojave, so we force High Sierra binaries there
+    ENV["PANTS_BINARIES_PATH_BY_ID"] =
+      "{('darwin','15'):('mac','10.11'),('darwin','16'):('mac','10.12'),"\
+      "('darwin','17'):('mac','10.13'),('darwin','18'):('mac','10.13')}"
+
     system "./pants", "binary", "src/main/python/apache/aurora/kerberos:kaurora"
     system "./pants", "binary", "src/main/python/apache/aurora/kerberos:kaurora_admin"
     bin.install "dist/kaurora.pex" => "aurora"
@@ -27,14 +33,14 @@ class AuroraCli < Formula
 
   test do
     ENV["AURORA_CONFIG_ROOT"] = "#{testpath}/"
-    (testpath/"clusters.json").write <<-EOS.undent
-        [{
-          "name": "devcluster",
-          "slave_root": "/tmp/mesos/",
-          "zk": "172.16.64.185",
-          "scheduler_zk_path": "/aurora/scheduler",
-          "auth_mechanism": "UNAUTHENTICATED"
-        }]
+    (testpath/"clusters.json").write <<~EOS
+      [{
+        "name": "devcluster",
+        "slave_root": "/tmp/mesos/",
+        "zk": "172.16.64.185",
+        "scheduler_zk_path": "/aurora/scheduler",
+        "auth_mechanism": "UNAUTHENTICATED"
+      }]
     EOS
     system "#{bin}/aurora_admin", "get_cluster_config", "devcluster"
   end

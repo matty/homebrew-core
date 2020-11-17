@@ -1,31 +1,29 @@
 class Gotags < Formula
-  desc "ctags-compatible tag generator for Go"
+  desc "Tag generator for Go, compatible with ctags"
   homepage "https://github.com/jstemmer/gotags"
-  url "https://github.com/jstemmer/gotags/archive/v1.3.0.tar.gz"
-  sha256 "414e1f96b560b089f11f814cd9000974a8ee376bb2cd9119cce60368e89ba226"
-
+  url "https://github.com/jstemmer/gotags/archive/v1.4.1.tar.gz"
+  sha256 "2df379527eaa7af568734bc4174febe7752eb5af1b6194da84cd098b7c873343"
+  license "MIT"
   head "https://github.com/jstemmer/gotags.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e18d6c1bed87116106b8aad916712faf73dfe033e5f8a568e58447892446f3d7" => :sierra
-    sha256 "c3d45ab0288282b15e76d962064860c10fad509a68d58dcc339beee17f277609" => :el_capitan
-    sha256 "72d7d85afb135baca77daaff911ae71cb87bd4b5a63df3e7c509e809745ea272" => :yosemite
-    sha256 "c3d177bdf195516994e4179334d54897d74aef7e57b702d4e34224636b8a468e" => :mavericks
-    sha256 "55a3ed971042138f7e985547e0f6074c42bbd16ffe23c1ab4604285a69f1ec28" => :mountain_lion
+    rebuild 1
+    sha256 "fc346e7abc09f27730ca2face102e704855a4e105310b27d0dc25b465e8fb453" => :big_sur
+    sha256 "c1b5430e2c3544fc021bc9bbc35c33a1f2c4482a30dbbc8d4977c1f0ee5638a1" => :catalina
+    sha256 "4413278c3b7f4d8783b9009a986dc91a2a5d3749430105a4297f2cec960a5344" => :mojave
+    sha256 "095f81ef736207a6806af1613a7ab5a0ba3837b4f94f85260aa1bceba3535fea" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-
-    system "go", "build", "-o", "gotags"
-    bin.install "gotags"
+    system "go", "build", "-ldflags", "-s -w", "-trimpath", "-o", bin/"gotags"
+    prefix.install_metafiles
   end
 
   test do
-    (testpath/"test.go").write <<-EOS.undent
+    (testpath/"test.go").write <<~EOS
       package main
 
       type Foo struct {

@@ -1,15 +1,17 @@
 class Hunspell < Formula
   desc "Spell checker and morphological analyzer"
   homepage "https://hunspell.github.io"
-  url "https://github.com/hunspell/hunspell/archive/v1.6.0.tar.gz"
-  sha256 "512e7d2ee69dad0b35ca011076405e56e0f10963a02d4859dbcc4faf53ca68e2"
-  revision 1
+  url "https://github.com/hunspell/hunspell/archive/v1.7.0.tar.gz"
+  sha256 "bb27b86eb910a8285407cf3ca33b62643a02798cf2eef468c0a74f6c3ee6bc8a"
+  license "GPL-2.0"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "df1df43a9275f798fca1a160aca932eeeeea252db043b16921ed2db3a70d95cc" => :sierra
-    sha256 "ce02b0a9beef31b587446a07987ad4ac0cbc63c7d1144bd73721a7f53e03bd54" => :el_capitan
-    sha256 "c2267b211ab4dc6ecbe997a702640beba1c9197303df77af01a61fc51f5e6ec7" => :yosemite
+    sha256 "3b7a02908774fa50dafee913969963ce223a09de100b62269fdb0fd71cd09115" => :catalina
+    sha256 "30927ed74597ba96c52ec0c1e9380aaaadee2adadf2e17414e1b494bfd8066b3" => :mojave
+    sha256 "4ada0a39e041b9e6676b4cd68e95c6523725043088f3555d1cac1216c8f91944" => :high_sierra
+    sha256 "65b1d0fc54a0de1fc7e8520aaee4dbe192a2f441757002c7b305b0fb93e3e341" => :sierra
   end
 
   depends_on "autoconf" => :build
@@ -18,7 +20,7 @@ class Hunspell < Formula
   depends_on "gettext"
   depends_on "readline"
 
-  conflicts_with "freeling", :because => "both install 'analyze' binary"
+  conflicts_with "freeling", because: "both install 'analyze' binary"
 
   def install
     system "autoreconf", "-fiv"
@@ -33,12 +35,13 @@ class Hunspell < Formula
     pkgshare.install "tests"
   end
 
-  def caveats; <<-EOS.undent
-    Dictionary files (*.aff and *.dic) should be placed in
-    ~/Library/Spelling/ or /Library/Spelling/.  Homebrew itself
-    provides no dictionaries for Hunspell, but you can download
-    compatible dictionaries from other sources, such as
-    https://wiki.openoffice.org/wiki/Dictionaries .
+  def caveats
+    <<~EOS
+      Dictionary files (*.aff and *.dic) should be placed in
+      ~/Library/Spelling/ or /Library/Spelling/.  Homebrew itself
+      provides no dictionaries for Hunspell, but you can download
+      compatible dictionaries from other sources, such as
+      https://wiki.openoffice.org/wiki/Dictionaries .
     EOS
   end
 

@@ -1,19 +1,16 @@
 class Unyaffs < Formula
   desc "Extract files from a YAFFS2 filesystem image"
-  homepage "https://github.com/ehlers/unyaffs"
-  url "https://github.com/ehlers/unyaffs/archive/0.9.6.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/u/unyaffs/unyaffs_0.9.6.orig.tar.gz"
-  sha256 "33c46419ab5cc5290f3b780f0cc9d93729962799f5eb7cecb9b352b85939fbbf"
-
-  head "https://github.com/ehlers/unyaffs.git"
+  homepage "https://git.b-ehlers.de/ehlers/unyaffs/"
+  url "https://git.b-ehlers.de/ehlers/unyaffs/archive/0.9.7.tar.gz"
+  sha256 "17489fb07051d228ede6ed35c9138e25f81085492804104a8f52c51a1bd6750d"
+  head "https://git.b-ehlers.de/ehlers/unyaffs.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "79cc4c6edc7c20887a6427cbcdd8c256849d61b47314888825d569863f9b44c1" => :sierra
-    sha256 "e33a63724b42277e86a91f37261892c4bca734f8362307c94dbf1a0f410a59c1" => :el_capitan
-    sha256 "484cdbf34b9a81e2e127115ed78b80efc0355efcaba53d6797dcc2c431f4bcf1" => :yosemite
-    sha256 "b0b9f241a1d576c3ad54fe16e4e20d2b545622ea8b7b30b668672214ecc03591" => :mavericks
-    sha256 "f4bf95fc8f6d31a8ffb94dd01e1152a82abc0301078865372f140d347a4ee623" => :mountain_lion
+    rebuild 2
+    sha256 "4bcff00c990f1376a4a14084a7e4c5c47a9abd1411140071a8f32820b24bc0c3" => :catalina
+    sha256 "9ffaad154e3119644c754d02544e386f9d5b6f7d06aceba76e972cb321608deb" => :mojave
+    sha256 "c215b5e405c842ca4a82dc120b8a3c9b9a1868303ab740d4d8973b1cd0160eb9" => :high_sierra
   end
 
   def install

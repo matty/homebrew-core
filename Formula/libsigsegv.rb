@@ -1,18 +1,23 @@
 class Libsigsegv < Formula
   desc "Library for handling page faults in user mode"
   homepage "https://www.gnu.org/software/libsigsegv/"
-  url "https://ftpmirror.gnu.org/libsigsegv/libsigsegv-2.10.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-2.10.tar.gz"
-  sha256 "8460a4a3dd4954c3d96d7a4f5dd5bc4d9b76f5754196aa245287553b26d2199a"
+  url "https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-2.12.tar.gz"
+  mirror "https://ftpmirror.gnu.org/libsigsegv/libsigsegv-2.12.tar.gz"
+  sha256 "3ae1af359eebaa4ffc5896a1aee3568c052c99879316a1ab57f8fe1789c390b6"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "d79887cb1d2dfde80fa0241e7a1acb5d21ea8519faf41a90673e44c1bc5b54a7" => :sierra
-    sha256 "d19b0b407f01626b9e68974848cae096d3a00c8af5314b19be2278879c57275f" => :el_capitan
-    sha256 "7cc35675981e54794ac49dcadd6daa30abaf4aaae34a18fdc8a6358fb2201896" => :yosemite
-    sha256 "1eb98d94bf58591e7e2cec76725de88f08c8280db6e4f6216fc5b4eeb6623190" => :mavericks
-    sha256 "70fcc5532a085c178a68d378f75d9926d06ee27b5733e0fb7a8d2e1288e8d80a" => :mountain_lion
+    sha256 "2db9aa014d95cd718825fa29da0f237c44c4b20e826b9f01c770f3f39b77e790" => :big_sur
+    sha256 "aae3e97886b24afb8daf0bafdf9dc02c5fa3d18392611cf68dfd88b663deb87b" => :catalina
+    sha256 "3b92bc3dfb8000bfac2b9ebdef436acdf0047d1c98b3ed250f0a332d84ba869a" => :mojave
+    sha256 "5fea960fc3cc9f168749e36e37efbf53f3030d4a3fc2f2602f182d3dcafd5a17" => :high_sierra
+    sha256 "158f90f84a050e266c23299745b7553321c304649e9f88afcf34d73ef08f95a1" => :sierra
+    sha256 "b9808096e671482dffd3c4b7ea330d8fc58027bee92c6a774b953fefc1606eb1" => :el_capitan
   end
 
   def install
@@ -26,7 +31,7 @@ class Libsigsegv < Formula
 
   test do
     # Sourced from tests/efault1.c in tarball.
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include "sigsegv.h"
 
       #include <errno.h>
@@ -65,7 +70,7 @@ class Libsigsegv < Formula
       }
     EOS
 
-    system ENV.cc, "test.c", "-lsigsegv", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-lsigsegv", "-o", "test"
     assert_match /Test passed/, shell_output("./test")
   end
 end

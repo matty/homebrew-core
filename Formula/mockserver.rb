@@ -1,17 +1,22 @@
 class Mockserver < Formula
   desc "Mock HTTP server and proxy"
-  homepage "http://www.mock-server.com/"
-  url "https://oss.sonatype.org/content/repositories/releases/org/mock-server/mockserver-netty/3.10.4/mockserver-netty-3.10.4-brew-tar.tar"
-  version "3.10.4"
-  sha256 "0abd89cb0f894cf53d678360452962f6102477a45b41691eaaea47dfce8d8467"
+  homepage "https://www.mock-server.com/"
+  url "https://oss.sonatype.org/content/repositories/releases/org/mock-server/mockserver-netty/5.11.2/mockserver-netty-5.11.2-brew-tar.tar"
+  sha256 "1758bb80c3e5cd250b55757a53105db7b03ff1b05d2dfca501ce5795feff8756"
+  license "Apache-2.0"
+
+  livecheck do
+    url "https://oss.sonatype.org/content/repositories/releases/org/mock-server/mockserver-netty/"
+    regex(%r{href=.*?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle :unneeded
 
-  depends_on :java => "1.6+"
+  depends_on "openjdk"
 
   def install
     libexec.install Dir["*"]
-    bin.install_symlink "#{libexec}/bin/run_mockserver.sh" => "mockserver"
+    (bin/"mockserver").write_env_script libexec/"bin/run_mockserver.sh", JAVA_HOME: Formula["openjdk"].opt_prefix
 
     lib.install_symlink "#{libexec}/lib" => "mockserver"
 
@@ -22,11 +27,7 @@ class Mockserver < Formula
   end
 
   test do
-    require "socket"
-
-    server = TCPServer.new(0)
-    port = server.addr[1]
-    server.close
+    port = free_port
 
     mockserver = fork do
       exec "#{bin}/mockserver", "-serverPort", port.to_s
@@ -34,7 +35,7 @@ class Mockserver < Formula
 
     loop do
       Utils.popen_read("curl", "-s", "http://localhost:#{port}/status", "-X", "PUT")
-      break if $?.exitstatus.zero?
+      break if $CHILD_STATUS.exitstatus.zero?
     end
 
     system "curl", "-s", "http://localhost:#{port}/stop", "-X", "PUT"

@@ -1,37 +1,39 @@
 class Libmpdclient < Formula
   desc "Library for MPD in the C, C++, and Objective-C languages"
   homepage "https://www.musicpd.org/libs/libmpdclient/"
-  url "https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.10.tar.gz"
-  sha256 "bf88ddd9beceadef11144811adaabe45008005af02373595daa03446e6b1bf3d"
+  url "https://www.musicpd.org/download/libmpdclient/2/libmpdclient-2.19.tar.xz"
+  sha256 "158aad4c2278ab08e76a3f2b0166c99b39fae00ee17231bd225c5a36e977a189"
+  license "BSD-3-Clause"
+  revision 1
+  head "https://github.com/MusicPlayerDaemon/libmpdclient.git"
 
   bottle do
     cellar :any
-    sha256 "fe07e076edafdb86d36590a0bab78f99e6f36faf54a450ffeee808bcc38b3193" => :sierra
-    sha256 "260ae000202c5d848b014c682db6f414b621c37fa0ada15a50d39ffa30a7d06e" => :el_capitan
-    sha256 "53c232fdc4c66fb2aa823b474337f8c5275cf01171077b8772a0dd2b1aaf670c" => :yosemite
-    sha256 "a6d500dd34581bb30a623df20b2e031eb3f1a6a586886acc97e437a5447e144b" => :mavericks
-    sha256 "d583dffa231db87e89bc291d20aedb63d9ac5324eeff80cdc974cff2b93c6a1a" => :mountain_lion
+    sha256 "ee86de4f5298b45cff0b1ba7446a9d9864fd1752184de585bf05e43a16374708" => :big_sur
+    sha256 "866e94308617552de97ecb04f824408fa4f849d1ef79ff9bf5467170c80e3a23" => :catalina
+    sha256 "0db8f7c9e7cd6eb5082397e9270989864042e36c187cba2fa61ae43ca996e32f" => :mojave
+    sha256 "71c37d5af98688decfe4440ce87e267064a4a71e0b1a4e11455068b5127edae4" => :high_sierra
   end
-
-  head do
-    url "git://git.musicpd.org/master/libmpdclient.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
-
-  option :universal
 
   depends_on "doxygen" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
 
   def install
-    inreplace "autogen.sh", "libtoolize", "glibtoolize"
-    system "./autogen.sh" if build.head?
+    system "meson", *std_meson_args, ".", "output"
+    system "ninja", "-C", "output"
+    system "ninja", "-C", "output", "install"
+  end
 
-    ENV.universal_binary if build.universal?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+  test do
+    (testpath/"test.cpp").write <<~EOS
+      #include <mpd/client.h>
+      int main() {
+        mpd_connection_new(NULL, 0, 30000);
+        return 0;
+      }
+    EOS
+    system ENV.cc, "test.cpp", "-L#{lib}", "-lmpdclient", "-o", "test"
+    system "./test"
   end
 end

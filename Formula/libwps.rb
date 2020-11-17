@@ -1,21 +1,27 @@
 class Libwps < Formula
   desc "Library to import files in MS Works format"
   homepage "https://libwps.sourceforge.io"
-  url "http://dev-www.libreoffice.org/src/libwps-0.4.2.tar.bz2"
-  sha256 "254b8aeb36a3b58eabf682b04a5a6cf9b01267e762c7dc57d4533b95f30dc587"
+  url "https://downloads.sourceforge.net/project/libwps/libwps/libwps-0.4.12/libwps-0.4.12.tar.xz"
+  sha256 "e21afb52a06d03b774c5a8c72679687ab64891b91ce0c3bdf2d3e97231534edb"
+  license any_of: ["LGPL-2.1-or-later", "MPL-2.0"]
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/libwps(?:/|[._-])v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "bc2f7b7cd3b38e38c6f6ed0423406340f33c4719e4c4833a0f2af8e0df0d58a2" => :sierra
-    sha256 "955cec0a064444c0c6db350b7c3a55b72b9382a98dae5060e25d78b928267fbb" => :el_capitan
-    sha256 "b747ff7cf50572bfe44fa363f8e9a987d8a5c27f07315a6ca15c0e6903e75d82" => :yosemite
-    sha256 "f41d5d0f77a02ed7f903a1761a5aabe7847f8dd4e6bf19c9aacd54924d7abcc6" => :mavericks
+    sha256 "b90de41ccfbd2b12fa25c90985a9a526f42f38ffba22839583d8d8dca7680f57" => :big_sur
+    sha256 "df168fef776884800b6e739e914ca328b2ed2011fb2f7c650a95ffb410669ff9" => :catalina
+    sha256 "6858e4fc67b746fa2f392c717eab3abf2af4826e7499489b4da45d98b9539b24" => :mojave
+    sha256 "cfba7b4a80156e0783277ea263ee303ecc2194b1a1147493e9b8e6ccafb3885d" => :high_sierra
   end
 
-  depends_on "pkg-config" => :build
   depends_on "boost" => :build
-  depends_on "libwpd"
+  depends_on "pkg-config" => :build
   depends_on "librevenge"
+  depends_on "libwpd"
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
@@ -25,7 +31,7 @@ class Libwps < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libwps/libwps.h>
       int main() {
         return libwps::WPS_OK;

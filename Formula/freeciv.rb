@@ -1,66 +1,69 @@
 class Freeciv < Formula
   desc "Free and Open Source empire-building strategy game"
-  homepage "http://freeciv.wikia.com"
-  url "https://downloads.sourceforge.net/project/freeciv/Freeciv%202.5/2.5.6/freeciv-2.5.6.tar.bz2"
-  mirror "http://download.gna.org/freeciv/stable/freeciv-2.5.6.tar.bz2"
-  sha256 "cfadc23eec11a5a8ae74a7d3719eb126026137f0700da065367fd55cbab6999b"
+  homepage "http://freeciv.org"
+  url "https://downloads.sourceforge.net/project/freeciv/Freeciv%202.6/2.6.2/freeciv-2.6.2.tar.bz2"
+  sha256 "6181ef3d3c76264383aabbe0eaf1550d8a65ca42639e6c17cc2938165e176c8f"
+  license "GPL-2.0"
+  revision 1
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/freeciv[._-]v?(\d+(?:\.\d+)+)\.(?:t|zip)/}i)
+  end
 
   bottle do
-    sha256 "6d909e5737f001570a73aa2169b0e768e51f9c13bdaa14e684d08708bc67f00a" => :sierra
-    sha256 "9849bddd68dd60b9f63de188a0ffcf8f15f3da4031a0a0b7b64cebbed06a50ce" => :el_capitan
-    sha256 "dcdb4844dee4d4240f4785debdfdd6ad6cd3d0320b60bf56a9f01be11095cf05" => :yosemite
+    sha256 "8fc4223aa3b2ed7d29ef8b13df5697895a934a5ec0bb05a52b524d0f3b499f52" => :big_sur
+    sha256 "ef6d245c1c9e7deae7ac7f7e76df10e7b6a8d49968bebc0b99f14729ceee290f" => :catalina
+    sha256 "3b488924c498bfd515785b3ce42f9b9fc75b82fa799fff77fd58c1b42038c2bb" => :mojave
+    sha256 "d7789957285649359ce9283b0cc4635fa6e94ca14856cfc922aef65810a41357" => :high_sierra
   end
 
   head do
-    url "svn://svn.gna.org/svn/freeciv/trunk"
-    depends_on "automake" => :build
+    url "https://github.com/freeciv/freeciv.git"
+
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "gettext" => :build
     depends_on "libtool" => :build
   end
 
-  option "without-nls", "Disable NLS support"
-  option "without-sdl", "Disable the SDL Freeciv client"
-
-  depends_on "gettext" if build.with? "nls"
-  depends_on "icu4c"
   depends_on "pkg-config" => :build
+  depends_on "atk"
+  depends_on "cairo"
+  depends_on "freetype"
+  depends_on "gdk-pixbuf"
+  depends_on "gettext"
+  depends_on "glib"
+  depends_on "gtk+3"
+  depends_on "harfbuzz"
+  depends_on "icu4c"
+  depends_on "pango"
   depends_on "readline"
+  depends_on "sdl2"
+  depends_on "sdl2_mixer"
 
-  depends_on "sdl" => :recommended
-  if build.with? "sdl"
-    depends_on "freetype"
-    depends_on "sdl_image"
-    depends_on "sdl_gfx"
-    depends_on "sdl_mixer"
-    depends_on "sdl_ttf"
-  end
-
-  depends_on "gtk+" => :recommended
-  depends_on "gtk+3" => :optional
-  if build.with?("gtk+") || build.with?("gtk+3")
-    depends_on "atk"
-    depends_on "glib"
-    depends_on "pango"
-  end
-  depends_on "gdk-pixbuf" if build.with? "gtk+3"
+  uses_from_macos "bzip2"
+  uses_from_macos "curl"
+  uses_from_macos "libiconv"
+  uses_from_macos "zlib"
 
   def install
+    ENV["ac_cv_lib_lzma_lzma_code"] = "no"
+
     args = %W[
       --disable-debug
       --disable-dependency-tracking
       --disable-gtktest
+      --disable-silent-rules
+      --disable-sdltest
+      --disable-sdl2test
+      --disable-sdl2framework
+      --enable-fcdb=sqlite3
       --prefix=#{prefix}
       --with-readline=#{Formula["readline"].opt_prefix}
+      CFLAGS=-I#{Formula["gettext"].include}
+      LDFLAGS=-L#{Formula["gettext"].lib}
     ]
-
-    if build.without? "nls"
-      args << "--disable-nls"
-    else
-      gettext = Formula["gettext"]
-      args << "CFLAGS=-I#{gettext.include}"
-      args << "LDFLAGS=-L#{gettext.lib}"
-    end
 
     if build.head?
       inreplace "./autogen.sh", "libtoolize", "glibtoolize"
@@ -74,13 +77,12 @@ class Freeciv < Formula
 
   test do
     system bin/"freeciv-manual"
-    File.exist? testpath/"manual6.html"
+    assert_predicate testpath/"classic6.mediawiki", :exist?
 
-    server = fork do
+    fork do
       system bin/"freeciv-server", "-l", testpath/"test.log"
     end
     sleep 5
-    Process.kill("TERM", server)
-    File.exist? testpath/"test.log"
+    assert_predicate testpath/"test.log", :exist?
   end
 end

@@ -1,19 +1,25 @@
 class Fades < Formula
   desc "Automatically handle virtualenvs for python scripts"
-  homepage "https://fades.readthedocs.org/"
-  url "https://pypi.python.org/packages/source/f/fades/fades-5.tar.gz"
-  sha256 "1952f496059ba6bac535f2c07effae44a55de0654ababaa1a15879c4b3fa89c1"
+  homepage "https://fades.readthedocs.io/"
+  url "https://files.pythonhosted.org/packages/cd/b0/381b14139b36dcbd317349ce7c2bd2e2a66bfc772d13e568d71f3d98d977/fades-9.0.tar.gz"
+  sha256 "77192b76efbd08dfabce65fe6012805a2383ec1b893c12091efe35fbfd9677f6"
+  license "GPL-3.0"
   revision 1
   head "https://github.com/PyAr/fades.git"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "9b4e3a4f485e75ec2a65686db6207dfd5f085c3ae96970933b6ecd647f788cf6" => :sierra
-    sha256 "1a44cbdb4c7ee07150271ad72e9bf55f1edccce3e601e8d474dc80c033d38f35" => :el_capitan
-    sha256 "1a44cbdb4c7ee07150271ad72e9bf55f1edccce3e601e8d474dc80c033d38f35" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on :python3
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "21973bd9531e3c6af4359e51ac9e31982bfbdf024843b02226168910a39aabd2" => :big_sur
+    sha256 "78532c867a5ab35381edeb565f094fff1d2d269c169f903e10bde65a2ee2b3c7" => :catalina
+    sha256 "bc2264df647adc84ef4f5321258ee9030da3269a66d4f50ed5faf0cc3185bd83" => :mojave
+    sha256 "bdf1c47688725b9335adaca1dae977fba9aa534d44f4c65b4a1a684d6fc7930e" => :high_sierra
+  end
+
+  depends_on "python@3.9"
 
   def install
     pyver = Language::Python.major_minor_version "python3"
@@ -21,7 +27,7 @@ class Fades < Formula
     system "python3", *Language::Python.setup_install_args(libexec)
 
     bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
   end
 
   test do

@@ -1,23 +1,32 @@
 class Stout < Formula
   desc "Reliable static website deploy tool"
-  homepage "http://stout.is"
-  url "https://github.com/EagerIO/Stout/archive/v1.2.3.tar.gz"
-  sha256 "0c4b10be84b2a2de18020215e49d59c380aba38a13d5c975c7f45d2b8e3cf4bc"
+  homepage "https://github.com/cloudflare/Stout"
+  url "https://github.com/cloudflare/Stout/archive/v1.3.2.tar.gz"
+  sha256 "33aa533beda7181d5efdcfb9fadcc568f58c1f7e27a4902adf1a6807c4875c99"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9e1e825f22facc7e04295268f3bd36417f2fffd596e5d1c2d5b71c861172c035" => :sierra
-    sha256 "aac5e3bac19e22e13d626a8d5b241659a9efd66267f970bd62ed0e394250c288" => :el_capitan
-    sha256 "48cae1a0395e12fe8919269033a0bb7b7d2aa314aa2284f2390b7a01bc2fb4a0" => :yosemite
+    sha256 "95406589caa2074808e99e54b755c2ea7b73fdd3ac8528c1a7f124895f3c1be5" => :catalina
+    sha256 "7d90dec0fbc23cfc58b56261957818a0fb1af5c77086b1979b77ea1196484a25" => :mojave
+    sha256 "cfff658fcb5319cd6a5053c645a9679d3db94e9dff4fbe91ae488ca31658a1fc" => :high_sierra
+    sha256 "26554af96b6044316abecb1a2142e81b1aab8315bff941cbdad9b39fe143b74e" => :sierra
   end
 
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
-    mkdir_p buildpath/"src/github.com/eagerio"
-    ln_s buildpath, buildpath/"src/github.com/eagerio/stout"
-    system "go", "build", "-o", bin/"stout", "-v", "github.com/eagerio/stout/src"
+
+    # Compatibility with newer Go.
+    # Reported upstream, but the project is unmaintained.
+    mkdir_p buildpath/"vendor/github.com/sspencer"
+    ln_s buildpath/"vendor/github.com/zackbloom/go-ini", buildpath/"vendor/github.com/sspencer/go-ini"
+
+    mkdir_p buildpath/"src/github.com/cloudflare"
+    ln_s buildpath, buildpath/"src/github.com/cloudflare/stout"
+
+    system "go", "build", "-o", bin/"stout", "-v", "github.com/cloudflare/stout/src"
   end
 
   test do

@@ -3,42 +3,45 @@ require "language/go"
 class Gron < Formula
   desc "Make JSON greppable"
   homepage "https://github.com/tomnomnom/gron"
-  url "https://github.com/tomnomnom/gron/archive/v0.4.0.tar.gz"
-  sha256 "e9c1c071f34a7a04eec61bbe95e9d5cc078cc03adcf600945fd01448d42646ed"
+  url "https://github.com/tomnomnom/gron/archive/v0.6.0.tar.gz"
+  sha256 "fe75b1b4922b591723f48cb9cd2c31cb60bb3ab9f8d0398df75a08b781d8591c"
+  license "MIT"
   head "https://github.com/tomnomnom/gron.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "72c06e0f5f429b505edf12ef4286bee205c3805815e3ef9672be88696d8a9000" => :sierra
-    sha256 "af5dd44dd022ea9e84d66e8a904596b35561174959188c2c05314fabd0ceda84" => :el_capitan
-    sha256 "88abd47eddfef7782733fa7200393a47f4b56367396d39d2166623d467ad90f0" => :yosemite
+    sha256 "a7851170e1feed7c87430f7af735f193cf295b5a4116d0f177296dd8fb000815" => :catalina
+    sha256 "8250d3b6d9acc5bf1700a6513ab9df0df1a3e5660d2f984a4a903c234e6cd555" => :mojave
+    sha256 "7838ab1c751a11027f31b7b4dac4f7a83402b04a7eef522edeb15735846dfd81" => :high_sierra
+    sha256 "fa5310f4ac25091387f24e5dd4bb0364db432ebc9f3273da371cbd35116af09e" => :sierra
+    sha256 "23c3378ea69d5936b6966608942a0769c4adad0cdeabb9575e8b811b9b6c3a26" => :el_capitan
   end
 
   depends_on "go" => :build
 
   go_resource "github.com/fatih/color" do
     url "https://github.com/fatih/color.git",
-        :revision => "34e4ee095d12986a2cef5ddb9aeb3b8cfcfea17c"
+        revision: "2d684516a8861da43017284349b7e303e809ac21"
   end
 
   go_resource "github.com/mattn/go-colorable" do
     url "https://github.com/mattn/go-colorable.git",
-        :revision => "ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8"
+        revision: "efa589957cd060542a26d2dd7832fd6a6c6c3ade"
   end
 
   go_resource "github.com/mattn/go-isatty" do
     url "https://github.com/mattn/go-isatty.git",
-        :revision => "3a115632dcd687f9c8cd01679c83a06a0e21c1f3"
+        revision: "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
   end
 
   go_resource "github.com/nwidger/jsoncolor" do
     url "https://github.com/nwidger/jsoncolor.git",
-        :revision => "0192e84d44af834c3a90c8a17bf670483b91ad5a"
+        revision: "75a6de4340e59be95f0884b9cebdda246e0fdf40"
   end
 
   go_resource "github.com/pkg/errors" do
     url "https://github.com/pkg/errors.git",
-        :revision => "645ef00459ed84a119197bfb8d8205042c6df63d"
+        revision: "816c9085562cd7ee03e7f8188a1cfd942858cded"
   end
 
   def install
@@ -50,7 +53,7 @@ class Gron < Formula
   end
 
   test do
-    assert_equal <<-EOS.undent, pipe_output("#{bin}/gron", "{\"foo\":1, \"bar\":2}")
+    assert_equal <<~EOS, pipe_output("#{bin}/gron", "{\"foo\":1, \"bar\":2}")
       json = {};
       json.bar = 2;
       json.foo = 1;

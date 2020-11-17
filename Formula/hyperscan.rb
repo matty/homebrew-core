@@ -1,47 +1,33 @@
 class Hyperscan < Formula
   desc "High-performance regular expression matching library"
-  homepage "https://01.org/hyperscan"
-  url "https://github.com/01org/hyperscan/archive/v4.4.0.tar.gz"
-  sha256 "6ff1b47ce9888803ce6dfa8e1efbab30ec53f984410275d7a45138825af0a0d5"
+  homepage "https://www.hyperscan.io/"
+  url "https://github.com/intel/hyperscan/archive/v5.3.0.tar.gz"
+  sha256 "9b50e24e6fd1e357165063580c631a828157d361f2f27975c5031fc00594825b"
+  license "BSD-3-Clause"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "95955960f7d59bbe2f8b070625773081fadcaff5ab4c8778e8ee6d85d84f551e" => :sierra
-    sha256 "20643e8a08ee9a58807a82df3446b1223b653c01d9fd1310263c0289f0ab2051" => :el_capitan
-    sha256 "178695ecc4b2f9d4bcacb81773a2584d1fbc8722258fe9b13f0fae8a3b3ccf19" => :yosemite
+    cellar :any
+    sha256 "1ed977c18b785d2bf4cee79c67f6cf6b8e963cb62c6029d11fe7cdfed6e272df" => :big_sur
+    sha256 "a56dfd1232dd769b481e1c9e0544c84f542f82bb527e23dd27d9a7451258194d" => :catalina
+    sha256 "217445aaf506df06e6759c53e38fc767c337a791a16d4073cf870027a93543f3" => :mojave
+    sha256 "49403fbbdd395e877457945ce7f00476574befcfa07238059cfb8ee40ef8e764" => :high_sierra
   end
 
-  option "with-debug", "Build with debug symbols"
-
-  depends_on :python => :build if MacOS.version <= :snow_leopard
   depends_on "boost" => :build
-  depends_on "ragel" => :build
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
+  depends_on "ragel" => :build
+  depends_on "pcre"
 
   def install
     mkdir "build" do
-      args = std_cmake_args
-
-      if build.with? "debug"
-        args -= %w[
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG
-          -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG
-        ]
-        args += %w[
-          -DCMAKE_BUILD_TYPE=Debug
-          -DDEBUG_OUTPUT=on
-        ]
-      end
-
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args, "-DBUILD_STATIC_AND_SHARED=on"
       system "make", "install"
     end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <hs/hs.h>
       int main()

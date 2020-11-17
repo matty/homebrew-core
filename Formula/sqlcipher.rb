@@ -1,39 +1,50 @@
 class Sqlcipher < Formula
   desc "SQLite extension providing 256-bit AES encryption"
-  homepage "http://sqlcipher.net"
-  url "https://github.com/sqlcipher/sqlcipher/archive/v3.4.1.tar.gz"
-  sha256 "4172cc6e5a79d36e178d36bd5cc467a938e08368952659bcd95eccbaf0fa4ad4"
-
+  homepage "https://www.zetetic.net/sqlcipher/"
+  url "https://github.com/sqlcipher/sqlcipher/archive/v4.4.1.tar.gz"
+  sha256 "a36ed7c879a5e9af1054942201c75fc56f1db22e46bf6c2bbae3975dfeb6782d"
+  license "BSD-3-Clause"
   head "https://github.com/sqlcipher/sqlcipher.git"
 
   bottle do
     cellar :any
-    sha256 "af99accb6d78fc570855dba4e740d0dc873e1e7b53efe1de247e82334d1e21ff" => :sierra
-    sha256 "8f0d85daab5aea9effc3c7ae027263f8b72d88ab38ed2c0f613c6eba7c16aeff" => :el_capitan
-    sha256 "f8f87d549868829e2825b07b36fd1dfe490be35a0d3aa5b26d1c065631683640" => :yosemite
+    sha256 "44c12e97db60edbfa80ec5e78eb5189922f15ad162010f2510fa04b7d9d5026e" => :big_sur
+    sha256 "946c98f80ccd6142d0bc50c1c309c8a064ae9973ca0c519055aec02bb2804462" => :catalina
+    sha256 "b3470dd97bda6b129759ffc22f129b5bd02a78883ac98ee11f1108e327b41064" => :mojave
+    sha256 "0f5ae0170acc197d506544f541c67e3ad7b9698a3104fd39a5c2a143c60562fc" => :high_sierra
   end
 
-  option "with-fts", "Build with full-text search enabled"
-
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     args = %W[
       --prefix=#{prefix}
       --enable-tempstore=yes
-      --with-crypto-lib=#{Formula["openssl"].opt_prefix}
+      --with-crypto-lib=#{Formula["openssl@1.1"].opt_prefix}
       --enable-load-extension
       --disable-tcl
     ]
 
-    if build.with?("fts")
-      args << "CFLAGS=-DSQLITE_HAS_CODEC -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS5"
-    else
-      args << "CFLAGS=-DSQLITE_HAS_CODEC"
-    end
+    # Build with full-text search enabled
+    args << "CFLAGS=-DSQLITE_HAS_CODEC -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 " \
+                   "-DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_COLUMN_METADATA"
 
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  test do
+    path = testpath/"school.sql"
+    path.write <<~EOS
+      create table students (name text, age integer);
+      insert into students (name, age) values ('Bob', 14);
+      insert into students (name, age) values ('Sue', 12);
+      insert into students (name, age) values ('Tim', json_extract('{"age": 13}', '$.age'));
+      select name from students order by age asc;
+    EOS
+
+    names = shell_output("#{bin}/sqlcipher < #{path}").strip.split("\n")
+    assert_equal %w[Sue Tim Bob], names
   end
 end

@@ -1,21 +1,28 @@
 class Timelimit < Formula
   desc "Limit a process's absolute execution time"
   homepage "https://devel.ringlet.net/sysutils/timelimit/"
-  url "https://devel.ringlet.net/sysutils/timelimit/timelimit-1.8.tar.gz"
-  sha256 "026e72b345f8407ebaa002036fd785b2136b2dfc4f8854f14536196ee3079996"
+  url "https://devel.ringlet.net/files/sys/timelimit/timelimit-1.9.0.tar.gz"
+  sha256 "34185bbfe807a912f352f4e2f634c9c3781810b376c4bba947a2381611e7d72c"
+
+  livecheck do
+    url :homepage
+    regex(/latest release is .*?timelimit[._-]v?(\d+(?:\.\d+)+)</i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f9363f55156c70c4e8727131ff7cb12191034b76cc3c5e65d70028a8b66fc871" => :sierra
-    sha256 "90494e903f7305d6e1c5392ba75a1c41685d37287dfe92a446eded91f039262f" => :el_capitan
-    sha256 "68028554a85b4b6f30bcfb3fbe0328ecf367c49fdbe8342e16e26fdb07f23465" => :yosemite
-    sha256 "274c9d6ccab028ef9f8177537fd880f733e21676321b8c8d7e95306f3b454a22" => :mavericks
+    sha256 "6660e64fd509f5e3b58a1ce3b6e8dffbdc4cbb35eedefca5b133e5bd3009f378" => :big_sur
+    sha256 "5a4d896430260125864a8b8e22aabf172e36c8f8942faece7db8d502c568a690" => :catalina
+    sha256 "4b868a4ee5bd9e424e6ea4aa36fc828d6efd3f07b1d72063bbdb5a0c59baa276" => :mojave
+    sha256 "872dbbd21820c6d08513f29bc0c024f8584c7d7b7b6b4b436553414d08fd6950" => :high_sierra
+    sha256 "5fdeeb6ef9c0306f7195187b8068bc4f84de79d6f6716977a262ce26abb3b1db" => :sierra
+    sha256 "d36206d7c4ba1431fb592ad9335e9ae3bea8b983245cec1e65cc24318088bd86" => :el_capitan
   end
 
   def install
-    # don't install for a specific user
+    # don't install for specific users
     inreplace "Makefile", "-o ${BINOWN} -g ${BINGRP}", ""
-    inreplace "Makefile", "-o ${MANOWN} -g ${MANGRP}", ""
+    inreplace "Makefile", "-o ${SHAREOWN} -g ${SHAREGRP}", ""
 
     args = %W[LOCALBASE=#{prefix} MANDIR=#{man}/man]
 

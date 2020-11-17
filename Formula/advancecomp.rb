@@ -1,19 +1,26 @@
 class Advancecomp < Formula
   desc "Recompression utilities for .PNG, .MNG, .ZIP, and .GZ files"
-  homepage "http://www.advancemame.it/comp-readme.html"
-  url "https://github.com/amadvance/advancecomp/archive/v1.23.tar.gz"
-  sha256 "fe89d6ab382efc6b6be536b8d58113f36b83d82783d5215c261c14374cba800a"
+  homepage "https://www.advancemame.it/comp-readme.html"
+  url "https://github.com/amadvance/advancecomp/releases/download/v2.1/advancecomp-2.1.tar.gz"
+  sha256 "3ac0875e86a8517011976f04107186d5c60d434954078bc502ee731480933eb8"
+  license "GPL-3.0"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c6be5afcb1aeb0c8f6ce37bc528cfd27755b09043d052580b1e4a89cb954f341" => :sierra
-    sha256 "d4fe20402a495811acd27c98ce7c5c8c7329a4596b5d1f6cef345c4ecb3f8e5c" => :el_capitan
-    sha256 "4106a08a195345033e4e5481f28091895fd297a334aa622851678a98689dd34d" => :yosemite
+    sha256 "abda672de18fdc778a01f0aafa1bf2a9108fd1df2662afff7f849dafafa855d4" => :big_sur
+    sha256 "fccdb14eb1a620c824c08e748db390d788ad797c30654cb6434205fb16c78784" => :catalina
+    sha256 "798de4490c97283280259ffc1dc39159bd0ded85edb47f3212ad5ec9a174289e" => :mojave
+    sha256 "fdb2a72157445c33a462388f05580489c427f4f0d2a3d4cdc1b7867ef69e7e53" => :high_sierra
+    sha256 "4ef3590e26c5ac96d64dc985b035ec7055f215c84d31dfb09542d958f6ec4e77" => :sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
+
+  uses_from_macos "bzip2"
+  uses_from_macos "zlib"
 
   def install
     system "autoreconf", "-fiv"
@@ -24,6 +31,11 @@ class Advancecomp < Formula
 
   test do
     system bin/"advdef", "--version"
-    system bin/"advpng", "--version"
+
+    cp test_fixtures("test.png"), "test.png"
+    system bin/"advpng", "--recompress", "--shrink-fast", "test.png"
+
+    version_string = shell_output("#{bin}/advpng --version")
+    assert_includes version_string, "advancecomp v#{version}"
   end
 end

@@ -1,17 +1,19 @@
 class Jpegoptim < Formula
   desc "Utility to optimize JPEG files"
   homepage "https://github.com/tjko/jpegoptim"
-  url "https://github.com/tjko/jpegoptim/archive/RELEASE.1.4.4.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/j/jpegoptim/jpegoptim_1.4.4.orig.tar.gz"
-  sha256 "bc6b018ae8c3eb12d07596693d54243e214780a2a2303a6578747d3671f45da3"
+  url "https://github.com/tjko/jpegoptim/archive/RELEASE.1.4.6.tar.gz"
+  sha256 "c44dcfac0a113c3bec13d0fc60faf57a0f9a31f88473ccad33ecdf210b4c0c52"
+  license "GPL-2.0"
   head "https://github.com/tjko/jpegoptim.git"
 
   bottle do
     cellar :any
-    sha256 "bec0d85c80ef11f55aef1390a4ec11097230ad8c85b21e92ccd9869250ba0ae3" => :sierra
-    sha256 "1b666f4c77a2f553e4802a24818a7f8aabf87fc89f574e516cfc4fe1eeea9779" => :el_capitan
-    sha256 "a96c668146e37bb303f0684b3395791926a22331a85e1e14b906510016e2dcf3" => :yosemite
-    sha256 "4628860044aff9a7adc4106ea702aed3dfee8e8c5f2192d03130a55b7dd8a49d" => :mavericks
+    sha256 "ca4714cf1b1ecbc166a78b8143648fa639b70495f54dc75bcd1a71b9a2c4e604" => :big_sur
+    sha256 "f6acdfbe5b3ff49f922bfccb936c39609bb1a0f9dbebd1289d1679bf7fe5b2a4" => :catalina
+    sha256 "c60d59cfe20db5ad448c4da58d7c43ca072f15a31502b989a51b9020da445880" => :mojave
+    sha256 "9588bffa63f2041939e480ff8dbce25a004ef2414fc7ea9d5b5177a38bfb8eaf" => :high_sierra
+    sha256 "89b7f8465e95066c6bf19515affed14037841ea5d0a86b8c3d6cf026f507e938" => :sierra
+    sha256 "cc6c60a27cba7bb5f0e1b4a7c8ae3567db4eeaf1e1384488b818da7a1409f837" => :el_capitan
   end
 
   depends_on "jpeg"

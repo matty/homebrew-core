@@ -2,16 +2,22 @@ require "language/node"
 
 class Jsdoc3 < Formula
   desc "API documentation generator for JavaScript"
-  homepage "http://usejsdoc.org/"
-  url "https://registry.npmjs.org/jsdoc/-/jsdoc-3.4.3.tgz"
-  sha256 "23614801b96ab77c17cd5d509a2a892f022c9f0669de9de81b8a426a0a761054"
+  homepage "https://jsdoc.app/"
+  url "https://registry.npmjs.org/jsdoc/-/jsdoc-3.6.6.tgz"
+  sha256 "816f44294f01a990df8baf23b420435ad8ebcfc7d4e141576dbeabe8e42879a0"
+  license "Apache-2.0"
   head "https://github.com/jsdoc3/jsdoc.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "05b19f6416176a148d4378a513ccb97162d39dfc7e1eb334ee847a255864c614" => :sierra
-    sha256 "a20047ed1604c540600e93726a072dd26c7050b0f100459047f01b8bd4388aa9" => :el_capitan
-    sha256 "3d1035d8d1ff7bd705d8b9ae2b3a00e1f969be6cdb1843c594924302e3de918d" => :yosemite
+    sha256 "4c1da3c8d4fe156dd341effdefc520eda61a622584cde9fbdc307761c0befb87" => :big_sur
+    sha256 "be52878f4ba17b23b50d0d10cd44509029967ab76b6bf7881744181ace44b469" => :catalina
+    sha256 "c9b323246b713d6e1914cd8b89948c88b2f17a2c2b350edc51f48599e9380b00" => :mojave
+    sha256 "7e4451a0a6726910650d18392c19cfe9e6e2acd477e23e803f73f6e09a38e64c" => :high_sierra
   end
 
   depends_on "node"
@@ -22,7 +28,7 @@ class Jsdoc3 < Formula
   end
 
   test do
-    (testpath/"test.js").write <<-EOS.undent
+    (testpath/"test.js").write <<~EOS
       /**
        * Represents a formula.
        * @constructor

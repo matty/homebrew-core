@@ -1,29 +1,33 @@
 class Nim < Formula
-  desc "Statically typed, imperative programming language"
-  homepage "http://nim-lang.org/"
-  url "http://nim-lang.org/download/nim-0.16.0.tar.xz"
-  sha256 "9e199823be47cba55e62dd6982f02cf0aad732f369799fec42a4d8c2265c5167"
+  desc "Statically typed compiled systems programming language"
+  homepage "https://nim-lang.org/"
+  url "https://nim-lang.org/download/nim-1.4.0.tar.xz"
+  sha256 "9dfba2bed31a21a5a34231016dd556b1b5e0db23c01357cfab26aa8f27a6c23d"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f026a07f779040c1b4e53448b344856e7375bc68c4a00992eaae98b90927ef28" => :sierra
-    sha256 "1e402f8c34ceeaa674a7d9864509db19689e3f98817e8ba1d0ec7807e834c8d1" => :el_capitan
-    sha256 "c45e4b32b58b95cd4415095281cca6efa33f3ac230fe60a063a7a196428939b0" => :yosemite
+    rebuild 1
+    sha256 "8b726adf91c1034db26ee946974d3a57925b72951b933a033407a80409d10be8" => :big_sur
+    sha256 "94d608a2b726324490468d97eb690051505a07f75ac729dbe00214a611172513" => :catalina
+    sha256 "35068d141e7b6043c0e90502e04e4fbd9d4c9abf058600b0f9e1fc3ce638206c" => :mojave
+    sha256 "b6ab01910675c9a1f0ffa855f3faab1495b6d66f83a55998553e3a507f0372cd" => :high_sierra
   end
 
   head do
-    url "https://github.com/nim-lang/Nim.git", :branch => "devel"
+    url "https://github.com/nim-lang/Nim.git", branch: "devel"
     resource "csources" do
       url "https://github.com/nim-lang/csources.git"
     end
   end
 
+  depends_on "help2man" => :build
+
   def install
     if build.head?
       resource("csources").stage do
         system "/bin/sh", "build.sh"
-        build_bin = buildpath/"bin"
-        build_bin.install "bin/nim"
+        (buildpath/"bin").install "bin/nim"
       end
     else
       system "/bin/sh", "build.sh"
@@ -32,29 +36,32 @@ class Nim < Formula
     system "bin/nim", "c", "-d:release", "koch"
     # Build a new version of the compiler with readline bindings
     system "./koch", "boot", "-d:release", "-d:useLinenoise"
-    # Build nimsuggest/nimble/nimgrep
+    # Build nimble/nimgrep/nimpretty/nimsuggest
     system "./koch", "tools"
     system "./koch", "geninstall"
     system "/bin/sh", "install.sh", prefix
-    bin.install_symlink prefix/"nim/bin/nim"
-    bin.install_symlink prefix/"nim/bin/nim" => "nimrod"
+
+    system "help2man", "bin/nim", "-o", "nim.1", "-N"
+    man1.install "nim.1"
 
     target = prefix/"nim/bin"
-    target.install "bin/nimsuggest"
-    target.install "bin/nimble"
-    target.install "bin/nimgrep"
-    bin.install_symlink prefix/"nim/bin/nimsuggest"
-    bin.install_symlink target/"nimble"
-    bin.install_symlink target/"nimgrep"
+    bin.install_symlink target/"nim"
+    tools = %w[nimble nimgrep nimpretty nimsuggest]
+    tools.each do |t|
+      system "help2man", buildpath/"bin"/t, "-o", "#{t}.1", "-N"
+      man1.install "#{t}.1"
+      target.install buildpath/"bin"/t
+      bin.install_symlink target/t
+    end
   end
 
   test do
-    (testpath/"hello.nim").write <<-EOS.undent
+    (testpath/"hello.nim").write <<~EOS
       echo("hello")
     EOS
     assert_equal "hello", shell_output("#{bin}/nim compile --verbosity:0 --run #{testpath}/hello.nim").chomp
 
-    (testpath/"hello.nimble").write <<-EOS.undent
+    (testpath/"hello.nimble").write <<~EOS
       version = "0.1.0"
       author = "Author Name"
       description = "A test nimble package"

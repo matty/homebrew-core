@@ -1,86 +1,65 @@
 class Guile < Formula
   desc "GNU Ubiquitous Intelligent Language for Extensions"
   homepage "https://www.gnu.org/software/guile/"
+  url "https://ftp.gnu.org/gnu/guile/guile-3.0.4.tar.xz"
+  mirror "https://ftpmirror.gnu.org/guile/guile-3.0.4.tar.xz"
+  sha256 "6b7947dc2e3d115983846a268b8f5753c12fd5547e42fbf2b97d75a3b79f0d31"
+  license "LGPL-3.0-or-later"
 
-  stable do
-    url "https://ftpmirror.gnu.org/guile/guile-2.0.14.tar.xz"
-    mirror "https://ftp.gnu.org/gnu/guile/guile-2.0.14.tar.xz"
-    sha256 "e8442566256e1be14e51fc18839cd799b966bc5b16c6a1d7a7c35155a8619d82"
-
-    if MacOS.version >= :sierra
-      # https://debbugs.gnu.org/cgi/bugreport.cgi?bug=23870
-      # http://osdir.com/ml/bug-guile-gnu/2016-06/msg00180.html
-      # https://github.com/Homebrew/homebrew-core/issues/1957#issuecomment-229347476
-      # https://gist.githubusercontent.com/rahulg/baa500e84136f0965e9ade2fb36b90ba/raw/4f1081838972ac9621fc68bb571daaf99fc0c045/libguile-stime-sierra.patch
-      patch :p0 do
-        url "https://raw.githubusercontent.com/macports/macports-ports/5a3bba7/lang/guile/files/sierra.patch"
-        sha256 "6947f15e1aa6129f12eb692253bcc1ff969862f804de1f4d6360ad4786ae53f0"
-      end
-
-      # Filter incompat. mkostemp(3) flags on macOS 10.12
-      # https://trac.macports.org/ticket/52613
-      # https://debbugs.gnu.org/cgi/bugreport.cgi?bug=24862
-      patch :p0 do
-        url "https://raw.githubusercontent.com/macports/macports-ports/8b7f401/lang/guile/files/sierra-filter-incompatible-mkostemp-flags.patch"
-        sha256 "90750429d92a2ea97c828435645a2fd3b399e1b571ced41ff1988894155b4934"
-      end
-    end
+  livecheck do
+    url :stable
   end
 
   bottle do
-    sha256 "1de107828ea1d6eb5448b56c9ddca985fdb36b89d0de77390d4a70a04581c964" => :sierra
-    sha256 "d8fc01107161424ecf8c22bb2e1bc074b5805d70c2a0525c604996112c945fa7" => :el_capitan
-    sha256 "e994c1c0ca0bf0f84d91838f2bf992eda7ada179b7eef6bbd4583fd74ce79fc9" => :yosemite
-  end
-
-  devel do
-    url "http://git.savannah.gnu.org/r/guile.git",
-        :tag => "v2.1.7",
-        :revision => "c58c143f31fe4c1717fc8846a8681de2bb4b3869"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "gettext" => :build
-
-    # Avoid undeclared identifier errors for SOCK_CLOEXEC and SOCK_NONBLOCK
-    # Reported 19 Feb 2017 https://debbugs.gnu.org/cgi/bugreport.cgi?bug=25790
-    patch :DATA
+    rebuild 2
+    sha256 "fb9d84289c4bcb60f7e455b7a00438c9dd955c213ef4ff5c2d9362631d07f337" => :big_sur
+    sha256 "677c227a6a9b67df6592ffc26478ce5daa10f84eec4ed2ec7818f2012bb582f7" => :catalina
+    sha256 "a4f0eeab635c5360ba0dea52358aa9ee8ebd841d2a53e3ccda8b65f5684f679f" => :mojave
+    sha256 "5f83affb2fa8fda3734c2379260a4df5372432b3b399cd9af195fa0fb94da578" => :high_sierra
   end
 
   head do
-    url "http://git.sv.gnu.org/r/guile.git"
+    url "https://git.savannah.gnu.org/git/guile.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "gettext" => :build
+    uses_from_macos "flex" => :build
   end
 
-  depends_on "pkg-config" => :run # guile-config is a wrapper around pkg-config.
-  depends_on "libtool" => :run
-  depends_on "libffi"
-  depends_on "libunistring"
+  depends_on "gnu-sed" => :build
   depends_on "bdw-gc"
   depends_on "gmp"
+  depends_on "libffi"
+  depends_on "libtool"
+  depends_on "libunistring"
+  depends_on "pkg-config" # guile-config is a wrapper around pkg-config.
   depends_on "readline"
 
-  fails_with :clang do
-    build 211
-    cause "Segfaults during compilation"
+  on_linux do
+    depends_on "gperf"
   end
 
   def install
-    unless build.stable?
-      # Avoid "address argument to atomic operation must be a pointer to _Atomic type"
-      # Reported 19 Feb 2017 http://debbugs.gnu.org/cgi/bugreport.cgi?bug=25791
-      ENV["ac_cv_header_stdatomic_h"] = "no"
+    # Work around Xcode 11 clang bug
+    # https://bitbucket.org/multicoreware/x265/issues/514/wrong-code-generated-on-macos-1015
+    ENV.append_to_cflags "-fno-stack-check" if DevelopmentTools.clang_build_version >= 1010
 
-      system "./autogen.sh"
-    end
+    # Avoid superenv shim
+    inreplace "meta/guile-config.in", "@PKG_CONFIG@", Formula["pkg-config"].opt_bin/"pkg-config"
+
+    system "./autogen.sh" unless build.stable?
+
+    # Disable JIT on Apple Silicon, as it is not yet supported
+    # https://debbugs.gnu.org/cgi/bugreport.cgi?bug=44505
+    extra_args = []
+    extra_args << "--enable-jit=no" if Hardware::CPU.arm?
 
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-libreadline-prefix=#{Formula["readline"].opt_prefix}",
-                          "--with-libgmp-prefix=#{Formula["gmp"].opt_prefix}"
+                          "--with-libgmp-prefix=#{Formula["gmp"].opt_prefix}",
+                          *extra_args
     system "make", "install"
 
     # A really messed up workaround required on macOS --mkhl
@@ -88,14 +67,44 @@ class Guile < Formula
       lib.install_symlink dylib.basename => "#{dylib.basename(".dylib")}.so"
     end
 
+    # This is either a solid argument for guile including options for
+    # --with-xyz-prefix= for libffi and bdw-gc or a solid argument for
+    # Homebrew automatically removing Cellar paths from .pc files in favour
+    # of opt_prefix usage everywhere.
+    inreplace lib/"pkgconfig/guile-3.0.pc" do |s|
+      s.gsub! Formula["bdw-gc"].prefix.realpath, Formula["bdw-gc"].opt_prefix
+      s.gsub! Formula["libffi"].prefix.realpath, Formula["libffi"].opt_prefix
+    end
+
     (share/"gdb/auto-load").install Dir["#{lib}/*-gdb.scm"]
+  end
+
+  def post_install
+    # Create directories so installed modules can create links inside.
+    (HOMEBREW_PREFIX/"lib/guile/3.0/site-ccache").mkpath
+    (HOMEBREW_PREFIX/"lib/guile/3.0/extensions").mkpath
+    (HOMEBREW_PREFIX/"share/guile/site/3.0").mkpath
+  end
+
+  def caveats
+    <<~EOS
+      Guile libraries can now be installed here:
+          Source files: #{HOMEBREW_PREFIX}/share/guile/site/3.0
+        Compiled files: #{HOMEBREW_PREFIX}/lib/guile/3.0/site-ccache
+            Extensions: #{HOMEBREW_PREFIX}/lib/guile/3.0/extensions
+
+      Add the following to your .bashrc or equivalent:
+        export GUILE_LOAD_PATH="#{HOMEBREW_PREFIX}/share/guile/site/3.0"
+        export GUILE_LOAD_COMPILED_PATH="#{HOMEBREW_PREFIX}/lib/guile/3.0/site-ccache"
+        export GUILE_SYSTEM_EXTENSIONS_PATH="#{HOMEBREW_PREFIX}/lib/guile/3.0/extensions"
+    EOS
   end
 
   test do
     hello = testpath/"hello.scm"
-    hello.write <<-EOS.undent
-    (display "Hello World")
-    (newline)
+    hello.write <<~EOS
+      (display "Hello World")
+      (newline)
     EOS
 
     ENV["GUILE_AUTO_COMPILE"] = "0"
@@ -103,21 +112,3 @@ class Guile < Formula
     system bin/"guile", hello
   end
 end
-
-__END__
-diff --git a/libguile/socket.c b/libguile/socket.c
-index 64df64f..446243c 100644
---- a/libguile/socket.c
-+++ b/libguile/socket.c
-@@ -1655,8 +1655,12 @@ scm_init_socket ()
- 
-   /* accept4 flags.  No ifdef as accept4 has a gnulib
-      implementation.  */
-+#ifdef SOCK_CLOEXEC
-   scm_c_define ("SOCK_CLOEXEC", scm_from_int (SOCK_CLOEXEC));
-+#endif
-+#ifdef SOCK_NONBLOCK
-   scm_c_define ("SOCK_NONBLOCK", scm_from_int (SOCK_NONBLOCK));
-+#endif
- 
-   /* setsockopt level.

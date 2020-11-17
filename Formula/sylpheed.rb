@@ -1,20 +1,28 @@
 class Sylpheed < Formula
   desc "Simple, lightweight email-client"
-  homepage "http://sylpheed.sraoss.jp/en/"
-  url "http://sylpheed.sraoss.jp/sylpheed/v3.5/sylpheed-3.5.0.tar.bz2"
-  sha256 "4a0b62d17bca6f1a96ab951ef55a9a67813d87bc1dc3ee55d8ec2c045366a05c"
+  homepage "https://sylpheed.sraoss.jp/en/"
+  url "https://sylpheed.sraoss.jp/sylpheed/v3.7/sylpheed-3.7.0.tar.bz2"
+  sha256 "eb23e6bda2c02095dfb0130668cf7c75d1f256904e3a7337815b4da5cb72eb04"
+  revision 3
+
+  livecheck do
+    url "https://sylpheed.sraoss.jp/en/download.html"
+    regex(%r{stable.*?href=.*?/sylpheed[._-]v?(\d+(?:\.\d+)+)\.t}im)
+  end
 
   bottle do
-    sha256 "a9d6c8f2f1da15af3ab8048fedc3d5996be9de40c781c6c120cc79821529c817" => :sierra
-    sha256 "fced00597f19a4f6d5c1eea145582ba35e6a7885d4de94c234a47021b0ce2939" => :el_capitan
-    sha256 "0743231958dd2029e227fda080acbe73d3fe038b3a59ff1826f3ea8290743bb4" => :yosemite
-    sha256 "e547604d5b9059de979bcb412820c6ae137975f49b2a247491588b988e73c308" => :mavericks
+    rebuild 1
+    sha256 "c6d593913b17b40c9fbffea7eb799bc34f3a15b78b76a05ac9895a4f1dfd89e4" => :big_sur
+    sha256 "44913001d85002b75a715b3b8d12ef0fcbc3a1de152546d8fe5297544af367d6" => :catalina
+    sha256 "744efdd95f6dc3152ab39da781d5cc9ef81a5caa7310097b00a903e1e595e188" => :mojave
+    sha256 "0ec10e9ba748c3ce1bbb2502b8f9736fcdd1c72d492fdf4c58e2e3c0f6442f4b" => :high_sierra
+    sha256 "df7c4f2ede961688c72b588cb4e08702603caf19ad08d2c00721e95c9a503716" => :sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "gpgme"
   depends_on "gtk+"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     system "./configure", "--disable-dependency-tracking",

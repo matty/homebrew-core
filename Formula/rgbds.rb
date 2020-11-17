@@ -1,36 +1,37 @@
 class Rgbds < Formula
   desc "Rednex GameBoy Development System"
-  homepage "https://github.com/bentley/rgbds"
-  url "https://github.com/bentley/rgbds/releases/download/v0.2.4/rgbds-0.2.4.tar.gz"
-  sha256 "a7d32f369c6acf65fc0875c72873ef21f4d3a5813d3a2ab74ea604429f7f0435"
+  homepage "https://github.com/rednex/rgbds"
+  url "https://github.com/rednex/rgbds/archive/v0.4.1.tar.gz"
+  sha256 "cecee415a3fafe56a761f033ffbf6c6aa6af1e47dc2b764ffd04104897bbd2e5"
+  license "MIT"
+  head "https://github.com/rednex/rgbds.git"
 
-  head "https://github.com/bentley/rgbds.git"
+  livecheck do
+    url "https://github.com/gbdev/rgbds/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "ea6db1238c05eba1f3d37c06d55b73119f3dd8d7e8e748191b59fd24f91ad833" => :sierra
-    sha256 "46c4d64f4ac330933afec620fb70e469461157d28bd52ddc726ab25de412a3b4" => :el_capitan
-    sha256 "2cb8697c3899037e909218ad5b1786116ba1becbe735a68a0efc909e0c0a3478" => :yosemite
-    sha256 "c08b856ecf4cb57390ec99241d0bc87ba623536ab7e3e11d5cc23334230ff1cd" => :mavericks
+    cellar :any
+    sha256 "1e6c364d0a654e124aa5cae514bb5f64e69af66f63254a272a473de7db3077c9" => :big_sur
+    sha256 "8adee69ec949c97750ea1aa84fb7ccabe219598902744f06cae3b49b4cbe6a08" => :catalina
+    sha256 "22b389095a057f515398cfa7981339fb37f93cf12417c1c9ff3fac9bc31cc71c" => :mojave
+    sha256 "a791dd97949a7aec4d02197bfdd44ee6bd84472c93a50d6b762b5a3a2f2c5117" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libpng" => :build
+  depends_on "libpng"
 
   def install
-    system "make", "install", "PREFIX=#{prefix}", "MANPREFIX=#{man}", "PNGFLAGS=-I#{Formula["libpng"].opt_include}"
+    system "make", "install", "PREFIX=#{prefix}", "mandir=#{man}"
   end
 
   test do
-    (testpath/"source.asm").write <<-EOS.undent
-      SECTION "Org $100",HOME[$100]
-      nop
-      jp begin
-      begin:
-        ld sp, $ffff
-        ld a, $1
-        ld b, a
-        add a, b
+    # https://github.com/rednex/rgbds/blob/HEAD/test/asm/assert-const.asm
+    (testpath/"source.asm").write <<~EOS
+      SECTION "rgbasm passing asserts", ROM0[0]
+        db 0
+        assert @
     EOS
     system "#{bin}/rgbasm", "source.asm"
   end

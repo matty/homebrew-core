@@ -1,15 +1,20 @@
 class Chadwick < Formula
-  desc "Tools for parsing Retrosheet MLB play-by-play files."
+  desc "Tools for parsing Retrosheet MLB play-by-play files"
   homepage "https://chadwick.sourceforge.io"
-  url "https://downloads.sourceforge.net/project/chadwick/chadwick-0.6/chadwick-0.6.5/chadwick-0.6.5.tar.gz"
-  sha256 "fed87dee762eb8550253ac86b42e5ffcd5abbd87509b708e523fffed105ab547"
+  url "https://downloads.sourceforge.net/project/chadwick/chadwick-0.7/chadwick-0.7.2/chadwick-0.7.2.tar.gz"
+  sha256 "f7b3af15281106e101e2ccc4cb182a3f15dbdc3327f2bcb045bfc486a8fda46e"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/chadwick[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "9e861062afe571d353e11df00146c5eafb3bad33cc747bc0b63b2441f1d52d10" => :sierra
-    sha256 "9b62dbf5675819d3ba2f770ab04086702d22054133c37096582a744624c41fce" => :el_capitan
-    sha256 "3975fe87dde078bf3fe1bfa23738e81dc2da185f8ea021a536e653749e33f944" => :yosemite
-    sha256 "f1d8a2d60be50146451c1581e536e5f22929c8846d8c6e625ee9ee2910348a35" => :mavericks
+    sha256 "693c6ee0980401936a83453bdbc398aeb0eb06ba9bb8e101046508b14edfdc98" => :catalina
+    sha256 "a068fd25b1e8b3d6f9a56a8a1d4ac18a49f07f82450b1ab3f3766b86fb0a362a" => :mojave
+    sha256 "427b5c0fca10b23b66c56bda3537080df2ba467edea59a9dfd2f0fba56f50f9b" => :high_sierra
   end
 
   def install
@@ -27,9 +32,9 @@ class Chadwick < Formula
     date_xml_slug = date_xml.delete "/"
 
     # game_id and attributes for the retrosheet "team file"
-    attr = { :game_id => "ATL#{date_xml_slug}0", :home => "ATL", :home_name => "Braves",
-             :home_city => "Atlanta", :visitor => "NYN", :visitor_name => "Mets",
-             :visitor_city => "New York" }
+    attr = { game_id: "ATL#{date_xml_slug}0", home: "ATL", home_name: "Braves",
+             home_city: "Atlanta", visitor: "NYN", visitor_name: "Mets",
+             visitor_city: "New York" }
 
     # retrosheet "event file" name, chadwick's xml name?, our value
     attr_map_info = [
@@ -44,9 +49,9 @@ class Chadwick < Formula
     ]
 
     # expected (computed) score related data in chadwick's output
-    exp_linescore = { :away_runs => "1", :away_hits => "1", :away_errors => "0",
-                      :home_runs => "0", :home_hits => "3", :home_errors => "0" }
-    exp_ing_ln_score = { :away => ["0", "0", "1"], :home => ["0", "0", "0"] }
+    exp_linescore = { away_runs: "1", away_hits: "1", away_errors: "0",
+                      home_runs: "0", home_hits: "3", home_errors: "0" }
+    exp_ing_ln_score = { away: ["0", "0", "1"], home: ["0", "0", "0"] }
     exp_innings_cnt = exp_ing_ln_score.values[0].size
     exp_tmplayers_cnt = 9 # expected player count for each team
 
@@ -57,7 +62,7 @@ class Chadwick < Formula
       attr_map_info.each { |a, _, v| f.puts ["info", a, v].join(",") }
     end
 
-    evn_file.append_lines <<-EOS.undent
+    evn_file.append_lines <<~EOS
       start,youne003,"Eric Young",0,1,7\nstart,murpd006,"Daniel Murphy",0,2,4
       start,wrigd002,"David Wright",0,3,5\nstart,granc001,"Curtis Granderson",0,4,9
       start,dudal001,"Lucas Duda",0,5,3\nstart,lagaj001,"Juan Lagares",0,6,8
@@ -84,13 +89,13 @@ class Chadwick < Formula
     EOS
 
     team_file = testpath/"TEAM#{date_y}" # retrosheet "team file"
-    team_file.write <<-EOS.undent
+    team_file.write <<~EOS
       #{attr[:home]},N,#{attr[:home_city]},#{attr[:home_name]}
       #{attr[:visitor]},N,#{attr[:visitor_city]},#{attr[:visitor_name]}
     EOS
 
     ros_file_h = testpath/"#{attr[:home]}#{date_y}.ROS" # retrosheet "roster"
-    ros_file_h.write <<-EOS.undent
+    ros_file_h.write <<~EOS
       freef001,Freeman,Freddie,L,R,ATL,1B\ngatte001,Gattis,Evan,R,R,ATL,C
       haraa001,Harang,Aaron,R,R,ATL,P\nheywj001,Heyward,Jason,L,L,ATL,OF
       simma001,Simmons,Andrelton,R,R,ATL,SS\nuggld001,Uggla,Dan,R,R,ATL,2B
@@ -99,7 +104,7 @@ class Chadwick < Formula
     EOS
 
     ros_file_v = testpath/"#{attr[:visitor]}#{date_y}.ROS" # retrosheet "roster"
-    ros_file_v.write <<-EOS.undent
+    ros_file_v.write <<~EOS
       colob001,Colon,Bartolo,R,R,NYN,P\ndarnt001,d'Arnaud,Travis,R,R,NYN,C
       dudal001,Duda,Lucas,L,R,NYN,OF\ngranc001,Granderson,Curtis,L,R,NYN,RF
       lagaj001,Lagares,Juan,R,R,NYN,OF\nmurpd006,Murphy,Daniel,L,R,NYN,3B
@@ -109,11 +114,11 @@ class Chadwick < Formula
 
     # check chadwick's standard output
     exec_str = "#{bin}/cwbox -X -q -i #{attr[:game_id]} -y #{date_y} #{evn_file}"
-    out = shell_output exec_str.sub("-X", "")
+    out = shell_output(exec_str.sub("-X", ""))
     assert_match "Game of #{date_m_d_y} -- #{attr[:visitor_city]} at #{attr[:home_city]}", out
 
     # check chadwick's xml output
-    out_xml = shell_output exec_str
+    out_xml = shell_output(exec_str)
     require "rexml/document"
     doc = REXML::Document.new(out_xml)
     assert root = doc.root

@@ -1,23 +1,23 @@
 class T1utils < Formula
   desc "Command-line tools for dealing with Type 1 fonts"
   homepage "https://www.lcdf.org/type/"
-  url "https://www.lcdf.org/type/t1utils-1.39.tar.gz"
-  sha256 "0faef3e5c4927b38b05ac99ee177b7d7cddbbf5b4452f98b244f684b52b0d4c4"
+  url "https://www.lcdf.org/type/t1utils-1.42.tar.gz"
+  sha256 "61877935b1987044ddff4bb90a05200ca7164678a355e170bf5f1a5556cc9f29"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "890093642744c194b50cd68765393f860db46404f4390d6f480662d4551830b0" => :sierra
-    sha256 "3bf7bfa976b8d32a652ca5ee32165ab93b02b83189cc8d63698cadad9ebe67d0" => :el_capitan
-    sha256 "3966b75f9da837ff1c06c07e7304cadf45f3f0d47a81db00f519fe1c7afbe05d" => :yosemite
-    sha256 "dcfef3d4b31408531519e121f0abc243740c73a8ce52e09defdf86a6b73ae3f3" => :mavericks
+    sha256 "f00f838c4ebef97926c3a2cd9940d2105029839a25543f9861903ec1a71939e1" => :big_sur
+    sha256 "dfaaef0c838273e5c4cee7d6d2eb515e91c77c3226913b4c4486ca0086c2e6bc" => :catalina
+    sha256 "1b511df389dee041c0cdadae94e38e987ea978024730d687b8642623cb054e09" => :mojave
+    sha256 "c17de51c95690f3133933cd508873e21734a8e4f8ed80ec6546ab3c7fb82edd2" => :high_sierra
   end
 
   head do
     url "https://github.com/kohler/t1utils.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
   def install

@@ -1,15 +1,17 @@
 class Libdvbpsi < Formula
   desc "Library to decode/generate MPEG TS and DVB PSI tables"
   homepage "https://www.videolan.org/developers/libdvbpsi.html"
-  url "https://download.videolan.org/pub/libdvbpsi/1.3.0/libdvbpsi-1.3.0.tar.bz2"
-  sha256 "a2fed1d11980662f919bbd1f29e2462719e0f6227e1a531310bd5a706db0a1fe"
+  url "https://download.videolan.org/pub/libdvbpsi/1.3.3/libdvbpsi-1.3.3.tar.bz2"
+  sha256 "02b5998bcf289cdfbd8757bedd5987e681309b0a25b3ffe6cebae599f7a00112"
+  license "LGPL-2.1"
 
   bottle do
     cellar :any
-    sha256 "11c95243fafbca574d4270a3c5ae60997f77f4b5871fac75f17006014b32afdb" => :sierra
-    sha256 "4a2441b1d7ef602c05e46744a394373de1de33284955c455937b4bbdecddfc89" => :el_capitan
-    sha256 "db2d97fb4e3460aa1b44e75af5398c0b9d2d8b860f18cb8a197c18e9e1ec8229" => :yosemite
-    sha256 "45af2a1bd8b769216fcff8b5c8c37dd136ab4db99167e46a8371db4880afc2c9" => :mavericks
+    sha256 "255b960c43fac14b8a50af513ca3b2925cdfa0e71efa61d2eced2fd172fe8dff" => :big_sur
+    sha256 "b6e6f300bbc36fabf785f74abb083c5cfc3f91fdd51ee7bd058cc579e709c78d" => :catalina
+    sha256 "26298540d01f52628385c83cac4b6666543af4cc059fa7ad5b3a8bd458955628" => :mojave
+    sha256 "c6d79686bf05346bc473cc148b68901d99ac447a85542ff68d089c71eda1bc87" => :high_sierra
+    sha256 "8bb1f1fff61674756153e8aec744d5d3c726da0c4ecd4bd291cae732e8264af3" => :sierra
   end
 
   def install

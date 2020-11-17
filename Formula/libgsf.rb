@@ -1,29 +1,35 @@
 class Libgsf < Formula
   desc "I/O abstraction library for dealing with structured file formats"
   homepage "https://developer.gnome.org/gsf/"
-  url "https://download.gnome.org/sources/libgsf/1.14/libgsf-1.14.41.tar.xz"
-  sha256 "150b98586a1021d5c49b3d4d065d0aa3e3674ae31db131af5372499d2d3f08d3"
+  url "https://download.gnome.org/sources/libgsf/1.14/libgsf-1.14.47.tar.xz"
+  sha256 "d188ebd3787b5375a8fd38ee6f761a2007de5e98fa0cf5623f271daa67ba774d"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "c7540109a9d799969ccf04f4cebd1c55c20e2f0b93313b3d0d0502ea6be28ade" => :sierra
-    sha256 "434efb359e8f149061659e9173826fa9e2ade089ad4cff88da0efce0070c813e" => :el_capitan
-    sha256 "f0f105ef96ede22df075cc256385c9df5f9c61832a9eb60a86aa1087696b4c85" => :yosemite
+    sha256 "190c702ad48598787b9fc72a019cd8f2701d1ae28ed41e3c111acd19b223d139" => :big_sur
+    sha256 "82a2fce8b091d204302919c7541a0ad21a28a24fe8ad8a5d4ae7f50f3f190349" => :catalina
+    sha256 "a051f21e80044277fafb60264c915cb79ce5f64059e9737f7a15795bc79ad3c8" => :mojave
+    sha256 "c2cb9985014c2c727abe935f113ab827e5a7af1e4376c27261897381fc87a2ba" => :high_sierra
   end
 
   head do
     url "https://github.com/GNOME/libgsf.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
-    depends_on "gnome-common" => :build
+    depends_on "automake" => :build
     depends_on "gtk-doc" => :build
     depends_on "libtool" => :build
   end
 
-  depends_on "pkg-config" => :build
   depends_on "intltool" => :build
-  depends_on "gdk-pixbuf" => :optional
+  depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "glib"
+
+  uses_from_macos "libxml2"
 
   def install
     args = %W[--disable-dependency-tracking --prefix=#{prefix}]
@@ -37,7 +43,7 @@ class Libgsf < Formula
 
   test do
     system bin/"gsf", "--help"
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gsf/gsf-utils.h>
       int main()
       {

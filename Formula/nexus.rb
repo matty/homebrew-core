@@ -1,9 +1,15 @@
 class Nexus < Formula
   desc "Repository manager for binary software components"
-  homepage "http://www.sonatype.org/"
-  url "https://sonatype-download.global.ssl.fastly.net/nexus/oss/nexus-2.14.2-01-bundle.tar.gz"
-  version "2.14.2-01"
-  sha256 "2264411f73adb0d3ec2b5c2390a5894f6d4e44fa59d7253c9e3d8940e04a8e6d"
+  homepage "https://www.sonatype.org/"
+  url "https://sonatype-download.global.ssl.fastly.net/repository/downloads-prod-group/oss/nexus-2.14.19-01-bundle.tar.gz"
+  version "2.14.19-01"
+  sha256 "5bf321e40b219756441fbdb9fa0d270493a25640af67076111ccd151ab007b7e"
+  license "EPL-1.0"
+
+  livecheck do
+    url "https://help.sonatype.com/repomanager2/download/download-archives---repository-manager-oss"
+    regex(/href=.*?nexus[._-]v?(\d+(?:\.\d+)+(?:-\d+)?)(?:-bundle)?\.t/i)
+  end
 
   bottle :unneeded
 
@@ -17,24 +23,25 @@ class Nexus < Formula
     bin.install_symlink libexec/"bin/nexus"
   end
 
-  plist_options :manual => "nexus start"
+  plist_options manual: "nexus start"
 
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>com.sonatype.nexus</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/nexus</string>
-          <string>start</string>
-        </array>
-        <key>RunAtLoad</key>
-      <true/>
-      </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>com.sonatype.nexus</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/nexus</string>
+            <string>start</string>
+          </array>
+          <key>RunAtLoad</key>
+        <true/>
+        </dict>
+      </plist>
     EOS
   end
 

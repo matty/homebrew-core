@@ -1,25 +1,31 @@
 class Fmt < Formula
   desc "Open-source formatting library for C++"
-  homepage "https://fmtlib.github.io/"
-  url "https://github.com/fmtlib/fmt/archive/3.0.1.tar.gz"
-  sha256 "dce62ab75a161dd4353a98364feb166d35e7eea382169d59d9ce842c49c55bad"
+  homepage "https://fmt.dev/"
+  url "https://github.com/fmtlib/fmt/archive/7.1.2.tar.gz"
+  sha256 "4119a1c34dff91631e1d0a3707428f764f1ea22fe3cd5e70af5b4ccd5513831c"
+  license "MIT"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "bac53b7d6efc3f09ddbb5e197aa6ea8f0337010b396f75bb51666bb9f1f4b250" => :sierra
-    sha256 "49151a813dd32732427993f0279620986b4371ec841ebdd506c77f4def10cd12" => :el_capitan
-    sha256 "91122df1a848016cf728ef1fe60fb18edae3f4fe99766eb93043bb6148b69259" => :yosemite
+    cellar :any
+    sha256 "e2c6b979c98bf19cb19f47a917f8509bca5d4e05443cec7f02f3dd632d6d497c" => :big_sur
+    sha256 "4eff1df21244a32d96b90a2dab162c18b8c3997da45c9c54f264776faf6a7457" => :catalina
+    sha256 "134d913dcd75ae766f8a887086538be4f8f0a9e13c9e4989d731cd8c2117806e" => :mojave
+    sha256 "a3cd11e35eab43f36608513a2c2904acce9336a0d46cb3ddd37cc00dfd258523" => :high_sierra
   end
 
   depends_on "cmake" => :build
 
   def install
-    system "cmake", ".", *std_cmake_args
+    system "cmake", ".", "-DBUILD_SHARED_LIBS=TRUE", *std_cmake_args
     system "make", "install"
+    system "make", "clean"
+    system "cmake", ".", "-DBUILD_SHARED_LIBS=FALSE", *std_cmake_args
+    system "make"
+    lib.install "libfmt.a"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <iostream>
       #include <string>
       #include <fmt/format.h>
@@ -31,7 +37,7 @@ class Fmt < Formula
       }
     EOS
 
-    system ENV.cxx, "test.cpp", "-o", "test",
+    system ENV.cxx, "test.cpp", "-std=c++11", "-o", "test",
                   "-I#{include}",
                   "-L#{lib}",
                   "-lfmt"

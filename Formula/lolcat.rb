@@ -2,26 +2,31 @@ class Lolcat < Formula
   desc "Rainbows and unicorns in your console!"
   homepage "https://github.com/busyloop/lolcat"
   url "https://github.com/busyloop/lolcat.git",
-      :tag => "v42.24.0",
-      :revision => "dfc68649f6bdac255d5be052d2123f3fbe3f555c"
+      tag:      "v100.0.1",
+      revision: "27441adfb51bc16073d65dbef300c8d3d7e86dc7"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "418b84a736d082079aeca4af6d2446c185e6062c2c1c15647ddd4357e9ea73fa" => :sierra
-    sha256 "0bf6b7d10ce44f854e3f81c1392d75ba0e4346a92807fb66b97223b8ccd6ad6d" => :el_capitan
-    sha256 "9878b6167975b0ad58868d55f1b36465f9a88910dcf22c119950f3d7203a0d83" => :yosemite
+    sha256 "df80796c28d2084b48ee2045954dbb2685eaa46935238b6b2a2cd1f41a546860" => :big_sur
+    sha256 "c0e179d579938e4301f04b4896bb2c234f4b643e53e53cbd4a7f796978d2ea6d" => :catalina
+    sha256 "ac56190c6ec7e25d49f979aff7f6cc3e45820002ef22fbc444196b64de2590f9" => :mojave
+    sha256 "1eb5cf4cd5565e07659f37e2531be1e72b0e2e8e57587af229e230fa00315ed3" => :high_sierra
   end
+
+  depends_on "ruby" if MacOS.version <= :sierra
 
   def install
     ENV["GEM_HOME"] = libexec
     system "gem", "build", "lolcat.gemspec"
     system "gem", "install", "lolcat-#{version}.gem"
     bin.install libexec/"bin/lolcat"
-    bin.env_script_all_files(libexec/"bin", :GEM_HOME => ENV["GEM_HOME"])
+    bin.env_script_all_files(libexec/"bin", GEM_HOME: ENV["GEM_HOME"])
+    man6.install "man/lolcat.6"
   end
 
   test do
-    (testpath/"test.txt").write <<-EOS.undent
+    (testpath/"test.txt").write <<~EOS
       This is
       a test
     EOS

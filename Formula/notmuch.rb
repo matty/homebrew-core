@@ -1,62 +1,59 @@
 class Notmuch < Formula
   desc "Thread-based email index, search, and tagging"
-  homepage "https://notmuchmail.org"
-  url "https://notmuchmail.org/releases/notmuch-0.23.5.tar.gz"
-  sha256 "c62694b3c5f04db48ed3bbf37a801ea2a03439826c6be318e23b34de749ac267"
+  homepage "https://notmuchmail.org/"
+  url "https://notmuchmail.org/releases/notmuch-0.31.2.tar.xz"
+  sha256 "1456b63e04637094eefe7e6f9a45812ed419392a0322fe8b0f452dd06a4cfbef"
+  license "GPL-3.0-or-later"
+  head "https://git.notmuchmail.org/git/notmuch", using: :git
+
+  livecheck do
+    url "https://notmuchmail.org/releases/"
+    regex(/href=.*?notmuch[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "86e86206746b46e81832c9e5690cfe25c88b8c58305f443ac752a275f228eb48" => :sierra
-    sha256 "2ea1ca92250f5e7c659fb1f5e4dc376466d723cd9c98c65713d69b721602c4fe" => :el_capitan
-    sha256 "02a47efc1509cf68d3f95326dc635bbf30d160e167574890cf6e8d01846bdd90" => :yosemite
+    sha256 "86205549d8971bcc17798ef64d43853a96c180f1997e6d991ad106c654f00eb3" => :big_sur
+    sha256 "33019e1569b78dc2ac4f72f6f901b05526d4678a2310f931609943f0f578c22b" => :catalina
+    sha256 "feef25a27ef288c9506b51b1c3f5482ccf29b98e4341f89bdeccb4452d8fd07b" => :mojave
+    sha256 "650579d43babe2435ba190a8cce066f1a3f6621ba840d7ea9a961b0f084ae589" => :high_sierra
   end
 
-  option "without-python", "Build without python support"
-
+  depends_on "doxygen" => :build
+  depends_on "libgpg-error" => :build
   depends_on "pkg-config" => :build
+  depends_on "sphinx-doc" => :build
+  depends_on "glib"
   depends_on "gmime"
+  depends_on "python@3.9"
   depends_on "talloc"
   depends_on "xapian"
-  depends_on :emacs => ["24.1", :optional]
-  depends_on :python3 => :optional
-  depends_on :ruby => ["1.9", :optional]
-
-  # Requires zlib >= 1.2.10
-  resource "zlib" do
-    url "http://zlib.net/zlib-1.2.10.tar.gz"
-    sha256 "8d7e9f698ce48787b6e1c67e6bff79e487303e66077e25cb9784ac8835978017"
-  end
-
-  # Fix SIP issue with python bindings
-  # A more comprehensive patch has been submitted upstream
-  # https://notmuchmail.org/pipermail/notmuch/2016/022631.html
-  patch :DATA
+  depends_on "zlib"
 
   def install
-    resource("zlib").stage do
-      system "./configure", "--prefix=#{buildpath}/zlib", "--static"
-      system "make", "install"
-      ENV.append_path "PKG_CONFIG_PATH", "#{buildpath}/zlib/lib/pkgconfig"
-    end
+    args = %W[
+      --prefix=#{prefix}
+      --mandir=#{man}
+      --emacslispdir=#{elisp}
+      --emacsetcdir=#{elisp}
+      --bashcompletiondir=#{bash_completion}
+      --zshcompletiondir=#{zsh_completion}
+      --without-ruby
+    ]
 
-    args = %W[--prefix=#{prefix}]
-
-    if build.with? "emacs"
-      ENV.deparallelize # Emacs and parallel builds aren't friends
-      args << "--with-emacs" << "--emacslispdir=#{elisp}" << "--emacsetcdir=#{elisp}"
-    else
-      args << "--without-emacs"
-    end
-
-    args << "--without-ruby" if build.without? "ruby"
+    ENV.append_path "PYTHONPATH", Formula["sphinx-doc"].opt_libexec/"lib/python3.9/site-packages"
 
     system "./configure", *args
     system "make", "V=1", "install"
 
-    Language::Python.each_python(build) do |python, _version|
-      cd "bindings/python" do
-        system python, *Language::Python.setup_install_args(prefix)
-      end
+    bash_completion.install "completion/notmuch-completion.bash"
+
+    (prefix/"vim/plugin").install "vim/notmuch.vim"
+    (prefix/"vim/doc").install "vim/notmuch.txt"
+    (prefix/"vim").install "vim/syntax"
+
+    cd "bindings/python" do
+      system Formula["python@3.9"].opt_bin/"python3", *Language::Python.setup_install_args(prefix)
     end
   end
 
@@ -66,18 +63,3 @@ class Notmuch < Formula
     assert_match "0 total", shell_output("#{bin}/notmuch new")
   end
 end
-
-__END__
-diff --git a/bindings/python/notmuch/globals.py b/bindings/python/notmuch/globals.py
-index b1eec2c..bce5190 100644
---- a/bindings/python/notmuch/globals.py
-+++ b/bindings/python/notmuch/globals.py
-@@ -25,7 +25,7 @@ from notmuch.version import SOVERSION
- try:
-     from os import uname
-     if uname()[0] == 'Darwin':
--        nmlib = CDLL("libnotmuch.{0:s}.dylib".format(SOVERSION))
-+        nmlib = CDLL("HOMEBREW_PREFIX/lib/libnotmuch.{0:s}.dylib".format(SOVERSION))
-     else:
-         nmlib = CDLL("libnotmuch.so.{0:s}".format(SOVERSION))
- except:

@@ -1,21 +1,20 @@
 class Suil < Formula
-  desc "lightweight C library for loading and wrapping LV2 plugin UIs"
+  desc "Lightweight C library for loading and wrapping LV2 plugin UIs"
   homepage "https://drobilla.net/software/suil/"
-  url "https://download.drobilla.net/suil-0.8.2.tar.bz2"
-  sha256 "787608c1e5b1f5051137dbf77c671266088583515af152b77b45e9c3a36f6ae8"
+  url "https://download.drobilla.net/suil-0.10.8.tar.bz2"
+  sha256 "91cd87e17e80d2e43d64700369b93a5c2d0f1648e36411e0233253a0c3840f40"
+  license "ISC"
 
   bottle do
-    rebuild 1
-    sha256 "3b7b1944db83edb792e26ebbd610cb5310357e2f24983ab7dd8be0c0c7dd4aeb" => :sierra
-    sha256 "30069bffb5c8f3903f4888135c3d1939f1329a19fda93b3bc8bf244827413995" => :el_capitan
-    sha256 "30c20891f724dfe103704e1b3c4e17b068a152fb3098560462a156fba29474c7" => :yosemite
-    sha256 "0f82a7cf59da98e7dfbdf437ee22c412eb5e52a821acba2f92b65de4ea7a5fe6" => :mavericks
+    sha256 "aea75cb3be00abce7094eed0be51b10ce8fd5d7ac8bd3514989dfa5e9e209880" => :big_sur
+    sha256 "24627d37fb66084ea3c0577d2dac5df714611004fb5c8cd9fddf747005eaa5be" => :catalina
+    sha256 "f84ea1b5e7a2b786e5f989093d72b2c7270218ef637b30a60df73e0ee7a517fb" => :mojave
+    sha256 "9b197d98140760bbb1293b90674941a0b3d5614c9a7f8353bd5ff64c23f0cd3f" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
+  depends_on "gtk+"
   depends_on "lv2"
-  depends_on "gtk+" => :recommended
-  depends_on :x11 => :optional
 
   def install
     system "./waf", "configure", "--prefix=#{prefix}"
@@ -23,7 +22,7 @@ class Suil < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <suil/suil.h>
 
       int main()
@@ -31,7 +30,8 @@ class Suil < Formula
         return suil_ui_supported("my-host", "my-ui");
       }
     EOS
-    system ENV.cc, "-I#{include}/suil-0", "-L#{lib}", "-lsuil-0", "test.c", "-o", "test"
+    lv2 = Formula["lv2"].opt_include
+    system ENV.cc, "-I#{lv2}", "-I#{include}/suil-0", "-L#{lib}", "-lsuil-0", "test.c", "-o", "test"
     system "./test"
   end
 end

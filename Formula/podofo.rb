@@ -1,40 +1,49 @@
 class Podofo < Formula
   desc "Library to work with the PDF file format"
   homepage "https://podofo.sourceforge.io"
-  url "https://downloads.sourceforge.net/podofo/podofo-0.9.5.tar.gz"
-  sha256 "854981cb897ebc14bac854ea0f25305372261a48a205363fe1c61659ba7b5304"
+  url "https://downloads.sourceforge.net/project/podofo/podofo/0.9.6/podofo-0.9.6.tar.gz"
+  sha256 "e9163650955ab8e4b9532e7aa43b841bac45701f7b0f9b793a98c8ca3ef14072"
+  revision 2
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "fea6db1ef03e7fe063ffc0db1359793a484f71b648399545f4e211a9c1a1e767" => :sierra
-    sha256 "6b41dacab35cc964f363b88b81b4bdfe09724d3d1fdc9603ef09fcb357cdf55f" => :el_capitan
-    sha256 "fefd08cd65f69149ebd3cb1e032e6f9e232d7ba22f766e378fa8a9848540a325" => :yosemite
+    sha256 "4840cedd76d3e3622ebd529df4e3105515c659b2a26cb7a61e75263ccb03233e" => :big_sur
+    sha256 "f3a0b9f5f93e268e1b8233bc1af041d26a89bb6f9e66ea0da0ef745b0454dc1d" => :catalina
+    sha256 "2ad60f4e4acd3fa9d1da1dcfeb7381696f126915bbea881d4bec9bb2cfd4fbab" => :mojave
+    sha256 "00db9c24295276fa24909d417f2790105bccc990c23f80ffa906210ab70e5af8" => :high_sierra
+    sha256 "30d51bd12657b4fe2defbe157c8dfea4c804318f13fa1f15011ebefaa7dec016" => :sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "libpng"
-  depends_on "freetype"
   depends_on "fontconfig"
+  depends_on "freetype"
   depends_on "jpeg"
+  depends_on "libidn"
+  depends_on "libpng"
   depends_on "libtiff"
-  depends_on "openssl"
-  depends_on "libidn" => :optional
+  depends_on "openssl@1.1"
+
+  # Upstream commit to fix cmake 3.12.0 build issue, remove in >= 0.9.7
+  # https://sourceforge.net/p/podofo/tickets/24/
+  patch :p0 do
+    url "https://sourceforge.net/p/podofo/tickets/24/attachment/podofo-cmake-3.12.patch"
+    sha256 "33e8bd8b57cc04884528d64c80624a852f61c8918b6fe320d26ca7d4905bdd54"
+  end
 
   def install
-    args = std_cmake_args
-
-    # Build shared to simplify linking for other programs.
-    args << "-DPODOFO_BUILD_SHARED:BOOL=TRUE"
-
-    args << "-DFREETYPE_INCLUDE_DIR_FT2BUILD=#{Formula["freetype"].opt_include}/freetype2"
-    args << "-DFREETYPE_INCLUDE_DIR_FTHEADER=#{Formula["freetype"].opt_include}/freetype2/config/"
-
-    # podofo scoops out non-mandatory dependencies from system automatically.
-    # Build fails against multi-lua systems, even when direct path is passed to cmake.
-    # https://github.com/Homebrew/homebrew/issues/44026
-    # DomT4: Reported upstream 19/12/2015 to mailing list but not published yet.
-    # This seemingly unofficial hack doesn't work for libidn sadly.
-    args << "-DLUA_INCLUDE_DIR=FALSE" << "-DLUA_LIBRARIES=FALSE"
+    args = std_cmake_args + %W[
+      -DCMAKE_INSTALL_NAME_DIR=#{opt_lib}
+      -DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON
+      -DCMAKE_DISABLE_FIND_PACKAGE_CppUnit=ON
+      -DCMAKE_DISABLE_FIND_PACKAGE_LUA=ON
+      -DPODOFO_BUILD_SHARED:BOOL=ON
+      -DFREETYPE_INCLUDE_DIR_FT2BUILD=#{Formula["freetype"].opt_include}/freetype2
+      -DFREETYPE_INCLUDE_DIR_FTHEADER=#{Formula["freetype"].opt_include}/freetype2/config/
+    ]
 
     mkdir "build" do
       system "cmake", "..", *args

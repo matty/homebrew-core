@@ -1,18 +1,20 @@
 class Upx < Formula
   desc "Compress/expand executable files"
   homepage "https://upx.github.io/"
-  url "https://github.com/upx/upx/releases/download/v3.93/upx-3.93-src.tar.xz"
-  sha256 "893f1cf1580c8f0048a4d328474cb81d1a9bf9844410d2fd99f518ca41141007"
-  head "https://github.com/upx/upx.git", :branch => :devel
+  url "https://github.com/upx/upx/releases/download/v3.96/upx-3.96-src.tar.xz"
+  sha256 "47774df5c958f2868ef550fb258b97c73272cb1f44fe776b798e393465993714"
+  head "https://github.com/upx/upx.git", branch: "devel"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0d02e380888bf408a7000c2894c23adcb2922e35ce92d36135dfefec2a7a099e" => :sierra
-    sha256 "c82e4c5cfa454ba997f4dd7a53f072a5cea34d43f31cddcd72b8663ad0d073bf" => :el_capitan
-    sha256 "9fd0ce75bd361d27e26cfa4f76bfa3e16ee8f791909899342e530bc28290e4c1" => :yosemite
+    sha256 "1089a067bec1387bfa8080565f95601493291933b83a510057ba6f1e7fd06d91" => :catalina
+    sha256 "20ab82b69b19ac0886bd202459b652d85f7bc5c288009dd7caf09017be940d37" => :mojave
+    sha256 "4773fc3b7ccb35aad163549a7c5b37813dea9e5c2f1cdfd67a00e7da36691b69" => :high_sierra
   end
 
-  depends_on "ucl"
+  depends_on "ucl" => :build
+
+  uses_from_macos "zlib"
 
   def install
     system "make", "all"

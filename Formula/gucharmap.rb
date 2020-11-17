@@ -1,25 +1,34 @@
 class Gucharmap < Formula
   desc "GNOME Character Map, based on the Unicode Character Database"
-  homepage "https://live.gnome.org/Gucharmap"
-  url "https://download.gnome.org/sources/gucharmap/9.0/gucharmap-9.0.2.tar.xz"
-  sha256 "723ea92c8e877beae3986432b8e002807c6c2d1140590dff1c5bff34bb6ed265"
+  homepage "https://wiki.gnome.org/Apps/Gucharmap"
+  url "https://download.gnome.org/sources/gucharmap/12.0/gucharmap-12.0.1.tar.xz"
+  sha256 "39de8aad9d7f0af33c29db1a89f645e76dad2fce00d1a0f7c8a689252a2c2155"
+  revision 4
 
-  bottle do
-    sha256 "58a9f1ad80737df84402e88890142d94a825c0f8de99998e097c2f720abf48bf" => :sierra
-    sha256 "51cb5eda359cd14a06fa25d5b3727aacff670e9db3fcc8a0ca21ddc7fcc8aee4" => :el_capitan
-    sha256 "a3793a89b3e82a957b03a742256887f0f796b1febc1b8d48bee031743f1c5f46" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "318ada0ffb5e2b9a2c4ed5968f8d38762a4cc2bb7119e50d6bb13354ca1de47f" => :big_sur
+    sha256 "007a3670270b9b8cbc2e0e9f36cb3854ba987d8b8105ec73e236fc56d28c2cbe" => :catalina
+    sha256 "b8f34cbea2db76364e0a4e3a6d2e5ba3110e80ef6b76fa3c165b1ac6b30ee9f1" => :mojave
+    sha256 "f8ad1728dd1e0124201e568ad0f69f004245368eb21527dea98ecf045ccad708" => :high_sierra
+  end
+
+  depends_on "coreutils" => :build
+  depends_on "desktop-file-utils" => :build
   depends_on "intltool" => :build
   depends_on "itstool" => :build
-  depends_on "desktop-file-utils" => :build
-  depends_on "wget" => :build
-  depends_on "coreutils" => :build
+  depends_on "pkg-config" => :build
+  depends_on "python@3.9" => :build
   depends_on "gtk+3"
 
   def install
-    ENV.append_path "PYTHONPATH", "#{Formula["libxml2"].opt_lib}/python2.7/site-packages"
+    xy = Language::Python.major_minor_version Formula["python@3.9"].opt_bin/"python3"
+    ENV.append_path "PYTHONPATH", "#{Formula["libxml2"].opt_lib}/python#{xy}/site-packages"
+    ENV["WGET"] = "curl"
+
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
@@ -28,7 +37,7 @@ class Gucharmap < Formula
                           "--disable-schemas-compile",
                           "--enable-introspection=no",
                           "--with-unicode-data=download"
-    system "make"
+    system "make", "WGETFLAGS=--remote-name --remote-time --connect-timeout 30 --retry 8"
     system "make", "install"
   end
 

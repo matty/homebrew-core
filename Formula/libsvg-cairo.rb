@@ -3,21 +3,29 @@ class LibsvgCairo < Formula
   homepage "https://cairographics.org/"
   url "https://cairographics.org/snapshots/libsvg-cairo-0.1.6.tar.gz"
   sha256 "a380be6a78ec2938100ce904363815a94068fca372c666b8cc82aa8711a0215c"
-  revision 1
+  license "LGPL-2.1"
+  revision 2
+
+  livecheck do
+    url "https://cairographics.org/snapshots/"
+    regex(/href=.*?libsvg-cairo[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "f4ab2f4b5888ea589bd18d2fbf2f5aa3dd255217b4498dfa228291141bc6fa26" => :sierra
-    sha256 "84c8809a89f2f46b0c596611a1b340de5eaca8152d36892cd8ec8226225953b2" => :el_capitan
-    sha256 "7375866aa26344d381892626dccc558052addb96bb2c7f76968a5c7a530ee010" => :yosemite
-    sha256 "45bcab7ac22c1ade9e3f3cbf81c77224e8e66be0dad99b23445ecf6805aa853a" => :mavericks
+    sha256 "d2d48b901a9ac8ad056adab1f6483d6ad17afcfeac95362ca7b32d473de84d69" => :big_sur
+    sha256 "91b325120c82295bea226193e0c0e0a26ffc7a4e6dc07c41bc474676c3aa302c" => :catalina
+    sha256 "573c68cc663ad978709b2f82072070e9d12be173665ef057d61c569bae428ad7" => :mojave
+    sha256 "85692fcfce287f166fefa4fcc4f78b58c96eee3c94ff403e6ef42403c005c29a" => :high_sierra
+    sha256 "63cfba79036bfd190a92e6a4c501e2e4c737bf63e6a8df6bdca56885c66ae740" => :sierra
+    sha256 "9f87cc3a6d7e702aab12b23ad1f720ae592bdfb9112753e27c9cf2203dc21915" => :el_capitan
+    sha256 "55bd8f9bfede25e71e9731d72ace27ce7724a4cce030a4e4e6969554ee64238d" => :yosemite
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libsvg"
-  depends_on "libpng"
   depends_on "cairo"
+  depends_on "libpng"
+  depends_on "libsvg"
 
   def install
     system "./configure", "--disable-dependency-tracking", "--disable-debug",

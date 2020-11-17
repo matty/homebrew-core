@@ -3,18 +3,19 @@ class Btpd < Formula
   homepage "https://github.com/btpd/btpd"
   url "https://github.com/downloads/btpd/btpd/btpd-0.16.tar.gz"
   sha256 "296bdb718eaba9ca938bee56f0976622006c956980ab7fc7a339530d88f51eb8"
-  revision 1
+  license "BSD-2-Clause"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "c951cbaadc8a4a04dbe95fe28fdb6f2ad760352c58fba5a36309ed3fdff69e16" => :sierra
-    sha256 "4dce615bca726cf8ea3adfd0ab5e18f4f1e3d95d1a4d98ce38d6f894b1206a25" => :el_capitan
-    sha256 "382f8e3ec6e514f5a5116b562c82e0f3b2ae786b625ba08ab222fe7db9a4bcff" => :yosemite
-    sha256 "62a5bcf9db33b7b543053ce0a7d6ce4ed1fdfc43c9fca2500adc289c8bf34dc8" => :mavericks
-    sha256 "c28477c4d39f288aeb979007ea65b933bc135de3b98182b4c81051e9baf1bf99" => :mountain_lion
+    sha256 "bdbb56a74d359d9feb9a6258ff4feff869561ffa208251be9f1a4ab3f18d3939" => :big_sur
+    sha256 "777f217d1d4cb87a8f4dae2bb1fdf3d62037561bd72f93fbb753674516870b0c" => :catalina
+    sha256 "0b479e7b812055a0ebbbae40c63624258044d74cb11a2d698392792a5b543e4d" => :mojave
+    sha256 "35042eba57182babbaff9f4a2eb1cbe891ebd82d2427a14926fd3617475da363" => :high_sierra
+    sha256 "6951afbf4af1e9d0df95f5d9260ef04eeb7e558cd2d58c3a429a99ad93c2dddc" => :sierra
   end
 
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     system "./configure", "--disable-dependency-tracking",

@@ -1,21 +1,40 @@
 class Dnsperf < Formula
   desc "Measure DNS performance by simulating network conditions"
-  homepage "https://nominum.com/measurement-tools/"
-  url "ftp://ftp.nominum.com/pub/nominum/dnsperf/2.0.0.0/dnsperf-src-2.0.0.0-1.tar.gz"
-  sha256 "23d486493f04554d11fca97552e860028f18c5ed6e35348e480a7448fa8cfaad"
+  homepage "https://www.dns-oarc.net/tools/dnsperf"
+  url "https://www.dns-oarc.net/files/dnsperf/dnsperf-2.3.4.tar.gz"
+  sha256 "adcb3ad28ad46ef9ff4a218c67bd5ea9a9dde556b9a277059a1f390ce0f86581"
+  license "Apache-2.0"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?dnsperf[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "5fef021470831807af35bd6b449027f7d75c2031120725541ae19c37a613020b" => :sierra
-    sha256 "e169ef157bfb88e0161f7c14f2ab7752138175f93c2f05c7e0d00d9afd696f06" => :el_capitan
-    sha256 "54cdcb0c2c6e150031b2ce436494a5a218828058ad37a087203165eb6a24ce4e" => :yosemite
-    sha256 "dc94a7815272721dc7a9d89fbdd133122a5002bb6b9dc84417acd6ec19f1a636" => :mavericks
+    sha256 "d1a85f1c052c0ed43c769627d0dcdc558020a988295b0a51e545e9a7d02f0623" => :big_sur
+    sha256 "29ce167d9cac25446abbab3948a4de2b66bead70576bca24f13bda51c1d79de4" => :catalina
+    sha256 "4cc4b444f46fe98328a3d07c70672b6e963b7b530a10515a02a1f40eab1b2d42" => :mojave
+    sha256 "d2bad43d4858579143f5f01aab16ca5fe8a528b3fe81051ee212ebefc7e4a057" => :high_sierra
   end
 
+  depends_on "pkg-config" => :build
   depends_on "bind"
+  depends_on "krb5"
   depends_on "libxml2"
 
   def install
+    # Fix "ld: file not found: /usr/lib/system/libsystem_darwin.dylib" for lxml
+    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra
+
+    # Extra linker flags are needed to build this on macOS.
+    # Upstream bug ticket: https://github.com/DNS-OARC/dnsperf/issues/80
+    ENV.append "LDFLAGS", "-framework CoreFoundation"
+    ENV.append "LDFLAGS", "-framework CoreServices"
+    ENV.append "LDFLAGS", "-framework Security"
+    ENV.append "LDFLAGS", "-framework GSS"
+    ENV.append "LDFLAGS", "-framework Kerberos"
+
     system "./configure", "--prefix=#{prefix}"
     system "make", "install"
   end

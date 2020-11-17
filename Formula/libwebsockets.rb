@@ -1,27 +1,45 @@
 class Libwebsockets < Formula
   desc "C websockets server library"
   homepage "https://libwebsockets.org"
-  url "https://github.com/warmcat/libwebsockets/archive/v2.1.1.tar.gz"
-  sha256 "96183cbdfcd6e6a3d9465e854a924b7bfde6c8c6d3384d6159ad797c2e823b4d"
+  url "https://github.com/warmcat/libwebsockets/archive/v4.0.21.tar.gz"
+  sha256 "6ece1f422c6d38aabedec2476f2ac12e9aede8691b08137068ad85545ce3ff78"
+  license "MIT"
   head "https://github.com/warmcat/libwebsockets.git"
 
+  livecheck do
+    url "https://github.com/warmcat/libwebsockets"
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
+
   bottle do
-    sha256 "ee61a613972a636e61dc68df72e78d66b33f656a9996c9965ed3e03edac01334" => :sierra
-    sha256 "bdf869501cfcbff68c705f9007ea9c47308e4f544798b68fe55c65ec1c5f566a" => :el_capitan
-    sha256 "55fea7bd9bbdc3de96119541fc5057fe74386b0c6bec17271ce6b4c8c40601ef" => :yosemite
+    sha256 "5edd30eeb43f99680834d0cae61fde57077b51bfe6e811be304e8a8c1fd11617" => :big_sur
+    sha256 "00debd0d684c9f178d4e43aadf3b3fb3ee45ff32084cea0b026b13bb007e2bd3" => :catalina
+    sha256 "011f64fbfe3adf3efda20aa89deaeef93c9959e701496752b84ba190a0a6fede" => :mojave
+    sha256 "8c98c0f71a20ee3a8066f0bbb8e28104a8e0e8a65dbdbb93c8311f7ca7f4b2cf" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "openssl"
+  depends_on "libevent"
+  depends_on "libuv"
+  depends_on "openssl@1.1"
+
+  uses_from_macos "zlib"
 
   def install
-    system "cmake", ".", *std_cmake_args
+    system "cmake", ".", *std_cmake_args,
+                    "-DLWS_IPV6=ON",
+                    "-DLWS_WITH_HTTP2=ON",
+                    "-DLWS_WITH_LIBEVENT=ON",
+                    "-DLWS_WITH_LIBUV=ON",
+                    "-DLWS_WITH_PLUGINS=ON",
+                    "-DLWS_WITHOUT_TESTAPPS=ON",
+                    "-DLWS_UNIX_SOCK=ON"
     system "make"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <openssl/ssl.h>
       #include <libwebsockets.h>
 
@@ -35,7 +53,8 @@ class Libwebsockets < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-I#{Formula["openssl"].opt_prefix}/include", "-lwebsockets", "-o", "test"
+    system ENV.cc, "test.c", "-I#{Formula["openssl@1.1"].opt_prefix}/include",
+                   "-L#{lib}", "-lwebsockets", "-o", "test"
     system "./test"
   end
 end

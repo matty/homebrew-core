@@ -1,23 +1,36 @@
 class Libfaketime < Formula
   desc "Report faked system time to programs"
-  homepage "http://www.code-wizards.com/projects/libfaketime"
-  url "http://code-wizards.com/projects/libfaketime/libfaketime-0.9.5.tar.gz"
-  sha256 "5e07678d440d632bef012068ca58825402da5ad25954513e785717cc539c213d"
+  homepage "https://github.com/wolfcw/libfaketime"
+  url "https://github.com/wolfcw/libfaketime/archive/v0.9.8.tar.gz"
+  sha256 "06288237cd5890eca148489e5b904ed852ed0ffa8424bfb479342f4daa8442a3"
+  license "GPL-2.0"
+  head "https://github.com/wolfcw/libfaketime.git"
 
   bottle do
-    rebuild 1
-    sha256 "1fc4204b9cf216dffc0c614e679c37682a7702b058ca00d3aed6226220997b53" => :el_capitan
-    sha256 "5148ca77b62f044e604d80cd18f2a7c46c2bd44ffff2b828eea05b98154f2b17" => :yosemite
-    sha256 "9beebb4e5b6fa274f6114a141d7c20f726532e851496733b60825e9c75926480" => :mavericks
-    sha256 "4b7477042b15dd475fc16de06df07e9cc3a983033d6d21ac6029dfc1ddfb1925" => :mountain_lion
+    sha256 "06307e738273586bed9070b5f49801a59ac007a78f59a6224f26cc03d9c057f6" => :big_sur
+    sha256 "959cc7db2821e8d6595bb004f6147c81c1a9b541e8c24f72e995e97ca03b013e" => :catalina
+    sha256 "d377ea33f18d8338a134f9e9553e83e3bb591ee344884b8a49d9f72c11be0e52" => :mojave
+    sha256 "30325cd15f866fdcba8749c84a43b3e331e0481e5023dbdf2366a6dd118bd036" => :high_sierra
+    sha256 "0d6626a0ec194b26f82546ce84fefdcc212d6a7fb52989997257a141f0c113d0" => :sierra
   end
 
-  depends_on :macos => :lion
+  # The `faketime` command needs GNU `gdate` not BSD `date`.
+  # See https://github.com/wolfcw/libfaketime/issues/158 and
+  # https://github.com/Homebrew/homebrew-core/issues/26568
+  depends_on "coreutils"
+
+  depends_on macos: :sierra
 
   def install
     system "make", "-C", "src", "-f", "Makefile.OSX", "PREFIX=#{prefix}"
     bin.install "src/faketime"
     (lib/"faketime").install "src/libfaketime.1.dylib"
     man1.install "man/faketime.1"
+  end
+
+  test do
+    cp "/bin/date", testpath/"date" # Work around SIP.
+    assert_match "1230106542",
+      shell_output(%Q(TZ=UTC #{bin}/faketime -f "2008-12-24 08:15:42" #{testpath}/date +%s)).strip
   end
 end

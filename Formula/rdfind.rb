@@ -1,16 +1,21 @@
 class Rdfind < Formula
   desc "Find duplicate files based on content (NOT file names)"
   homepage "https://rdfind.pauldreik.se/"
-  url "https://rdfind.pauldreik.se/rdfind-1.3.4.tar.gz"
-  sha256 "a5f0b3f72093d927b93898c993479b35682cccb47f7393fb72bd4803212fcc7d"
-  revision 2
+  url "https://rdfind.pauldreik.se/rdfind-1.4.1.tar.gz"
+  sha256 "30c613ec26eba48b188d2520cfbe64244f3b1a541e60909ce9ed2efb381f5e8c"
+  revision 1
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?rdfind[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "4531928ed8d78b25d6a8d403ca81d8c2b8ddc59a884ab45dfa16d0c0be553c8d" => :sierra
-    sha256 "37fd65e7eb7f130794dcf334e3f765af8213d711889a854d67dfa01950343bad" => :el_capitan
-    sha256 "369d6dd1f73c0af431ad7a5babe40ea08cb9906f56d6dde20e16e72f9f2d5b14" => :yosemite
-    sha256 "57fe67783383110ec6c954fc605541ae7095ea1e39a4ef5c75a00d9e95395a51" => :mavericks
+    sha256 "ade2aaffee4c52e143fdcd0a22fae933e60e4c3d5057e4bc74a9aaffaf3c2146" => :big_sur
+    sha256 "e890406a4cbbd8d026a4c583644efa537433ac71c095a1e582b0454d85a87d00" => :catalina
+    sha256 "489e104d2c5e5d939439f5b100cd97e19ed070181d355b49fbd1ad2b3320d789" => :mojave
+    sha256 "2ce91e3b8a129c0fadb57fba46074e74e0d896287c23eb1844cd99e5eef093b1" => :high_sierra
   end
 
   depends_on "nettle"
@@ -24,10 +29,12 @@ class Rdfind < Formula
 
   test do
     mkdir "folder"
-    touch "folder/file1"
-    touch "folder/file2"
-    system "#{bin}/rdfind", "-deleteduplicates", "true", "-ignoreempty", "false", "folder"
-    assert File.exist?("folder/file1")
-    assert !File.exist?("folder/file2")
+    (testpath/"folder/file1").write("foo")
+    (testpath/"folder/file2").write("bar")
+    (testpath/"folder/file3").write("foo")
+    system "#{bin}/rdfind", "-deleteduplicates", "true", "folder"
+    assert_predicate testpath/"folder/file1", :exist?
+    assert_predicate testpath/"folder/file2", :exist?
+    refute_predicate testpath/"folder/file3", :exist?
   end
 end

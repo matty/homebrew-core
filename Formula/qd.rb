@@ -1,25 +1,29 @@
 class Qd < Formula
   desc "C++/Fortran-90 double-double and quad-double package"
-  homepage "https://crd.lbl.gov/~dhbailey/mpdist/"
-  url "https://crd.lbl.gov/~dhbailey/mpdist/qd-2.3.17.tar.gz"
-  sha256 "c58e276f6fcf5f2f442c525f3de42ea00004734572b29c74028bbda0ad81096d"
+  homepage "https://www.davidhbailey.com/dhbsoftware/"
+  url "https://www.davidhbailey.com/dhbsoftware/qd-2.3.22.tar.gz"
+  sha256 "30c1ffe46b95a0e9fa91085949ee5fca85f97ff7b41cd5fe79f79bab730206d3"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?qd[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "a1354aeb2b037bd7c201f454e15beb266990355b617309fcf383bea6ac3f67b2" => :sierra
-    sha256 "02f2e11cae957f20fee46218a559368ac2c44cfdf6edd042c7430c3f5e3c5227" => :el_capitan
-    sha256 "bd53e8612f09d48ffcfd9d981717e94ae5c617c08c0e2b0e8250ea085a75dd57" => :yosemite
-    sha256 "35c7acae6a87c02301cde8c5d76b59bb696d9c3dd04970948c5fdbe3c1c6776e" => :mavericks
+    rebuild 2
+    sha256 "380c30f837eed2027f1f1a353cfca4b5f71f551e504c26b2ab635cba4918681b" => :big_sur
+    sha256 "9700e6163692f31c736ddd74f535305fef730e021c4ca9f85b5860926397e330" => :catalina
+    sha256 "53e4efc8ab2d1c18b1c4198bed031eb1b97b4431b1c0a4e8e4195c9b01659098" => :mojave
+    sha256 "0ff67d07426a90d2897f0f69da0bd91bedb8a40ea52c0201c80225dd6c22510d" => :high_sierra
   end
 
-  depends_on :fortran => :recommended
+  depends_on "gcc" # for gfortran
 
   def install
-    args = ["--disable-dependency-tracking", "--enable-shared", "--prefix=#{prefix}"]
-    args << "--enable-fortran=no" if build.without? :fortran
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking", "--enable-shared",
+                          "--prefix=#{prefix}"
     system "make"
-    system "make", "check"
     system "make", "install"
   end
 

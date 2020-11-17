@@ -1,21 +1,23 @@
 class DnscryptWrapper < Formula
   desc "Server-side proxy that adds dnscrypt support to name resolvers"
   homepage "https://cofyc.github.io/dnscrypt-wrapper/"
-  url "https://github.com/Cofyc/dnscrypt-wrapper/releases/download/v0.2.2/dnscrypt-wrapper-v0.2.2.tar.bz2"
-  sha256 "6fa0d2bea41a11c551d6b940bf4dffeaaa0e034fffd8c67828ee2093c1230fee"
+  url "https://github.com/cofyc/dnscrypt-wrapper/archive/v0.4.2.tar.gz"
+  sha256 "911856dc4e211f906ca798fcf84f5b62be7fdbf73c53e5715ce18d553814ac86"
+  license "ISC"
   revision 1
   head "https://github.com/Cofyc/dnscrypt-wrapper.git"
 
   bottle do
     cellar :any
-    sha256 "268ac696b183becf2ad001f937a3e9600f1c5f20c89585fac6c21bf83ab509d0" => :sierra
-    sha256 "ef4e5a23248e73f8a1b06e6704e5b6fbd3f7720dd55b2a64394eb29ea41a9b12" => :el_capitan
-    sha256 "7665c7555c22ad8faee36719e8b10535b064f1d16beda2501d8968ddfac95f00" => :yosemite
+    sha256 "ea344feb10cc87d14e8b30cd3fcbbabed2b55f5c76014fcdc18aff49cb9fc5cd" => :catalina
+    sha256 "129be9e2c08af0351401437f09a950f0d4050e99cce47da220561a3153d5334d" => :mojave
+    sha256 "226bbce3fbcc39a1619bfd77451c6e0cf0d0054b61696acc2617e4f30580e69b" => :high_sierra
+    sha256 "92da097e90b1cd593efb8d0d1a16c24dd016aa93933a3036be671b5596c6af0d" => :sierra
   end
 
   depends_on "autoconf" => :build
-  depends_on "libsodium"
   depends_on "libevent"
+  depends_on "libsodium"
 
   def install
     system "make", "configure"
@@ -25,7 +27,9 @@ class DnscryptWrapper < Formula
   end
 
   test do
-    system "#{sbin}/dnscrypt-wrapper", "--gen-provider-keypair"
+    system "#{sbin}/dnscrypt-wrapper", "--gen-provider-keypair",
+           "--provider-name=2.dnscrypt-cert.example.com",
+           "--ext-address=192.168.1.1"
     system "#{sbin}/dnscrypt-wrapper", "--gen-crypt-keypair"
   end
 end

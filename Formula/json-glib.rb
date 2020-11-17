@@ -1,29 +1,37 @@
 class JsonGlib < Formula
   desc "Library for JSON, based on GLib"
-  homepage "https://live.gnome.org/JsonGlib"
-  url "https://download.gnome.org/sources/json-glib/1.2/json-glib-1.2.2.tar.xz"
-  sha256 "ea128ab52a824fcd06e5448fbb2bd8d9a13740d51c66d445828edba71321a621"
+  homepage "https://wiki.gnome.org/Projects/JsonGlib"
+  url "https://download.gnome.org/sources/json-glib/1.6/json-glib-1.6.0.tar.xz"
+  sha256 "0d7c67602c4161ea7070fab6c5823afd9bd7f7bc955f652a50d3753b08494e73"
+  license "LGPL-2.1-or-later"
 
-  bottle do
-    sha256 "be50545abc36b43fe093e29eda2692246111d8c37a3d154537724485e12a86a4" => :sierra
-    sha256 "7ae820550037c8df9fb51976bcdd72079a94ebcac9e1afdf1c84a5d819ff1f08" => :el_capitan
-    sha256 "5ff0ceedf7b85ad8ac06a3bbb9eac249c0ae73da2723c25b321ce6174824d564" => :yosemite
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "9f694420f25e652d73e0e93798304ce26023e50bb5e4aeb5322e30b19e957ed0" => :big_sur
+    sha256 "7a4f86a42a66360951fcbeac7ddcda95288fa3cd7fc5aee8d297fe31540e048f" => :catalina
+    sha256 "8f0e9b27a61d547cb185eb2952fb81e2bcf2ad502e459a7ec2037e505281e060" => :mojave
+    sha256 "6b72cc181e7ee816a8444adc59373b51033712dc8fc58b73531cc9fefbd0bd5e" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "glib"
-  depends_on "gobject-introspection"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--enable-introspection=yes"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, "-Dintrospection=enabled", ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <json-glib/json-glib.h>
 
       int main(int argc, char *argv[]) {

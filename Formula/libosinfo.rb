@@ -1,84 +1,88 @@
 class Libosinfo < Formula
-  desc "The Operating System information database"
+  desc "Operating System information database"
   homepage "https://libosinfo.org/"
-  url "https://fedorahosted.org/releases/l/i/libosinfo/libosinfo-1.0.0.tar.gz"
-  sha256 "f7b425ecde5197d200820eb44401c5033771a5d114bd6390230de768aad0396b"
+  url "https://releases.pagure.org/libosinfo/libosinfo-1.8.0.tar.xz"
+  sha256 "49ff32be0d209f6c99480e28b94340ac3dd0158322ae4303adfbdfe973a108a5"
+  license "LGPL-2.0-or-later"
+  revision 3
 
-  bottle do
-    sha256 "8333caf213bde3c6d468db1511061277d0424e255fadd000508d86613479c18e" => :sierra
-    sha256 "6a8d53d43ab4b9889780e5393f0d332a0276d1ff3790032830b42e7b394d09dc" => :el_capitan
-    sha256 "78fa165080b4feed8020fa47d5c13e0a601aa74ea63673f7213fc2197a4be248" => :yosemite
+  livecheck do
+    url "https://releases.pagure.org/libosinfo/?C=M&O=D"
+    regex(/href=.*?libosinfo[._-]v?([\d.]+)\.t/i)
   end
 
-  depends_on "intltool" => :build
-  depends_on "pkg-config" => :build
-  depends_on "wget" => :build
+  bottle do
+    sha256 "485f4ed04f60420b754b32014321e797d05a52f56c066ef8e0d5bd084e03b101" => :big_sur
+    sha256 "6a779d888f548649d3482452583ced807c9aceca45bb0989122b22822ec82316" => :catalina
+    sha256 "60e18106b7dca908a79e1edf59cd090ecb3a11d611d84330806aa0941fedb035" => :mojave
+    sha256 "eabb00c969fe4686063a44b6d58170bc566972278d8b27468ac56341e7d083d3" => :high_sierra
+  end
 
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+  depends_on "pkg-config" => :build
   depends_on "check"
   depends_on "gettext"
   depends_on "glib"
   depends_on "libsoup"
   depends_on "libxml2"
-  depends_on "pygobject3"
+  depends_on "usb.ids"
 
-  depends_on "gobject-introspection" => :recommended
-  depends_on "vala" => :optional
+  resource "pci.ids" do
+    url "https://raw.githubusercontent.com/pciutils/pciids/791050fc4eca1e19db3a985a284081f9038c21aa/pci.ids"
+    sha256 "587aa462719ffa840254e88b7b79fb499da2c3af227496a45d7e8b7c87f790f6"
+  end
 
   def install
-    args = %W[
-      --prefix=#{prefix}
-      --localstatedir=#{var}
-      --mandir=#{man}
-      --sysconfdir=#{etc}
-      --disable-silent-rules
-      --disable-udev
-      --enable-tests
-    ]
+    (share/"misc").install resource("pci.ids")
 
-    args << "--disable-introspection" if build.without? "gobject-introspection"
-    args << "--enable-vala" if build.with? "vala"
-
-    system "./configure", *args
-
-    # Compilation of docs doesn't get done if we jump straight to "make install"
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      flags = %W[
+        -Denable-gtk-doc=false
+        -Dwith-pci-ids-path=#{share/"misc/pci.ids"}
+        -Dwith-usb-ids-path=#{Formula["usb.ids"].opt_share/"misc/usb.ids"}
+        -Dsysconfdir=#{etc}
+      ]
+      system "meson", *std_meson_args, *flags, ".."
+      system "ninja", "install", "-v"
+    end
+    (share/"osinfo/.keep").write ""
   end
 
   test do
-    (testpath/"test.py").write <<-EOS.undent
-      import gi
-      gi.require_version('Libosinfo', '1.0')
-      from gi.repository import Libosinfo as osinfo;
+    (testpath/"test.c").write <<~EOS
+      #include <stdio.h>
+      #include <osinfo/osinfo.h>
 
-      loader = osinfo.Loader()
-      loader.process_path("./")
-
-      db = loader.get_db()
-
-      devs = db.get_device_list()
-      print "All device IDs"
-      for dev in devs.get_elements():
-        print ("  Device " + dev.get_id())
-
-      names = db.unique_values_for_property_in_device("name")
-      print "All device names"
-      for name in names:
-        print ("  Name " + name)
-
-      osnames = db.unique_values_for_property_in_os("short-id")
-      osnames.sort()
-      print "All OS short IDs"
-      for name in osnames:
-        print ("  OS short id " + name)
-
-      hvnames = db.unique_values_for_property_in_platform("short-id")
-      hvnames.sort()
-      print "All HV short IDs"
-      for name in hvnames:
-        print ("  HV short id " + name)
+      int main(int argc, char *argv[]) {
+        GError *err = NULL;
+        OsinfoPlatformList *list = osinfo_platformlist_new();
+        OsinfoLoader *loader = osinfo_loader_new();
+        osinfo_loader_process_system_path(loader, &err);
+        if (err != NULL) {
+          fprintf(stderr, "%s", err->message);
+          return 1;
+        }
+        return 0;
+      }
     EOS
-
-    system "python", "test.py"
+    gettext = Formula["gettext"]
+    glib = Formula["glib"]
+    flags = %W[
+      -I#{gettext.opt_include}
+      -I#{glib.opt_include}/glib-2.0
+      -I#{glib.opt_lib}/glib-2.0/include
+      -I#{include}/libosinfo-1.0
+      -L#{gettext.opt_lib}
+      -L#{glib.opt_lib}
+      -L#{lib}
+      -losinfo-1.0
+      -lglib-2.0
+      -lgobject-2.0
+    ]
+    system ENV.cc, "test.c", "-o", "test", *flags
+    system "./test"
+    system bin/"osinfo-query", "device"
   end
 end

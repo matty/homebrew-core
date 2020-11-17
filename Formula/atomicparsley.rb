@@ -1,28 +1,34 @@
 class Atomicparsley < Formula
   desc "MPEG-4 command-line tool"
-  homepage "https://bitbucket.org/wez/atomicparsley/overview/"
-  url "https://bitbucket.org/dinkypumpkin/atomicparsley/downloads/atomicparsley-0.9.6.tar.bz2"
-  sha256 "49187a5215520be4f732977657b88b2cf9203998299f238067ce38f948941562"
-  head "https://bitbucket.org/wez/atomicparsley", :using => :hg
+  homepage "https://github.com/wez/atomicparsley"
+  url "https://github.com/wez/atomicparsley/archive/20200701.154658.b0d6223.tar.gz"
+  version "20200701.154658.b0d6223"
+  sha256 "52f11dc0cbd8964fcdaf019bfada2102f9ee716a1d480cd43ae5925b4361c834"
+  license "GPL-2.0"
+  version_scheme 1
+  head "https://github.com/wez/atomicparsley.git"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "345eb5a19de38e476a0b39627ea243efdfc9a7a7dd980e5e51e4db74599c3f20" => :sierra
-    sha256 "b43ba5577c7e8b2dd9b4852a5d6652e1600a460584096646f38b69b7d103cee9" => :el_capitan
-    sha256 "b1825326c53079bd37a098cf100ae29d2b2763c985be0f2592ba89f10b914eb3" => :yosemite
-    sha256 "8797e94e5a1083d41fd9843a94362a714a48430918ed95fa9d7f37b31e0ba1e9" => :mavericks
+    sha256 "e79d2e76d6fd57bb96cbc879e9760d556284c7c61ecd345edeed73442cbce203" => :big_sur
+    sha256 "6bc22e04f5d2863e73010606d823eb0768d637165d190d3889db3780bbbb724c" => :catalina
+    sha256 "204e206047f48cdffef4fa91f81dbce6db370f002dd883000798d91f2916c391" => :mojave
+    sha256 "ce2509fe2cc72c18b6b82c9df5e802e2503f61ebf841833618a974ac21fc92c3" => :high_sierra
   end
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "libtool" => :build
+  depends_on "cmake" => :build
+  uses_from_macos "zlib"
 
   def install
-    system "./autogen.sh"
-    system "./configure", "--prefix=#{prefix}",
-                          "--disable-debug",
-                          "--disable-universal"
-    system "make", "install"
+    system "cmake", ".", *std_cmake_args
+    system "cmake", "--build", ".", "--config", "Release"
+    bin.install "AtomicParsley"
+  end
+
+  test do
+    cp test_fixtures("test.m4a"), testpath/"file.m4a"
+    system "#{bin}/AtomicParsley", testpath/"file.m4a", "--artist", "Homebrew", "--overWrite"
+    output = shell_output("#{bin}/AtomicParsley file.m4a --textdata")
+    assert_match "Homebrew", output
   end
 end

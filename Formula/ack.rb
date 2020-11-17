@@ -1,31 +1,23 @@
 class Ack < Formula
   desc "Search tool like grep, but optimized for programmers"
-  homepage "http://beyondgrep.com/"
-  url "http://beyondgrep.com/ack-2.14-single-file"
-  version "2.14"
-  sha256 "1d203cfbc52ce8f49e3992be1cd3e4d7d5dfb7daa3739e8628aa9858ccc5b9df"
+  homepage "https://beyondgrep.com/"
+  url "https://beyondgrep.com/ack-v3.4.0"
+  sha256 "e048c5e6144f5932d8672c2fade81d9073d5b3ca1517b84df006de3d25414fc1"
+  license "Artistic-2.0"
 
-  head "https://github.com/petdance/ack2.git", :branch => "dev"
+  head do
+    url "https://github.com/beyondgrep/ack3.git", branch: "dev"
 
-  devel do
-    url "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/ack-2.15_02.tar.gz"
-    sha256 "893e46a9263b446d9bd7efeae52c12fbee6092a3a5b9f816d8f84c1644ad7199"
-    version "2.15-02"
+    resource "File::Next" do
+      url "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/File-Next-1.16.tar.gz"
+      sha256 "6965f25c2c132d0ba7a6f72b57b8bc6d25cf8c1b7032caa3a9bda8612e41d759"
+    end
   end
 
   bottle :unneeded
 
-  resource "File::Next" do
-    url "https://cpan.metacpan.org/authors/id/P/PE/PETDANCE/File-Next-1.12.tar.gz"
-    sha256 "cc3afd8eaf6294aba93b8152a269cc36a9df707c6dc2c149aaa04dabd869e60a"
-  end
-
   def install
-    if build.stable?
-      bin.install "ack-#{version}-single-file" => "ack"
-      system "pod2man", "#{bin}/ack", "ack.1"
-      man1.install "ack.1"
-    else
+    if build.head?
       ENV.prepend_create_path "PERL5LIB", libexec/"lib/perl5"
       ENV.prepend_path "PERL5LIB", libexec/"lib"
 
@@ -40,8 +32,12 @@ class Ack < Formula
       libexec.install "ack"
       chmod 0755, libexec/"ack"
       (libexec/"lib").install "blib/lib/App"
-      (bin/"ack").write_env_script("#{libexec}/ack", :PERL5LIB => ENV["PERL5LIB"])
+      (bin/"ack").write_env_script("#{libexec}/ack", PERL5LIB: ENV["PERL5LIB"])
       man1.install "blib/man1/ack.1"
+    else
+      bin.install "ack-v#{version.to_s.tr("-", "_")}" => "ack"
+      system "pod2man", "#{bin}/ack", "ack.1"
+      man1.install "ack.1"
     end
   end
 

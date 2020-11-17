@@ -4,18 +4,18 @@ class HttpLoad < Formula
   url "https://www.acme.com/software/http_load/http_load-09Mar2016.tar.gz"
   version "20160309"
   sha256 "5a7b00688680e3fca8726dc836fd3f94f403fde831c71d73d9a1537f215b4587"
+  revision 2
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "066db733e2ca22f30545f7131ad2833b3c16559a769fb2ce18686336066d6466" => :sierra
-    sha256 "b7afff0a015534e8db9ba4e957014225bbf446c97378769a193da2e3753b14bc" => :el_capitan
-    sha256 "6a38746183341a185ac3f7da57afc365707c2647ebaa0dc1d836b670b9bae35e" => :yosemite
-    sha256 "0ba139d6c0adc4b5843bbbf3ce677ad58335029e7d4de0a18201bff0082e1e19" => :mavericks
+    cellar :any
+    sha256 "67456aed34ccc1d9873b946ed2adb7c86ecd52ad90a495f9527afd0a883710d0" => :big_sur
+    sha256 "36fada1e1b8cbe35a9eb1fb2374c175a003d750f0560565c6bfaf6b90a17f748" => :catalina
+    sha256 "d0d672723564b758fc3ef0721239e108ec063a395e183db033071200d5d9ee48" => :mojave
+    sha256 "22e21275c49121c174024104f9b99c5f55d37e032ff7cae42bba89746c26bd88" => :high_sierra
+    sha256 "a949ed2040faf49c7cdb6bf0110dfbbff465641c811e78a035998a4160170a05" => :sierra
   end
 
-  option "with-openssl", "Build with OpenSSL for HTTPS support"
-
-  depends_on "openssl" => :optional
+  depends_on "openssl@1.1"
 
   def install
     bin.mkpath
@@ -26,18 +26,15 @@ class HttpLoad < Formula
       LIBDIR=#{lib}
       MANDIR=#{man1}
       CC=#{ENV.cc}
+      SSL_TREE=#{Formula["openssl@1.1"].opt_prefix}
     ]
 
-    if build.with? "openssl"
-      inreplace "Makefile", "#SSL_", "SSL_"
-      args << "SSL_TREE=#{Formula["openssl"].opt_prefix}"
-    end
-
+    inreplace "Makefile", "#SSL_", "SSL_"
     system "make", "install", *args
   end
 
   test do
-    (testpath/"urls").write "http://brew.sh"
+    (testpath/"urls").write "https://brew.sh/"
     system "#{bin}/http_load", "-rate", "1", "-fetches", "1", "urls"
   end
 end

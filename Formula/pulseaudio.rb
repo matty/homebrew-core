@@ -1,51 +1,43 @@
 class Pulseaudio < Formula
   desc "Sound system for POSIX OSes"
   homepage "https://wiki.freedesktop.org/www/Software/PulseAudio/"
-  url "https://www.freedesktop.org/software/pulseaudio/releases/pulseaudio-10.0.tar.xz"
-  sha256 "a3186824de9f0d2095ded5d0d0db0405dc73133983c2fbb37291547e37462f57"
-  revision 2
+  url "https://www.freedesktop.org/software/pulseaudio/releases/pulseaudio-13.0.tar.xz"
+  sha256 "961b23ca1acfd28f2bc87414c27bb40e12436efcf2158d29721b1e89f3f28057"
+  revision 1
+
+  # The regex here avoids x.99 releases, as they're pre-release versions.
+  livecheck do
+    url :stable
+    regex(/href=["']?pulseaudio[._-]v?((?!\d+\.9\d+)\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "dd04c95709c64a4ea74cfa929d0dc2ddc6fd9473df163bf7e72310baa22b1653" => :sierra
-    sha256 "22eb7493320be8bf4c41ed227149d045eaffb8c132df9b8ad8b7b69ed3e085ce" => :el_capitan
-    sha256 "657b7acd39bbc8ccd790fed5396ff3b5de08667f039cabe7481cc259ddb6f005" => :yosemite
+    sha256 "2c66cd8a26ff24ae4b53ec18844fb163a13ae809d8a8369e1fbd11a4d2c39e02" => :big_sur
+    sha256 "0e9445dd8d49abd299324e93f00231605e993f791674997d9d2c35b88efec528" => :catalina
+    sha256 "ae68dfdb8ad584bf3f602ea7fb36d9bc1e4540e6905986a7129e45c6170d8d95" => :mojave
+    sha256 "687c4c646487eb8a9988303e279dc2ee542b6404504cb54fcfce1d6d6bcf949f" => :high_sierra
   end
 
   head do
-    url "https://anongit.freedesktop.org/git/pulseaudio/pulseaudio.git"
+    url "https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
-    depends_on "intltool" => :build
+    depends_on "automake" => :build
     depends_on "gettext" => :build
+    depends_on "intltool" => :build
   end
-
-  option "with-nls", "Build with native language support"
-
-  deprecated_option "without-speex" => "without-speexdsp"
 
   depends_on "pkg-config" => :build
-
-  if build.with? "nls"
-    depends_on "intltool" => :build
-    depends_on "gettext" => :build
-  end
-
-  depends_on "libtool" => :run
   depends_on "json-c"
   depends_on "libsndfile"
   depends_on "libsoxr"
-  depends_on "openssl"
-  depends_on "speexdsp" => :recommended
-  depends_on "glib" => :optional
-  depends_on "gconf" => :optional
-  depends_on "gtk+3" => :optional
-  depends_on "jack" => :optional
+  depends_on "libtool"
+  depends_on "openssl@1.1"
+  depends_on "speexdsp"
 
-  fails_with :clang do
-    build 421
-    cause "error: thread-local storage is unsupported for the current target"
-  end
+  uses_from_macos "perl" => :build
+  uses_from_macos "expat"
+  uses_from_macos "m4"
 
   def install
     args = %W[
@@ -54,12 +46,11 @@ class Pulseaudio < Formula
       --prefix=#{prefix}
       --enable-coreaudio-output
       --disable-neon-opt
+      --disable-nls
+      --disable-x11
       --with-mac-sysroot=#{MacOS.sdk_path}
       --with-mac-version-min=#{MacOS.version}
-      --disable-x11
     ]
-
-    args << "--disable-nls" if build.without? "nls"
 
     if build.head?
       # autogen.sh runs bootstrap.sh then ./configure
@@ -70,7 +61,36 @@ class Pulseaudio < Formula
     system "make", "install"
   end
 
+  plist_options manual: "pulseaudio"
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/pulseaudio</string>
+          <string>--exit-idle-time=-1</string>
+          <string>--verbose</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+        <key>StandardErrorPath</key>
+        <string>#{var}/log/#{name}.log</string>
+        <key>StandardOutPath</key>
+        <string>#{var}/log/#{name}.log</string>
+      </dict>
+      </plist>
+    EOS
+  end
+
   test do
-    system bin/"pulseaudio", "--dump-modules"
+    assert_match "module-sine", shell_output("#{bin}/pulseaudio --dump-modules")
   end
 end

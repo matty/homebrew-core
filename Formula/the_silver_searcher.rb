@@ -1,39 +1,32 @@
 class TheSilverSearcher < Formula
   desc "Code-search similar to ack"
   homepage "https://github.com/ggreer/the_silver_searcher"
-  url "https://github.com/ggreer/the_silver_searcher/archive/1.0.2.tar.gz"
-  sha256 "4cb73a4436fccf2c2cae91479a0167bacaa968a4deca28f3ff9d5abd98f01009"
+  url "https://github.com/ggreer/the_silver_searcher/archive/2.2.0.tar.gz"
+  sha256 "6a0a19ca5e73b2bef9481c29a508d2413ca1a0a9a5a6b1bd9bbd695a7626cbf9"
+  license "Apache-2.0"
   head "https://github.com/ggreer/the_silver_searcher.git"
 
   bottle do
     cellar :any
-    sha256 "ee96a49318df08722fe5e83e5a57ccc283ac053a397f7b9809373d349294f64f" => :sierra
-    sha256 "ec8149718da56dc6dab3d89e4982bf310f626ff2e3d716ab4b1953a593fe1d84" => :el_capitan
-    sha256 "680ce1c7267e326782e6cd06dbc09ff18c8274145f40b2f5a05bb93692381fff" => :yosemite
+    sha256 "e0fe6360a649e3a9722d72d258a65a4ec449e76e82166c9d0fc48530e73e952e" => :big_sur
+    sha256 "6fd80fdd0896dae09c01d3c9785ddd658bb5f2f229e7d011d3fbdde887bc35d0" => :catalina
+    sha256 "e57f89664f48c131dfb462dc4be2f5265867d827f82efb1c3841ba71d9156ed0" => :mojave
+    sha256 "0bf5394d8ab5f61b8fbb593249f556f13b358d16eb0d3c97215be3da0476e94b" => :high_sierra
+    sha256 "2365e24e5d0b1bef64b35c6a8f9e4f61d1f38eafe38c06d6e0acefc6a9a955db" => :sierra
+    sha256 "1f35dcee133d638a16462db711560b624020e9dd8f732ac5a6f13a09b694421a" => :el_capitan
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-
   depends_on "pkg-config" => :build
   depends_on "pcre"
-  depends_on "xz" => :recommended
+  depends_on "xz"
 
   def install
     # Stable tarball does not include pre-generated configure script
-    system "aclocal", "-I #{HOMEBREW_PREFIX}/share/aclocal"
-    system "autoconf"
-    system "autoheader"
-    system "automake", "--add-missing"
-
-    args = %W[
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-    ]
-
-    args << "--disable-lzma" if build.without?("xz")
-
-    system "./configure", *args
+    system "autoreconf", "-fiv"
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}"
     system "make"
     system "make", "install"
 

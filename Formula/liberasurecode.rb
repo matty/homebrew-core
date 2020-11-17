@@ -1,15 +1,15 @@
 class Liberasurecode < Formula
   desc "Erasure Code API library written in C with pluggable backends"
-  homepage "https://bitbucket.org/tsg-/liberasurecode/"
-  url "https://bitbucket.org/tsg-/liberasurecode/downloads/liberasurecode-1.1.0.tar.gz"
-  sha256 "3f8aadab190b82a3c18fdfc2c36a908a39e478d68e91f5d89a59849e91449039"
+  homepage "https://github.com/openstack/liberasurecode"
+  url "https://github.com/openstack/liberasurecode/archive/1.6.2.tar.gz"
+  sha256 "f11752f41e652e62d0feb095a118a8fe1b5d43910d3d31a0de99b789070d7788"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any
-    sha256 "1dc03033d0359d6abeb0c183d38778f5f0f1280ff2423185783099c616ed7540" => :sierra
-    sha256 "824ffcb696c9951aa380b6f5806a72573726b7026e0a051e7e6da8abcd542fc5" => :el_capitan
-    sha256 "57683d16fd2dba4def2a9b6edd012aa35697dacd839ae1921b2ee4998dba1965" => :yosemite
-    sha256 "f6b2d2aa09eb404e323634ae08aa413e7ca8db7a860cb2af43f58e4a3cd1a624" => :mavericks
+    sha256 "0252ffca75211c217bee75061bb6a62dc2982334b66d95fbfcdc2e686480d1fb" => :catalina
+    sha256 "0073290d5c19d629b70f6e4be0677931f625e07e79d2dacea25b333f7d820933" => :mojave
+    sha256 "2f0bb8a2f295cff0ba42097db3f31103f2f10637faa66ba2028bc746934b58d0" => :high_sierra
   end
 
   depends_on "autoconf" => :build
@@ -17,19 +17,19 @@ class Liberasurecode < Formula
   depends_on "libtool" => :build
   depends_on "jerasure"
 
+  uses_from_macos "zlib"
+
   def install
     system "./autogen.sh"
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
-    system "make"
-    system "make", "test"
     system "make", "install"
   end
 
   test do
-    (testpath/"liberasurecode-test.cpp").write <<-EOS.undent
+    (testpath/"liberasurecode-test.cpp").write <<~EOS
       #include <erasurecode.h>
 
       int main() {
@@ -54,7 +54,8 @@ class Liberasurecode < Formula
           exit(0);
       }
     EOS
-    system ENV.cxx, "liberasurecode-test.cpp", "-L#{lib}", "-lerasurecode", "-I#{include}/liberasurecode", "-o", "liberasurecode-test"
+    system ENV.cxx, "liberasurecode-test.cpp", "-L#{lib}", "-lerasurecode",
+                    "-I#{include}/liberasurecode", "-o", "liberasurecode-test"
     system "./liberasurecode-test"
   end
 end

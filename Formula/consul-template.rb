@@ -2,35 +2,35 @@ class ConsulTemplate < Formula
   desc "Generic template rendering and notifications with Consul"
   homepage "https://github.com/hashicorp/consul-template"
   url "https://github.com/hashicorp/consul-template.git",
-      :tag => "v0.18.1",
-      :revision => "e9bbed7053974ed6c3b6d329bb3786afa961af01"
+      tag:      "v0.25.1",
+      revision: "171d54d1d3e732a7e960988b72ff9c2fddb3cd8f"
+  license "MPL-2.0"
   head "https://github.com/hashicorp/consul-template.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "91bb13839501e29a3a9fa5cd01252fc286790643641e09ceab82aad240ed9ca6" => :sierra
-    sha256 "0e2cdcdbb3898a26ec07b08b7dbb80a13cf74e019dcd3a67436e89da26eacd5f" => :el_capitan
-    sha256 "a8f46fc1966ef98ed2cfc70507b32e58df21ca3ff9729f20cc4916d858d10459" => :yosemite
+    sha256 "978bab61f0209e37b5a14a1af8d9b55a767701cb5cded8107e9c7447e5e0b78d" => :big_sur
+    sha256 "79c0b42239bae3e2771b9cce86d2e816654126aa6c5907be3999eadec34ecd8a" => :catalina
+    sha256 "169f7d647729d546330b8268f5e07eb378fc95e35831fb6f24d508901f607499" => :mojave
+    sha256 "37f32e5b0d9e2ffc20846be7f4e97607e76f5b27b29cf015c941c9c03cc506f4" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    arch = MacOS.prefer_64_bit? ? "amd64" : "386"
-    ENV["XC_OS"] = "darwin"
-    ENV["XC_ARCH"] = arch
-    dir = buildpath/"src/github.com/hashicorp/consul-template"
-    dir.install buildpath.children - [buildpath/".brew_home"]
-
-    cd dir do
-      system "make", "bin-local"
-      bin.install "pkg/darwin_#{arch}/consul-template"
-    end
+    project = "github.com/hashicorp/consul-template"
+    commit = Utils.safe_popen_read("git", "rev-parse", "--short", "HEAD").chomp
+    ldflags = %W[
+      -s -w
+      -X #{project}/version.Name=consul-template
+      -X #{project}/version.GitCommit=#{commit}
+    ]
+    system "go", "build", "-ldflags", ldflags.join(" "), *std_go_args
+    prefix.install_metafiles
   end
 
   test do
-    (testpath/"template").write <<-EOS.undent
+    (testpath/"template").write <<~EOS
       {{"homebrew" | toTitle}}
     EOS
     system bin/"consul-template", "-once", "-template", "template:test-result"

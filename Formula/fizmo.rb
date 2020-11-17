@@ -1,20 +1,29 @@
 class Fizmo < Formula
   desc "Z-Machine interpreter"
   homepage "https://fizmo.spellbreaker.org"
-  url "https://fizmo.spellbreaker.org/source/fizmo-0.8.2.tar.gz"
-  sha256 "369c3b58e019756229bf7e72cc5b15c049f1d6d5c65d7653267e67cef109e675"
+  url "https://fizmo.spellbreaker.org/source/fizmo-0.8.5.tar.gz"
+  sha256 "1c259a29b21c9f401c12fc24d555aca4f4ff171873be56fb44c0c9402c61beaa"
+  license "BSD-3-Clause"
+  revision 2
+
+  livecheck do
+    url "https://fizmo.spellbreaker.org/download/"
+    regex(%r{href=.*?/fizmo[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
-    sha256 "069909413fbd1df59ced112cded0166ccdd8303b4a7fc7b333459e2a047bc5ff" => :sierra
-    sha256 "5750e2522754a6e9e051364e35b00909bb1f78951d7e7548f3c9bbe29bf83409" => :el_capitan
-    sha256 "fe6e54e32badf6f464e30aed4ffe76aee006fd901d210c954562dafc7df90b04" => :yosemite
+    sha256 "620198d285ed205b8feb79aae7f04be8450bbf32b627536cec8aa48caf91eaf7" => :big_sur
+    sha256 "9f84f5f3d0f97f9637ad66d6d7906c53bd794518eab45c22f4eb51c153e31ac8" => :catalina
+    sha256 "e37b186ac0ed5c8cdf5f08a7f7bedd7e997454700b6b9a92e14c41f3afc4c9fd" => :mojave
+    sha256 "16992ff53e0327dfc9bce300d6a1c3a2e6e0874faf9ef3fb7638c3267ae09788" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on :x11
+  depends_on "freetype"
   depends_on "jpeg"
   depends_on "libpng"
   depends_on "libsndfile"
+  depends_on "libx11"
   depends_on "sdl2"
 
   def install

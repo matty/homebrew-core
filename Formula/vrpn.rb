@@ -1,44 +1,29 @@
 class Vrpn < Formula
   desc "Virtual reality peripheral network"
   homepage "https://github.com/vrpn/vrpn/wiki"
-  url "https://github.com/vrpn/vrpn/releases/download/v07.33/vrpn_07_33.zip"
-  sha256 "3cb9e71f17eb756fbcf738e6d5084d47b3b122b68b66d42d6769105cb18a79be"
+  url "https://github.com/vrpn/vrpn/releases/download/version_07.34/vrpn_07.34.zip"
+  sha256 "1ecb68f25dcd741c4bfe161ce15424f1319a387a487efa3fbf49b8aa249c9910"
   head "https://github.com/vrpn/vrpn.git"
 
   bottle do
     cellar :any
-    rebuild 3
-    sha256 "489b682ce46a75081ef4aeec26943f118027e612af9cc882a380f7463fd2ea48" => :sierra
-    sha256 "ea131270a6b130a525cf7c1be5fede216d00b97c11877d6223133e8f856590b5" => :el_capitan
-    sha256 "23ac5436fdd15dccb7e661d0f50bdfe64b5765fdb3d636830dbc27e7af59c056" => :yosemite
-    sha256 "d0f42ffa2bf57e011d59cf5fff15ab1a0ff9f1fe7a8183f06aa358c1dc173abb" => :mavericks
+    sha256 "679f3b5776a13311701ec2e75481dd263a47444084bd06948da80b7787184b60" => :big_sur
+    sha256 "cecacf7a6918983b48197ab850b20e00a775a607f28b53e51ba49e89f550b2a6" => :catalina
+    sha256 "5a3e1485fdbc883c3996fef9993ef1f3a0aa0e991c9610e82091663db412e471" => :mojave
+    sha256 "9b9f4a31161dbc0a4a9ea0759122f0a3725a361dde0b5f1def9bab4e59de12e7" => :high_sierra
+    sha256 "4e03c131adba54f74742151ee269d2d0c1716e307294679ed2366c0e6cb5fd41" => :sierra
+    sha256 "36e5273f8006b1fe5f1655e258f8937e06e9abc4ad849e2c9b1e7a1462fe790d" => :el_capitan
   end
 
-  option "with-clients", "Build client apps and tests"
-  option "with-docs", "Build doxygen-based API documentation"
-
-  deprecated_option "docs" => "with-docs"
-  deprecated_option "clients" => "with-clients"
-
   depends_on "cmake" => :build
-  depends_on "doxygen" => :build if build.with? "docs"
   depends_on "libusb" # for HID support
 
   def install
-    ENV.libstdcxx
-
-    args = std_cmake_args
-    args << "-DCMAKE_OSX_SYSROOT=#{MacOS.sdk_path}"
-
-    if build.with? "clients"
-      args << "-DVRPN_BUILD_CLIENTS:BOOL=ON"
-    else
-      args << "-DVRPN_BUILD_CLIENTS:BOOL=OFF"
-    end
-
     mkdir "build" do
-      system "cmake", "..", *args
-      system "make", "doc" if build.with? "docs"
+      system "cmake", "..", *std_cmake_args,
+                            "-DCMAKE_OSX_SYSROOT=#{MacOS.sdk_path}",
+                            "-DVRPN_BUILD_CLIENTS:BOOL=OFF",
+                            "-DVRPN_BUILD_JAVA:BOOL=OFF"
       system "make", "install"
     end
   end

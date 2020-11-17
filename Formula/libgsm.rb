@@ -1,20 +1,21 @@
 class Libgsm < Formula
   desc "Lossy speech compression library"
   homepage "http://www.quut.com/gsm/"
-  url "http://www.quut.com/gsm/gsm-1.0.13.tar.gz"
-  sha256 "52c518244d428c2e56c543b98c9135f4a76ff780c32455580b793f60a0a092ad"
+  url "http://www.quut.com/gsm/gsm-1.0.19.tar.gz"
+  sha256 "4903652f68a8c04d0041f0d19b1eb713ddcd2aa011c5e595b3b8bca2755270f6"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?gsm[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "379e5da09c1733b6eb0cca6c33fa3332a26bb53ae09bab7739f398e644a9e7e4" => :sierra
-    sha256 "d1a329a6594db0bf0d4d743bd38bda1e07e566292a32a700df6fc73f6a9739d3" => :el_capitan
-    sha256 "c67758c5298dc6d36a5bb201eb42821862647aa79df0ee2824df708ac388db48" => :yosemite
-    sha256 "c25d6ffc2bf063c8c824093ca83b6de17ebbca52c062c4344cddbb8b8286169c" => :mavericks
-    sha256 "8b9054832ecbd7a4e41b1b3e7f8ef7a4aa4e0006a5332a19d176119c6b4121f3" => :mountain_lion
+    sha256 "c5bee474fc90a4c08f5e0b7e3eb589c363501cd479f2fdb5369e37c7d0824539" => :big_sur
+    sha256 "9a3eaa556cd1a5429c458ee11c29b5c757ee6f32fbc334355110a37622357dc4" => :catalina
+    sha256 "f7a7683ef5f7f916e81e3ed51aa754da92ca2b993533608f8fc95187baaf8b3c" => :mojave
+    sha256 "5a2b52e7ed65f005f32bb56519dd425b26e537f888b49402322fe1424f0901e4" => :high_sierra
   end
-
-  option :universal
 
   # Builds a dynamic library for gsm, this package is no longer developed
   # upstream. Patch taken from Debian and modified to build a dylib.
@@ -24,7 +25,6 @@ class Libgsm < Formula
   end
 
   def install
-    ENV.universal_binary if build.universal?
     ENV.append_to_cflags "-c -O2 -DNeedFunctionPrototypes=1"
 
     # Only the targets for which a directory exists will be installed
@@ -44,6 +44,24 @@ class Libgsm < Formula
     system "make", "install",
            "INSTALL_ROOT=#{prefix}",
            "GSM_INSTALL_INC=#{include}"
-    lib.install Dir["lib/*dylib"]
+    lib.install Dir["lib/#{shared_library("*")}"]
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <gsm.h>
+
+      int main()
+      {
+        gsm g = gsm_create();
+        if (g == 0)
+        {
+          return 1;
+        }
+        return 0;
+      }
+    EOS
+    system ENV.cc, "-L#{lib}", "-lgsm", "test.c", "-o", "test"
+    system "./test"
   end
 end

@@ -1,53 +1,47 @@
 class Sleuthkit < Formula
   desc "Forensic toolkit"
-  homepage "http://www.sleuthkit.org/"
-  url "https://github.com/sleuthkit/sleuthkit/archive/sleuthkit-4.3.1.tar.gz"
-  sha256 "91a9aa86041f8746038b8e8b0c6e07584971b025a9dd239c6f46d3db52c85d98"
-  head "https://github.com/sleuthkit/sleuthkit.git", :branch => "develop"
+  homepage "https://www.sleuthkit.org/"
+  url "https://github.com/sleuthkit/sleuthkit/releases/download/sleuthkit-4.10.1/sleuthkit-4.10.1.tar.gz"
+  sha256 "65c3f701f046f012feba78452a50f1307948a1038474eaf8e296f65031604a0a"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://github.com/sleuthkit/sleuthkit/releases/latest"
+    regex(%r{href=.*?/tag/sleuthkit[._-]v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "a95620c4212372ae76222790745d772798729287f3af14ec84e419ec411b188e" => :sierra
-    sha256 "c7f769eb76c40b27e501b96e41a95e8dc37dcaaca6464dbe60a1897a0e9d08fe" => :el_capitan
-    sha256 "f8f5348d846630cfbe5041da4b225829c2cf9931677f0f4465dd9539326f4cef" => :yosemite
+    sha256 "c1ab47b1de34253319907d3ce1f9742109b225168ad5adec25d1abb62340543e" => :big_sur
+    sha256 "32169b058d0500b740d6496bd5b9d1f87920d0d4a2c4b466f72d5857db88c449" => :catalina
+    sha256 "96242dd0f595b9384e9d73e0c272c7105a98f13a66a010db796c538ec848bf24" => :mojave
+    sha256 "076912d050385aca70b18f1a681c69cfcaa7237d87517b5d15457351701e7329" => :high_sierra
   end
 
-  conflicts_with "irods", :because => "both install `ils`"
+  depends_on "ant" => :build
+  depends_on "afflib"
+  depends_on "libewf"
+  depends_on "libpq"
+  depends_on "openjdk"
 
-  option "with-jni", "Build Sleuthkit with JNI bindings"
-  option "with-debug", "Build debug version"
-
-  if build.with? "jni"
-    depends_on :java
-    depends_on :ant => :build
-  end
-
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
-  depends_on "libtool" => :build
-  depends_on "afflib" => :optional
-  depends_on "libewf" => :optional
+  uses_from_macos "sqlite"
 
   conflicts_with "ffind",
-    :because => "both install a 'ffind' executable."
+    because: "both install a `ffind` executable"
 
   def install
-    ENV.append_to_cflags "-DNDEBUG" if build.without? "debug"
-    ENV.java_cache if build.with? "jni"
+    ENV["JAVA_HOME"] = Formula["openjdk"].opt_libexec/"openjdk.jdk/Contents/Home"
+    ENV["ANT_FOUND"]=Formula["ant"].opt_bin/"ant"
+    ENV["SED"]="/usr/bin/sed"
+    ENV.append_to_cflags "-DNDEBUG"
 
-    system "./bootstrap"
-    system "./configure", "--disable-dependency-tracking",
-                          if build.without? "jni" then "--disable-java" end,
-                          "--prefix=#{prefix}"
-    system "make"
+    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make", "install"
 
-    if build.with? "jni"
-      cd "bindings/java" do
-        system "ant"
-      end
-      prefix.install "bindings"
+    cd "bindings/java" do
+      system "ant"
     end
+    prefix.install "bindings"
   end
 
   test do

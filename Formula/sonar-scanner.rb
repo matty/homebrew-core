@@ -1,8 +1,9 @@
 class SonarScanner < Formula
   desc "Launcher to analyze a project with SonarQube"
-  homepage "http://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner"
-  url "https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-2.8.zip"
-  sha256 "0295365a7e5d4499ec6b46cb6c70f3fa127159b58b73930f675acd0897a6b350"
+  homepage "https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner"
+  url "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.5.0.2216.zip"
+  sha256 "a271a933d14da6e8705d58996d30afd0b4afc93c0bfe957eb377bed808c4fa89"
+  license "LGPL-3.0-or-later"
   head "https://github.com/SonarSource/sonar-scanner-cli.git"
 
   bottle :unneeded
@@ -13,7 +14,7 @@ class SonarScanner < Formula
     bin.install libexec/"bin/sonar-scanner"
     etc.install libexec/"conf/sonar-scanner.properties"
     ln_s etc/"sonar-scanner.properties", libexec/"conf/sonar-scanner.properties"
-    bin.env_script_all_files libexec/"bin/", :SONAR_SCANNER_HOME => libexec
+    bin.env_script_all_files libexec/"bin/", SONAR_SCANNER_HOME: libexec
   end
 
   test do

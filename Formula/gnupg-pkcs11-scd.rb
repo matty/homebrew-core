@@ -1,32 +1,46 @@
 class GnupgPkcs11Scd < Formula
   desc "Enable the use of PKCS#11 tokens with GnuPG"
   homepage "https://gnupg-pkcs11.sourceforge.io"
-  url "https://github.com/alonbl/gnupg-pkcs11-scd/releases/download/gnupg-pkcs11-scd-0.7.4/gnupg-pkcs11-scd-0.7.4.tar.bz2"
-  sha256 "790dfd55f1651fe86f6186558cc8f1631897db81feb1a91c0e2f012049c6a922"
+  url "https://github.com/alonbl/gnupg-pkcs11-scd/releases/download/gnupg-pkcs11-scd-0.9.2/gnupg-pkcs11-scd-0.9.2.tar.bz2"
+  sha256 "fddd798f8b5f9f960d2a7f6961b00ef7b49b00e8bf069c113a4d42b5e44fd0d5"
+  license "BSD-3-Clause"
+  revision 1
+
+  livecheck do
+    url "https://github.com/alonbl/gnupg-pkcs11-scd/releases/latest"
+    regex(%r{href=.*?/tag/gnupg-pkcs11-scd[._-]v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "720587bc6d99e67f4ed5a1e0a966a5e79dd4246b02439d8e9c5f1d39cbe9b131" => :sierra
-    sha256 "20bf6e1bd39c9d664365e7179b5add79a4f1c5ab8a66d18ad4abd6e4c74cebbf" => :el_capitan
-    sha256 "8a0d9351dea28bef9f0ede96fe8777b6dd0f483ab58fd96e57467dbb255f72e7" => :yosemite
+    sha256 "78f09618378fd89be78ff9e10af2e1d33ac5dc06fcca6474994662434b7b3dc1" => :catalina
+    sha256 "78537d1ee3285a604aae1d683db56da1b9ec76bf71262ff234e758efda63f885" => :mojave
+    sha256 "1f4264ac76b36c453a3c5a000d1b1269f331e88420efc5591274ccbb8dc8b85c" => :high_sierra
+    sha256 "83748a14d87233e8a2cf4744d0353c01176536b5cd9e1b317f741f824416453f" => :sierra
   end
 
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on "libgpg-error"
   depends_on "libassuan"
   depends_on "libgcrypt"
+  depends_on "libgpg-error"
   depends_on "pkcs11-helper"
 
   def install
+    system "autoreconf", "-fiv"
     system "./configure", "--disable-dependency-tracking",
                           "--with-libgpg-error-prefix=#{Formula["libgpg-error"].opt_prefix}",
                           "--with-libassuan-prefix=#{Formula["libassuan"].opt_prefix}",
                           "--with-libgcrypt-prefix=#{Formula["libgcrypt"].opt_prefix}",
                           "--prefix=#{prefix}"
+    system "make"
+    system "make", "check"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/gnupg-pkcs11-scd --help > /dev/null ; [ $? -eq 1 ]"
+    system "#{bin}/gnupg-pkcs11-scd", "--help"
   end
 end

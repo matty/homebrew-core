@@ -1,39 +1,39 @@
 class Gh < Formula
-  desc "GitHub command-line client"
-  homepage "https://github.com/jingweno/gh"
-  url "https://github.com/jingweno/gh/archive/v2.1.0.tar.gz"
-  sha256 "3435c95e78c71589c983e2cafa8948e1abf73aaa033e7fb9d891c052ce25f4f3"
-  head "https://github.com/jingweno/gh.git"
+  desc "GitHub command-line tool"
+  homepage "https://github.com/cli/cli"
+  url "https://github.com/cli/cli/archive/v1.2.1.tar.gz"
+  sha256 "ae7f03426b9d9ebf40be3cdbd4ce8cec7aeeda8e51acd34d8d0aaf0b3c4ea550"
+  license "MIT"
+
+  livecheck do
+    url "https://github.com/cli/cli/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 2
-    sha256 "ae90fe8da47a7e3934e88052e0d10e6292ecb20111aba7405cdbac560176ab4b" => :sierra
-    sha256 "e2d0bc29c2f4b7eaf706955002ba1e88634aa4f2c0e0461b9d22b00e66da2734" => :el_capitan
-    sha256 "553daabe8b4a839ce8f6403e78770d2fcb7773da9ac6b617a64e34bb52c3f70b" => :yosemite
-    sha256 "541e522a0ccc06c007bed65b12ac60cd3db1e84c284aa878daecc24d628c17bf" => :mavericks
+    sha256 "e778e471372364f8902c7b313284072c72f8610cb5e163d0ca76a615850cb4aa" => :big_sur
+    sha256 "11d663b3712fe2c0fb7b834a49da1bd872cc2f9da1efcee6d081e692bc255d8e" => :catalina
+    sha256 "bbb71a404ce321c53b95bacdc08618d462fb247865c4cc12980d974b2d38ab0a" => :mojave
+    sha256 "0b1e2a2959043d3e81b2e93f4079605ea75d1641d57c62c08358880826380ce7" => :high_sierra
   end
-
-  option "without-completions", "Disable bash/zsh completions"
 
   depends_on "go" => :build
 
   def install
-    system "script/make", "--no-update"
-    bin.install "gh"
-    man1.install "man/gh.1"
-
-    if build.with? "completions"
-      bash_completion.install "etc/gh.bash_completion.sh"
-      zsh_completion.install "etc/gh.zsh_completion" => "_gh"
-    end
+    ENV["GH_VERSION"] = version.to_s
+    ENV["GO_LDFLAGS"] = "-s -w"
+    system "make", "bin/gh", "manpages"
+    bin.install "bin/gh"
+    man1.install Dir["share/man/man1/gh*.1"]
+    (bash_completion/"gh").write `#{bin}/gh completion -s bash`
+    (fish_completion/"gh.fish").write `#{bin}/gh completion -s fish`
+    (zsh_completion/"_gh").write `#{bin}/gh completion -s zsh`
   end
 
   test do
-    system "git", "init"
-    %w[haunted house].each { |f| touch testpath/f }
-    system "git", "add", "haunted", "house"
-    system "git", "commit", "-a", "-m", "Initial Commit"
-    assert_equal "haunted\nhouse", shell_output("#{bin}/gh ls-files").strip
+    assert_match "gh version #{version}", shell_output("#{bin}/gh --version")
+    assert_match "Work with GitHub issues", shell_output("#{bin}/gh issue 2>&1")
+    assert_match "Work with GitHub pull requests", shell_output("#{bin}/gh pr 2>&1")
   end
 end

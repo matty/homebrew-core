@@ -1,47 +1,50 @@
 class Pybind11 < Formula
   desc "Seamless operability between C++11 and Python"
   homepage "https://github.com/pybind/pybind11"
-  url "https://github.com/pybind/pybind11/archive/v1.8.1.tar.gz"
-  sha256 "321de8881ff0e113087b9e996d77777417b7db05bc4536b365f648b5fadc27b8"
+  url "https://github.com/pybind/pybind11/archive/v2.6.1.tar.gz"
+  sha256 "cdbe326d357f18b83d10322ba202d69f11b2f49e2d87ade0dc2be0c5c34f8e2a"
+  license "BSD-3-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ea4ca731c46f052e19f3028e2b82c9605e3312d2359c21ad712b6385212e42ca" => :sierra
-    sha256 "2aae43a1164b30daac5403baa30989b365a46b48525e5fa3f9cf4c24f32926cb" => :el_capitan
-    sha256 "f4cbd0f51b870b69fe7889eb99497a97e1ae1f307340b7b8c88b4cd9fa1bcd6f" => :yosemite
-    sha256 "f4cbd0f51b870b69fe7889eb99497a97e1ae1f307340b7b8c88b4cd9fa1bcd6f" => :mavericks
+    sha256 "2f8d6a8a4ec4e2d35ed5926f56d49e0a3c1a3a853f16f1fe266e4cb25673a2c9" => :big_sur
+    sha256 "a65ec879104470206955784e0715d9188fd2f3848dcd88714e094313ab8305de" => :catalina
+    sha256 "122967134526009627cf8648d4181f4a7e06688d5b74ffa0a2767abeeb54e091" => :mojave
+    sha256 "2128187d3a45fbb3dfe2426b8e974ad15a07942a17ae07c09a52f07482b11bdf" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on :python3
+  depends_on "python@3.9" => :test
 
   def install
-    system "cmake", ".", *std_cmake_args
-    system "make", "install"
+    system "cmake", "-S", ".", "-B", "build",
+           "-DPYBIND11_TEST=OFF",
+           "-DPYBIND11_NOPYTHON=ON",
+           *std_cmake_args
+    system "cmake", "--install", "build"
   end
 
   test do
-    (testpath/"example.cpp").write <<-EOS.undent
+    (testpath/"example.cpp").write <<~EOS
       #include <pybind11/pybind11.h>
 
       int add(int i, int j) {
           return i + j;
       }
       namespace py = pybind11;
-      PYBIND11_PLUGIN(example) {
-          py::module m("example", "pybind11 example plugin");
+      PYBIND11_MODULE(example, m) {
+          m.doc() = "pybind11 example plugin";
           m.def("add", &add, "A function which adds two numbers");
-          return m.ptr();
       }
     EOS
 
-    (testpath/"example.py").write <<-EOS.undent
+    (testpath/"example.py").write <<~EOS
       import example
       example.add(1,2)
     EOS
 
-    python_flags = `python3-config --cflags --ldflags`.split(" ")
+    python_flags = `#{Formula["python@3.9"].opt_bin}/python3-config --cflags --ldflags --embed`.split(" ")
     system ENV.cxx, "-O3", "-shared", "-std=c++11", *python_flags, "example.cpp", "-o", "example.so"
-    system "python3", "example.py"
+    system Formula["python@3.9"].opt_bin/"python3", "example.py"
   end
 end

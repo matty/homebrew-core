@@ -1,40 +1,27 @@
 class Kvazaar < Formula
   desc "Ultravideo HEVC encoder"
   homepage "https://github.com/ultravideo/kvazaar"
+  url "https://github.com/ultravideo/kvazaar/archive/v2.0.0.tar.gz"
+  sha256 "213edca448f127f9c6d194cdfd21593d10331f9061d95751424e1001bae60b5d"
+  license "LGPL-2.1"
   head "https://github.com/ultravideo/kvazaar.git"
 
-  stable do
-    url "https://github.com/ultravideo/kvazaar/archive/v1.0.0.tar.gz"
-    sha256 "40eb7b4b23897299e99050f0c011e9380cf898b25615dd143f018b278b972a46"
-
-    # Remove for > 1.0.0
-    # Upstream commit from 2 Feb 2017 "Fix encoder getting stuck on OS-X"
-    # See https://github.com/ultravideo/kvazaar/issues/153
-    patch do
-      url "https://github.com/ultravideo/kvazaar/commit/d893474.patch"
-      sha256 "0d2087dcf535ce01b2cc8afdb138f207e7e2389976fda6167bbb7c22c78c4797"
-    end
-
-    # Remove for > 1.0.0
-    # Upstream commit from 8 Feb 2017 "Fix crash with sub-LCU frame sizes and WPP"
-    # See https://github.com/ultravideo/kvazaar/issues/153
-    patch do
-      url "https://github.com/ultravideo/kvazaar/commit/b8e3513.patch"
-      sha256 "de52ecb665f65be4d364f0070632e660f4bf5a16a47e63064846595b64afe14a"
-    end
+  livecheck do
+    url "https://github.com/ultravideo/kvazaar/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
   bottle do
     cellar :any
-    sha256 "5dd89059b3af46dc2bb14659e85ef3df0335e1cb4983776618e2a11ebc33bdb5" => :sierra
-    sha256 "5bda05263252256cefadb228ec8588f09568d00875a00ef0f12da69ab06868f6" => :el_capitan
-    sha256 "ec981006d5607147b9af8a1a1d6e9dca1642b1dd85ac8a528f1c801f82053573" => :yosemite
+    sha256 "294a8c34175f2338af524ca7b7cf134d9893405013314c006ad3e075160e28b6" => :big_sur
+    sha256 "75467ab21cc9bb1a3f81f41949a0312300f9d470b4547e827111379b94a237d8" => :catalina
+    sha256 "d146e6aa5dda30a3353f72bae18356622fe613e1a7a43ae6d5d5e2fa8bfc2aba" => :mojave
+    sha256 "50723e7fbe1dfb25f2ba39b84f4059b208bed481ae0832d00f24c7221bdde905" => :high_sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "pkg-config" => :build
   depends_on "yasm" => :build
 
   resource "videosample" do
@@ -52,7 +39,7 @@ class Kvazaar < Formula
     # download small sample and try to encode it
     resource("videosample").stage do
       system bin/"kvazaar", "-i", "lm20.avi", "--input-res", "16x16", "-o", "lm20.hevc"
-      assert File.exist? "lm20.hevc"
+      assert_predicate Pathname.pwd/"lm20.hevc", :exist?
     end
   end
 end

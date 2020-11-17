@@ -1,42 +1,60 @@
 class X264 < Formula
   desc "H.264/AVC encoder"
   homepage "https://www.videolan.org/developers/x264.html"
-  # the latest commit on the stable branch
-  url "https://git.videolan.org/git/x264.git", :revision => "97eaef2ab82a46d13ea5e00270712d6475fbe42b"
-  version "r2748"
-  head "https://git.videolan.org/git/x264.git"
+  license "GPL-2.0-only"
+  revision 1
+  head "https://code.videolan.org/videolan/x264.git"
+
+  stable do
+    # the latest commit on the stable branch
+    url "https://code.videolan.org/videolan/x264.git",
+        revision: "4121277b40a667665d4eea1726aefdc55d12d110"
+    version "r3027"
+  end
+
+  # There's no guarantee that the versions we find on the `release-macos` index
+  # page are stable but there didn't appear to be a different way of getting
+  # the version information at the time of writing.
+  livecheck do
+    url "https://artifacts.videolan.org/x264/release-macos/"
+    regex(%r{href=.*?x264[._-](r\d+)[._-][\da-z]+/?["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "e7b49d928421526258edb4021324a9c5bc6c9823e25c4f06070ffb4dbf9ce3c5" => :sierra
-    sha256 "59c336f951b9fc03a26574dc29da0ee6e6e45cbf4e3245de7529271c134f149c" => :el_capitan
-    sha256 "92ba46544181c3f7039fb62e6dd6e730e214dece3a3866f2a3bb8eb824701cbf" => :yosemite
+    sha256 "ae4f4d320db6d3c52c118da312de4118870c0d60228c085f87cf75b88b63c5fe" => :big_sur
+    sha256 "60b2b82a877d14c5c02f28e0d51ae90b89d4a141fa3c4efcc3fed6926d41033a" => :catalina
+    sha256 "25c5033625c3de8f4f2e4de5b9d2e3f954e42ec9ec04104f49d6d4c255f65286" => :mojave
+    sha256 "7a7dbe31d8afd48909c01294cc165b60fcaa20ca3df245617151b13f38d7c626" => :high_sierra
   end
 
-  option "with-10-bit", "Build a 10-bit x264 (default: 8-bit)"
-  option "with-l-smash", "Build CLI with l-smash mp4 output"
+  depends_on "nasm" => :build
 
-  depends_on "yasm" => :build
-  depends_on "l-smash" => :optional
-
-  deprecated_option "10-bit" => "with-10-bit"
+  if MacOS.version <= :high_sierra
+    # Stack realignment requires newer Clang
+    # https://code.videolan.org/videolan/x264/-/commit/b5bc5d69c580429ff716bafcd43655e855c31b02
+    depends_on "gcc"
+    fails_with :clang
+  end
 
   def install
     args = %W[
       --prefix=#{prefix}
+      --disable-lsmash
+      --disable-swscale
+      --disable-ffms
       --enable-shared
       --enable-static
       --enable-strip
     ]
-    args << "--disable-lsmash" if build.without? "l-smash"
-    args << "--bit-depth=10" if build.with? "10-bit"
 
     system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    assert_match version.to_s.delete("r"), shell_output("#{bin}/x264 --version").lines.first
+    (testpath/"test.c").write <<~EOS
       #include <stdint.h>
       #include <x264.h>
 
@@ -49,7 +67,7 @@ class X264 < Formula
           return 0;
       }
     EOS
-    system ENV.cc, "-lx264", "test.c", "-o", "test"
+    system ENV.cc, "-L#{lib}", "-lx264", "test.c", "-o", "test"
     system "./test"
   end
 end

@@ -1,22 +1,28 @@
 class Libinfinity < Formula
   desc "GObject-based C implementation of the Infinote protocol"
   homepage "https://gobby.github.io"
-  url "http://releases.0x539.de/libinfinity/libinfinity-0.6.6.tar.gz"
-  sha256 "3df9397b52d61392cbe98084aada9b7362a34811ef21baa0db87fdfd754f92cc"
-  revision 1
+  url "http://releases.0x539.de/libinfinity/libinfinity-0.6.8.tar.gz"
+  sha256 "0c4e7e0e5cb6ad5df4dbe19568de37b100a13e61475cf9d4e0f2a68fcdd2d45b"
+  license "LGPL-2.1"
+  revision 2
 
   bottle do
-    sha256 "41aa8345422458ad73c954071fc093b4c81f4be7839beef9a06499065e17b117" => :sierra
-    sha256 "43aed53c6130683c7a2cbc75f72f640ac4a8890f0a4d0d5324802722fb9e595a" => :el_capitan
-    sha256 "f8814b4172c821d45b26edd01fd19ead1e1e3c54b53ebb199b851761dbd9c429" => :yosemite
-    sha256 "a657d5cb68e8dec8efee285e1dc1bb69e9d7753593c49876aaffe2825a136b91" => :mavericks
+    sha256 "4d367978cb9ee0612c37947080939b3006c5bb7972673cc2c6175242c5809c28" => :catalina
+    sha256 "8c9bdd8c7cfb58b1f8c9ce451881c620d574ac749ff0f40e4efa87c0faebba26" => :mojave
+    sha256 "ea90d469694a6da2dd087ceb5f77fc9294b0ce7cee678d135ad466c3a1ae636d" => :high_sierra
+    sha256 "6dd59d33bdc050e1e61d5a7a6efa79a83c0130c237f04c678f7e8fe6a455e4df" => :sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "glib"
-  depends_on "gtk+3"
   depends_on "gnutls"
   depends_on "gsasl"
+  depends_on "gtk+3"
+
+  # libinfinity is only used by gobby
+  # latest 0.7.1 does not work with gobby 0.5.0 due to open issue, https://github.com/gobby/gobby/issues/143
+  # gobby is disbled per #57501
+  disable! because: "is only used by gobby (which has been disabled)"
 
   # MacPorts patch to fix pam include. This is still applicable to 0.6.4.
   patch :p0 do
@@ -32,7 +38,7 @@ class Libinfinity < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libinfinity/common/inf-init.h>
 
       int main(int argc, char *argv[]) {

@@ -1,25 +1,27 @@
 class Mvtools < Formula
   desc "Filters for motion estimation and compensation"
   homepage "https://github.com/dubhater/vapoursynth-mvtools"
-  url "https://github.com/dubhater/vapoursynth-mvtools/archive/v17.tar.gz"
-  sha256 "739656d8ea3fb864b72e3e3d167dc1f7fdb8feff4e396cdf9414b367621ca011"
+  url "https://github.com/dubhater/vapoursynth-mvtools/archive/v23.tar.gz"
+  sha256 "3b5fdad2b52a2525764510a04af01eab3bc5e8fe6a02aba44b78955887a47d44"
+  license "GPL-2.0"
   revision 1
   head "https://github.com/dubhater/vapoursynth-mvtools.git"
 
   bottle do
     cellar :any
-    sha256 "999e644ce8b4d721081491b0bf504aac96f8021a6bc417e44b4dc78174effeb3" => :sierra
-    sha256 "5ebe81cfcff81d1763175660b0305fb3f8661e3435e72b9fa1f1951bd09fb30b" => :el_capitan
+    sha256 "01785cf0cea2080cb2b875df545e027aaaf339fbbddeca53fd5dae8f39bf4726" => :catalina
+    sha256 "0809f0353e48e30d8628bbe2124cebfa0ebd1a6add77e2d27798ce968dadb84d" => :mojave
+    sha256 "0a1bab6b74375cb11959d2100e562bb2cc8124da7115b754975cd70c31e676b2" => :high_sierra
   end
 
-  depends_on "pkg-config" => :build
-  depends_on "yasm" => :build
-  depends_on "vapoursynth"
-  depends_on "fftw"
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on :macos => :el_capitan # due to zimg
+  depends_on "nasm" => :build
+  depends_on "pkg-config" => :build
+  depends_on "fftw"
+  depends_on macos: :el_capitan # due to zimg
+  depends_on "vapoursynth"
 
   def install
     system "./autogen.sh"
@@ -28,21 +30,21 @@ class Mvtools < Formula
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       MVTools will not be autoloaded in your VapourSynth scripts. To use it
       use the following code in your scripts:
 
-        core.std.LoadPlugin(path="#{HOMEBREW_PREFIX}/lib/libmvtools.dylib")
+        core.std.LoadPlugin(path="#{HOMEBREW_PREFIX}/lib/#{shared_library("libmvtools")}")
     EOS
   end
 
   test do
-    script = <<-PYTHON.undent.split("\n").join(";")
+    script = <<~EOS.split("\n").join(";")
       import vapoursynth as vs
       core = vs.get_core()
-      core.std.LoadPlugin(path="#{HOMEBREW_PREFIX}/lib/libmvtools.dylib")
-    PYTHON
+      core.std.LoadPlugin(path="#{lib}/#{shared_library("libmvtools")}")
+    EOS
 
-    system "python3", "-c", script
+    system Formula["python@3.9"].opt_bin/"python3", "-c", script
   end
 end

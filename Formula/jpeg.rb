@@ -1,25 +1,28 @@
 class Jpeg < Formula
   desc "Image manipulation library"
-  homepage "http://www.ijg.org"
-  url "http://www.ijg.org/files/jpegsrc.v8d.tar.gz"
-  sha256 "00029b1473f0f0ea72fbca3230e8cb25797fbb27e58ae2e46bb8bf5a806fe0b3"
+  homepage "https://www.ijg.org/"
+  url "https://www.ijg.org/files/jpegsrc.v9d.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/jpeg-9d.tar.gz"
+  mirror "https://fossies.org/linux/misc/jpegsrc.v9d.tar.gz"
+  sha256 "99cb50e48a4556bc571dadd27931955ff458aae32f68c4d9c39d624693f69c32"
+  license "IJG"
+
+  livecheck do
+    url "https://www.ijg.org/files/"
+    regex(/href=.*?jpegsrc[._-]v?(\d+[a-z]?)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "85d1f6055de99c1b764c697498bb86d003f5d24b324133f036f0393b97b3e869" => :sierra
-    sha256 "bbc74f8b5980065d7bf95927150c2d56806d30abea459c2b1edcbdeed2d7c458" => :el_capitan
-    sha256 "75419be793eefb3decd69de8ee0444ef697aef3d0f942361437c5d967fd8ecec" => :yosemite
-    sha256 "c94f5859603b34d9b3c1b021ee21cf3a41a5d92b178a41ed5c05a1e5b7d19ff5" => :mavericks
-    sha256 "816f0f826e633cb70f8efc173b6fe745fb9b90334d6cb78813de25f48aec6191" => :mountain_lion
-    sha256 "f94b7976c0e867dfc36ff6cead1d88db8b1198a91a01589e008d2006fcf37c61" => :lion
+    sha256 "c565929a4901365a3408b57275802f943625c1e29e1b48a186edd2e97d8c0bdb" => :big_sur
+    sha256 "8f7b82a952fb3937889c7f22da1403e5338cd320495917eb26b0c5b2e614791c" => :catalina
+    sha256 "b931e7725c83275c56f962b51b83c10f31a01ac8d823c6722edaf16d893970b1" => :mojave
+    sha256 "64286932634fbe1e0d07eacda334d2f4967b20bce0737424df56ec5eaa34ccca" => :high_sierra
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
     system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules",
                           "--prefix=#{prefix}"
     system "make", "install"
   end

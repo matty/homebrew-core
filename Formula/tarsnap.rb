@@ -1,27 +1,41 @@
 class Tarsnap < Formula
   desc "Online backups for the truly paranoid"
   homepage "https://www.tarsnap.com/"
-  url "https://www.tarsnap.com/download/tarsnap-autoconf-1.0.37.tgz"
-  sha256 "fa999413651b3bd994547a10ffe3127b4a85a88b1b9a253f2de798888718dbfa"
+  url "https://www.tarsnap.com/download/tarsnap-autoconf-1.0.39.tgz"
+  sha256 "5613218b2a1060c730b6c4a14c2b34ce33898dd19b38fb9ea0858c5517e42082"
+  license "0BSD"
+  revision 1
+
+  livecheck do
+    url "https://www.tarsnap.com/download/"
+    regex(/href=.*?tarsnap-autoconf[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "40a6aa38f88d284ef5254c7a689c795b451ab78a03331dd8352e71999cf58db7" => :sierra
-    sha256 "40965861e708196ec3c18f9a99943f75a54dac2494c88aed96b3df70cd46d4fa" => :el_capitan
-    sha256 "4e256b38d10e905ece1c874a5655612f2f2cc8e7911bfe1d72b07ea2e209244a" => :yosemite
-    sha256 "0c8a97e409b389b5e696330123a1f185ebf17c91728274634a25dc7adfa72866" => :mavericks
+    sha256 "db0fceeaf2b93d4d7588ef1b3c0ac69080595e4fd05311fb3d61ccb95c9f9ae0" => :big_sur
+    sha256 "afa6ebfefbc93faf12ac6576f26edb0b68c6a47cc65b893d590ea1efd4301fb4" => :catalina
+    sha256 "c6c97cd8e16ba02f7997d1d269373dca82d4a3d188b89dc3532c8149e277bd02" => :mojave
+    sha256 "847aae76230beaedfa23ea0a0f375864a8af6063c8539634637ab218a425540d" => :high_sierra
+    sha256 "dbf1a477d46c723a3cebb6b1001771bf51956035ea3369b5e2451c091cad5930" => :sierra
   end
 
   head do
     url "https://github.com/Tarsnap/tarsnap.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
-  depends_on "openssl"
-  depends_on "xz" => :optional
+  depends_on "openssl@1.1"
 
   def install
+    # dyld: lazy symbol binding failed: Symbol not found: _clock_gettime
+    # Reported 20 Aug 2017 https://github.com/Tarsnap/tarsnap/issues/286
+    if MacOS.version == :el_capitan && MacOS::Xcode.version >= "8.0"
+      inreplace "libcperciva/util/monoclock.c", "CLOCK_MONOTONIC",
+                                                "UNDEFINED_GIBBERISH"
+    end
+
     system "autoreconf", "-iv" if build.head?
 
     args = %W[
@@ -30,8 +44,9 @@ class Tarsnap < Formula
       --prefix=#{prefix}
       --sysconfdir=#{etc}
       --with-bash-completion-dir=#{bash_completion}
+      --without-lzma
+      --without-lzmadec
     ]
-    args << "--without-lzma" << "--without-lzmadec" if build.without? "xz"
 
     system "./configure", *args
     system "make", "install"

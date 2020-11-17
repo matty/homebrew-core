@@ -1,24 +1,31 @@
 class Nedit < Formula
-  desc "fast, compact Motif/X11 plain text editor"
-  homepage "http://sourceforge.net/projects/nedit"
-  url "https://downloads.sourceforge.net/project/nedit/nedit-source/nedit-5.6a-src.tar.gz"
-  sha256 "53677983cb6c91c5da1fcdcac90f7f9a193f08fa13b7a6330bc9ce21f9461eed"
+  desc "Fast, compact Motif/X11 plain text editor"
+  homepage "https://sourceforge.net/projects/nedit/"
+  url "https://downloads.sourceforge.net/project/nedit/nedit-source/nedit-5.7-src.tar.gz"
+  sha256 "add9ac79ff973528ad36c86858238bac4f59896c27dbf285cbe6a4d425fca17a"
+  license "GPL-2.0-or-later"
+  revision 1
 
-  bottle do
-    sha256 "8629a2b766e407e590835d9001830a7e7c0ac46084e152588906bdeefb2e10ae" => :sierra
-    sha256 "d79bd52f941bd568ffbaac5bbb3827b759622c6a3a678baffb22ca876987d560" => :el_capitan
-    sha256 "c8fbc8396996701b2b2dea73a3b246105f876341e8a0e1fe6991d43791dffe4d" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  depends_on "openmotif"
-  depends_on :x11
+  bottle do
+    cellar :any
+    sha256 "d39ce752a03c79732c908a3cbe93df61f413a12126f764e7e1c3d71f4106f701" => :big_sur
+    sha256 "c726811764a5d12465d4c11b273229482af935921df472f6d083a27e34b39b3f" => :catalina
+    sha256 "7e3760fcb4d5a78393094c94b0c97a4e9b73487eeca6510963f098ebaeddf281" => :mojave
+    sha256 "0f1ea26247cf5abe89ecc7038820b937ee20046fa44b504363604af4a7bbb093" => :high_sierra
+  end
 
-  # Nedit specifically checks the version of openmotif that is running against.
-  # Unfortunately this check leaves out the latest versions of openmotif 2.3.4+ (
-  # which is what homebrew currently has)
-  # see https://sourceforge.net/p/nedit/patches/177/ for the upstream bug report,
-  # and patch.
-  patch :DATA
+  depends_on "libice"
+  depends_on "libsm"
+  depends_on "libx11"
+  depends_on "libxext"
+  depends_on "libxp"
+  depends_on "libxpm"
+  depends_on "libxt"
+  depends_on "openmotif"
 
   def install
     system "make", "macosx", "MOTIFLINK='-lXm'"
@@ -34,21 +41,7 @@ class Nedit < Formula
   end
 
   test do
-    system bin/"nedit", "-version"
-    system bin/"ncl", "-version"
+    assert_match "Can't open display", shell_output("DISPLAY= #{bin}/nedit 2>&1", 1)
+    assert_match "Can't open display", shell_output("DISPLAY= #{bin}/ncl 2>&1", 1)
   end
 end
-__END__
-diff --git a/util/motif.c.old b/util/motif.c
-index 1ab3ef8..8d11abc 100644
---- a/util/motif.c.old
-+++ b/util/motif.c
-@@ -151,7 +151,7 @@ static enum MotifStability GetOpenMotifStability(void)
-     {
-         result = MotifKnownBad;
-     }
--    else if (XmFullVersion >= 200203 && XmFullVersion <= 200303) /* 2.2.3 - 2.3 is good */
-+    else if (XmFullVersion >= 200203 && XmFullVersion <= 200306) /* 2.2.3 - 2.3.6 is good */
-     {
-         result = MotifKnownGood;
-     }

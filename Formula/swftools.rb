@@ -5,25 +5,17 @@ class Swftools < Formula
   sha256 "bf6891bfc6bf535a1a99a485478f7896ebacbe3bbf545ba551298080a26f01f1"
   revision 1
 
-  bottle do
-    sha256 "479570fcb99302996b55c361db1a6bb4a3abee611533b854fa350956f6b8cf61" => :sierra
-    sha256 "7343a6c406b0374b460f1d814e5542372f85df5d6ee500759648084713e33174" => :el_capitan
-    sha256 "f672348156459f385c6b08ed67c7055cd1cb9ee9dee8d868777596a57ac01a7f" => :yosemite
-    sha256 "7f18b7dae61164cd47eb34712884dea4de8df821d51ce955c6c33f36c165eaa1" => :mavericks
-    sha256 "900f2dd522f48c9ea72a3bf8dba53a8f0f35a4867dc68fab5dc85921a769c206" => :mountain_lion
+  livecheck do
+    url "http://www.swftools.org/download.html"
+    regex(/href=.*?swftools[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  option "with-xpdf", "Build with PDF support"
-
-  depends_on :x11 if build.with? "xpdf"
-  depends_on "jpeg" => :optional
-  depends_on "lame" => :optional
-  depends_on "giflib" => :optional
-  depends_on "fftw" => :optional
-
-  resource "xpdf" do
-    url "ftp://ftp.foolabs.com/pub/xpdf/xpdf-3.04.tar.gz", :using => :nounzip
-    sha256 "11390c74733abcb262aaca4db68710f13ffffd42bfe2a0861a5dfc912b2977e5"
+  bottle do
+    rebuild 1
+    sha256 "bacf30e9986bb179127942abea49fac9ca05cf1ac3b3851cf3faf1cb970009b4" => :big_sur
+    sha256 "b0791e6725e6d07610847df7e4431e5839fcf72120cea34f1890b425f8e024c4" => :catalina
+    sha256 "bf18bfc66b1f6d6ed247acd0a4208a09b4acf6a4668e8f7eba2e40ad33ffe9f6" => :mojave
+    sha256 "d0e441ed7eef07c3536965d5269f648744ceb62d41fbcfe9a12248b8154c4f62" => :high_sierra
   end
 
   # Fixes a conftest for libfftwf.dylib that mistakenly calls fftw_malloc()
@@ -32,14 +24,7 @@ class Swftools < Formula
   # Patch is merged upstream.  Remove at swftools-0.9.3.
   patch :DATA
 
-  # Fix compile error, via MacPorts: https://trac.macports.org/ticket/34553
-  patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/96d3ae5/swftools/patch-src_gif2swf.c.diff"
-    sha256 "75daa35a292a25d05b45effc5b734e421b437bad22479837e0ee5cbd7a05e73e"
-  end
-
   def install
-    (buildpath/"lib/pdf").install resource("xpdf") if build.with? "xpdf"
     system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make", "install"
@@ -54,7 +39,7 @@ __END__
 --- a/configure	2012-04-08 10:25:35.000000000 -0700
 +++ b/configure	2012-04-09 17:42:10.000000000 -0700
 @@ -6243,7 +6243,7 @@
- 
+
      int main()
      {
 -	char*data = fftw_malloc(sizeof(fftwf_complex)*600*800);

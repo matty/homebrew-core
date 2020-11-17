@@ -1,16 +1,21 @@
 class Sratom < Formula
   desc "Library for serializing LV2 atoms to/from RDF"
   homepage "https://drobilla.net/software/sratom/"
-  url "https://download.drobilla.net/sratom-0.4.6.tar.bz2"
-  sha256 "a4b9beaeaedc4f651beb15cd1cfedff905b0726a9010548483475ad97d941220"
+  url "https://download.drobilla.net/sratom-0.6.6.tar.bz2"
+  sha256 "fb910bf62a5e69f4430bf09653d386fc4de9ff02bfd58635e1d45cbd31481b9d"
+  license "ISC"
+
+  livecheck do
+    url "https://download.drobilla.net"
+    regex(/href=.*?sratom[._-]v?(\d+.\d+.\d+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "5304acf02c8ba958f6122d572503c5a286aedb288d2b211b1b24912a7f3cd73c" => :sierra
-    sha256 "55a2eb57141d5fa5589206b94113a873df38e298c32b18e135ab689ad209b188" => :el_capitan
-    sha256 "91f3cd1331e6502639eb51755e60581372aaf34944dd4ba4f8884724aae40e1e" => :yosemite
-    sha256 "035d8d79e3ab88f3ae991690d0f1ede056237a3666022436af7355d739b9a635" => :mavericks
+    sha256 "930146db04f23544f9e89c36b783761217e834035e0a6c6d934fc75367852a5d" => :big_sur
+    sha256 "eb959c7930bef09a0d25e5213b387c28d0bcfe5567fe97327699c36ae966d7a9" => :catalina
+    sha256 "9a1ae4be9fbf3643fd782aef40928125d257244c368fa7e748df04b5ceb31a1d" => :mojave
+    sha256 "acbfea6ae53d91a461eedfe7ad0467be9fe2fe18ae34bb45896efa936b3684ce" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
@@ -22,5 +27,22 @@ class Sratom < Formula
     system "./waf", "configure", "--prefix=#{prefix}"
     system "./waf"
     system "./waf", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <sratom/sratom.h>
+
+      int main()
+      {
+        return 0;
+      }
+    EOS
+    lv2 = Formula["lv2"].opt_include
+    serd = Formula["serd"].opt_include
+    sord = Formula["sord"].opt_include
+    system ENV.cc, "-I#{lv2}", "-I#{serd}/serd-0", "-I#{sord}/sord-0", "-I#{include}/sratom-0",
+                   "-L#{lib}", "-lsratom-0", "test.c", "-o", "test"
+    system "./test"
   end
 end

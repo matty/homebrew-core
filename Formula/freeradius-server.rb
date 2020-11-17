@@ -1,18 +1,31 @@
 class FreeradiusServer < Formula
   desc "High-performance and highly configurable RADIUS server"
   homepage "https://freeradius.org/"
-  url "ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-3.0.12.tar.bz2"
-  sha256 "fe4e1f52cc2873f6aee2b12b0f03236978e4632f2acf298f834686b240c4183d"
+  url "https://github.com/FreeRADIUS/freeradius-server/archive/release_3_0_21.tar.gz"
+  sha256 "b2014372948a92f86cfe2cf43c58ef47921c03af05666eb9d6416bdc6eeaedc2"
+  license "GPL-2.0"
   head "https://github.com/FreeRADIUS/freeradius-server.git"
 
-  bottle do
-    sha256 "e4d007b16ac62f010ed4aead35c17697f72e97a2d4d73a54ed7af22d43ca5524" => :sierra
-    sha256 "019f39ca70a186fdedb1f1ede009134fedae5b53b90a4dbb6c6dcba6cc92213e" => :el_capitan
-    sha256 "a0661e889d4171401e4a767b6f6df58188b1cb29f6e17e9d2f0b34c12598a7b3" => :yosemite
+  livecheck do
+    url :head
+    regex(/^release[._-](\d+(?:[._]\d+)+)$/i)
   end
 
-  depends_on "openssl"
+  bottle do
+    sha256 "c3174a08eaeabce252f16224d93fcb1503584ac6b2d7733a6e80eb558cfefee5" => :catalina
+    sha256 "4c4dc47fe8af598594c4dd24184f7b5400e383e7649c6f6aa98f1663997b04ec" => :mojave
+    sha256 "2c8d33eddc1311f098175f2854173bbd4181d9f20fa0d1807950a84198fca6e1" => :high_sierra
+  end
+
+  depends_on "openssl@1.1"
   depends_on "talloc"
+
+  uses_from_macos "perl"
+  uses_from_macos "sqlite"
+
+  on_linux do
+    depends_on "readline"
+  end
 
   def install
     ENV.deparallelize
@@ -21,8 +34,8 @@ class FreeradiusServer < Formula
       --prefix=#{prefix}
       --sbindir=#{bin}
       --localstatedir=#{var}
-      --with-openssl-includes=#{Formula["openssl"].opt_include}
-      --with-openssl-libraries=#{Formula["openssl"].opt_lib}
+      --with-openssl-includes=#{Formula["openssl@1.1"].opt_include}
+      --with-openssl-libraries=#{Formula["openssl@1.1"].opt_lib}
       --with-talloc-lib-dir=#{Formula["talloc"].opt_lib}
       --with-talloc-include-dir=#{Formula["talloc"].opt_include}
     ]
@@ -38,6 +51,7 @@ class FreeradiusServer < Formula
   end
 
   test do
-    assert_match /77C8009C912CFFCF3832C92FC614B7D1/, shell_output("#{bin}/smbencrypt homebrew")
+    output = shell_output("#{bin}/smbencrypt homebrew")
+    assert_match "77C8009C912CFFCF3832C92FC614B7D1", output
   end
 end

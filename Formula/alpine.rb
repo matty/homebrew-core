@@ -1,29 +1,43 @@
 class Alpine < Formula
   desc "News and email agent"
-  homepage "http://patches.freeiz.com/alpine/"
-  url "http://patches.freeiz.com/alpine/release/src/alpine-2.20.tar.xz"
-  sha256 "ed639b6e5bb97e6b0645c85262ca6a784316195d461ce8d8411999bf80449227"
+  homepage "http://alpine.x10host.com/alpine/release/"
+  url "http://alpine.x10host.com/alpine/release/src/alpine-2.24.tar.xz"
+  sha256 "651a9ffa0a29e2b646a0a6e0d5a2c8c50f27a07a26a61640b7c783d06d0abcef"
+  license "Apache-2.0"
+  head "https://repo.or.cz/alpine.git"
 
-  bottle do
-    sha256 "40e1bb1dca0c3f775bd1ae01abb41a1b0034d2c646b3ccfd169a3d089f94af7a" => :sierra
-    sha256 "730553f37f597097bbba910de04dd5b9327d5b5a920c26f29406eca2d31f540d" => :el_capitan
-    sha256 "cd774d63bf4327c4109a6b97fd7189f9618d53bd608bb314101f4880368f7662" => :yosemite
-    sha256 "b35c3667a183c86dfa769e1d9e53669524930fda371422ab1c8519d3d807b8d5" => :mavericks
-    sha256 "8f52d4ebe9e445ec975cabdd74c4a48cef80eebb21f18c33644e99de1a6d2173" => :mountain_lion
+  livecheck do
+    url :homepage
+    regex(/href=.*?alpine[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "openssl"
+  bottle do
+    sha256 "bc7e92be45c91c784791a4be2cc2569bed0b686d132f4cdfd0d0233be091643d" => :big_sur
+    sha256 "8a856082da848d13cc4019f3bed974e896144b0cf192125285e20a7250a72295" => :catalina
+    sha256 "43533b14f530c72a3f89dbaebf2c4efcd66c8c7fc89349e56d714ff15f2af02e" => :mojave
+    sha256 "bed10deca1df682e23ffec4b21af9f837db1dbf011879ab0df579efc81116db1" => :high_sierra
+  end
+
+  depends_on "openssl@1.1"
+
+  uses_from_macos "ncurses"
 
   def install
     ENV.deparallelize
-    system "./configure", "--disable-debug",
-                          "--with-ssl-dir=#{Formula["openssl"].opt_prefix}",
-                          "--with-ssl-certs-dir=#{etc}/openssl",
-                          "--prefix=#{prefix}"
+
+    args = %W[
+      --disable-debug
+      --with-ssl-dir=#{Formula["openssl@1.1"].opt_prefix}
+      --with-ssl-certs-dir=#{etc}/openssl@1.1
+      --prefix=#{prefix}
+      --with-bundled-tools
+    ]
+
+    system "./configure", *args
     system "make", "install"
   end
 
   test do
-    system "#{bin}/alpine", "-supported"
+    system "#{bin}/alpine", "-conf"
   end
 end

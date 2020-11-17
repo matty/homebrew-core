@@ -1,48 +1,26 @@
 class Libbtbb < Formula
   desc "Bluetooth baseband decoding library"
   homepage "https://github.com/greatscottgadgets/libbtbb"
-  url "https://github.com/greatscottgadgets/libbtbb/archive/2015-10-R1.tar.gz"
-  version "2015-10-R1"
-  sha256 "95f493d379a53ec1134cfb36349cc9aac95d77260db4fdb557313b0dbb5c1d5a"
-  revision 1
-
+  url "https://github.com/greatscottgadgets/libbtbb/archive/2018-12-R1.tar.gz"
+  version "2018-12-R1"
+  sha256 "0eb2b72e1c1131538206f1e3176e2cf1048751fe7dc665eef1e7429d1f2e6225"
+  license "GPL-2.0"
   head "https://github.com/greatscottgadgets/libbtbb.git"
 
   bottle do
     cellar :any
-    sha256 "ca2e1d20b1861ab016128590c98a8195a9d6acb581f997135fe174cd87d6cf33" => :sierra
-    sha256 "0775b81b4e7620a5030090a0a449d5be11fdb0bd02d37c4ee5fff87670c44ec3" => :el_capitan
-    sha256 "0ccf46429a2bddd4a71aeaaf24df9dc85c34f1c64062059ed0e630b551fcddd2" => :yosemite
+    sha256 "79cd35b4013959310c4a2bfc09512ea30814edc9d2a186cababe4f854ae11364" => :big_sur
+    sha256 "a44e009e65047628a6d6c1e355ab19ca43410eaec83a557c907b277de361b98e" => :catalina
+    sha256 "835f6edfd8143b29d96eeeed66dd443d837cc8a117519fdca30637c417c9b8d9" => :mojave
+    sha256 "b2be1cc3b707870e022401656041307bfde41035659db8eee563647f0dce5873" => :high_sierra
+    sha256 "e09299efc9ea3b989a2b1ceda4d123e6cebec6b28aa8ff08cf3052dfa6a65c3d" => :sierra
   end
-
-  option :universal
 
   depends_on "cmake" => :build
-  depends_on :python if MacOS.version <= :snow_leopard
-
-  # Requires headers macOS doesn't supply.
-  resource "libpcap" do
-    url "http://www.tcpdump.org/release/libpcap-1.7.4.tar.gz"
-    sha256 "7ad3112187e88328b85e46dce7a9b949632af18ee74d97ffc3f2b41fe7f448b0"
-  end
 
   def install
-    args = std_cmake_args
-
-    if build.universal?
-      ENV.universal_binary
-      args << "-DCMAKE_OSX_ARCHITECTURES=#{Hardware::CPU.universal_archs.as_cmake_arch_flags}"
-    end
-
-    resource("libpcap").stage do
-      system "./configure", "--prefix=#{libexec}/vendor", "--enable-ipv6"
-      system "make", "install"
-    end
-
-    ENV.prepend_path "PATH", libexec/"vendor/bin"
-    ENV.append_to_cflags "-I#{libexec}/vendor/include"
     mkdir "build" do
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args
       system "make", "install"
     end
   end

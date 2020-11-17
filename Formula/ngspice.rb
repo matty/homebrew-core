@@ -1,18 +1,23 @@
 class Ngspice < Formula
   desc "Spice circuit simulator"
   homepage "https://ngspice.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/26/ngspice-26.tar.gz"
-  sha256 "51e230c8b720802d93747bc580c0a29d1fb530f3dd06f213b6a700ca9a4d0108"
+  url "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/33/ngspice-33.tar.gz"
+  sha256 "b99db66cc1c57c44e9af1ef6ccb1dcbc8ae1df3e35acf570af578f606f8541f1"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/ngspice[._-]v?(\d+(?:\.\d+)*)\.t}i)
+  end
 
   bottle do
-    sha256 "267664560fe26b818457e00ba124ad1951b452ad978bd34ee7d7b9f4567bd3b9" => :sierra
-    sha256 "b508b0ca4f88db18b48796715a9de16ee5e7c119b13809ce01a87685f3a9393e" => :el_capitan
-    sha256 "ea1f0b65fcb3bb926124694d210e14800be6e47e73dcbf47a8e2baaac5314f44" => :yosemite
-    sha256 "4bc737b0801c82999a290f602f416de0ed38777df599afc688d9695c1f16d704" => :mavericks
+    sha256 "b00fa22144c9add0b27a0c169e51877fb680ae309f0b339043898cb7c1be8a22" => :big_sur
+    sha256 "947aa81277b9bfdfe5b9a52ba502f146cb2c7e5125e88770255a40f6799685bd" => :catalina
+    sha256 "0d880665db391a48e55b133b6fea6cbf7f0e56c0428045b4d046b03dfff95685" => :mojave
+    sha256 "9f048cc3f136b84cfd2f76afe91f39d7bf844c00e442a9fbb7363f84fa44a8c7" => :high_sierra
   end
 
   head do
-    url "git://ngspice.git.sourceforge.net/gitroot/ngspice/ngspice"
+    url "https://git.code.sf.net/p/ngspice/ngspice.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -20,11 +25,8 @@ class Ngspice < Formula
     depends_on "libtool" => :build
   end
 
-  option "without-xspice", "Build without x-spice extensions"
-
-  deprecated_option "with-x" => "with-x11"
-
-  depends_on :x11 => :optional
+  depends_on "fftw"
+  depends_on "readline"
 
   def install
     system "./autogen.sh" if build.head?
@@ -32,21 +34,17 @@ class Ngspice < Formula
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
-      --with-editline=yes
+      --with-readline=yes
+      --enable-xspice
+      --without-x
     ]
-    if build.with? "x11"
-      args << "--with-x"
-    else
-      args << "--without-x"
-    end
-    args << "--enable-xspice" if build.with? "xspice"
 
     system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cir").write <<-EOS.undent
+    (testpath/"test.cir").write <<~EOS
       RC test circuit
       v1 1 0 1
       r1 1 2 1

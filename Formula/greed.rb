@@ -1,14 +1,18 @@
 class Greed < Formula
   desc "Game of consumption"
   homepage "http://www.catb.org/~esr/greed/"
-  url "http://www.catb.org/~esr/greed/greed-4.1.tar.gz"
-  sha256 "2356151b2f95badcb8ad413ca88ee7022a46b11b2edab5b096de6d033778b1ea"
+  url "http://www.catb.org/~esr/greed/greed-4.2.tar.gz"
+  sha256 "702bc0314ddedb2ba17d4b55d873384a1606886e8d69f35ce67f6e3024a8d3fd"
+  license "BSD-2-Clause"
   head "https://gitlab.com/esr/greed.git"
 
   bottle do
-    sha256 "152ce580c6e8157f765217a537cab9fb05561433c9546696989eb5770c77ee3b" => :sierra
-    sha256 "136edae12bcf18054cc5afeb7bd5f0d05ca8c6979f8764126a6216c174644e31" => :el_capitan
-    sha256 "634db96b3c26b08026ea59b90e161af6ec0979f79dcdb5ca132ee49fc91b6cfa" => :yosemite
+    cellar :any_skip_relocation
+    rebuild 1
+    sha256 "15791321c59787d6e5b633efb195e0b7edf8c92976d5c6991e12a920a9f46a00" => :big_sur
+    sha256 "64d0028754d683a8bbe1de0bb1a7319dcf6d8020c6d3624e58df5b5be3bf4e42" => :catalina
+    sha256 "9cba951e4fd73d29a1e4899a4f2a7d5f0158f6f5b6d02bb75837c7296530e65c" => :mojave
+    sha256 "9685dcc52ad08b19964cfb61f4fd0d9e28ec0d42cde2f112da4e9be1e1d15b5b" => :high_sierra
   end
 
   def install
@@ -23,13 +27,14 @@ class Greed < Formula
     system "make", "install", "BIN=#{bin}"
   end
 
-  def caveats; <<-EOS.undent
-    High scores will be stored in the following location:
-      #{var}/greed/greed.hs
+  def caveats
+    <<~EOS
+      High scores will be stored in the following location:
+        #{var}/greed/greed.hs
     EOS
   end
 
   test do
-    File.executable? "#{bin}/greed"
+    assert_predicate bin/"greed", :executable?
   end
 end

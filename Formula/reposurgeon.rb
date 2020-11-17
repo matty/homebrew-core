@@ -2,51 +2,36 @@ class Reposurgeon < Formula
   desc "Edit version-control repository history"
   homepage "http://www.catb.org/esr/reposurgeon/"
   url "https://gitlab.com/esr/reposurgeon.git",
-      :tag => "3.41",
-      :revision => "26514f50738a6bfbfeec896a5e1934b8567b5fbb"
+    tag:      "4.19",
+    revision: "f9902cb938911b674f69da4c085eb4a4bebf9cf4"
+  license "BSD-2-Clause"
   head "https://gitlab.com/esr/reposurgeon.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "84122d1769c118062fbdad0ec2603a8baac3f7cfb0121fbd315790183b1931e0" => :sierra
-    sha256 "05c65f31121bfa1fdabda3e07b2e7727e4b54afdd7a493ad4505cbdcc248d079" => :el_capitan
-    sha256 "842a856913525967f362101026c16b8437794f7dca0cd76dabf41714103bac3b" => :yosemite
+    sha256 "62a870e757aca026be8fa1bffcfb7551160b2cc7ad46d615002c0563611de4be" => :big_sur
+    sha256 "54257b991eca3725c03ed737d38158f2c9406b29fe035ed43a59dda6ac0400d2" => :catalina
+    sha256 "045b3d231e384da1ac603b3f7f4d0b96b86bccfb208e93148aa56fee0d7baffa" => :mojave
+    sha256 "b1025a09b10689b8562959ed6e6e37c77d04765285ba64fde51bbf385e15ff29" => :high_sierra
   end
 
-  option "without-cython", "Build without cython (faster compile)"
-
-  depends_on :python if MacOS.version <= :snow_leopard
-  depends_on "asciidoc" => :build
-  depends_on "xmlto" => :build
-
-  resource "Cython" do
-    url "https://files.pythonhosted.org/packages/b7/67/7e2a817f9e9c773ee3995c1e15204f5d01c8da71882016cac10342ef031b/Cython-0.25.2.tar.gz"
-    sha256 "f141d1f9c27a07b5a93f7dc5339472067e2d7140d1c5a9e20112a5665ca60306"
-  end
+  depends_on "asciidoctor" => :build
+  depends_on "go" => :build
+  depends_on "git" # requires >= 2.19.2
 
   def install
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
+    system "make"
     system "make", "install", "prefix=#{prefix}"
     elisp.install "reposurgeon-mode.el"
-
-    if build.with? "cython"
-      resource("Cython").stage do
-        system "python", *Language::Python.setup_install_args(buildpath/"vendor")
-      end
-      ENV.prepend_path "PYTHONPATH", buildpath/"vendor/lib/python2.7/site-packages"
-      system "make", "install-cyreposurgeon", "prefix=#{prefix}",
-             "CYTHON=#{buildpath}/vendor/bin/cython",
-             "pyinclude=" + `python-config --cflags`.chomp,
-             "pylib=" + `python-config --ldflags`.chomp
-    end
   end
 
   test do
-    (testpath/".gitconfig").write <<-EOS.undent
+    (testpath/".gitconfig").write <<~EOS
       [user]
         name = Real Person
         email = notacat@hotmail.cat
-      EOS
+    EOS
     system "git", "init"
     system "git", "commit", "--allow-empty", "--message", "brewing"
 

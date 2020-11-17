@@ -1,13 +1,18 @@
 class DependencyCheck < Formula
-  desc "OWASP Dependency Check"
-  homepage "https://www.owasp.org/index.php/OWASP_Dependency_Check"
-  url "https://dl.bintray.com/jeremy-long/owasp/dependency-check-1.4.5-release.zip"
-  version "1.4.5"
-  sha256 "129323b238c372b156c0c315d0b365518025765f3c0855f0ec6ac385f91b91be"
+  desc "OWASP dependency-check"
+  homepage "https://owasp.org/www-project-dependency-check/"
+  url "https://github.com/jeremylong/DependencyCheck/releases/download/v6.0.3/dependency-check-6.0.3-release.zip"
+  sha256 "ca3787b523541c500df8b8fbb0d44df34613a15a9729bb9abd1e76b7be976c51"
+  license "Apache-2.0"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?dependency-check[._-]v?(\d+(?:\.\d+)+)-release\.zip/i)
+  end
 
   bottle :unneeded
 
-  depends_on :java
+  depends_on "openjdk"
 
   def install
     rm_f Dir["bin/*.bat"]
@@ -15,26 +20,29 @@ class DependencyCheck < Formula
     chmod 0755, "bin/dependency-check.sh"
     libexec.install Dir["*"]
 
-    mv libexec/"bin/dependency-check.sh", libexec/"bin/dependency-check"
-    bin.install_symlink libexec/"bin/dependency-check"
+    (bin/"dependency-check").write_env_script libexec/"bin/dependency-check.sh",
+      JAVA_HOME: Formula["openjdk"].opt_prefix
 
     (var/"dependencycheck").mkpath
     libexec.install_symlink var/"dependencycheck" => "data"
 
     (etc/"dependencycheck").mkpath
     jar = "dependency-check-core-#{version}.jar"
-    corejar = libexec/"repo/org/owasp/dependency-check-core/#{version}/#{jar}"
+    corejar = libexec/"lib/#{jar}"
     system "unzip", "-o", corejar, "dependencycheck.properties", "-d", libexec/"etc"
     (etc/"dependencycheck").install_symlink libexec/"etc/dependencycheck.properties"
   end
 
   test do
-    output = shell_output("#{libexec}/bin/dependency-check --version").strip
+    output = shell_output("#{bin}/dependency-check --version").strip
     assert_match "Dependency-Check Core version #{version}", output
 
-    (testpath/"temp-props.properties").write "cve.startyear=2017"
+    (testpath/"temp-props.properties").write <<~EOS
+      cve.startyear=2017
+      analyzer.assembly.enabled=false
+    EOS
     system bin/"dependency-check", "-P", "temp-props.properties", "-f", "XML",
                "--project", "dc", "-s", libexec, "-d", testpath, "-o", testpath
-    assert File.exist?(testpath/"dependency-check-report.xml")
+    assert_predicate testpath/"dependency-check-report.xml", :exist?
   end
 end

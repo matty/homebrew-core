@@ -1,23 +1,38 @@
 class Xrootd < Formula
   desc "High performance, scalable, fault-tolerant access to data"
-  homepage "http://xrootd.org"
-  url "http://xrootd.org/download/v4.5.0/xrootd-4.5.0.tar.gz"
-  sha256 "27a8e4ef1e6bb6bfe076fef50afe474870edd198699d43359ef01de2f446c670"
+  homepage "https://xrootd.slac.stanford.edu/"
+  url "https://xrootd.slac.stanford.edu/download/v4.12.5/xrootd-4.12.5.tar.gz"
+  sha256 "164c83171e0bfc4d15ed55abde5f8b4d6413aa516c6b1faefabca0e6ba18275f"
+  license "LGPL-3.0-or-later"
   head "https://github.com/xrootd/xrootd.git"
+
+  livecheck do
+    url "http://xrootd.org/dload.html"
+    regex(/href=.*?xrootd[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "98956880d9cb2d36a4d2f32d04bf351d7f329e51fc639a15f77d91e982eb7a86" => :sierra
-    sha256 "c4765937da5ae6637efd92c5c7b8a1adc57d801c61eb2a0e2252caa88d6567fe" => :el_capitan
-    sha256 "692861333404f5936a0bf1dce7a4d4a3a7f04e34903e5c5e3716bb2dc5bb4d58" => :yosemite
+    sha256 "93c151aa365834913a5a6ebe2110185acdbd7e61373776b4ef37c18e195a8e67" => :big_sur
+    sha256 "22b2413b91bfc41aadc51bd16d7f25662b285065e1a2faca0cfb531191b69919" => :catalina
+    sha256 "ca118b5416a139b7b65e847eaa1c3b5384dae26754fdb2fd86286ff9a8e06fd7" => :mojave
+    sha256 "6b3e11548b8251999277d709c9c449f4ef92ae28265f65e6718db354f7c5bd6d" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+  depends_on "readline"
+
+  uses_from_macos "libxml2"
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "util-linux"
+  end
 
   def install
     mkdir "build" do
-      system "cmake", "..", *std_cmake_args
+      system "cmake", "..", *std_cmake_args, "-DENABLE_PYTHON=OFF"
       system "make", "install"
     end
   end

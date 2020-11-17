@@ -1,140 +1,100 @@
 class Emacs < Formula
   desc "GNU Emacs text editor"
   homepage "https://www.gnu.org/software/emacs/"
-  url "https://ftpmirror.gnu.org/emacs/emacs-25.1.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/emacs/emacs-25.1.tar.xz"
-  sha256 "19f2798ee3bc26c95dca3303e7ab141e7ad65d6ea2b6945eeba4dbea7df48f33"
+  url "https://ftp.gnu.org/gnu/emacs/emacs-27.1.tar.xz"
+  mirror "https://ftpmirror.gnu.org/emacs/emacs-27.1.tar.xz"
+  sha256 "4a4c128f915fc937d61edfc273c98106711b540c9be3cd5d2e2b9b5b2f172e41"
+  license "GPL-3.0-or-later"
 
-  bottle do
-    rebuild 4
-    sha256 "c80ef281b85fb8a8bd65a84676056ea41d7bb2954d5c82193eef2acea2ade856" => :sierra
-    sha256 "5498bd9f8e027d8a77a8939d3468123313a57e67c3f08ad4d4f72bd1a95b3cbb" => :el_capitan
-    sha256 "8fa2c1f493b9dc831a017055b5de26b426925895c6400b24a3755e4db8b0ffa2" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  devel do
-    url "https://alpha.gnu.org/gnu/emacs/pretest/emacs-25.2-rc1.tar.xz"
-    sha256 "a94e8e190992627c9b7ef5683d267663bb4c9c2880ef5093988ba42cf8aeae2b"
+  bottle do
+    sha256 "054fd70aa5e4c6bf44b5f37d965e49f415abaf7a94566ad1ac89780256537bee" => :big_sur
+    sha256 "6586559b5aa8c51ce6cc7738abe4796ef7e803ab3389dc2e30eda7bb5e46b85d" => :catalina
+    sha256 "6704d9430ac4b602a5dc7046f845d8b93d00cb509fc70244403f14af6c97bc3b" => :mojave
+    sha256 "a4808d9f5433bcc9512ae4c62dba04b7954a1c0ee47e01b34ba5a401f227f375" => :high_sierra
   end
 
   head do
     url "https://github.com/emacs-mirror/emacs.git"
 
     depends_on "autoconf" => :build
-    depends_on "automake" => :build
     depends_on "gnu-sed" => :build
     depends_on "texinfo" => :build
   end
 
-  option "with-cocoa", "Build a Cocoa version of emacs"
-  option "with-ctags", "Don't remove the ctags executable that emacs provides"
-  option "without-libxml2", "Don't build with libxml2 support"
-  option "with-modules", "Compile with dynamic modules support"
-
-  deprecated_option "cocoa" => "with-cocoa"
-  deprecated_option "keep-ctags" => "with-ctags"
-  deprecated_option "with-d-bus" => "with-dbus"
-
   depends_on "pkg-config" => :build
-  depends_on "dbus" => :optional
-  depends_on "gnutls" => :optional
-  depends_on "librsvg" => :optional
-  depends_on "imagemagick" => :optional
-  depends_on "mailutils" => :optional
+  depends_on "gnutls"
+  depends_on "jansson"
+
+  uses_from_macos "libxml2"
+  uses_from_macos "ncurses"
+
+  on_linux do
+    depends_on "jpeg"
+  end
 
   def install
     args = %W[
-      --disable-dependency-tracking
       --disable-silent-rules
       --enable-locallisppath=#{HOMEBREW_PREFIX}/share/emacs/site-lisp
       --infodir=#{info}/emacs
       --prefix=#{prefix}
+      --with-gnutls
       --without-x
+      --with-xml2
+      --without-dbus
+      --with-modules
+      --without-ns
+      --without-imagemagick
     ]
-
-    if build.with? "libxml2"
-      args << "--with-xml2"
-    else
-      args << "--without-xml2"
-    end
-
-    if build.with? "dbus"
-      args << "--with-dbus"
-    else
-      args << "--without-dbus"
-    end
-
-    if build.with? "gnutls"
-      args << "--with-gnutls"
-    else
-      args << "--without-gnutls"
-    end
-
-    args << "--with-imagemagick" if build.with? "imagemagick"
-    args << "--with-modules" if build.with? "modules"
-    args << "--with-rsvg" if build.with? "librsvg"
-    args << "--without-pop" if build.with? "mailutils"
 
     if build.head?
       ENV.prepend_path "PATH", Formula["gnu-sed"].opt_libexec/"gnubin"
       system "./autogen.sh"
     end
 
-    if build.with? "cocoa"
-      args << "--with-ns" << "--disable-ns-self-contained"
-    else
-      args << "--without-ns"
-    end
+    File.write "lisp/site-load.el", <<~EOS
+      (setq exec-path (delete nil
+        (mapcar
+          (lambda (elt)
+            (unless (string-match-p "Homebrew/shims" elt) elt))
+          exec-path)))
+    EOS
 
     system "./configure", *args
     system "make"
     system "make", "install"
 
-    if build.with? "cocoa"
-      prefix.install "nextstep/Emacs.app"
-
-      # Replace the symlink with one that avoids starting Cocoa.
-      (bin/"emacs").unlink # Kill the existing symlink
-      (bin/"emacs").write <<-EOS.undent
-        #!/bin/bash
-        exec #{prefix}/Emacs.app/Contents/MacOS/Emacs "$@"
-      EOS
-    end
-
     # Follow MacPorts and don't install ctags from Emacs. This allows Vim
     # and Emacs and ctags to play together without violence.
-    if build.without? "ctags"
-      (bin/"ctags").unlink
-      (man1/"ctags.1.gz").unlink
-    end
+    (bin/"ctags").unlink
+    (man1/"ctags.1.gz").unlink
   end
 
-  def caveats
-    if build.with? "cocoa" then <<-EOS.undent
-      Please try the Cask for a better-supported Cocoa version:
-        brew cask install emacs
-      EOS
-    end
-  end
+  plist_options manual: "emacs"
 
-  plist_options :manual => "emacs"
-
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/emacs</string>
-        <string>--daemon</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-    </dict>
-    </plist>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>KeepAlive</key>
+        <true/>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/emacs</string>
+          <string>--fg-daemon</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+      </dict>
+      </plist>
     EOS
   end
 

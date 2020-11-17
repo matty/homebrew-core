@@ -1,44 +1,31 @@
 class Nu < Formula
   desc "Object-oriented, Lisp-like programming language"
-  homepage "http://programming.nu"
-  url "https://github.com/timburks/nu/archive/v2.1.1.tar.gz"
-  sha256 "5bdf8234855ecdec54b716c806a332c78812c73c8e7f626520dd273382d3de17"
+  homepage "https://programming.nu/"
+  url "https://github.com/nulang/nu/archive/v2.3.0.tar.gz"
+  sha256 "1a6839c1f45aff10797dd4ce5498edaf2f04c415b3c28cd06a7e0697d6133342"
+  license "Apache-2.0"
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "8c15fe6d9ec3f4a857a1c5948e784fc7b963e1336abeb6eafd0eb48144a6524e" => :sierra
-    sha256 "6db4fa8bafc2110e16cb7b8ae675e4e25483cb3d05b7f15535ae3cabe25f48d2" => :el_capitan
-    sha256 "6934ad8b4e7a1baa21939975a82b5fb2b4ec8d7462bb9c4237004dd10c05d9d4" => :yosemite
-    sha256 "c6075aa6a0ea3a36067295f9e9e16fca5ec0d4c79db5f7c5fde19e774a24f69e" => :mavericks
+    sha256 "f99e9ccd7919c4e2058299e3c545c26ac2fca23a241550fd306afcee6c790d98" => :big_sur
+    sha256 "d785730e9226dbfe78513a268657bfa50bacd5427b8779f838d00f1c312cc2a8" => :catalina
+    sha256 "a3e605c8fca139258b5b5d49f85ac4d57a781017ae0deac8096a74d491219121" => :mojave
+    sha256 "119f4f3eed1bf677c4e8d0248bd4d042d6c7333d21e6442b90440504bb2e276a" => :high_sierra
   end
 
-  depends_on :macos => :lion
   depends_on "pcre"
 
-  fails_with :gcc do
-    build 5666
-    cause "nu only builds with clang"
-  end
-
-  # remove deprecated -fobjc-gc
-  # https://github.com/timburks/nu/pull/74
-  # https://github.com/Homebrew/homebrew/issues/37341
-  patch do
-    url "https://github.com/timburks/nu/commit/c0b05f1.diff"
-    sha256 "f6c1a66e470e7132ba11937c971f9b90824bb03eaa030b3e70004f9d2725c636"
-  end
-
   def install
+    ENV.delete("SDKROOT") if MacOS.version < :sierra
     ENV["PREFIX"] = prefix
 
     inreplace "Nukefile" do |s|
       s.gsub!('(SH "sudo ', '(SH "') # don't use sudo to install
       s.gsub!("\#{@destdir}/Library/Frameworks", "\#{@prefix}/Frameworks")
-      s.sub! /^;; source files$/, <<-EOS
-;; source files
-(set @framework_install_path "#{frameworks}")
-EOS
+      s.sub! /^;; source files$/, <<~EOS
+        ;; source files
+        (set @framework_install_path "#{frameworks}")
+      EOS
     end
     system "make"
     system "./mininush", "tools/nuke"
@@ -48,14 +35,15 @@ EOS
     system "./mininush", "tools/nuke", "install"
   end
 
-  def caveats; <<-EOS.undent
-    Nu.framework was installed to:
-      #{frameworks}/Nu.framework
+  def caveats
+    <<~EOS
+      Nu.framework was installed to:
+        #{frameworks}/Nu.framework
 
-    You may want to symlink this Framework to a standard macOS location,
-    such as:
-      ln -s "#{frameworks}/Nu.framework" /Library/Frameworks
-  EOS
+      You may want to symlink this Framework to a standard macOS location,
+      such as:
+        ln -s "#{frameworks}/Nu.framework" /Library/Frameworks
+    EOS
   end
 
   test do

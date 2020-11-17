@@ -1,27 +1,33 @@
 class Librsvg < Formula
   desc "Library to render SVG files using Cairo"
-  homepage "https://live.gnome.org/LibRsvg"
-  url "https://download.gnome.org/sources/librsvg/2.40/librsvg-2.40.16.tar.xz"
-  sha256 "d48bcf6b03fa98f07df10332fb49d8c010786ddca6ab34cbba217684f533ff2e"
-  revision 1
+  homepage "https://wiki.gnome.org/Projects/LibRsvg"
+  url "https://download.gnome.org/sources/librsvg/2.50/librsvg-2.50.1.tar.xz"
+  sha256 "9bd9799322e06cf5db19b9f7afb728edac6efcf0110baafc44f0f96f45df9a09"
+  license "LGPL-2.1-or-later"
 
-  bottle do
-    sha256 "2c91490028b0e66dd2a446eb7b45c77e84a61bb35a44f7cacc768d762c302a05" => :sierra
-    sha256 "f4b8c0b69418d3cb0720af733219b2177a801f6f98f6767acaa1d538457b5c7d" => :el_capitan
-    sha256 "23c9650d0d5f26898e3387836fc6c7272998d7a41aa5a76bda84ba9be31fbb81" => :yosemite
-    sha256 "b00aa2f676d225950a9ac5ee7c6595b2bfe365252c362bc781ef8e86fdf033fc" => :mavericks
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "cd7f49a31378522aa40a9d33374c15d19b529a625bdfb60ddeb8103839d9844a" => :big_sur
+    sha256 "e28f9c403217736413344409410073bae44d46e379996580e6a0eaa889a8523a" => :catalina
+    sha256 "a994d254a1f92392c5c53152a8c0e52d5ed29b3fcff9b0037067dcd383eb8200" => :mojave
+    sha256 "7e53a0d3671600aeb29929e2dce65c87a9fb1b9ab8064fe68e40b7fba0fabee6" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "pkg-config" => :build
+  depends_on "rust" => :build
   depends_on "cairo"
   depends_on "gdk-pixbuf"
   depends_on "glib"
-  depends_on "libcroco"
   depends_on "pango"
-  depends_on "libgsf" => :optional
-  depends_on "gtk+3" => :optional
 
   def install
+    # https://gitlab.gnome.org/GNOME/librsvg/issues/545#note_753842
+    ENV.append "LDFLAGS", "-lobjc"
+
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
@@ -30,7 +36,6 @@ class Librsvg < Formula
       --enable-pixbuf-loader=yes
       --enable-introspection=yes
     ]
-    args << "--enable-svgz" if build.with? "libgsf"
 
     system "./configure", *args
 
@@ -53,7 +58,7 @@ class Librsvg < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <librsvg/rsvg.h>
 
       int main(int argc, char *argv[]) {

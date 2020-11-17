@@ -1,44 +1,40 @@
 class Nvc < Formula
   desc "VHDL compiler and simulator"
   homepage "https://github.com/nickg/nvc"
-  url "https://github.com/nickg/nvc/releases/download/r1.1.0/nvc-1.1.0.tar.gz"
-  sha256 "b3b5f67ee91046ab802112e544b7883f7a92b69d25041b5b8187c07016dfda75"
+  url "https://github.com/nickg/nvc/releases/download/r1.5.0/nvc-1.5.tar.gz"
+  sha256 "4da984ba95eb3b8dd2893fb7a676675de869ff114b827a9f5490dfd54bc95fcb"
+  license "GPL-3.0"
+  revision 1
 
   bottle do
-    sha256 "1e9c83fa64952cccf301e1652516697c6ab9e17a3d05e6f5f3861cb97689f1c0" => :sierra
-    sha256 "05d0071242e0e8cc1621e3ac0ea1e8b5bcdcfbfe9622db9bef8a7a3077c39983" => :el_capitan
-    sha256 "1b530bdf998bb161222efaae1ee59fe135889d6ed245f28dd2cee06e845ddc0e" => :yosemite
+    sha256 "7ba6e4a374fa45ac6727a3a94b68ec1e317989999aeace6e16e2d2374f1adef9" => :catalina
+    sha256 "f7096c9a1f5430b7540a5384c21548e3d58937a571b894362d00326400ec52cb" => :mojave
+    sha256 "9235685aba9cdb880d6d76336fa94e918762bbd5e7de2c150a5ab4d887ec2b74" => :high_sierra
   end
 
   head do
     url "https://github.com/nickg/nvc.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
-  depends_on "llvm" => :build
   depends_on "check" => :build
+  depends_on "pkg-config" => :build
+  # llvm 8+ is not supported https://github.com/nickg/nvc/commit/c3d1ae5700cfba6070293ad1bb5a6c198c631195
+  depends_on "llvm@7"
 
   resource "vim-hdl-examples" do
     url "https://github.com/suoto/vim-hdl-examples.git",
-        :revision => "c112c17f098f13719784df90c277683051b61d05"
+        revision: "c112c17f098f13719784df90c277683051b61d05"
   end
 
-  # LLVM 3.9 compatibility
-  # Fix "Undefined symbols for architecture x86_64: '_LLVMLinkModules'"
-  # Reported 8 Jan 2017 https://github.com/nickg/nvc/issues/310
-  patch :DATA
-
   def install
-    args = %W[
-      --with-llvm=#{Formula["llvm"].opt_bin}/llvm-config
-      --prefix=#{prefix}
-    ]
-
-    system "./autogen.sh" unless build.stable?
+    system "./autogen.sh" if build.head?
     system "./tools/fetch-ieee.sh"
-    system "./configure", *args
+    system "./configure", "--with-llvm=#{Formula["llvm@7"].opt_bin}/llvm-config",
+                          "--prefix=#{prefix}",
+                          "--with-system-cc=/usr/bin/clang"
     system "make"
     system "make", "install"
   end
@@ -48,19 +44,3 @@ class Nvc < Formula
     system "#{bin}/nvc", "-a", "#{testpath}/basic_library/very_common_pkg.vhd"
   end
 end
-
-__END__
-diff --git a/src/link.c b/src/link.c
-index 850de56..2592b84 100644
---- a/src/link.c
-+++ b/src/link.c
-@@ -158,8 +158,8 @@ static void link_context_bc_fn(lib_t lib, tree_t unit, FILE *deps)
-          tree_remove_attr(unit, llvm_i);
-
-       char *outmsg;
--      if (LLVMLinkModules(module, src, LLVMLinkerDestroySource, &outmsg))
--         fatal("LLVM link failed: %s", outmsg);
-+      if (LLVMLinkModules2(module, src))
-+         fatal("LLVM link failed");
-    }
- }

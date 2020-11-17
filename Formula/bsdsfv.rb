@@ -4,8 +4,16 @@ class Bsdsfv < Formula
   url "https://downloads.sourceforge.net/project/bsdsfv/bsdsfv/1.18/bsdsfv-1.18.tar.gz"
   sha256 "577245da123d1ea95266c1628e66a6cf87b8046e1a902ddd408671baecf88495"
 
+  livecheck do
+    url :stable
+  end
+
   bottle do
     cellar :any_skip_relocation
+    sha256 "3fe4cd9e74eb5d55bf3ecc10a675600ade3b4f0d56b94d2bcfd9d71e91cae302" => :big_sur
+    sha256 "3abfd33001c44edc6b03905559f8565f923001aa1ccc3a3247ebd073d226ccaa" => :catalina
+    sha256 "e500396c1a26993727df9ccc8d878e0a4fbc353326206dffcbd18b9fc8071247" => :mojave
+    sha256 "28bee35fbc8c0be9e1182287c58340898d29d9ba0f910109974af6efcb5cd61f" => :high_sierra
     sha256 "38b9d278b430e250b384c5ba2baf3e74dfe0771c5ceea45686022ecb01616ee2" => :sierra
     sha256 "404ec03e044a019a487adfab90012a29a6655fe67b907d9b4e9a46d4f6c57a9b" => :el_capitan
     sha256 "fd15cb46a9499bcd1182e8fe4a6ae1de9fb77ced85186601ef6c6579a22d9c51" => :yosemite

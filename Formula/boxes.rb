@@ -1,28 +1,22 @@
 class Boxes < Formula
   desc "Draw boxes around text"
-  homepage "http://boxes.thomasjensen.com/"
-  url "https://github.com/ascii-boxes/boxes/archive/v1.1.2.tar.gz"
-  sha256 "4d5e536be91b476ee48640bef9122f3114b16fe2da9b9906947308b94682c5fe"
+  homepage "https://boxes.thomasjensen.com/"
+  url "https://github.com/ascii-boxes/boxes/archive/v1.3.tar.gz"
+  sha256 "cbb46b3b0ef2c016f9ebcebea5acf6c2bfec39dfb6696dc8f4427a3f844cd567"
+  license "GPL-2.0"
   head "https://github.com/ascii-boxes/boxes.git"
 
   bottle do
-    rebuild 1
-    sha256 "21b2548489c34f7a11ac4f445e9129fbc42696a6dba5b50b20aeec99a570fef2" => :sierra
-    sha256 "d5a5b256a1ef58a8d9c3d69c57c27bb8dd5c5e40e8979f877f83278ff38fd950" => :el_capitan
-    sha256 "ee8b2795856fafcfaad79356325d7e1cf6aaa02359cb9adf162df2028243f429" => :yosemite
-    sha256 "4d82f6e37b1e18d48a2198ca4301d901e4a6b55681ed8f0b65dddeee1148221e" => :mavericks
+    sha256 "ac4cba99372fa9c4a07d429769561c51492b244868c6694c3bd09cb872883d31" => :big_sur
+    sha256 "48a3b6d9b8c23a3ab1f366f6f085361cc8db8cd341dfe9474665d87c4c23bbf8" => :catalina
+    sha256 "84b135ad528536233546dbf8d36e0be4a21a89050910e45a4f8e2796c99b7c3f" => :mojave
+    sha256 "ca1c4e0e76f03ee4a60789f30093d2eee3794ff54b989da1a8a3ae555228f081" => :high_sierra
+    sha256 "d31462128d1f55cd3014ae942b4620f1ec4d06e72e8a47cae5ef56afcf65e791" => :sierra
   end
 
   def install
-    ENV.m32
-
     # distro uses /usr/share/boxes change to prefix
-    system "make",
-      "GLOBALCONF=#{share}/boxes-config",
-      "CC=#{ENV.cc}",
-      # Force 32 bit compile
-      "CFLAGS_ADDTL=-m32",
-      "LDFLAGS_ADDTL=-m32"
+    system "make", "GLOBALCONF=#{share}/boxes-config", "CC=#{ENV.cc}"
 
     bin.install "src/boxes"
     man1.install "doc/boxes.1"
@@ -30,6 +24,6 @@ class Boxes < Formula
   end
 
   test do
-    assert_match "/* test brew */", pipe_output("#{bin}/boxes", "test brew")
+    assert_match "test brew", pipe_output("#{bin}/boxes", "test brew")
   end
 end

@@ -1,27 +1,25 @@
 class Mapcrafter < Formula
   desc "Minecraft map renderer"
-  homepage "http://mapcrafter.org"
-  url "https://github.com/mapcrafter/mapcrafter/archive/v.2.3.1.tar.gz"
-  sha256 "b88e53ccffc00f83717f2e686dbed047b95f011187af2b7a23ba7f5cd3537679"
+  homepage "https://mapcrafter.org"
+  url "https://github.com/mapcrafter/mapcrafter/archive/v.2.4.tar.gz"
+  sha256 "f3b698d34c02c2da0c4d2b7f4e251bcba058d0d1e4479c0418eeba264d1c8dae"
+  license "GPL-3.0"
+  revision 3
 
   bottle do
     cellar :any
-    sha256 "bfeb52979c50e54e36638e516a764aa182d28469de8b05d974a47efbcc50cd8b" => :sierra
-    sha256 "926a5324a81abc0c0466afae29c63508678049a166543f8e2c677065e81cb646" => :el_capitan
-    sha256 "6e56726fcb30139819b22476a56b2107f678f40a57d37c0950e58d1db91de1be" => :yosemite
+    sha256 "6b8ce30b655e743288ca868c0bdf231f45c6c7b094eb62797d3fa87c5b98e118" => :big_sur
+    sha256 "986224321f7be4d777cb1ac012a237535c2cbb44586e86327cf84589fe85c327" => :catalina
+    sha256 "ef50257242f50111c034ddc97be5d592b8a91d255053a2bb50b6cb9ea791e930" => :mojave
+    sha256 "f3ce96014ce5e35f2a40034bd0498a583d4c92fe27ecc5ed3039733c1b049757" => :high_sierra
+    sha256 "f0e35d940f533e1a4a8a3575afafe567523c89c72e81dc7276679c39b173800b" => :sierra
+    sha256 "5b10b03e8125110487845f76b36dd5fea958e0d98b8f7ef14e72956f1c98b6f2" => :el_capitan
   end
-
-  needs :cxx11
 
   depends_on "cmake" => :build
+  depends_on "boost"
   depends_on "jpeg-turbo"
   depends_on "libpng"
-
-  if MacOS.version < :mavericks
-    depends_on "boost" => "c++11"
-  else
-    depends_on "boost"
-  end
 
   def install
     ENV.cxx11

@@ -1,20 +1,24 @@
-# NOTE: Configure will fail if using awk 20110810 from dupes.
-# Upstream issue: https://savannah.gnu.org/bugs/index.php?37063
 class Wget < Formula
   desc "Internet file retriever"
   homepage "https://www.gnu.org/software/wget/"
-  url "https://ftpmirror.gnu.org/wget/wget-1.19.1.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/wget/wget-1.19.1.tar.gz"
-  sha256 "9e4f12da38cc6167d0752d934abe27c7b1599a9af294e73829be7ac7b5b4da40"
+  url "https://ftp.gnu.org/gnu/wget/wget-1.20.3.tar.gz"
+  sha256 "31cccfc6630528db1c8e3a06f6decf2a370060b982841cfab2b8677400a5092e"
+  license "GPL-3.0-or-later"
+  revision 2
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "7015cd6c9406ae5ca4cd74d54bcd706716a875f58620820789f0679213e3f3f8" => :sierra
-    sha256 "543f4592707e20753528da6850a47f01150d277f1e8b508cc45bf339dbc5c242" => :el_capitan
-    sha256 "3f69c50c8bb6baec19fe880881e99dcc134ead22ed47180302d1657b46f31b42" => :yosemite
+    sha256 "c965fd423db73afdcce5ccde8af2783b5659ec2287bf02ae6a982fd6dcbd6292" => :big_sur
+    sha256 "ef65c759c5097a36323fa9c77756468649e8d1980a3a4e05695c05e39568967c" => :catalina
+    sha256 "28f4090610946a4eb207df102d841de23ced0d06ba31cb79e040d883906dcd4f" => :mojave
+    sha256 "91dd0caca9bd3f38c439d5a7b6f68440c4274945615fae035ff0a369264b8a2f" => :high_sierra
   end
 
   head do
-    url "git://git.savannah.gnu.org/wget.git"
+    url "https://git.savannah.gnu.org/git/wget.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -22,36 +26,26 @@ class Wget < Formula
     depends_on "gettext"
   end
 
-  deprecated_option "enable-debug" => "with-debug"
-
-  option "with-debug", "Build with debug support"
-
   depends_on "pkg-config" => :build
-  depends_on "pod2man" => :build if MacOS.version <= :snow_leopard
-  depends_on "openssl"
-  depends_on "pcre" => :optional
-  depends_on "libmetalink" => :optional
-  depends_on "gpgme" => :optional
+  depends_on "libidn2"
+  depends_on "openssl@1.1"
+
+  on_linux do
+    depends_on "util-linux"
+  end
 
   def install
-    # Fixes undefined symbols _iconv, _iconv_close, _iconv_open
-    # Reported 10 Jun 2016: https://savannah.gnu.org/bugs/index.php?48193
-    ENV.append "LDFLAGS", "-liconv"
-
-    args = %W[
-      --prefix=#{prefix}
-      --sysconfdir=#{etc}
-      --with-ssl=openssl
-      --with-libssl-prefix=#{Formula["openssl"].opt_prefix}
-    ]
-
-    args << "--disable-debug" if build.without? "debug"
-    args << "--disable-pcre" if build.without? "pcre"
-    args << "--with-metalink" if build.with? "libmetalink"
-    args << "--with-gpgme-prefix=#{Formula["gpgme"].opt_prefix}" if build.with? "gpgme"
-
-    system "./bootstrap" if build.head?
-    system "./configure", *args
+    system "./bootstrap", "--skip-po" if build.head?
+    system "./configure", "--prefix=#{prefix}",
+                          "--sysconfdir=#{etc}",
+                          "--with-ssl=openssl",
+                          "--with-libssl-prefix=#{Formula["openssl@1.1"].opt_prefix}",
+                          # Work around a gnulib issue with macOS Catalina
+                          "gl_cv_func_ftello_works=yes",
+                          "--disable-debug",
+                          "--disable-pcre",
+                          "--disable-pcre2",
+                          "--without-libpsl"
     system "make", "install"
   end
 

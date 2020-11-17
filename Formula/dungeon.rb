@@ -1,16 +1,18 @@
 class Dungeon < Formula
-  desc "the classic text adventure"
+  desc "Classic text adventure game"
   homepage "https://github.com/GOFAI/dungeon"
-  url "https://github.com/GOFAI/dungeon/archive/4.0.tar.gz"
-  sha256 "be2217be9e23861f22c14c4395da272fca5fb08a1741f52fd393792908279bea"
+  url "https://github.com/GOFAI/dungeon/archive/4.1.tar.gz"
+  sha256 "b88c49ef60e908e8611257fbb5a6a41860e1058760df2dfcb7eb141eb34e198b"
+  revision 1
 
   bottle do
-    sha256 "1b7ad6df9083ccfe77ea44aa6c6c8018e2ac47cb642f41a38bcaccd5fd83b101" => :sierra
-    sha256 "f8fa2ff30a4128014335dbcc653e5c4102b4803e0ae1a4b5b0dfda8e9f5dc141" => :el_capitan
-    sha256 "fb1ca630a34b39361762e588bdd0273ffeb44fdc47912f5910927c77e7375164" => :yosemite
+    cellar :any
+    sha256 "86edc8b6eeb85a1353d82543859f1e9ac70f8f602dd6cb7d7607741f8a23d74b" => :catalina
+    sha256 "7f797732836ef54d4ae987eeecdc12a195eb9f00dd6f145728a2ab9ce819f520" => :mojave
+    sha256 "9ebda679eabb0f65ba172887d2f271c897abd4faeb2b8f0863b024bea4112865" => :high_sierra
   end
 
-  depends_on :fortran
+  depends_on "gcc" # for gfortran
 
   def install
     chdir "src" do
@@ -35,7 +37,7 @@ class Dungeon < Formula
     require "open3"
     Open3.popen3("#{bin}/dungeon") do |stdin, stdout, _|
       stdin.close
-      assert_equal " Welcome to Dungeon.\t\t\tThis version created 2-Dec-15.\n This is an open field west of a white house with a boarded front door.\n There is a small mailbox here.\n A rubber mat saying \"Welcome to Dungeon!\" lies by the door.\n > >", stdout.read
+      assert_match " Welcome to Dungeon.\t\t\t", stdout.read
     end
   end
 end

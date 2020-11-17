@@ -1,28 +1,29 @@
 class Natalie < Formula
   desc "Storyboard Code Generator (for Swift)"
   homepage "https://github.com/krzyzanowskim/Natalie"
-  url "https://github.com/krzyzanowskim/Natalie/archive/0.5.0.tar.gz"
-  sha256 "66e00a4095121255a9740a16a8a59daa289f878f2e1e77ba6a9f98d6a671a33c"
+  url "https://github.com/krzyzanowskim/Natalie/archive/0.7.0.tar.gz"
+  sha256 "f7959915595495ce922b2b6987368118fa28ba7d13ac3961fd513ec8dfdb21c8"
+  license "MIT"
+  revision 1
   head "https://github.com/krzyzanowskim/Natalie.git"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "b6b0597c2bd6e6b1c5df362d846da233f91727f62914f703503dd8360ddea53e" => :sierra
-    sha256 "472b56132024812e48041b4ea4174e889f95eab70e8ff83d6182bde406865d88" => :el_capitan
+    sha256 "218ec8bb0ac3ac4de7a6fa8489f3ad7013b1beb051a7c0e74a6e37ade79eee6c" => :catalina
+    sha256 "9dcc093fc648175eb165aec20413246ace7427d0d3c4a9884d37cfad9a851dca" => :mojave
+    sha256 "dd51e00a1969ffdd478e954bed48bedd1c5a9813b67931aa146711f49cb58223" => :high_sierra
   end
 
-  depends_on :xcode => ["8.0", :build]
+  depends_on xcode: ["9.4", :build]
 
   def install
-    ENV["CC"] = which(ENV.cc)
-    system "swift", "build", "-c", "release", "-Xswiftc", "-static-stdlib"
+    system "swift", "build", "--disable-sandbox", "-c", "release", "--static-swift-stdlib"
     bin.install ".build/release/natalie"
     share.install "NatalieExample"
   end
 
   test do
-    generated_code = Utils.popen_read("#{bin}/natalie #{share}/NatalieExample")
+    generated_code = shell_output("#{bin}/natalie #{share}/NatalieExample")
     assert generated_code.lines.count > 1, "Natalie failed to generate code!"
   end
 end

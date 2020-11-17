@@ -1,50 +1,49 @@
 class Dvm < Formula
   desc "Docker Version Manager"
-  homepage "https://github.com/getcarina/dvm"
-  url "https://github.com/getcarina/dvm/archive/0.7.0.tar.gz"
-  sha256 "ba49aa8e34bbbd8b96d27aa79f1e84daee72f625a412b1b65f35d2804285a279"
+  homepage "https://github.com/howtowhale/dvm"
+  url "https://github.com/howtowhale/dvm/archive/1.0.2.tar.gz"
+  sha256 "eb98d15c92762b36748a6f5fc94c0f795bf993340a4923be0eb907a8c17c6acc"
+  license "Apache-2.0"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "2fad028117df696bda1b86684fce38200cdeb9c907ce98f5428a3b677fcfcf8b" => :sierra
-    sha256 "d82eaa88e2ec438d6a6247bc1b8be79dbbab67653a7119e352b9f03e60221055" => :el_capitan
-    sha256 "112fed06eb04fb5d878083b8f1c7e45bd3c538b63937957cb86aa944e2d70ce1" => :yosemite
+    sha256 "5f320e53c2734bed07fe70ac919232642d3a52d104bab787da9c08f251098942" => :big_sur
+    sha256 "9c7cc18808affb5cc05958f3e501602c8d40889157c776dfb9f5ba9109a717b7" => :catalina
+    sha256 "fa56fd369d0ef2dc43d29316d202f7cc3ca670765e07a3295429971929d93d24" => :mojave
+    sha256 "d98c151704057dc821b67634c0387b15ed3b0e86b07e1eecd9c073f2f27abcd4" => :high_sierra
   end
 
-  depends_on "glide" => :build
   depends_on "go" => :build
 
   def install
-    # `make` has to be deparallelized due to the following errors:
-    #   glide install
-    #   fatal: Not a git repository (or any of the parent directories): .git
-    #   CGO_ENABLED=0 go build ...
-    #   dvm-helper/dvm-helper.go:16:2: cannot find package "github.com/blang/semver"
-    #   make: *** [local] Error 1
-    # Reported 17 Feb 2017: https://github.com/getcarina/dvm/issues/151
-    ENV.deparallelize
-
     ENV["GOPATH"] = buildpath
-    ENV["GLIDE_HOME"] = HOMEBREW_CACHE/"glide_home/#{name}"
 
-    # `depends_on "glide"` already has this covered
-    inreplace "Makefile", %r{^.*go get github.com/Masterminds/glide.*$\n}, ""
+    (buildpath/"src/github.com/howtowhale/dvm").install buildpath.children
 
-    (buildpath/"src/github.com/getcarina/dvm").install buildpath.children
+    cd "src/github.com/howtowhale/dvm" do
+      # Upstream release has a vendored dependency placed in the wrong path,
+      # so adjust its location and relevant import statement.
+      # Upstream acknowledged issue at https://github.com/howtowhale/dvm/issues/193
+      mkdir "vendor/code.cloudfoundry.org"
+      mv "vendor/github.com/pivotal-golang/archiver",
+         "vendor/code.cloudfoundry.org/archiver"
+      inreplace "dvm-helper/internal/downloader/downloader.go",
+                "github.com/pivotal-golang/archiver/extractor",
+                "code.cloudfoundry.org/archiver/extractor"
 
-    cd "src/github.com/getcarina/dvm" do
       system "make", "VERSION=#{version}", "UPGRADE_DISABLED=true"
       prefix.install "dvm.sh"
       bash_completion.install "bash_completion" => "dvm"
       (prefix/"dvm-helper").install "dvm-helper/dvm-helper"
-      prefix.install_metafiles
     end
   end
 
-  def caveats; <<-EOS.undent
-    dvm is a shell function, and must be sourced before it can be used.
-    Add the following command to your bash profile:
-        [ -f #{opt_prefix}/dvm.sh ] && . #{opt_prefix}/dvm.sh
+  def caveats
+    <<~EOS
+      dvm is a shell function, and must be sourced before it can be used.
+      Add the following command to your bash profile:
+          [ -f #{opt_prefix}/dvm.sh ] && . #{opt_prefix}/dvm.sh
     EOS
   end
 

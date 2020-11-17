@@ -5,13 +5,18 @@ class Musepack < Formula
   version "r475"
   sha256 "a4b1742f997f83e1056142d556a8c20845ba764b70365ff9ccf2e3f81c427b2b"
 
+  livecheck do
+    url "https://www.musepack.net/index.php?pg=src"
+    regex(/href=.*?musepack(?:[._-]src)?[._-](r\d+)\.t/i)
+  end
+
   bottle do
     cellar :any
-    sha256 "26b774c3ca9b6c43cfdc868d71e635d292bcf218d0577fbc271be5138e8ef3c0" => :sierra
-    sha256 "33e4734a8714484a2c506241d91ab45145c19228abe51d355e0cbd60020ee11a" => :el_capitan
-    sha256 "2e6bad894063f1178ff43b5cd10a899b82baa757228c3a51488793a4a22acdf2" => :yosemite
-    sha256 "4ff9d23d8631300ff2619d9f1a7d99e07f8636c6e8d8db8dbf1335a21c1f7e27" => :mavericks
-    sha256 "ac50f1100cdb2c91846a5d5a8d364cdb31abaeb7823ccbfc6614829f96540c6d" => :mountain_lion
+    rebuild 1
+    sha256 "e9221e9612e1c0134554fbf380639cd995a5970ad34702bea371633f121ffb3e" => :big_sur
+    sha256 "847cacb946b6289a5fbfbfe4e1a38f1ec5b7f1e32d6c12145aaf1044317e4ce0" => :catalina
+    sha256 "5efee306aff13a0c0b8f98371e3cbe3eab6b73b0e92bdd59237d7db608a17708" => :mojave
+    sha256 "e1b6641d11a5338d395de8f5573464beddb81dc3dce16998e53361b43502844b" => :high_sierra
   end
 
   depends_on "cmake" => :build

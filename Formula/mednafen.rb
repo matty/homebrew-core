@@ -1,35 +1,35 @@
 class Mednafen < Formula
   desc "Multi-system emulator"
-  homepage "http://mednafen.fobby.net/"
-  url "https://mednafen.github.io/releases/files/mednafen-0.9.41.tar.xz"
-  sha256 "74736b9b52a7ba6270b67ae8e6c876a887e0e26a00a7d96bdd49af17992aac47"
+  homepage "https://mednafen.github.io/"
+  url "https://mednafen.github.io/releases/files/mednafen-1.26.1.tar.xz"
+  sha256 "842907c25c4292c9ba497c9cb9229c7d10e04e22cb4740d154ab690e6587fdf4"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://mednafen.github.io/releases/"
+    regex(/href=.*?mednafen[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "80e63fcb4a9c17bee872bb7866f567fd1752054e3810db1c19fb9ac0ff904299" => :sierra
+    sha256 "3f600b7eac07b1250c2e8718d804d2fa56f6dea06a3a4e5d3d774837f8ee38ee" => :big_sur
+    sha256 "1ad2bba5c312f2cd5396844c0674a1ed4de85916596d50a5f3c24a244776a6ed" => :catalina
+    sha256 "0569f3945b958e2e7f65a09cac93b360ad56d8c58fed3da05f1771aed3f391a5" => :mojave
+    sha256 "d0e98aafea519a145b92b3ffed0e218332d54834bbc69e272120250b081b50a0" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "sdl"
-  depends_on "libsndfile"
   depends_on "gettext"
-
-  needs :cxx11
-
-  fails_with :clang do
-    build 800
-    cause <<-EOS.undent
-      LLVM miscompiles some loop code with optimization
-      https://llvm.org/bugs/show_bug.cgi?id=15470
-      EOS
-  end
+  depends_on "libsndfile"
+  depends_on macos: :sierra # needs clock_gettime
+  depends_on "sdl2"
 
   def install
-    ENV.cxx11
     system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking"
     system "make", "install"
   end
 
   test do
-    assert_equal version.to_s, shell_output("#{bin}/mednafen -dump_modules_def M >/dev/null || head -n 1 M").chomp
+    cmd = "#{bin}/mednafen | head -n1 | grep -o '[0-9].*'"
+    assert_equal version.to_s, shell_output(cmd).chomp
   end
 end

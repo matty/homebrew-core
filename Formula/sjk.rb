@@ -1,26 +1,17 @@
 class Sjk < Formula
   desc "Swiss Java Knife"
   homepage "https://github.com/aragozin/jvm-tools"
-  url "https://github.com/aragozin/jvm-tools/archive/jvmtool-umbrella-pom-0.5.tar.gz"
-  sha256 "94ef70187752e0e3a9ebc0e37b5453b046066e17b7db100ee18f18742af13f94"
+  url "https://search.maven.org/remotecontent?filepath=org/gridkit/jvmtool/sjk-plus/0.17/sjk-plus-0.17.jar"
+  sha256 "4f3d1b8b5c1c85b7fdcec1ebc880bac6d81da5d924fd445ce7e221e6728705d7"
+  license "Apache-2.0"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "298ca4cf2da2d45f3c2a67c7f31ab172b747c2388d97cd475e269e52c8525deb" => :sierra
-    sha256 "24271d45fbf4f2ad5d4ae008f95e4fdb4dfbe3afde349ac429984914526bc0f2" => :el_capitan
-    sha256 "d83e89c35dff7eabd7dee175fe6fa2f3d1fc72abdccedfff6e3205ed4cbc5405" => :yosemite
-  end
+  bottle :unneeded
 
-  depends_on "maven" => :build
-  depends_on :java
+  depends_on "openjdk"
 
   def install
-    ENV.java_cache
-    system "mvn", "clean", "package"
-    cd "sjk-plus/target" do
-      libexec.install "sjk-plus-#{version}.jar"
-      bin.write_jar_script "#{libexec}/sjk-plus-#{version}.jar", "sjk"
-    end
+    libexec.install "sjk-plus-#{version}.jar"
+    bin.write_jar_script libexec/"sjk-plus-#{version}.jar", "sjk"
   end
 
   test do

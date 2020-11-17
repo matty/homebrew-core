@@ -1,23 +1,27 @@
 class Pangomm < Formula
   desc "C++ interface to Pango"
-  homepage "http://www.pango.org/"
-  url "https://download.gnome.org/sources/pangomm/2.40/pangomm-2.40.1.tar.xz"
-  sha256 "9762ee2a2d5781be6797448d4dd2383ce14907159b30bc12bf6b08e7227be3af"
+  homepage "https://www.pango.org/"
+  url "https://download.gnome.org/sources/pangomm/2.42/pangomm-2.42.1.tar.xz"
+  sha256 "14bf04939930870d5cfa96860ed953ad2ce07c3fd8713add4a1bfe585589f40f"
+  license "LGPL-2.1-only"
+  revision 2
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "0f5fe35f77d9ab084cdb0ecba758a61771ec33650de30e3c57ddf56af240cabf" => :sierra
-    sha256 "7565443483138210e191d3fe044c04d55755057b4c3d53187baf2857c966f0a5" => :el_capitan
-    sha256 "09d9b38d15273c02968cb4330159c8cfa0b9e06701f69b7495c12f64f7f370b8" => :yosemite
-    sha256 "1d2a6f8d96059a189be9d39e6d20fd5a8a7a14293cc64c71eab506522ff5c1e5" => :mavericks
+    sha256 "9dc75bd5d85a445f17d6245e555e5b72e5e479cd00c1e8e4afea94431762c3b4" => :big_sur
+    sha256 "b76cf574756211f73f6145ce57738e47c20740bbced59243526580ac97c639bf" => :catalina
+    sha256 "4c656b17af2dd884085c70493389a5d4c415d9631a6dedb1b88b964bf6e05aca" => :mojave
+    sha256 "ab43bb783b24993470dbb96fa3ac1e75cbfc641e7ac477cb492d2dbecce25091" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
-  depends_on "glibmm"
   depends_on "cairomm"
+  depends_on "glibmm"
   depends_on "pango"
-
-  needs :cxx11
 
   def install
     ENV.cxx11
@@ -25,7 +29,7 @@ class Pangomm < Formula
     system "make", "install"
   end
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <pangomm.h>
       int main(int argc, char *argv[])
       {
@@ -42,7 +46,7 @@ class Pangomm < Formula
     glibmm = Formula["glibmm"]
     harfbuzz = Formula["harfbuzz"]
     libpng = Formula["libpng"]
-    libsigcxx = Formula["libsigc++"]
+    libsigcxx = Formula["libsigc++@2"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
     flags = %W[

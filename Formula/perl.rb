@@ -1,51 +1,36 @@
 class Perl < Formula
   desc "Highly capable, feature-rich programming language"
   homepage "https://www.perl.org/"
-  revision 1
-  head "git://perl5.git.perl.org/perl.git", :branch => "blead"
+  url "https://www.cpan.org/src/5.0/perl-5.32.0.tar.xz"
+  sha256 "6f436b447cf56d22464f980fac1916e707a040e96d52172984c5d184c09b859b"
+  license any_of: ["Artistic-1.0-Perl", "GPL-1.0-or-later"]
+  head "https://github.com/perl/perl5.git", branch: "blead"
 
-  stable do
-    url "http://www.cpan.org/src/5.0/perl-5.24.0.tar.xz"
-    mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/p/perl/perl_5.24.0.orig.tar.xz"
-    sha256 "a9a37c0860380ecd7b23aa06d61c20fc5bc6d95198029f3684c44a9d7e2952f2"
-
-    # Fixes Time::HiRes module bug related to the presence of clock_gettime
-    # https://rt.perl.org/Public/Bug/Display.html?id=128427
-    # Merged upstream, should be in the next release.
-    if DevelopmentTools.clang_build_version >= 800
-      patch do
-        url "https://raw.githubusercontent.com/Homebrew/formula-patches/b18137128c4e0cb7e92e9ee007a9f78bc9d03b21/perl/clock_gettime.patch"
-        sha256 "612825c24ed19d6fa255bb42af59dff46ee65c16ea77abf4a59b754aa8ab05ac"
-      end
-    end
+  livecheck do
+    url "https://www.cpan.org/src/"
+    regex(/href=.*?perl[._-]v?(\d+\.\d*[02468](?:\.\d+)*)\.t/i)
   end
 
   bottle do
-    rebuild 1
-    sha256 "2d17be7f00decaec2d9d9d25335962e78319b5ee121112ae6e6325227c50313a" => :sierra
-    sha256 "bbc3eb4e2a1e7d9585918862adf718e5be80e4dae793e547bf71da8a07b372d8" => :el_capitan
-    sha256 "7f4410ad668128cb66085a8e7fa995258cb60ba8b2551ab170ae612d3101d021" => :yosemite
+    sha256 "7db44dc9609acbada14bd4cf847b26b49f1b3f18693e0870e806741a274c957a" => :big_sur
+    sha256 "bc6c97521b6edf723c8ee0742aebb1954b5c8fec81bf2d96861c3f8bcc4e404d" => :catalina
+    sha256 "f09b3fefe2175b36e590ee13e7aa84d28ebcbce3ef8e252e24a0aebb752405ab" => :mojave
+    sha256 "718a54da6e3b02c33d5230776aaa54eaaac710c09cf412078014c9c50dd0ac51" => :high_sierra
   end
 
-  option "with-dtrace", "Build with DTrace probes"
-  option "without-test", "Skip running the build test suite"
+  uses_from_macos "expat"
 
-  deprecated_option "with-tests" => "with-test"
+  # Prevent site_perl directories from being removed
+  skip_clean "lib/perl5/site_perl"
+
+  patch do
+    # Enable build support on macOS 11.x
+    # Remove when https://github.com/Perl/perl5/pull/17946 is merged
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/526faca9830646b974f563532fa27a1515e51ca1/perl/version_check.patch"
+    sha256 "cff250437f141eb677ec2215a9f2dfcbacba77304dac06499db6c722c9d30b58"
+  end
 
   def install
-    if MacOS.version == :el_capitan && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
-      %w[cpan/IPC-Cmd/lib/IPC/Cmd.pm dist/Time-HiRes/Changes
-         dist/Time-HiRes/HiRes.pm dist/Time-HiRes/HiRes.xs
-         dist/Time-HiRes/Makefile.PL dist/Time-HiRes/fallback/const-c.inc
-         dist/Time-HiRes/t/clock.t pod/perl588delta.pod
-         pod/perlperf.pod].each do |f|
-        inreplace f do |s|
-          s.gsub! "clock_gettime", "perl_clock_gettime"
-          s.gsub! "clock_getres", "perl_clock_getres", false
-        end
-      end
-    end
-
     args = %W[
       -des
       -Dprefix=#{prefix}
@@ -59,32 +44,26 @@ class Perl < Formula
       -Duseshrplib
       -Duselargefiles
       -Dusethreads
+      -Dsed=/usr/bin/sed
     ]
 
-    args << "-Dusedtrace" if build.with? "dtrace"
     args << "-Dusedevel" if build.head?
 
     system "./Configure", *args
-    system "make"
 
-    # OS X El Capitan's SIP feature prevents DYLD_LIBRARY_PATH from being
-    # passed to child processes, which causes the make test step to fail.
-    # https://rt.perl.org/Ticket/Display.html?id=126706
-    # https://github.com/Homebrew/legacy-homebrew/issues/41716
-    if MacOS.version < :el_capitan
-      system "make", "test" if build.with? "test"
-    end
+    system "make"
 
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    By default non-brewed cpan modules are installed to the Cellar. If you wish
-    for your modules to persist across updates we recommend using `local::lib`.
+  def caveats
+    <<~EOS
+      By default non-brewed cpan modules are installed to the Cellar. If you wish
+      for your modules to persist across updates we recommend using `local::lib`.
 
-    You can set that up like this:
-      PERL_MM_OPT="INSTALL_BASE=$HOME/perl5" cpan local::lib
-      echo 'eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"' >> #{shell_profile}
+      You can set that up like this:
+        PERL_MM_OPT="INSTALL_BASE=$HOME/perl5" cpan local::lib
+        echo 'eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"' >> #{shell_profile}
     EOS
   end
 

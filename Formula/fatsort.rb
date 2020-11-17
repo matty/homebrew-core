@@ -1,15 +1,22 @@
 class Fatsort < Formula
   desc "Sorts FAT16 and FAT32 partitions"
   homepage "https://fatsort.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/fatsort/fatsort-1.3.365.tar.gz"
-  sha256 "77acc374b189e80e3d75d3508f3c0ca559f8030f1c220f7cfde719a4adb03f3d"
+  url "https://downloads.sourceforge.net/project/fatsort/fatsort-1.6.3.622.tar.xz"
+  version "1.6.3"
+  sha256 "481c94ea08f6faaafe67594726d70fb3e3d5ac9672745f0034e55134ea5256fc"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/fatsort[._-]v?(\d+(?:\.\d+)+)\.\d+\.t}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "53f12d55b4101fb0b3d5e30dacd0a8dfce6dc7ae1c8bd7bda8f49396d8c789e5" => :sierra
-    sha256 "104cd675fc257344c5c96209a8cc924f50cf1bc4696f966e10e61ebeb4e2f62c" => :el_capitan
-    sha256 "56540697be3d92f196343199911fc2a780fb4f554bd6542818659158081aaa43" => :yosemite
-    sha256 "24362ba75c2e644c1480ba2e73536fdf3010e1f76b6d0b3dbde54e396d95095f" => :mavericks
+    sha256 "b4db250147cd55cb86be66c73986c621529c11f855e0cb6be129f92b96b22504" => :big_sur
+    sha256 "c3e2a36f45f08826087b89279cb36c9156024d4ecc0e02a1218dd28d27c6d8b7" => :catalina
+    sha256 "3f70bababd3108670a3752056ed24b76187df9d82beae1581645b91945cdde2d" => :mojave
+    sha256 "fdecaa643274a1e780ff530801c88cb92a66a49639ced214b29c4703389e0dd7" => :high_sierra
   end
 
   depends_on "help2man"
@@ -18,5 +25,9 @@ class Fatsort < Formula
     system "make", "CC=#{ENV.cc}"
     bin.install "src/fatsort"
     man1.install "man/fatsort.1"
+  end
+
+  test do
+    system "#{bin}/fatsort", "--version"
   end
 end

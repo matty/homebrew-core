@@ -1,64 +1,39 @@
 class Tesseract < Formula
   desc "OCR (Optical Character Recognition) engine"
   homepage "https://github.com/tesseract-ocr/"
-  url "https://github.com/tesseract-ocr/tesseract/archive/3.04.01.tar.gz"
-  sha256 "57f63e1b14ae04c3932a2683e4be4954a2849e17edd638ffe91bc5a2156adc6a"
-  revision 2
+  url "https://github.com/tesseract-ocr/tesseract/archive/4.1.1.tar.gz"
+  sha256 "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb"
+  license "Apache-2.0"
+  head "https://github.com/tesseract-ocr/tesseract.git"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    sha256 "cf3f65725fee58769174390c9679fb50d91c31f050f78c168562e8201a9d4947" => :sierra
-    sha256 "61fe45974f9c0d9ea56d7c0c8adff0f62bef5892623403fb6a7c9bc85bbe7040" => :el_capitan
-    sha256 "f8e99bc1013c533d78cfce0a049840e693a75a83ac465f3f4bce9a2ec6049809" => :yosemite
-    sha256 "7f18bf4f30a861e949f453aea13debe638c052b8e6b4dda56f5329357ed23709" => :mavericks
+    cellar :any
+    sha256 "6d49823b55a5093041b94bad0fb34e3a06c13d7ec0c677765ee64a88a3608fc0" => :big_sur
+    sha256 "81ff467946d9c85151c86819034cd183a983b4a3fa10374c7f039a5ec3ef0d82" => :catalina
+    sha256 "34eee505fccec07eaab30f14c46f9688db9f3aa578306d47bbcd31801b0b849d" => :mojave
+    sha256 "6b64585454bcca9b62945b284000723d76afad15b5e80109ca6cdc699ae50e25" => :high_sierra
   end
 
-  head do
-    url "https://github.com/tesseract-ocr/tesseract.git"
-
-    depends_on "autoconf" => :build
-    depends_on "autoconf-archive" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-    depends_on "pkg-config" => :build
-
-    resource "tessdata-head" do
-      url "https://github.com/tesseract-ocr/tessdata.git"
-    end
-  end
-
-  option "with-all-languages", "Install recognition data for all languages"
-  option "with-training-tools", "Install OCR training tools"
-  option "with-opencl", "Enable OpenCL support"
-  option "with-serial-num-pack", "Install serial number recognition pack"
-
-  deprecated_option "all-languages" => "with-all-languages"
-
+  depends_on "autoconf" => :build
+  depends_on "autoconf-archive" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
   depends_on "leptonica"
-  depends_on "libtiff" => :recommended
-
-  if build.with? "training-tools"
-    depends_on "libtool" => :build
-    depends_on "icu4c"
-    depends_on "glib"
-    depends_on "cairo"
-    depends_on "pango"
-    depends_on :x11
-  end
-
-  needs :cxx11
-
-  resource "tessdata" do
-    url "https://github.com/tesseract-ocr/tessdata/archive/3.04.00.tar.gz"
-    sha256 "5dcb37198336b6953843b461ee535df1401b41008d550fc9e43d0edabca7adb1"
-  end
+  depends_on "libtiff"
 
   resource "eng" do
-    url "https://github.com/tesseract-ocr/tessdata/raw/3.04.00/eng.traineddata"
-    sha256 "c0515c9f1e0c79e1069fcc05c2b2f6a6841fb5e1082d695db160333c1154f06d"
+    url "https://github.com/tesseract-ocr/tessdata_fast/raw/4.0.0/eng.traineddata"
+    sha256 "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
   end
 
   resource "osd" do
-    url "https://github.com/tesseract-ocr/tessdata/raw/3.04.00/osd.traineddata"
+    url "https://github.com/tesseract-ocr/tessdata_fast/raw/4.0.0/osd.traineddata"
     sha256 "9cf5d576fcc47564f11265841e5ca839001e7e6f38ff7f7aacf46d15a96b00ff"
   end
 
@@ -67,60 +42,44 @@ class Tesseract < Formula
     sha256 "36f772980ff17c66a767f584a0d80bf2302a1afa585c01a226c1863afcea1392"
   end
 
+  resource "testfile" do
+    url "https://raw.githubusercontent.com/tesseract-ocr/test/6dd816cdaf3e76153271daf773e562e24c928bf5/testing/eurotext.tif"
+    sha256 "7b9bd14aba7d5e30df686fbb6f71782a97f48f81b32dc201a1b75afe6de747d6"
+  end
+
   def install
-    if build.head?
-      # ld: symbol(s) not found for _clSetKernelArg and other symbols
-      # Regression caused by https://github.com/tesseract-ocr/tesseract/commit/b1c921b
-      # Reported 13 Sep 2016 https://github.com/tesseract-ocr/tesseract/issues/426
-      inreplace "api/Makefile.am", "$(GENERIC_LIBRARY_VERSION) -no-undefined",
-                                   "$(GENERIC_LIBRARY_VERSION)"
-    end
-
-    if build.with? "training-tools"
-      icu4c = Formula["icu4c"]
-      ENV.append "CFLAGS", "-I#{icu4c.opt_include}"
-      ENV.append "LDFLAGS", "-L#{icu4c.opt_lib}"
-    end
-
     # explicitly state leptonica header location, as the makefile defaults to /usr/local/include,
     # which doesn't work for non-default homebrew location
     ENV["LIBLEPT_HEADERSDIR"] = HOMEBREW_PREFIX/"include"
 
     ENV.cxx11
 
-    # Fix broken pkg-config file
-    # Can be removed with next version bump
-    # https://github.com/tesseract-ocr/tesseract/issues/241
-    inreplace "tesseract.pc.in", "@OPENCL_LIB@", "@OPENCL_LDFLAGS@" if build.stable?
+    system "./autogen.sh"
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking",
+                          "--datarootdir=#{HOMEBREW_PREFIX}/share"
 
-    system "./autogen.sh" if build.head?
+    system "make"
 
-    args = %W[
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-    ]
-    args << "--enable-opencl" if build.with? "opencl"
-    system "./configure", *args
+    # make install in the local share folder to avoid permission errors
+    system "make", "install", "datarootdir=#{share}"
 
-    system "make", "install"
-    if build.with? "serial-num-pack"
-      resource("snum").stage { mv "snum.traineddata", share/"tessdata" }
-    end
-    if build.with? "training-tools"
-      system "make", "training"
-      system "make", "training-install"
-    end
-    if build.head?
-      resource("tessdata-head").stage { mv Dir["*"], share/"tessdata" }
-    elsif build.with? "all-languages"
-      resource("tessdata").stage { mv Dir["*"], share/"tessdata" }
-    else
-      resource("eng").stage { mv "eng.traineddata", share/"tessdata" }
-      resource("osd").stage { mv "osd.traineddata", share/"tessdata" }
-    end
+    resource("snum").stage { mv "snum.traineddata", share/"tessdata" }
+    resource("eng").stage { mv "eng.traineddata", share/"tessdata" }
+    resource("osd").stage { mv "osd.traineddata", share/"tessdata" }
+  end
+
+  def caveats
+    <<~EOS
+      This formula contains only the "eng", "osd", and "snum" language data files.
+      If you need any other supported languages, run `brew install tesseract-lang`.
+    EOS
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/tesseract -v 2>&1")
+    resource("testfile").stage do
+      system bin/"tesseract", "./eurotext.tif", "./output", "-l", "eng"
+      assert_match "The (quick) [brown] {fox} jumps!\n", File.read("output.txt")
+    end
   end
 end

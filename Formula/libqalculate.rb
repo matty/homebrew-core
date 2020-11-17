@@ -1,29 +1,29 @@
 class Libqalculate < Formula
   desc "Library for Qalculate! program"
-  homepage "https://qalculate.sourceforge.io/"
-  url "https://downloads.sourceforge.net/project/qalculate/libqalculate/libqalculate-0.9.7/libqalculate-0.9.7.tar.gz"
-  sha256 "9a6d97ce3339d104358294242c3ecd5e312446721e93499ff70acc1604607955"
-  revision 1
+  homepage "https://qalculate.github.io/"
+  url "https://github.com/Qalculate/libqalculate/releases/download/v3.14.0/libqalculate-3.14.0.tar.gz"
+  sha256 "ef422aa54eac7c711ece65dd3a5cbc66370d3e17173465313201897c201e7d3e"
+  license "GPL-2.0-or-later"
 
   bottle do
-    sha256 "8e6dfe4e45213d687961fbc44b77e6900233f7bc9e44449c391cf512a8ab73f6" => :sierra
-    sha256 "369f1490d60045930bbe3d7b62a6e07233aa2589817e6de4c96bcccbb86b0404" => :el_capitan
-    sha256 "4b6de765ce80651675e070e1fb2793cc730b05bf9ba5f6bd5f4ec97476441407" => :yosemite
+    sha256 "0f46816cae6ec126d635b287d1a36eb6a60d44aee1664dc5093ba61d6a13535d" => :big_sur
+    sha256 "b53f2a3209c4344749769c0879ad83ddbd5df78c71168b0c91388a219a98d0aa" => :catalina
+    sha256 "e18d4fc0159ed4f7311366363c564d7e5e5a7aa877db40cac8d0bd4cbf775c61" => :mojave
+    sha256 "6829bd3b47962411998cdf443605702745ebfd614b6bf0da7439217daa1660de" => :high_sierra
   end
 
+  depends_on "intltool" => :build
   depends_on "pkg-config" => :build
-  depends_on "cln"
-  depends_on "glib"
-  depends_on "gnuplot"
   depends_on "gettext"
+  depends_on "gnuplot"
+  depends_on "mpfr"
   depends_on "readline"
-  depends_on "wget"
-
-  # Patches against version 0.9.7, should not be needed in the future
-  patch :DATA
 
   def install
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
+    ENV.cxx11
+    system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules",
+                          "--without-icu",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
@@ -32,31 +32,3 @@ class Libqalculate < Formula
     system "#{bin}/qalc", "-nocurrencies", "(2+2)/4 hours to minutes"
   end
 end
-
-__END__
-diff -ur a/src/defs2doc.cc b/src/defs2doc.cc
---- a/src/defs2doc.cc 2009-12-02 14:24:28.000000000 -0600
-+++ b/src/defs2doc.cc 2012-01-10 18:47:50.000000000 -0600
-@@ -16,7 +16,9 @@
- #include <time.h>
- #include <pthread.h>
- #include <dirent.h>
-+#if !defined(__APPLE__)
- #include <malloc.h>
-+#endif
- #include <stdio.h>
- #include <vector>
- #include <glib.h>
-diff -ur a/src/qalc.cc b/src/qalc.cc
---- a/src/qalc.cc 2010-01-05 09:17:29.000000000 -0600
-+++ b/src/qalc.cc 2012-01-10 18:47:42.000000000 -0600
-@@ -16,7 +16,9 @@
- #include <time.h>
- #include <pthread.h>
- #include <dirent.h>
-+#if !defined(__APPLE__)
- #include <malloc.h>
-+#endif
- #include <stdio.h>
- #include <vector>
- #include <glib.h>

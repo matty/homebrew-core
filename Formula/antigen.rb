@@ -1,19 +1,23 @@
 class Antigen < Formula
-  desc "Plugin manager for zsh, inspired by oh-my-zsh and vundle."
-  homepage "http://antigen.sharats.me/"
-  url "https://github.com/zsh-users/antigen/releases/download/v1.4.0/v1.4.0.tar.gz"
-  sha256 "b76b7d15bf28afa114cc4540e4f02cc79645f9ceedd4d74b76e9f07199d9b2d0"
-  head "https://github.com/zsh-users/antigen.git"
+  desc "Plugin manager for zsh, inspired by oh-my-zsh and vundle"
+  homepage "https://antigen.sharats.me/"
+  url "https://github.com/zsh-users/antigen/releases/download/v2.2.3/v2.2.3.tar.gz"
+  sha256 "bd3f1077050d52f459bc30fa3f025c44c528d625b4924a2f487fd2bacb89d61e"
+  license "MIT"
+  head "https://github.com/zsh-users/antigen.git", branch: "develop"
 
   bottle :unneeded
+
+  uses_from_macos "zsh"
 
   def install
     pkgshare.install "bin/antigen.zsh"
   end
 
-  def caveats; <<-EOS.undent
-    To activate antigen, add the following to your ~/.zshrc:
-      source #{HOMEBREW_PREFIX}/share/antigen/antigen.zsh
+  def caveats
+    <<~EOS
+      To activate antigen, add the following to your ~/.zshrc:
+        source #{HOMEBREW_PREFIX}/share/antigen/antigen.zsh
     EOS
   end
 

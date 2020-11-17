@@ -1,13 +1,21 @@
 class Yash < Formula
   desc "Yet another shell: a POSIX-compliant command-line shell"
   homepage "https://yash.osdn.jp/"
-  url "http://dl.osdn.jp/yash/66984/yash-2.44.tar.xz"
-  sha256 "f1352b49195a3879284e3ab60af4b30d3a87d696c838b246e2068ccbdfcf2e66"
+  # Canonical: https://osdn.net/dl/yash/yash-*
+  url "https://dotsrc.dl.osdn.net/osdn/yash/73097/yash-2.50.tar.xz"
+  sha256 "b6e0e2e607ab449947178da227fa739db4b13c8af9dfe8116b834964b980e24b"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://osdn.jp/projects/yash/releases/rss"
+    regex(%r{(\d+(?:\.\d+)+)</title>}i)
+  end
 
   bottle do
-    sha256 "da1943d53ced363a3670017129947a4ba996ec82604112788ad7f02830612663" => :sierra
-    sha256 "6c212b53de2e7dfc29a5c84be0242553f96c3873f5926b5168ce9cf374479c91" => :el_capitan
-    sha256 "547509067bd7e0d2c0cc6e6156b3d2abbd9fb1d67cc106538d2443fbcbd872a5" => :yosemite
+    sha256 "e9ce00f183e818cc273cae2748dc2c5021565083870351b5ac391548baa49580" => :big_sur
+    sha256 "7e92afc1391f9d80bcab553e29705fd0cb11c88ae10448a7d57d408284c8490f" => :catalina
+    sha256 "1ce52a85f6ed173af4e6e296a1051b08536a31d7e7c8704d0324bb4d2c751fad" => :mojave
+    sha256 "026106ab6ee3296619ad4cd762756d4676713feb7060172cabc39e92d8f222a0" => :high_sierra
   end
 
   depends_on "gettext"

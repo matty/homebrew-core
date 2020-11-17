@@ -3,33 +3,36 @@ class Zbackup < Formula
   homepage "http://zbackup.org"
   url "https://github.com/zbackup/zbackup/archive/1.4.4.tar.gz"
   sha256 "efccccd2a045da91576c591968374379da1dc4ca2e3dec4d3f8f12628fa29a85"
-  revision 3
+  revision 15
 
   bottle do
     cellar :any
-    sha256 "5a1078d12ceee6bc9577c865cbf9bd5f1ac6aa681649af79014edf25da4f73f4" => :sierra
-    sha256 "d579f8a6851f07491723ba5f0f6fbf28f23cc4d4da64a2dc2f7b5ef4b7589b9e" => :el_capitan
-    sha256 "aa06cf46a4fc4c970e968478995258542b1d5252dede792a4b563baa52ce24d4" => :yosemite
+    sha256 "602077d5d67427237da225551ff1c2d5467eb9c063b59db0481982ebf90577ea" => :big_sur
+    sha256 "e0be4d9e98c46c1053c28abdb80e3ebfa3226879df87f3f9e2c1153a93c90e49" => :catalina
+    sha256 "66e322817ff57fe5f7414dfd210a7132a99d7e52d2afe6a4ac37aa838802ae17" => :mojave
+    sha256 "b2d1f390339dae2da9e279fe9a3c44d6a88272b152f1863b45383312d7ad6cf0" => :high_sierra
   end
 
   depends_on "cmake" => :build
-  depends_on "openssl"
+  depends_on "lzo"
+  depends_on "openssl@1.1"
   depends_on "protobuf"
   depends_on "xz" # get liblzma compression algorithm library from XZutils
-  depends_on "lzo"
 
   # These fixes are upstream and can be removed in version 1.5+
   patch do
-    url "https://github.com/zbackup/zbackup/commit/7e6adda6b1df9c7b955fc06be28fe6ed7d8125a2.diff"
-    sha256 "564c494b02be7b159b21f1cfcc963df29350061e050e66b7b3d96ed829552351"
+    url "https://github.com/zbackup/zbackup/commit/7e6adda6b1df9c7b955fc06be28fe6ed7d8125a2.patch?full_index=1"
+    sha256 "a41acc7be1dee8c8f14e0fb73b6c4a39ae2d458ef8879553202f4ff917629f95"
   end
 
   patch do
-    url "https://github.com/zbackup/zbackup/commit/f4ff7bd8ec63b924a49acbf3a4f9cf194148ce18.diff"
-    sha256 "47f760aa03a0a1550f05e30b1fa127afa1eda5a802d0d6edd9be07f3762008fb"
+    url "https://github.com/zbackup/zbackup/commit/f4ff7bd8ec63b924a49acbf3a4f9cf194148ce18.patch?full_index=1"
+    sha256 "ae296da66ed2899ca9b06da61b2ed2d2407051e322bd961c72cf35fd9d6a330e"
   end
 
   def install
+    ENV.cxx11
+
     # Avoid collision with protobuf 3.x CHECK macro
     inreplace [
       "backup_creator.cc",

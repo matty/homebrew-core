@@ -2,20 +2,27 @@ class Snap7 < Formula
   desc "Ethernet communication suite that works natively with Siemens S7 PLCs"
   homepage "https://snap7.sourceforge.io/"
   url "https://downloads.sourceforge.net/project/snap7/1.4.2/snap7-full-1.4.2.7z"
-  sha256 "65af129e11de4b0d942751bcd9c563f7012cae174931860c03dbb2cdf2e80ae7"
+  sha256 "1f4270cde8684957770a10a1d311c226e670d9589c69841a9012e818f7b9f80e"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "ed5bbb34831786cc62281716df93c5b1c15533793b49ec08efa85ffa1627c26c" => :sierra
-    sha256 "a9067f22d44555dbe4cdf4a7d68d4f531a7120c2e1241535f4ad1610d5bbc5bc" => :el_capitan
-    sha256 "53d421256ed6bb88628f05ad081e2829b27359707fe04b877aec10cd67ea18e4" => :yosemite
+    rebuild 1
+    sha256 "52d04e1646b47ba15e5877e8c24b8f2d0267a51d8b7b07ee47330ecd2c44d95a" => :big_sur
+    sha256 "015a23b1cb6728a86716811511e51fba427c69febabd1af5507af31d77523802" => :catalina
+    sha256 "71aff7cbb3e78369d6b9a93887820dd7def1afe382ed82211be313942e1bb81d" => :mojave
+    sha256 "b0d670ce6a2d780d13cfaa3346c6aa701f280a85be010dc42c802d6ebd028694" => :high_sierra
+    sha256 "e04dea88411f3b444dcab340d3f11bd739fb853de65701e727546a9481981924" => :sierra
   end
 
   def install
-    cd "snap7-full-#{version}"
     lib.mkpath
     system "make", "-C", "build/osx",
-                   "-f", "#{MacOS.preferred_arch}_osx.mk",
+                   "-f", "x86_64_osx.mk",
                    "install", "LibInstall=#{lib}"
     include.install "release/Wrappers/c-cpp/snap7.h"
   end

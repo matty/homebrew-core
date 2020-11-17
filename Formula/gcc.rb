@@ -1,54 +1,24 @@
 class Gcc < Formula
-  def arch
-    if MacOS.prefer_64_bit?
-      "x86_64"
-    else
-      "i686"
-    end
-  end
-
-  def osmajor
-    `uname -r`.chomp
-  end
-
   desc "GNU compiler collection"
-  homepage "https://gcc.gnu.org"
-  revision 1
+  homepage "https://gcc.gnu.org/"
+  url "https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz"
+  mirror "https://ftpmirror.gnu.org/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz"
+  sha256 "b8dd4368bb9c7f0b98188317ee0254dd8cc99d1e3a18d0ff146c855fe16c1d8c"
+  license "GPL-3.0"
+  head "https://gcc.gnu.org/git/gcc.git"
 
-  head "svn://gcc.gnu.org/svn/gcc/trunk"
-
-  stable do
-    url "https://ftpmirror.gnu.org/gcc/gcc-6.3.0/gcc-6.3.0.tar.bz2"
-    mirror "https://ftp.gnu.org/gnu/gcc/gcc-6.3.0/gcc-6.3.0.tar.bz2"
-    sha256 "f06ae7f3f790fbf0f018f6d40e844451e6bc3b7bc96e128e63b09825c1f8b29f"
+  livecheck do
+    url :stable
+    regex(%r{href=.*?gcc[._-]v?(\d+(?:\.\d+)+)(?:/?["' >]|\.t)}i)
   end
 
   bottle do
-    sha256 "9a05a75102206bfb3e37ff60b822421dd73c4a14b67f7acb258054317fd0f5ca" => :sierra
-    sha256 "c76a4b7294e41e410d37cd45d9c2f820c55001a7cfa82b71ac81d6a0051de5f4" => :el_capitan
-    sha256 "807d107ada2e8774a5bf1461d3f8dc636d1135bdfde5a64f03ccabc063a11328" => :yosemite
+    rebuild 1
+    sha256 "721b6e0927796363e8ccbb9409d7e6dc2c17e121ae371cfd8198e26b31f5dff8" => :big_sur
+    sha256 "520596722515e691a408b878c93e1f3d93cd6964d033533e48c368490bed0d87" => :catalina
+    sha256 "62f6d04e2b699be8a89a1827d18acb4d6d4df98a40b80091a51ba85712c5585e" => :mojave
+    sha256 "4886ccbae6b664f016595d0bbb518baec08d6cf2ed72803661921950536ab6ed" => :high_sierra
   end
-
-  # GCC's Go compiler is not currently supported on macOS.
-  # See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=46986
-  option "with-java", "Build the gcj compiler"
-  option "with-all-languages", "Enable all compilers and languages, except Ada"
-  option "with-nls", "Build with native language support (localization)"
-  option "with-jit", "Build the jit compiler"
-  option "without-fortran", "Build without the gfortran compiler"
-  # enabling multilib on a host that can't run 64-bit results in build failures
-  option "without-multilib", "Build without multilib support" if MacOS.prefer_64_bit?
-
-  depends_on "gmp"
-  depends_on "libmpc"
-  depends_on "mpfr"
-  depends_on "isl"
-  depends_on "ecj" if build.with?("java") || build.with?("all-languages")
-
-  fails_with :gcc_4_0
-
-  # GCC bootstraps itself, so it is OK to have an incompatible C++ stdlib
-  cxxstdlib_check :skip
 
   # The bottles are built on systems with the CLT installed, and do not work
   # out of the box on Xcode-only systems due to an incorrect sysroot.
@@ -57,109 +27,87 @@ class Gcc < Formula
     satisfy { MacOS::CLT.installed? }
   end
 
-  def version_suffix
-    if build.head?
-      (stable.version.to_s.slice(/\d/).to_i + 1).to_s
-    else
-      version.to_s.slice(/\d/)
-    end
+  depends_on "gmp"
+  depends_on "isl"
+  depends_on "libmpc"
+  depends_on "mpfr"
+
+  uses_from_macos "zlib"
+
+  # GCC bootstraps itself, so it is OK to have an incompatible C++ stdlib
+  cxxstdlib_check :skip
+
+  # Patch for Big Sur version numbering, remove with GCC 11
+  # https://github.com/iains/gcc-darwin-arm64/commit/556ab512
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/7baf6e2f/gcc/bigsur.diff"
+    sha256 "42de3bc4889b303258a4075f88ad8624ea19384cab57a98a5270638654b83f41"
   end
 
-  # Fix for libgccjit.so linkage on Darwin
-  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64089
-  # https://github.com/Homebrew/homebrew-core/issues/1872#issuecomment-225625332
-  # https://github.com/Homebrew/homebrew-core/issues/1872#issuecomment-225626490
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/e9e0ee09389a54cc4c8fe1c24ebca3cd765ed0ba/gcc/6.1.0-jit.patch"
-    sha256 "863957f90a934ee8f89707980473769cff47ca0663c3906992da6afb242fb220"
+  def version_suffix
+    if build.head?
+      "HEAD"
+    else
+      version.major.to_s
+    end
   end
 
   def install
     # GCC will suffer build errors if forced to use a particular linker.
     ENV.delete "LD"
 
-    if build.with? "all-languages"
-      # Everything but Ada, which requires a pre-existing GCC Ada compiler
-      # (gnat) to bootstrap. GCC 4.6.0 adds go as a language option, but it is
-      # currently only compilable on Linux.
-      languages = %w[c c++ objc obj-c++ fortran java jit]
-    else
-      # C, C++, ObjC compilers are always built
-      languages = %w[c c++ objc obj-c++]
+    # We avoiding building:
+    #  - Ada, which requires a pre-existing GCC Ada compiler to bootstrap
+    #  - Go, currently not supported on macOS
+    #  - BRIG
+    languages = %w[c c++ objc obj-c++ fortran]
 
-      languages << "fortran" if build.with? "fortran"
-      languages << "java" if build.with? "java"
-      languages << "jit" if build.with? "jit"
-    end
+    pkgversion = "Homebrew GCC #{pkg_version} #{build.used_options*" "}".strip
 
-    languages -= ["java"] if build.head?
-
-    # Even when suffixes are appended, the info pages conflict when
-    # install-info is run so pretend we have an outdated makeinfo
-    # to prevent their build.
-    ENV["gcc_cv_prog_makeinfo_modern"] = "no"
-
-    args = [
-      "--build=#{arch}-apple-darwin#{osmajor}",
-      "--prefix=#{prefix}",
-      "--libdir=#{lib}/gcc/#{version_suffix}",
-      "--enable-languages=#{languages.join(",")}",
-      # Make most executables versioned to avoid conflicts.
-      "--program-suffix=-#{version_suffix}",
-      "--with-gmp=#{Formula["gmp"].opt_prefix}",
-      "--with-mpfr=#{Formula["mpfr"].opt_prefix}",
-      "--with-mpc=#{Formula["libmpc"].opt_prefix}",
-      "--with-isl=#{Formula["isl"].opt_prefix}",
-      "--with-system-zlib",
-      "--enable-stage1-checking",
-      "--enable-checking=release",
-      "--enable-lto",
-      # Use 'bootstrap-debug' build configuration to force stripping of object
-      # files prior to comparison during bootstrap (broken by Xcode 6.3).
-      "--with-build-config=bootstrap-debug",
-      "--disable-werror",
-      "--with-pkgversion=Homebrew GCC #{pkg_version} #{build.used_options*" "}".strip,
-      "--with-bugurl=https://github.com/Homebrew/homebrew-core/issues",
+    args = %W[
+      --build=x86_64-apple-darwin#{OS.kernel_version.major}
+      --prefix=#{prefix}
+      --libdir=#{lib}/gcc/#{version_suffix}
+      --disable-nls
+      --enable-checking=release
+      --enable-languages=#{languages.join(",")}
+      --program-suffix=-#{version_suffix}
+      --with-gmp=#{Formula["gmp"].opt_prefix}
+      --with-mpfr=#{Formula["mpfr"].opt_prefix}
+      --with-mpc=#{Formula["libmpc"].opt_prefix}
+      --with-isl=#{Formula["isl"].opt_prefix}
+      --with-system-zlib
+      --with-pkgversion=#{pkgversion}
+      --with-bugurl=https://github.com/Homebrew/homebrew-core/issues
     ]
 
-    # The pre-Mavericks toolchain requires the older DWARF-2 debugging data
-    # format to avoid failure during the stage 3 comparison of object files.
-    # See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=45248
-    args << "--with-dwarf2" if MacOS.version <= :mountain_lion
+    # Xcode 10 dropped 32-bit support
+    args << "--disable-multilib" if DevelopmentTools.clang_build_version >= 1000
 
-    args << "--disable-nls" if build.without? "nls"
-
-    if build.with?("java") || build.with?("all-languages")
-      args << "--with-ecj-jar=#{Formula["ecj"].opt_share}/java/ecj.jar"
+    # System headers may not be in /usr/include
+    sdk = MacOS.sdk_path_if_needed
+    if sdk
+      args << "--with-native-system-header-dir=/usr/include"
+      args << "--with-sysroot=#{sdk}"
     end
 
-    if build.without?("multilib") || !MacOS.prefer_64_bit?
-      args << "--disable-multilib"
-    else
-      args << "--enable-multilib"
-    end
-
-    args << "--enable-host-shared" if build.with?("jit") || build.with?("all-languages")
+    # Avoid reference to sed shim
+    args << "SED=/usr/bin/sed"
 
     # Ensure correct install names when linking against libgcc_s;
-    # see discussion in https://github.com/Homebrew/homebrew/pull/34303
+    # see discussion in https://github.com/Homebrew/legacy-homebrew/pull/34303
     inreplace "libgcc/config/t-slibgcc-darwin", "@shlib_slibdir@", "#{HOMEBREW_PREFIX}/lib/gcc/#{version_suffix}"
 
     mkdir "build" do
-      unless MacOS::CLT.installed?
-        # For Xcode-only systems, we need to tell the sysroot path.
-        # "native-system-headers" will be appended
-        args << "--with-native-system-header-dir=/usr/include"
-        args << "--with-sysroot=#{MacOS.sdk_path}"
-      end
-
       system "../configure", *args
-      system "make", "bootstrap"
+
+      # Use -headerpad_max_install_names in the build,
+      # otherwise updated load commands won't fit in the Mach-O header.
+      # This is needed because `gcc` avoids the superenv shim.
+      system "make", "BOOT_LDFLAGS=-Wl,-headerpad_max_install_names"
       system "make", "install"
 
-      if build.with?("fortran") || build.with?("all-languages")
-        bin.install_symlink bin/"gfortran-#{version_suffix}" => "gfortran"
-      end
+      bin.install_symlink bin/"gfortran-#{version_suffix}" => "gfortran"
     end
 
     # Handle conflicts between GCC formulae and avoid interfering
@@ -177,18 +125,8 @@ class Gcc < Formula
     File.rename file, "#{dir}/#{base}-#{suffix}#{ext}"
   end
 
-  def caveats
-    if build.with?("multilib") then <<-EOS.undent
-      GCC has been built with multilib support. Notably, OpenMP may not work:
-        https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60670
-      If you need OpenMP support you may want to
-        brew reinstall gcc --without-multilib
-      EOS
-    end
-  end
-
   test do
-    (testpath/"hello-c.c").write <<-EOS.undent
+    (testpath/"hello-c.c").write <<~EOS
       #include <stdio.h>
       int main()
       {
@@ -199,7 +137,7 @@ class Gcc < Formula
     system "#{bin}/gcc-#{version_suffix}", "-o", "hello-c", "hello-c.c"
     assert_equal "Hello, world!\n", `./hello-c`
 
-    (testpath/"hello-cc.cc").write <<-EOS.undent
+    (testpath/"hello-cc.cc").write <<~EOS
       #include <iostream>
       int main()
       {
@@ -210,22 +148,18 @@ class Gcc < Formula
     system "#{bin}/g++-#{version_suffix}", "-o", "hello-cc", "hello-cc.cc"
     assert_equal "Hello, world!\n", `./hello-cc`
 
-    if build.with?("fortran") || build.with?("all-languages")
-      fixture = <<-EOS.undent
-        integer,parameter::m=10000
-        real::a(m), b(m)
-        real::fact=0.5
+    (testpath/"test.f90").write <<~EOS
+      integer,parameter::m=10000
+      real::a(m), b(m)
+      real::fact=0.5
 
-        do concurrent (i=1:m)
-          a(i) = a(i) + fact*b(i)
-        end do
-        print *, "done"
-        end
-      EOS
-      (testpath/"in.f90").write(fixture)
-      system "#{bin}/gfortran", "-c", "in.f90"
-      system "#{bin}/gfortran", "-o", "test", "in.o"
-      assert_equal "done", `./test`.strip
-    end
+      do concurrent (i=1:m)
+        a(i) = a(i) + fact*b(i)
+      end do
+      write(*,"(A)") "Done"
+      end
+    EOS
+    system "#{bin}/gfortran", "-o", "test", "test.f90"
+    assert_equal "Done\n", `./test`
   end
 end

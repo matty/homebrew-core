@@ -1,8 +1,9 @@
 class Gws < Formula
   desc "Manage workspaces composed of git repositories"
   homepage "https://streakycobra.github.io/gws/"
-  url "https://github.com/StreakyCobra/gws/archive/0.1.8.tar.gz"
-  sha256 "c240601b0adcc5ae402199217fc0d5fd6775ada69919a860ad3c1c4b16805e63"
+  url "https://github.com/StreakyCobra/gws/archive/0.2.0.tar.gz"
+  sha256 "f92b7693179c2522c57edd578abdb90b08f6e2075ed27abd4af56c1283deab1a"
+  license "MIT"
 
   bottle :unneeded
 
@@ -19,6 +20,6 @@ class Gws < Formula
     system "git", "init", "project"
     system "#{bin}/gws", "init"
     output = shell_output("#{bin}/gws status")
-    assert_equal "project:\n                              Clean [Local only repository]\n", output
+    assert_equal "project:\n  *                           Clean [Local only repository]\n", output
   end
 end

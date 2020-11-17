@@ -1,33 +1,55 @@
 class Sdl2Image < Formula
   desc "Library for loading images as SDL surfaces and textures"
   homepage "https://www.libsdl.org/projects/SDL_image/"
-  url "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.tar.gz"
-  sha256 "3a3eafbceea5125c04be585373bfd8b3a18f259bd7eae3efc4e6d8e60e0d7f64"
-  revision 2
+  url "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.tar.gz"
+  sha256 "bdd5f6e026682f7d7e1be0b6051b209da2f402a2dd8bd1c4bd9c25ad263108d0"
+
+  livecheck do
+    url :homepage
+    regex(/SDL2_image[._-]v?(\d+(?:\.\d+)*)/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "947ed2dbcc3bd8c6b4188dbc2874d8b06e95aee64d58eb530b6f5215f4574cf6" => :sierra
-    sha256 "da313993c1cc825c342ef0d8e1a7fefaeec399654eb56b0b07f33b767555c4ba" => :el_capitan
-    sha256 "f5aaf7b8c035d662c696fa818ac4d82f33108ae1874f88e471368b29938ae20f" => :yosemite
+    sha256 "d106f96771895c1b6faa9864e3605d301cdbe658672900108605c521616a8bf6" => :big_sur
+    sha256 "691d5407fef2bc374ac3b7c2fafbe46a6bc0f9ed609f98812b24fec33ab9bd27" => :catalina
+    sha256 "1b3a464579d9ef25b3bdd9276119efffd0134fda5c5dc27051a35f1b21c00cfd" => :mojave
+    sha256 "55c1f996fb523c2727d2b103f0a5ecfd7a073f55ff9a7230bb609d22bbf5a576" => :high_sierra
+    sha256 "e3c9cf45d97099e818c667d23af8352e6d1bba0e3b609cdddee654f2a9da80cf" => :sierra
   end
 
-  option :universal
-
   depends_on "pkg-config" => :build
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "libtiff"
   depends_on "sdl2"
-  depends_on "jpeg" => :recommended
-  depends_on "libpng" => :recommended
-  depends_on "libtiff" => :recommended
-  depends_on "webp" => :recommended
+  depends_on "webp"
 
   def install
-    ENV.universal_binary if build.universal?
-
     inreplace "SDL2_image.pc.in", "@prefix@", HOMEBREW_PREFIX
 
     system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}", "--enable-imageio=no"
+                          "--prefix=#{prefix}",
+                          "--disable-imageio",
+                          "--disable-jpg-shared",
+                          "--disable-png-shared",
+                          "--disable-tif-shared",
+                          "--disable-webp-shared"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <SDL2/SDL_image.h>
+
+      int main()
+      {
+          int success = IMG_Init(0);
+          IMG_Quit();
+          return success;
+      }
+    EOS
+    system ENV.cc, "-L#{lib}", "-lsdl2_image", "test.c", "-o", "test"
+    system "./test"
   end
 end

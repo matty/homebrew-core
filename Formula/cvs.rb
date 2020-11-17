@@ -5,21 +5,22 @@
 
 class Cvs < Formula
   desc "Version control system"
-  homepage "http://cvs.nongnu.org/"
+  homepage "https://www.nongnu.org/cvs/"
   url "https://ftp.gnu.org/non-gnu/cvs/source/feature/1.12.13/cvs-1.12.13.tar.bz2"
   sha256 "78853613b9a6873a30e1cc2417f738c330e75f887afdaf7b3d0800cb19ca515e"
+  revision 2
+
+  livecheck do
+    url "https://ftp.gnu.org/non-gnu/cvs/source/feature/"
+    regex(%r{href=.*?v?(\d+(?:\.\d+)+)/}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "48e3daba0b967f76f790792c5882002b82b5867a18fe4b9aa4ee13b0044277cf" => :sierra
-    sha256 "c454f576c58dbabc3d3ce4af4974dfdcf47c4232af3de9275f171a93dbdf264a" => :el_capitan
-    sha256 "3b6a02a69d14c6a6476727ade22b47a542dae280df6375a9bce9374a21176f86" => :yosemite
-    sha256 "ff6b161b7379b44bf42635828f45e7f43c932d2be9fbf9691714f2f4a356ec7f" => :mavericks
-    sha256 "cbabf7f11bb08b7018117f5b45dda26d55a0584f9ef7e00c0a134bbbe1284655" => :mountain_lion
+    sha256 "c80cc90d6ffbb4113745eac9386396c82b63ceee000f88acba79b7a16e05724d" => :catalina
+    sha256 "2fba5fb7a0ece4b19030e2217a9297f13d3a763303443b9f6935f48d434f636a" => :mojave
+    sha256 "eac3fab201c8e47ee3d05e95a240c2f53306e000a416956843083d7305b48da9" => :high_sierra
   end
-
-  keg_only :provided_until_xcode5
 
   patch :p0 do
     url "https://opensource.apple.com/tarballs/cvs/cvs-45.tar.gz"
@@ -37,6 +38,17 @@ class Cvs < Formula
           "patches/tag.diff",
           "patches/zlib.diff"
   end
+
+  # Fixes error: 'Illegal instruction: 4'; '%n used in a non-immutable format string' on 10.13
+  # Patches the upstream-provided gnulib on all platforms as is recommended
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/24118ec737c7d008420d4683a07129ed80a759eb/cvs/vasnprintf-high-sierra-fix.diff"
+    sha256 "affa485332f66bb182963680f90552937bf1455b855388f7c06ef6a3a25286e2"
+  end
+
+  # Fixes "cvs [init aborted]: cannot get working directory: No such file or directory" on Catalina.
+  # Original patch idea by Jason White from stackoverflow
+  patch :DATA
 
   def install
     system "./configure", "--disable-debug",
@@ -68,3 +80,18 @@ class Cvs < Formula
     end
   end
 end
+
+__END__
+--- cvs-1.12.13/lib/xgetcwd.c.orig      2019-10-10 22:52:37.000000000 -0500
++++ cvs-1.12.13/lib/xgetcwd.c   2019-10-10 22:53:32.000000000 -0500
+@@ -25,8 +25,9 @@
+ #include "xgetcwd.h"
+
+ #include <errno.h>
++#include <unistd.h>
+
+-#include "getcwd.h"
++/* #include "getcwd.h" */
+ #include "xalloc.h"
+
+ /* Return the current directory, newly allocated.

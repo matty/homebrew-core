@@ -1,38 +1,31 @@
 class Shapelib < Formula
   desc "Library for reading and writing ArcView Shapefiles"
   homepage "http://shapelib.maptools.org/"
-  url "http://download.osgeo.org/shapelib/shapelib-1.3.0.tar.gz"
-  sha256 "23d474016158ab5077db2f599527631706ba5c0dc7c4178a6a1d685bb014f68f"
+  url "https://download.osgeo.org/shapelib/shapelib-1.5.0.tar.gz"
+  sha256 "1fc0a480982caef9e7b9423070b47750ba34cd0ba82668f2e638fab1d07adae1"
+
+  livecheck do
+    url "https://download.osgeo.org/shapelib/"
+    regex(/href=.*?shapelib[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "5ccf254ad426070dc2876c92af6674648229faa6613800983c825e9d88a34105" => :sierra
-    sha256 "231ff7f01f4e050713d0525701a8478ff2de72e6f6a866f6a0b2a2f8ed3a7e29" => :el_capitan
-    sha256 "ff785bd9efdab4345d8e1409934e173b2b18a35c87f522c30eef097b20c662e1" => :yosemite
-    sha256 "30c19104eeb1a1d3f70ea80ed73a352e03e976610a63c5775d77a15eb7da355c" => :mavericks
-    sha256 "f8d87f694df8fec823efe62702e317737c53fd5c1407f1007b7d5fae9f37974f" => :mountain_lion
+    sha256 "dfae7491c46ca8ed8b587dd6dfa885b4ec6db8520095b1f1ae44becd28ca76d2" => :big_sur
+    sha256 "9800e87eaeeca3eca0d59c3bca555c0211df96f021735251964981ac2b16bd90" => :catalina
+    sha256 "90f9b9b0ccadf93be027e515be356d0b92f4dfb33979f11df9fc7570c3249d0e" => :mojave
+    sha256 "f1242aaf566b272f69331d16441171b12d0b4cef8396b56e0a8246fe7618ca68" => :high_sierra
+    sha256 "0add799fff38395de6300f1b18102270bd269b5dc37714e7cac1873849b2ced7" => :sierra
   end
 
+  depends_on "cmake" => :build
+
   def install
-    dylib = lib+"libshp.#{version}.dylib"
+    system "cmake", ".", *std_cmake_args
+    system "make", "install"
+  end
 
-    system "make", "CC=#{ENV.cc}",
-                   "CFLAGS=#{ENV.cflags}",
-                   "PREFIX=#{prefix}"
-
-    lib.mkpath
-    system ENV.cc, "-dynamiclib", "-Wl,-all_load",
-                   "-Wl,-install_name,#{dylib}",
-                   "-Wl,-headerpad_max_install_names",
-                   "-Wl,-compatibility_version,#{version}",
-                   "-o", dylib.to_s, "shpopen.o", "shptree.o",
-                   "dbfopen.o", "safileio.o"
-
-    include.install "shapefil.h"
-    bin.install %w[shpcreate shpadd shpdump shprewind dbfcreate dbfadd dbfdump shptreedump]
-
-    lib.install_symlink dylib.basename => "libshp.#{version.to_s.split(".").first}.dylib"
-    lib.install_symlink dylib.basename => "libshp.dylib"
+  test do
+    assert_match "shp_file", shell_output("#{bin}/shptreedump", 1)
   end
 end

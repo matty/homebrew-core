@@ -1,29 +1,30 @@
 class Sops < Formula
-  include Language::Python::Virtualenv
-
   desc "Editor of encrypted files"
   homepage "https://github.com/mozilla/sops"
-  url "https://github.com/mozilla/sops/archive/2.0.7.tar.gz"
-  sha256 "d916714370bfc5d118607e6a48e54844d1caa93a4a4ff89d884a788651cbb9a3"
-  head "https://github.com/mozilla/sops.git"
+  url "https://github.com/mozilla/sops/archive/v3.6.1.tar.gz"
+  sha256 "bb6611eb70580ff74a258aa8b9713fdcb9a28de5a20ee716fe6b516608a60237"
+  license "MPL-2.0"
+  head "https://github.com/mozilla/sops.git", branch: "develop"
 
   bottle do
-    sha256 "3bba826e5df2d67210c94b0e411afec3ee5786e95a55b6e2a2637f9677e28a01" => :sierra
-    sha256 "ce276dd1fd34cf5addceab033810852287b20f6644a36d58e1b17dc32fbfe90f" => :el_capitan
-    sha256 "0a6e44204f38a8597111f91827d1144d1d3dbb94828464eb00f47569d5292570" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "802a7f9f44753e14258c9fba558d573230fb0b8ae78b217a54ac216ce8582f83" => :big_sur
+    sha256 "7b883bcead58c088e16a32310a29f4146066329f7f8b203bf69ec5f1fecec950" => :catalina
+    sha256 "1c0ef6707dee2088bb816d827f6cfd2d7a26ef530b5177b3ae5652aa2a0591eb" => :mojave
+    sha256 "b6e72dd038ae5c28786423aa9b5eb31c92b9533feee1b927d72cb697e3c1ddd7" => :high_sierra
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    ENV["GOBIN"] = bin
-    (buildpath/"src/go.mozilla.org").mkpath
-    ln_s buildpath, "src/go.mozilla.org/sops"
-    system "make", "install"
+    system "go", "build", "-o", bin/"sops", "go.mozilla.org/sops/v3/cmd/sops"
+    pkgshare.install "example.yaml"
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/sops --version 2>&1")
+    assert_match version.to_s, shell_output("#{bin}/sops --version")
+
+    assert_match "Recovery failed because no master key was able to decrypt the file.",
+      shell_output("#{bin}/sops #{pkgshare}/example.yaml 2>&1", 128)
   end
 end

@@ -1,58 +1,57 @@
 class Cfssl < Formula
   desc "CloudFlare's PKI toolkit"
   homepage "https://cfssl.org/"
-  url "https://github.com/cloudflare/cfssl/archive/1.2.0.tar.gz"
-  sha256 "28e1d1ec6862eb926336490e2fcd1de626113d3e227293a4138fec59b7b6e443"
-  revision 2
-
+  url "https://github.com/cloudflare/cfssl/archive/v1.5.0.tar.gz"
+  sha256 "5267164b18aa99a844e05adceaf4f62d1b96dcd326a9132098d65c515c180a91"
+  license "BSD-2-Clause"
   head "https://github.com/cloudflare/cfssl.git"
 
   bottle do
-    rebuild 2
-    sha256 "df9604a452ffbab49d4944e3af38575777f65c8026852b743e3f3ff5d5447063" => :sierra
-    sha256 "9c215477cd204590d087f02fb0a7b852728feb05e337f92a978c261148177c26" => :el_capitan
-    sha256 "979ed2a7e0dd26725c7475795409cbd9112532cf2ec480c0abfe1ab123bc7708" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "0c28baffc2249f7f5ca27dff92318106267840a7ace3237e5de88cdaf30ee758" => :big_sur
+    sha256 "eba10fa745e0b84e9ecf812313125f3ce6178b9c4053ba1d5ce81214f34316f7" => :catalina
+    sha256 "cb0a2266d3f11b5d4462c824dbc9bbc7f0893bf24f4eb92025809d2ce36f3549" => :mojave
+    sha256 "37abc780b685c1aeee3771b5a66771bea66fdb9b49c7aea80d9a0b96a479a10c" => :high_sierra
   end
 
   depends_on "go" => :build
-  depends_on "libtool" => :run
+  depends_on "libtool"
 
   def install
-    ENV["GOPATH"] = buildpath
-    cfsslpath = buildpath/"src/github.com/cloudflare/cfssl"
-    cfsslpath.install Dir["{*,.git}"]
-    cd "src/github.com/cloudflare/cfssl" do
-      system "go", "build", "-o", "#{bin}/cfssl", "cmd/cfssl/cfssl.go"
-      system "go", "build", "-o", "#{bin}/cfssljson", "cmd/cfssljson/cfssljson.go"
-      system "go", "build", "-o", "#{bin}/cfsslmkbundle", "cmd/mkbundle/mkbundle.go"
-    end
+    ldflags = ["-s", "-w",
+               "-X github.com/cloudflare/cfssl/cli/version.version=#{version}"]
+
+    system "go", "build", "-o", "#{bin}/cfssl", "-ldflags", ldflags, "cmd/cfssl/cfssl.go"
+    system "go", "build", "-o", "#{bin}/cfssljson", "-ldflags", ldflags, "cmd/cfssljson/cfssljson.go"
+    system "go", "build", "-o", "#{bin}/cfsslmkbundle", "cmd/mkbundle/mkbundle.go"
   end
 
-  def caveats; <<-EOS.undent
-    `mkbundle` has been installed as `cfsslmkbundle` to avoid conflict
-    with Mono and other tools that ship the same executable.
-  EOS
+  def caveats
+    <<~EOS
+      `mkbundle` has been installed as `cfsslmkbundle` to avoid conflict
+      with Mono and other tools that ship the same executable.
+    EOS
   end
 
   test do
-    (testpath/"request.json").write <<-EOS.undent
-    {
-      "CN" : "Your Certificate Authority",
-      "hosts" : [],
-      "key" : {
-        "algo" : "rsa",
-        "size" : 4096
-      },
-      "names" : [
-        {
-          "C" : "US",
-          "ST" : "Your State",
-          "L" : "Your City",
-          "O" : "Your Organization",
-          "OU" : "Your Certificate Authority"
-        }
-      ]
-    }
+    (testpath/"request.json").write <<~EOS
+      {
+        "CN" : "Your Certificate Authority",
+        "hosts" : [],
+        "key" : {
+          "algo" : "rsa",
+          "size" : 4096
+        },
+        "names" : [
+          {
+            "C" : "US",
+            "ST" : "Your State",
+            "L" : "Your City",
+            "O" : "Your Organization",
+            "OU" : "Your Certificate Authority"
+          }
+        ]
+      }
     EOS
     shell_output("#{bin}/cfssl genkey -initca request.json > response.json")
     response = JSON.parse(File.read(testpath/"response.json"))

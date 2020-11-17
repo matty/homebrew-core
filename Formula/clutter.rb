@@ -1,25 +1,30 @@
 class Clutter < Formula
   desc "Generic high-level canvas library"
   homepage "https://wiki.gnome.org/Projects/Clutter"
-  url "https://download.gnome.org/sources/clutter/1.26/clutter-1.26.0.tar.xz"
-  sha256 "67514e7824b3feb4723164084b36d6ce1ae41cb3a9897e9f1a56c8334993ce06"
+  url "https://download.gnome.org/sources/clutter/1.26/clutter-1.26.4.tar.xz"
+  sha256 "8b48fac159843f556d0a6be3dbfc6b083fc6d9c58a20a49a6b4919ab4263c4e6"
+  license "LGPL-2.1"
 
-  bottle do
-    sha256 "5210bc8ba72d624f8e927c540f6f926bb7b3a292fbc74a49e2b72fc6651b7300" => :sierra
-    sha256 "ee1428123c15251c5393d5ad5f0693704e7aa60c131dc1d56de3df48a5dcb4c2" => :el_capitan
-    sha256 "61e314bfe13c06db50812c577a88099e9f6dbff7ec0fa7a14fcce0fde7c55611" => :yosemite
-    sha256 "6f9fb993c83c0e52d8e8b0e3edb15657cfb68159912810ae5787f1050c781fd8" => :mavericks
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "b6a60fc6c91f4e0a206e75c3fe5672215eb9460304202c4bfe1a4c7402ce9bd4" => :big_sur
+    sha256 "ccec39ce9c941de753798e466b8cfc2a69612319d8b5a422f6e4bde49db305b1" => :catalina
+    sha256 "43da6f50107059a3c9b215e77d29724f9e71a17fd89f5e72a200cd021e32f471" => :mojave
+    sha256 "2a1f93e956dbfc9dc4f3c47dd8923b224ed155f3b8dbf32df74f365a65052bbb" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "pkg-config" => :build
-  depends_on "glib"
-  depends_on "gdk-pixbuf"
-  depends_on "cogl"
-  depends_on "cairo" # for cairo-gobject
   depends_on "atk"
-  depends_on "pango"
+  depends_on "cairo" # for cairo-gobject
+  depends_on "cogl"
+  depends_on "gdk-pixbuf"
+  depends_on "glib"
   depends_on "json-glib"
-  depends_on "gobject-introspection"
+  depends_on "pango"
 
   def install
     args = %W[
@@ -41,7 +46,7 @@ class Clutter < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <clutter/clutter.h>
 
       int main(int argc, char *argv[]) {
@@ -56,6 +61,7 @@ class Clutter < Formula
     freetype = Formula["freetype"]
     gettext = Formula["gettext"]
     glib = Formula["glib"]
+    harfbuzz = Formula["harfbuzz"]
     json_glib = Formula["json-glib"]
     libpng = Formula["libpng"]
     pango = Formula["pango"]
@@ -69,6 +75,7 @@ class Clutter < Formula
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
+      -I#{harfbuzz.opt_include}/harfbuzz
       -I#{include}/clutter-1.0
       -I#{json_glib.opt_include}/json-glib-1.0
       -I#{libpng.opt_include}/libpng16

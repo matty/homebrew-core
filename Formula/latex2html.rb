@@ -1,24 +1,44 @@
 class Latex2html < Formula
   desc "LaTeX-to-HTML translator"
-  homepage "https://www.ctan.org/pkg/latex2html"
-  url "http://mirrors.ctan.org/support/latex2html/latex2html-2016.tar.gz"
-  sha256 "ab1dbc18ab0ec62f65c1f8c14f2b74823a0a2fc54b07d73ca49524bcae071309"
+  homepage "https://www.latex2html.org"
+  url "https://github.com/latex2html/latex2html/archive/v2020.2.tar.gz"
+  sha256 "09f2d7f086fee9538523fd5074ada8ebadbdbc2227ca11d9d36189e698e5cfaf"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)*)$/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "96aba432faa475b5201a84d032e5e4e90d95264e23387ba20bd59fea5d06403b" => :sierra
-    sha256 "093a49aaa3b77c884b9e7aa7ebcff872dc763a984c779fa03b3a50013c311ea1" => :el_capitan
-    sha256 "6a304d1b869c3bdb472c4eea5b4251e626a89446c3d55443da81bbbbe626a59c" => :yosemite
+    sha256 "d9e1606ef1316a3945c6b17b7a327c0f3afd6ee98573924d55ceae911d555614" => :big_sur
+    sha256 "f5448ddd27e175bc6cf388581f3332a188bc52a15c69d41b8002cc5303471cf4" => :catalina
+    sha256 "fc170658ac170d9bf484a05d99fc052fdefdf9d39ada1cb0b2cffa20950e7ed5" => :mojave
+    sha256 "1057bbb3c6c991e3ce62425b2b11852558d40be5fab478560784ee2b60ec2591" => :high_sierra
   end
 
-  depends_on "netpbm"
   depends_on "ghostscript"
-  depends_on :tex => :optional
+  depends_on "netpbm"
 
   def install
     system "./configure", "--prefix=#{prefix}",
                           "--without-mktexlsr",
                           "--with-texpath=#{share}/texmf/tex/latex/html"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.tex").write <<~EOS
+      \\documentclass{article}
+      \\usepackage[utf8]{inputenc}
+      \\title{Experimental Setup}
+      \\date{\\today}
+      \\begin{document}
+      \\maketitle
+      \\end{document}
+    EOS
+    system "#{bin}/latex2html", "test.tex"
+    assert_match /Experimental Setup/, File.read("test/test.html")
   end
 end

@@ -1,16 +1,16 @@
 class GithubRelease < Formula
   desc "Create and edit releases on Github (and upload artifacts)"
-  homepage "https://github.com/aktau/github-release"
-  url "https://github.com/aktau/github-release/archive/v0.6.2.tar.gz"
-  sha256 "0f434345519664193d4ab270ea0150a31d604224e09b58dc948fa5930c5551ee"
-  head "https://github.com/aktau/github-release.git"
+  homepage "https://github.com/github-release/github-release"
+  url "https://github.com/github-release/github-release/archive/v0.9.0.tar.gz"
+  sha256 "d421bee3af352ab79058d1e37b8f97d0772f890cd850ae2a21a7060e81985e1f"
+  license "MIT"
+  head "https://github.com/github-release/github-release.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "43ff0e8f4ffd6329586c55a94b789f8a000f42a1e2dd6b739676cad098ede12b" => :sierra
-    sha256 "da81d46e83c078b2676a744f14a3e045264f92923e95160faf65f702de3bfd61" => :el_capitan
-    sha256 "1ae83d9d5f18aeb437409199200b8bc95d7a8eaefd3d815457a7ec079ef1bdcd" => :yosemite
-    sha256 "7023a11e0dbe16b7bbdafdc784a1ad28488251f1c17ecfb010542ce0c64a54e7" => :mavericks
+    sha256 "55ca08b3981304bfdeea12ce4cec19b75bb56e0c502060211eb360774bfddc47" => :catalina
+    sha256 "753179f81586312d394ab636eccc14a67af766f37b1056030bff7b9bfa7fad7a" => :mojave
+    sha256 "c0a159a17d1b68a20581a048267c228bc242db00e36cd8bc3221a26dea2f0488" => :high_sierra
   end
 
   depends_on "go" => :build
@@ -22,7 +22,7 @@ class GithubRelease < Formula
   end
 
   test do
-    system "#{bin}/github-release", "info", "--user", "aktau",
+    system "#{bin}/github-release", "info", "--user", "github-release",
                                             "--repo", "github-release",
                                             "--tag", "v#{version}"
   end

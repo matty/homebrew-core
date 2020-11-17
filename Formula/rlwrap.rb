@@ -1,21 +1,28 @@
 class Rlwrap < Formula
   desc "Readline wrapper: adds readline support to tools that lack it"
-  homepage "http://utopia.knoware.nl/~hlub/rlwrap/"
-  url "https://github.com/hanslub42/rlwrap/archive/v0.42.tar.gz"
-  sha256 "fff56c24341f0c717cf3a8f0ebbf2cba415b1952e1591168ca69ed13638b20f3"
+  homepage "https://github.com/hanslub42/rlwrap"
+  url "https://github.com/hanslub42/rlwrap/archive/v0.43.tar.gz"
+  sha256 "29e5a850fbe4753f353b0734e46ec0da043621bdcf7b52a89b77517f3941aade"
+  license "GPL-2.0"
   revision 1
-
   head "https://github.com/hanslub42/rlwrap.git"
 
-  bottle do
-    sha256 "53859da22797c6c4b51754b538dc4be18866f492bbcd14c66228ee1f7d11a93b" => :sierra
-    sha256 "1361a917ac884c5d9f2755ec08b33f5ce57e68687a5f19458a2c0854dbdc6da7" => :el_capitan
-    sha256 "48b56717c9b66c9c56e288b5e9dca32b5c3f6a256c5b3057f68f46b920788e59" => :yosemite
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
   end
 
-  depends_on "readline"
+  bottle do
+    sha256 "d1569b44bcf5e3cbc42a6c9e456ad57a56cdf2906eab3a7ec837f5e83f3e838c" => :big_sur
+    sha256 "d4a2ef8e6f2c143c9156ed301d9b835b74b8e1c8bb232feb7fd8494e5262441c" => :catalina
+    sha256 "1bd82e889c7f88df7b45b31201d563d7185c362c7a5d3814b5474d295de65f22" => :mojave
+    sha256 "d8d5c5402f1b0041bc26c2161b2822cfd025e93674a7a5dc0046185d5870181d" => :high_sierra
+    sha256 "3dd6233bbef1327553b5bd92d070c4d7bd24f5414628c1c367c4c3ad6f1acc76" => :sierra
+  end
+
   depends_on "autoconf" => :build
   depends_on "automake" => :build
+  depends_on "readline"
 
   def install
     system "autoreconf", "-v", "-i"
@@ -24,5 +31,9 @@ class Rlwrap < Formula
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    system "#{bin}/rlwrap", "--version"
   end
 end

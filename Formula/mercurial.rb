@@ -3,25 +3,44 @@
 class Mercurial < Formula
   desc "Scalable distributed version control system"
   homepage "https://mercurial-scm.org/"
-  url "https://mercurial-scm.org/release/mercurial-4.1.tar.gz"
-  sha256 "7b33c32cdd1d518bc2e2ae223e6ef63c486cf52e9d01a45b99cf8eab7bea5274"
+  url "https://www.mercurial-scm.org/release/mercurial-5.6.tar.gz"
+  sha256 "dfa7b3b5082783763710504f242ec487a5d801dc4bcd701cdad4b6ffc1f062c2"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://www.mercurial-scm.org/release/"
+    regex(/href=.*?mercurial[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "6c66a096f76d77b35febca52870df73b320e491810587b395ecb72591326d5b4" => :sierra
-    sha256 "6f8f61e23762cd42398902f3a4de6568e1c338826b1dce5b3694908d1748c27b" => :el_capitan
-    sha256 "0ba0f500d97bfba5715d9bee5407d452e0d9d5bb56f9ffbcdb09dadfcda289ae" => :yosemite
+    sha256 "d83bfd062511da71682f6785fedac7db65041b3ebec6fff903e0ca87e4c30ece" => :big_sur
+    sha256 "b07858cbdab90ed0b12519af5916c440a08ebb2c1906079b556812b288ed79f1" => :catalina
+    sha256 "c18aef777907d1d3d3681f3c18ea5f20a4ffc3640fc780fed7babf2ba9df30f3" => :mojave
+    sha256 "a2aff7b9bd96091ab1efc1e14f2555448c12d49b123bcfebe2f5c7f15b9accbd" => :high_sierra
   end
 
-  option "with-custom-python", "Install against the python in PATH instead of Homebrew's python"
-  if build.with? "custom-python"
-    depends_on :python
-  else
-    depends_on "python"
-  end
+  depends_on "python@3.9"
 
   def install
-    system "make", "PREFIX=#{prefix}", "install-bin"
+    ENV["HGPYTHON3"] = "1"
+
+    system "make", "PREFIX=#{prefix}", "PYTHON=python3", "install-bin"
+
+    # Install chg (see https://www.mercurial-scm.org/wiki/CHg)
+    cd "contrib/chg" do
+      system "make", "PREFIX=#{prefix}", "PYTHON=python3", "HGPATH=#{bin}/hg",
+                     "HG=#{bin}/hg"
+      bin.install "chg"
+    end
+
+    # Configure a nicer default pager
+    (buildpath/"hgrc").write <<~EOS
+      [pager]
+      pager = less -FRX
+    EOS
+
+    (etc/"mercurial").install "hgrc"
+
     # Install man pages, which come pre-built in source releases
     man1.install "doc/hg.1"
     man5.install "doc/hgignore.5", "doc/hgrc.5"
@@ -33,9 +52,11 @@ class Mercurial < Formula
 
   def caveats
     return unless (opt_bin/"hg").exist?
+
     cacerts_configured = `#{opt_bin}/hg config web.cacerts`.strip
     return if cacerts_configured.empty?
-    <<-EOS.undent
+
+    <<~EOS
       Homebrew has detected that Mercurial is configured to use a certificate
       bundle file as its trust store for TLS connections instead of using the
       default OpenSSL store. If you have trouble connecting to remote

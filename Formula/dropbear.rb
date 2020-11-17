@@ -1,23 +1,23 @@
 class Dropbear < Formula
   desc "Small SSH server/client for POSIX-based system"
   homepage "https://matt.ucc.asn.au/dropbear/dropbear.html"
-  url "https://matt.ucc.asn.au/dropbear/releases/dropbear-2016.74.tar.bz2"
-  mirror "https://dropbear.nl/mirror/dropbear-2016.74.tar.bz2"
-  sha256 "2720ea54ed009af812701bcc290a2a601d5c107d12993e5d92c0f5f81f718891"
+  url "https://matt.ucc.asn.au/dropbear/releases/dropbear-2020.81.tar.bz2"
+  sha256 "48235d10b37775dbda59341ac0c4b239b82ad6318c31568b985730c788aac53b"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "06ec7a95e2d60c0898cf596a2442dd524744ba4bb309469db969da13801ec11f" => :sierra
-    sha256 "8710753a40480bd472b90a75375cfb0dc2fc8f40e2f454bbb85989256685f5a1" => :el_capitan
-    sha256 "d10e0571037b42d5ea665c63f720603b5b0e0aedec39e97c1727b9ea261e34e2" => :yosemite
-    sha256 "5d08ad835636ba85ccc5264573dcc5c2c2fb5f43a11522cbbb78600e7d63100f" => :mavericks
+    sha256 "ba4a09e7636d2629bdc11bfc5a99f9cab29eb351fb52a05c82533c76c29c87c8" => :big_sur
+    sha256 "9659a7bdf1475748311e5a1e768ffb01d9020ddf7e19c7f8412bb62dc883d817" => :catalina
+    sha256 "55f1c51b6d253bcf03c6957139fae7e3b4f4cdcbdc90416ff9bd63f98d21a26d" => :mojave
+    sha256 "59f3c740122b0f90b294d8b6e465cb9685b76617056cf9ae6554c221c681ed1c" => :high_sierra
   end
 
   head do
     url "https://github.com/mkj/dropbear.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
   end
 
   def install
@@ -40,6 +40,6 @@ class Dropbear < Formula
     testfile = testpath/"testec521"
     system "#{bin}/dbclient", "-h"
     system "#{bin}/dropbearkey", "-t", "ecdsa", "-f", testfile, "-s", "521"
-    assert testfile.exist?
+    assert_predicate testfile, :exist?
   end
 end

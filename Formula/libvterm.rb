@@ -1,15 +1,22 @@
 class Libvterm < Formula
-  desc "C99 library which implements a VT220 or xterm terminal emulator."
+  desc "C99 library which implements a VT220 or xterm terminal emulator"
   homepage "http://www.leonerd.org.uk/code/libvterm/"
-  url "http://www.leonerd.org.uk/code/libvterm/libvterm-0+bzr681.tar.gz"
-  sha256 "abea46d1b0b831dec2af5d582319635cece63d260f8298d9ccce7c1c2e62a6e8"
+  url "http://www.leonerd.org.uk/code/libvterm/libvterm-0.1.4.tar.gz"
+  sha256 "bc70349e95559c667672fc8c55b9527d9db9ada0fb80a3beda533418d782d3dd"
+  license "MIT"
+  version_scheme 1
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?libvterm[._-]v?(\d+(?:\.\d+)+)\./i)
+  end
 
   bottle do
     cellar :any
-    sha256 "1b0e1cd45ec1aa67280fa555c47139d2d0b36d7c28313148bd7d23d85a31178c" => :sierra
-    sha256 "fdab6481377220ea48474d7af256df3b82ee202d28ba010d644aa5ff200c2fbd" => :el_capitan
-    sha256 "e74dceb0e58c42be4c8e1ab96867ad71931b9412b7c692cfc40dc5bc924d0daa" => :yosemite
-    sha256 "a3b42686b7e365b71c766cfb44bb564e5d0e157ac85cf9b9ffba6b6d570f3ef8" => :mavericks
+    sha256 "73b78f138e6575528d7f197f63897be167c712698744c5e11852a9e976e8d1d5" => :big_sur
+    sha256 "b62a78631bca9a723eb25dd924853ced974718df0847820c7c38f7f0d7fdc43c" => :catalina
+    sha256 "56946cfa43a7bcf3b47086d61541b2a0541d636a362c788401f51b29cf6fa35f" => :mojave
+    sha256 "518299bd4bde4aeb3063df624e4c474280ac15a8e65f612059c7d03717b143ac" => :high_sierra
   end
 
   depends_on "libtool" => :build
@@ -19,7 +26,7 @@ class Libvterm < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <vterm.h>
 
       int main() {
@@ -27,7 +34,7 @@ class Libvterm < Formula
       }
     EOS
 
-    system ENV.cc, "test.c", "-lvterm", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-lvterm", "-o", "test"
     system "./test"
   end
 end

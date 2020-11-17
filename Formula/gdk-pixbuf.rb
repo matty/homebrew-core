@@ -1,30 +1,33 @@
 class GdkPixbuf < Formula
   desc "Toolkit for image loading and pixel buffer manipulation"
-  homepage "http://gtk.org"
-  url "https://download.gnome.org/sources/gdk-pixbuf/2.36/gdk-pixbuf-2.36.2.tar.xz"
-  sha256 "3a082ad67d68b55970aed0b2034a06618167be98a42d5c70de736756b45d325d"
+  homepage "https://gtk.org"
+  url "https://download.gnome.org/sources/gdk-pixbuf/2.42/gdk-pixbuf-2.42.0.tar.xz"
+  sha256 "73441338d1a901dc7a3940113cb0aac22776b2832f7eab8f8ec7ec5755adaec7"
+  license "LGPL-2.1-or-later"
 
-  bottle do
-    sha256 "c6786bd781df2b3421351f3b3c5ab468644d9ec5940744a97149f83b9d91dd4a" => :sierra
-    sha256 "d007f9b2b0296b6302902d1011428572513aaa8e7be2cdbba62a39c4456bbe16" => :el_capitan
-    sha256 "1aa5969773dbaff17cc38c6c21cf0e17e5bae650d88e9aa867ee06eb53984155" => :yosemite
+  livecheck do
+    url :stable
   end
 
-  option :universal
-  option "with-relocations", "Build with relocation support for bundles"
-  option "without-modules", "Disable dynamic module loading"
-  option "with-included-loaders=", "Build the specified loaders into gdk-pixbuf"
+  bottle do
+    sha256 "1819bb48f7487d522a69c564dca6fe5dff4da658269f067e47edccddfaab9440" => :big_sur
+    sha256 "e13d8731f186ae02d6206e9cbac19e1944bdc460b83745f01cb77caede3a663f" => :catalina
+    sha256 "600ab81d004fda9d6d57c3a5e89270001d1deb7c55259dcf6b4afca225f9874c" => :mojave
+    sha256 "0ea3f5e077bbabcda0e696a7e7f5b47780c91d43b315b7ed3ef88d63c28fc98f" => :high_sierra
+  end
 
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "glib"
   depends_on "jpeg"
-  depends_on "libtiff"
   depends_on "libpng"
-  depends_on "gobject-introspection"
-  depends_on "shared-mime-info"
+  depends_on "libtiff"
 
-  # 'loaders.cache' must be writable by other packages
-  skip_clean "lib/gdk-pixbuf-2.0"
+  on_linux do
+    depends_on "shared-mime-info"
+  end
 
   # gdk-pixbuf has an internal version number separate from the overall
   # version number that specifies the location of its module and cache
@@ -39,28 +42,26 @@ class GdkPixbuf < Formula
   end
 
   def install
-    ENV.universal_binary if build.universal?
-    ENV.append_to_cflags "-DGDK_PIXBUF_LIBDIR=\\\"#{HOMEBREW_PREFIX}/lib\\\""
-    args = %W[
-      --disable-dependency-tracking
-      --disable-maintainer-mode
-      --enable-debug=no
-      --prefix=#{prefix}
-      --enable-introspection=yes
-      --disable-Bsymbolic
-      --enable-static
-      --without-gdiplus
+    inreplace "gdk-pixbuf/meson.build",
+              "-DGDK_PIXBUF_LIBDIR=\"@0@\"'.format(gdk_pixbuf_libdir)",
+              "-DGDK_PIXBUF_LIBDIR=\"@0@\"'.format('#{HOMEBREW_PREFIX}/lib')"
+
+    args = std_meson_args + %w[
+      -Dx11=false
+      -Ddocs=false
+      -Dgir=true
+      -Drelocatable=false
+      -Dnative_windows_loaders=false
+      -Dinstalled_tests=false
+      -Dman=false
     ]
 
-    args << "--enable-relocations" if build.with?("relocations")
-    args << "--disable-modules" if build.without?("modules")
-
-    included_loaders = ARGV.value("with-included-loaders")
-    args << "--with-included-loaders=#{included_loaders}" if included_loaders
-
-    system "./configure", *args
-    system "make"
-    system "make", "install"
+    ENV["DESTDIR"] = "/"
+    mkdir "build" do
+      system "meson", *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install"
+    end
 
     # Other packages should use the top-level modules directory
     # rather than dumping their files into the gdk-pixbuf keg.
@@ -69,15 +70,6 @@ class GdkPixbuf < Formula
       s.change_make_var! "gdk_pixbuf_binarydir",
         HOMEBREW_PREFIX/"lib/gdk-pixbuf-#{gdk_so_ver}"/libv
     end
-
-    # Remove the cache. We will regenerate it in post_install
-    (lib/"gdk-pixbuf-#{gdk_so_ver}/#{gdk_module_ver}/loaders.cache").unlink
-  end
-
-  # Where we want to store the loaders.cache file, which should be in a
-  # Keg-specific lib directory, not in the global Homebrew lib directory
-  def module_file
-    "#{lib}/gdk-pixbuf-#{gdk_so_ver}/#{gdk_module_ver}/loaders.cache"
   end
 
   # The directory that loaders.cache gets linked into, also has the "loaders"
@@ -87,26 +79,41 @@ class GdkPixbuf < Formula
   end
 
   def post_install
-    ENV["GDK_PIXBUF_MODULE_FILE"] = module_file
     ENV["GDK_PIXBUF_MODULEDIR"] = "#{module_dir}/loaders"
     system "#{bin}/gdk-pixbuf-query-loaders", "--update-cache"
-    # Link newly created module_file into global gdk-pixbuf directory
-    ln_sf module_file, module_dir
-  end
-
-  def caveats
-    if build.with?("relocations") || HOMEBREW_PREFIX.to_s != "/usr/local"
-      <<-EOS.undent
-        Programs that require this module need to set the environment variable
-          export GDK_PIXBUF_MODULE_FILE="#{module_file}"
-          export GDK_PIXBUF_MODULEDIR="#{module_dir}/loaders"
-        If you need to manually update the query loader cache, set these variables then run
-          #{bin}/gdk-pixbuf-query-loaders --update-cache
-      EOS
-    end
   end
 
   test do
-    system bin/"gdk-pixbuf-csource", test_fixtures("test.png")
+    (testpath/"test.c").write <<~EOS
+      #include <gdk-pixbuf/gdk-pixbuf.h>
+
+      int main(int argc, char *argv[]) {
+        GType type = gdk_pixbuf_get_type();
+        return 0;
+      }
+    EOS
+    gettext = Formula["gettext"]
+    glib = Formula["glib"]
+    libpng = Formula["libpng"]
+    pcre = Formula["pcre"]
+    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
+    flags += %W[
+      -I#{gettext.opt_include}
+      -I#{glib.opt_include}/glib-2.0
+      -I#{glib.opt_lib}/glib-2.0/include
+      -I#{include}/gdk-pixbuf-2.0
+      -I#{libpng.opt_include}/libpng16
+      -I#{pcre.opt_include}
+      -D_REENTRANT
+      -L#{gettext.opt_lib}
+      -L#{glib.opt_lib}
+      -L#{lib}
+      -lgdk_pixbuf-2.0
+      -lglib-2.0
+      -lgobject-2.0
+      -lintl
+    ]
+    system ENV.cc, "test.c", "-o", "test", *flags
+    system "./test"
   end
 end

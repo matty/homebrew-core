@@ -1,35 +1,37 @@
 class Whatmp3 < Formula
+  include Language::Python::Shebang
+
   desc "Small script to create mp3 torrents out of FLACs"
   homepage "https://github.com/RecursiveForest/whatmp3"
   url "https://github.com/RecursiveForest/whatmp3/archive/v3.8.tar.gz"
   sha256 "0d8ba70a1c72835663a3fde9ba8df0ff7007268ec0a2efac76c896dea4fcf489"
+  license "MIT"
+  revision 4
   head "https://github.com/RecursiveForest/whatmp3.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4b9cae8fe803bbb26ee73e1724dba6e679d384fba7df680a42363b8f45a848d8" => :sierra
-    sha256 "d50a1cb3c8406226f5b06750652ec7928243b9367723fe4def66332f412c719b" => :el_capitan
-    sha256 "d50a1cb3c8406226f5b06750652ec7928243b9367723fe4def66332f412c719b" => :yosemite
+    sha256 "68a5f39de733c7d95679ac3e9c91e9edd543eb9450592a517b2491dd7089641b" => :big_sur
+    sha256 "d449a8bb1339bbc02f27b930a08c21f2acfdbbb49f45dd43ea4015054607244f" => :catalina
+    sha256 "73e35194bc0eed4cab900ae2436ca67283bddc942d73a77f84e3aa02cf2e518a" => :mojave
+    sha256 "87e78b789996ff11ea55d9224896d581d0aff8a6ad10e14e456588903cf592cb" => :high_sierra
   end
 
-  depends_on :python3
   depends_on "flac"
-  depends_on "mktorrent" => :recommended
-  depends_on "lame" => :recommended
-  depends_on "vorbis-tools" => :optional
-  depends_on "mp3gain" => :optional
-  depends_on "aacgain" => :optional
-  depends_on "vorbisgain" => :optional
-  depends_on "sox" => :optional
+  depends_on "lame"
+  depends_on "mktorrent"
+  depends_on "python@3.9"
 
   def install
     system "make", "PREFIX=#{prefix}", "install"
+
+    rewrite_shebang detected_python_shebang, bin/"whatmp3"
   end
 
   test do
-    # Create dummy FLAC
-    (testpath/"flac/file.flac").write "fLaC\x00\x00\x00\"\x04\x80\x04\x80\x00\x00\f\x00\x00\f\x01\xF4\x00\xF0\x00\x00\x00\x01\xF3\x8B\xE3\xDBM\x93\xE40\\~$\xBE\x94\xEF\x01\x9A\x84\x00\x00( \x00\x00\x00reference libFLAC 1.2.1 20070917\x00\x00\x00\x00\xFF\xF8d\b\x00\x00\xE3\x03\x01\xFD\xEC\x10"
+    (testpath/"flac").mkpath
+    cp test_fixtures("test.flac"), "flac"
     system "#{bin}/whatmp3", "--notorrent", "--V0", "flac"
-    assert (testpath/"V0/file.mp3").exist?
+    assert_predicate testpath/"V0/test.mp3", :exist?
   end
 end

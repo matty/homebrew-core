@@ -1,91 +1,55 @@
 class Opencolorio < Formula
   desc "Color management solution geared towards motion picture production"
-  homepage "http://opencolorio.org/"
-  url "https://github.com/imageworks/OpenColorIO/archive/v1.0.9.tar.gz"
-  sha256 "27c81e691c15753cd2b560c2ca4bd5679a60c2350eedd43c99d44ca25d65ea7f"
-
+  homepage "https://opencolorio.org/"
+  url "https://github.com/imageworks/OpenColorIO/archive/v1.1.1.tar.gz"
+  sha256 "c9b5b9def907e1dafb29e37336b702fff22cc6306d445a13b1621b8a754c14c8"
+  license "BSD-3-Clause"
+  revision 3
   head "https://github.com/imageworks/OpenColorIO.git"
 
   bottle do
     cellar :any
-    sha256 "908cdf59c8eb2dd6afba51e1a851998ae551d5b9b885da66ade3e2c7cbce7447" => :sierra
-    sha256 "e3a2312a3f21ea15255903f4b030d44fbcceee36e768a070427234d9b80a46fd" => :el_capitan
-    sha256 "49edcb11a59fbcdbea875024a4c2719055fc17cee5e6472fe82d30e79685ae97" => :yosemite
-    sha256 "8aba1648c2c21f1054956c2d0fa7884d3882e30446785419bc429e50022d242c" => :mavericks
+    sha256 "41d69027763621bd23db83f3656587afbb90a456d6aab1d4429839a04a2bfdb8" => :big_sur
+    sha256 "41140d26dbe70add3bece6d1dfc2b6a01b7ed1879c79c18e29eeefd66694b9db" => :catalina
+    sha256 "f3b183e64cf41cc28273b9e0fe99013fd1bd4a7f3774f3be370423d04ac847da" => :mojave
+    sha256 "4beea67e0c1400c1d82b1257bae9476e4f58fbab6a727f31161199b5dae4d3bc" => :high_sierra
   end
-
-  option "with-test", "Verify the build with its unit tests (~1min)"
-  option "with-java", "Build ocio with java bindings"
-  option "with-docs", "Build the documentation"
-
-  deprecated_option "with-tests" => "with-test"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "little-cms2"
-  depends_on :python => :optional
-
-  # Fix build with libc++
-  patch do
-    url "https://github.com/imageworks/OpenColorIO/commit/ebd6efc036b6d0b17c869e3342f17f9c5ef8bbfc.diff"
-    sha256 "eab670cdd0278c610ecd6c059cb12f3042395d474259ddd18b7b8e242ad82810"
-  end
-
-  # Fix includes on recent Clang; reported upstream:
-  # https://github.com/imageworks/OpenColorIO/issues/338#issuecomment-36589039
-  patch :DATA
+  depends_on "python@3.9"
 
   def install
-    args = std_cmake_args
-    args << "-DOCIO_BUILD_JNIGLUE=ON" if build.with? "java"
-    args << "-DOCIO_BUILD_TESTS=ON" if build.with? "test"
-    args << "-DOCIO_BUILD_DOCS=ON" if build.with? "docs"
-    args << "-DCMAKE_VERBOSE_MAKEFILE=OFF"
-
-    # Python note:
-    # OCIO's PyOpenColorIO.so doubles as a shared library. So it lives in lib, rather
-    # than the usual HOMEBREW_PREFIX/lib/python2.7/site-packages per developer choice.
-    args << "-DOCIO_BUILD_PYGLUE=OFF" if build.without? "python"
-
-    args << ".."
+    args = std_cmake_args + %W[
+      -DCMAKE_VERBOSE_MAKEFILE=OFF
+      -DPYTHON=python3
+      -DPYTHON_EXECUTABLE=#{Formula["python@3.9"].opt_bin}/"python3"
+    ]
 
     mkdir "macbuild" do
-      system "cmake", *args
+      system "cmake", *args, ".."
       system "make"
-      system "make", "test" if build.with? "test"
       system "make", "install"
     end
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       OpenColorIO requires several environment variables to be set.
       You can source the following script in your shell-startup to do that:
-
-          #{HOMEBREW_PREFIX}/share/ocio/setup_ocio.sh
+        #{HOMEBREW_PREFIX}/share/ocio/setup_ocio.sh
 
       Alternatively the documentation describes what env-variables need set:
-
-          http://opencolorio.org/installation.html#environment-variables
+        https://opencolorio.org/installation.html#environment-variables
 
       You will require a config for OCIO to be useful. Sample configuration files
       and reference images can be found at:
-
-          http://opencolorio.org/downloads.html
+        https://opencolorio.org/downloads.html
     EOS
   end
-end
 
-__END__
-diff --git a/export/OpenColorIO/OpenColorIO.h b/export/OpenColorIO/OpenColorIO.h
-index 561ce50..796ca84 100644
---- a/export/OpenColorIO/OpenColorIO.h
-+++ b/export/OpenColorIO/OpenColorIO.h
-@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- #include <iosfwd>
- #include <string>
- #include <cstddef>
-+#include <unistd.h>
- 
- #include "OpenColorABI.h"
- #include "OpenColorTypes.h"
+  test do
+    assert_match "validate", shell_output("#{bin}/ociocheck --help", 1)
+  end
+end

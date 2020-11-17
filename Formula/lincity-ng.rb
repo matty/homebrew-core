@@ -1,35 +1,30 @@
 class LincityNg < Formula
   desc "City simulation game"
   homepage "https://github.com/lincity-ng/lincity-ng/"
-  revision 1
+  url "https://github.com/lincity-ng/lincity-ng/archive/lincity-ng-2.0.tar.gz"
+  sha256 "e05a2c1e1d682fbf289caecd0ea46ca84b0db9de43c7f1b5add08f0fdbf1456b"
+  license "GPL-2.0"
+  revision 2
   head "https://github.com/lincity-ng/lincity-ng.git"
 
-  stable do
-    url "https://github.com/lincity-ng/lincity-ng/archive/lincity-ng-2.0.tar.gz"
-    sha256 "e05a2c1e1d682fbf289caecd0ea46ca84b0db9de43c7f1b5add08f0fdbf1456b"
-  end
-
   bottle do
-    sha256 "74fb79c8d696a70137abd631c660230e6b90d3174b564fa37c2bd69faf60d200" => :sierra
-    sha256 "a618caffe64ab2b5df4e03b83f6bfa65684b33d1cfbb2ba8fbc263a3d51c3e49" => :el_capitan
-    sha256 "2f26f46f39bea9e6608bedd12db9282dea17ef67455321a02b3aedd2006d53e4" => :yosemite
-  end
-
-  devel do
-    url "https://downloads.sourceforge.net/project/lincity-ng.berlios/lincity-ng-2.9.beta.tar.bz2"
-    version "2.9.beta"
-    sha256 "542506135e833f7fd7231c0a5b2ab532fab719d214add461227af72d97ac9d4f"
+    sha256 "4ea8b0d4afe937e6ffdd5ff7c92fd84fdfb23c35f5dd8a0bdcb015f79a7ba5b7" => :catalina
+    sha256 "5909e4a6c9cfe47aafd4fb4c5dd26016cbe096945faa485d377fe2c423b3caca" => :mojave
+    sha256 "bdfe153ca219084bf621c031612c8b86b02911e64d6fa154422812aee7de8d76" => :high_sierra
+    sha256 "cae5f270842c10affb29d6f9c592a96913d9ca630c49d22afa03cba6d3a6121c" => :sierra
+    sha256 "b9f326c678a9317f141ad13749cb4075ab42144855254d344de15bc22c4020e5" => :el_capitan
+    sha256 "6eae33edda53f256caa2fde01d334bc19b2c9810c8cf8e039ad1094c71619691" => :yosemite
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "pkg-config" => :build
   depends_on "jam" => :build
+  depends_on "pkg-config" => :build
   depends_on "physfs"
   depends_on "sdl"
   depends_on "sdl_gfx"
   depends_on "sdl_image"
-  depends_on "sdl_mixer" => "with-libvorbis"
+  depends_on "sdl_mixer"
   depends_on "sdl_ttf"
 
   def install
@@ -44,13 +39,15 @@ class LincityNg < Formula
     rm_rf ["#{pkgshare}/applications", "#{pkgshare}/pixmaps"]
   end
 
-  def caveats; <<-EOS.undent
-    If you have problem with fullscreen, try running in windowed mode:
-      lincity-ng -w
+  def caveats
+    <<~EOS
+      If you have problem with fullscreen, try running in windowed mode:
+        lincity-ng -w
     EOS
   end
 
   test do
+    (testpath/".lincity-ng").mkpath
     assert_match /lincity-ng version #{version}$/, shell_output("#{bin}/lincity-ng --version")
   end
 end

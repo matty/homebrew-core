@@ -1,50 +1,23 @@
 class Io < Formula
   desc "Small prototype-based programming language"
   homepage "http://iolanguage.com/"
+  url "https://github.com/IoLanguage/io/archive/2017.09.06.tar.gz"
+  sha256 "9ac5cd94bbca65c989cd254be58a3a716f4e4f16480f0dc81070457aa353c217"
+  license "BSD-3-Clause"
   revision 1
-
-  head "https://github.com/stevedekorte/io.git"
-
-  stable do
-    url "https://github.com/stevedekorte/io/archive/2015.11.11.tar.gz"
-    sha256 "00d7be0b69ad04891dd5f6c77604049229b08164d0c3f5877bfab130475403d3"
-
-    # Fix build on Sierra. Already merged upstream.
-    patch do
-      url "https://github.com/stevedekorte/io/commit/db4d9c2.patch"
-      sha256 "25245bcfcde145ee5c0d142bee5be3017622173b98a04b26c2169ff738b5914d"
-    end
-  end
+  head "https://github.com/IoLanguage/io.git"
 
   bottle do
-    sha256 "568f0e2970b3ebb0ee1407eddc76f6c9a7d7ce14284aa068266dfaa4ecb95f92" => :sierra
-    sha256 "e78e1078cadd25d0991d8d8cdd4e2f8af114df23b253f2a0d864efccf6cbe233" => :el_capitan
-    sha256 "39d88952df6b5ad7dd4622364e83c36011fda46faafc83145fb2d535586fd75b" => :yosemite
+    sha256 "fae9b76e33ac8a9f4dd4f3c2335b13b003c2bdc01b81c4a2efbf5d7435c51e15" => :big_sur
+    sha256 "c4c862d20a8e4ddb1e6e588414a9e23ae2a17baa490e3beb621614aca7a8ca87" => :catalina
+    sha256 "48c37d6f30d8b01d391e7f4ef777b5087425d89a9df0077414769a59333db420" => :mojave
+    sha256 "a061482b97c1ada8eea9d658f13fe0cfbfa223d97762b51611c4cab2de4c0273" => :high_sierra
   end
-
-  option "without-addons", "Build without addons"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
 
-  if build.with? "addons"
-    depends_on "glib"
-    depends_on "cairo"
-    depends_on "gmp"
-    depends_on "jpeg"
-    depends_on "libevent"
-    depends_on "libffi"
-    depends_on "libogg"
-    depends_on "libpng"
-    depends_on "libsndfile"
-    depends_on "libtiff"
-    depends_on "libvorbis"
-    depends_on "ossp-uuid"
-    depends_on "pcre"
-    depends_on "yajl"
-    depends_on "xz"
-    depends_on :python => :optional
-  end
+  uses_from_macos "libxml2"
 
   def install
     ENV.deparallelize
@@ -52,40 +25,23 @@ class Io < Formula
     # FSF GCC needs this to build the ObjC bridge
     ENV.append_to_cflags "-fobjc-exceptions"
 
-    if build.without? "addons"
+    unless build.head?
       # Turn off all add-ons in main cmake file
       inreplace "CMakeLists.txt", "add_subdirectory(addons)",
                                   "#add_subdirectory(addons)"
-    else
-      inreplace "addons/CMakeLists.txt" do |s|
-        if build.without? "python"
-          s.gsub! "add_subdirectory(Python)", "#add_subdirectory(Python)"
-        end
-
-        # Turn off specific add-ons that are not currently working
-
-        # Looks for deprecated Freetype header
-        s.gsub!(/(add_subdirectory\(Font\))/, '#\1')
-        # Builds against older version of memcached library
-        s.gsub!(/(add_subdirectory\(Memcached\))/, '#\1')
-      end
     end
 
     mkdir "buildroot" do
-      system "cmake", "..", *std_cmake_args
+      system "cmake", "..", "-DCMAKE_DISABLE_FIND_PACKAGE_ODE=ON",
+                            "-DCMAKE_DISABLE_FIND_PACKAGE_Theora=ON",
+                            *std_cmake_args
       system "make"
-      output = `./_build/binaries/io ../libs/iovm/tests/correctness/run.io`
-      if $?.exitstatus.nonzero?
-        opoo "Test suite not 100% successful:\n#{output}"
-      else
-        ohai "Test suite ran successfully:\n#{output}"
-      end
       system "make", "install"
     end
   end
 
   test do
-    (testpath/"test.io").write <<-EOS.undent
+    (testpath/"test.io").write <<~EOS
       "it works!" println
     EOS
 

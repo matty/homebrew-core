@@ -1,19 +1,25 @@
 class Libcdr < Formula
   desc "C++ library to parse the file format of CorelDRAW documents"
   homepage "https://wiki.documentfoundation.org/DLP/Libraries/libcdr"
-  url "http://dev-www.libreoffice.org/src/libcdr/libcdr-0.1.3.tar.xz"
-  sha256 "66e28e502abef7f6f494ce03de037d532f5e7888cfdee62c01203c8325b33f22"
+  url "https://dev-www.libreoffice.org/src/libcdr/libcdr-0.1.6.tar.xz"
+  sha256 "01cd00b04a030977e544433c2d127c997205332cd9b8e35ec0ee17110da7f861"
   revision 2
+
+  livecheck do
+    url "https://dev-www.libreoffice.org/src/"
+    regex(/href=["']?libcdr[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "4c59ebfbb12f1d71d26b03899691dc6b62dcde619c53c2f096b8efc91aab6bdc" => :sierra
-    sha256 "5984f319a2bc8b3e3fd15daffaf588a737395d5e11813af84bba2884a3ebad1a" => :el_capitan
-    sha256 "69e4eeaa9f00aa68c8afde1327adf8a7d84d53fc24a4df0cf2d5d29494ccfba1" => :yosemite
+    sha256 "ff990e3679d616548a67184a2b5a8030912c7c1a411119dd82c57f29893e2dec" => :big_sur
+    sha256 "8c07a139f24c7548cfd8eb6b5bba59ab643d0030d05fb52eb2baf7a825a232fa" => :catalina
+    sha256 "9a1aff2e64f3d103b416b7bcc07c2431777660eee1466af64d9717cbcca9454b" => :mojave
+    sha256 "f602a7919ea9e6921f3597f061b96b466d3291c597c355f410bd340b4b8e23d3" => :high_sierra
   end
 
-  depends_on "pkg-config" => :build
   depends_on "cppunit" => :build
+  depends_on "pkg-config" => :build
   depends_on "boost"
   depends_on "icu4c"
   depends_on "librevenge"
@@ -30,7 +36,7 @@ class Libcdr < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libcdr/libcdr.h>
       int main() {
         libcdr::CDRDocument::isSupported(0);
@@ -39,7 +45,7 @@ class Libcdr < Formula
     system ENV.cxx, "test.cpp", "-o", "test",
                                 "-I#{Formula["librevenge"].include}/librevenge-0.0",
                                 "-I#{include}/libcdr-0.1",
-                                "-lcdr-0.1"
+                                "-L#{lib}", "-lcdr-0.1"
     system "./test"
   end
 end

@@ -1,28 +1,78 @@
 class Gmime < Formula
   desc "MIME mail utilities"
-  homepage "https://gmime.sourceforge.io"
-  url "https://download.gnome.org/sources/gmime/2.6/gmime-2.6.23.tar.xz"
-  sha256 "7149686a71ca42a1390869b6074815106b061aaeaaa8f2ef8c12c191d9a79f6a"
+  homepage "https://spruce.sourceforge.io/gmime/"
+  url "https://download.gnome.org/sources/gmime/3.2/gmime-3.2.7.tar.xz"
+  sha256 "2aea96647a468ba2160a64e17c6dc6afe674ed9ac86070624a3f584c10737d44"
+  license "LGPL-2.1"
 
-  bottle do
-    sha256 "05af2f1ac617529df02b43e6494c480cb442387a96702614ce3eba537d26989a" => :sierra
-    sha256 "5b97393ade91622508cd7902a50b2bbeab57d109da9211b6d80053186a84d86a" => :el_capitan
-    sha256 "a74503cf97b51a46a7b43f862c1b9cd1f2220b3fc38ba4b56f607b72371f28aa" => :yosemite
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    sha256 "3714b2907a93c2495efb79c0cf870bdab5683c64c17696836b19e5b34108b852" => :big_sur
+    sha256 "877f2024cc0d97bc94f559ad992f87bdf6fdc23f9a1acc7b5bb13f0711b734c3" => :catalina
+    sha256 "7a0bda5bca906bc62e3ab24fc39752e2858fce861ba759040fc864928ab18d96" => :mojave
+    sha256 "0bb48841eae316695037bcd793673d518d0f2be20968a115a81c92824fb77ac0" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
   depends_on "pkg-config" => :build
-  depends_on "libgpg-error" => :build
   depends_on "glib"
-  depends_on "gobject-introspection"
+  depends_on "gpgme"
 
   def install
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--enable-largefile",
-                          "--enable-introspection",
-                          "--disable-vala",
-                          "--disable-mono",
-                          "--disable-glibtest"
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+      --enable-largefile
+      --disable-vala
+      --disable-glibtest
+      --enable-crypto
+      --enable-introspection
+    ]
+
+    system "./configure", *args
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <stdio.h>
+      #include <gmime/gmime.h>
+      int main (int argc, char **argv)
+      {
+        g_mime_init();
+        if (gmime_major_version>=3) {
+          return 0;
+        } else {
+          return 1;
+        }
+      }
+    EOS
+    gettext = Formula["gettext"]
+    glib = Formula["glib"]
+    pcre = Formula["pcre"]
+    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
+    flags += %W[
+      -I#{gettext.opt_include}
+      -I#{glib.opt_include}/glib-2.0
+      -I#{glib.opt_lib}/glib-2.0/include
+      -I#{include}/gmime-3.0
+      -I#{pcre.opt_include}
+      -D_REENTRANT
+      -L#{gettext.opt_lib}
+      -L#{glib.opt_lib}
+      -L#{lib}
+      -lgio-2.0
+      -lglib-2.0
+      -lgmime-3.0
+      -lgobject-2.0
+    ]
+    on_macos do
+      flags << "-lintl"
+    end
+    system ENV.cc, "-o", "test", "test.c", *flags
+    system "./test"
   end
 end

@@ -1,24 +1,34 @@
 class PcscLite < Formula
   desc "Middleware to access a smart card using SCard API"
-  homepage "https://pcsclite.alioth.debian.org"
-  url "https://alioth.debian.org/frs/download.php/file/4203/pcsc-lite-1.8.20.tar.bz2"
-  sha256 "ec7d0114016c788c1c09859c84860f6cec6c4595436d23245105154b9c046bb2"
+  homepage "https://pcsclite.apdu.fr/"
+  url "https://pcsclite.apdu.fr/files/pcsc-lite-1.9.0.tar.bz2"
+  sha256 "0148d403137124552c5d0f10f8cdab2cbb8dfc7c6ce75e018faf667be34f2ef9"
 
-  bottle do
-    sha256 "0cf13c92847d79113c18046de5bba33e154c89b3d5ddb2eb8a1510a740e3a2ab" => :sierra
-    sha256 "4dae204aa9af497a06a6cbd102f892ba6d41e3c8da2480ea1b057aa9fb7d1aad" => :el_capitan
-    sha256 "8369d8cf480a4c86005c5522fdeb30dc40c09331e674c5eaa03b42823cd6f2e7" => :yosemite
+  livecheck do
+    url "https://pcsclite.apdu.fr/files/"
+    regex(/href=.*?pcsc-lite[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  keg_only :provided_by_osx,
-    "pcsc-lite interferes with detection of macOS's PCSC.framework."
+  bottle do
+    cellar :any
+    sha256 "4ba5aed45cd8e15a1496f069c66463b695ef1b684f38d0e5a07399268bfc0811" => :big_sur
+    sha256 "650bd1cb922417a5ef04f6667261e9b11393ebbd24750f6332ed067716a5e192" => :catalina
+    sha256 "fca41c0447251ec74156c0dd68e6b38b695d9f14d7176c329964c223cfb983e6" => :mojave
+    sha256 "4fc95dd4040b9ac313724c6db99937949dc18013c8a59839f806885e0d5e2e50" => :high_sierra
+  end
+
+  keg_only :shadowed_by_macos, "macOS provides PCSC.framework"
+
+  on_linux do
+    depends_on "pkg-config" => :build
+  end
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--sysconfdir=#{etc}",
-                          "--with-systemdsystemunitdir=no"
+                          "--disable-libsystemd"
     system "make", "install"
   end
 

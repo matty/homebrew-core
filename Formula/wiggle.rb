@@ -1,36 +1,30 @@
 class Wiggle < Formula
   desc "Program for applying patches with conflicting changes"
-  homepage "http://neil.brown.name/blog/20100324064620"
-  url "http://neil.brown.name/wiggle/wiggle-1.0.tar.gz"
-  sha256 "44c97b2d47a109c709cdd4181d9ba941fee50dbb64448018b91d4a2fffe69cf2"
+  homepage "https://neil.brown.name/blog/20100324064620"
+  url "https://neil.brown.name/wiggle/wiggle-1.2.tar.gz"
+  sha256 "31375badb76a4a586f2113e49d13486dbc64844962ae80976a81c6542e901622"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://neil.brown.name/wiggle/"
+    regex(/href=.*?wiggle[._-](\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0f002fb282dfaa1df66f28cd3f2135b571095b4f5db5528e288dcf439d480a2f" => :sierra
-    sha256 "7e832c2b0e4e4564f15c3a66b1d0b78c309a0f28ca548b5e39b6967bdf12a542" => :el_capitan
-    sha256 "e6799084357708eb5142ec5c1104f43c9fdcc0d953f0b80c458e931f53e210e8" => :yosemite
-    sha256 "09c23ec2dce1bc70a93671b85780f47f9bbb24c024a48cbfa9c3a13b79b048a5" => :mavericks
-  end
-
-  # All three patches are upstream commits
-  patch do
-    url "https://github.com/neilbrown/wiggle/commit/16bb4be1c93be24917669d63ab68dd7d77597b63.diff"
-    sha256 "09c9e028c22ae9ee37c5f7636a79899862264bf45cae2ed3fb9c47535d092467"
-  end
-
-  patch do
-    url "https://github.com/neilbrown/wiggle/commit/e010f2ffa78b0e50eff5a9e664f9de27bb790035.diff"
-    sha256 "33f9ef59e90000e2c10485ab358fee2014d8525428f77329399389f2acaa7290"
-  end
-
-  patch do
-    url "https://github.com/neilbrown/wiggle/commit/351535d3489f4583a49891726616375e249ab1f3.diff"
-    sha256 "4ee9d9df6099be99ac6b4eee5f17d6ea5d885288400fb3a49835cf72aaf6bb18"
+    sha256 "db474825c0242b8557438ba22b48d18b326c0612ac1bc19ec40e08bd5529cf25" => :big_sur
+    sha256 "ebf56026e29b37067218ad4ee2340de46df5b454b46848a0fe2ac117442cfce1" => :catalina
+    sha256 "6971993e24c3267d64110bf8ef472bb80db7268a0b85617d3846b66c5f5dbde1" => :mojave
+    sha256 "5fe1b56648deb49456c668a2e99d3f7bbb2edf3045d8d55f78382ea008f640d1" => :high_sierra
   end
 
   def install
     system "make", "OptDbg=#{ENV.cflags}", "wiggle", "wiggle.man", "test"
     bin.install "wiggle"
     man1.install "wiggle.1"
+  end
+
+  test do
+    system "#{bin}/wiggle", "--version"
   end
 end

@@ -1,30 +1,43 @@
 class Clamav < Formula
   desc "Anti-virus software"
   homepage "https://www.clamav.net/"
-  url "https://www.clamav.net/downloads/production/clamav-0.99.2.tar.gz"
-  sha256 "167bd6a13e05ece326b968fdb539b05c2ffcfef6018a274a10aeda85c2c0027a"
-  revision 1
+  url "https://www.clamav.net/downloads/production/clamav-0.103.0.tar.gz"
+  mirror "https://fossies.org/linux/misc/clamav-0.103.0.tar.gz"
+  sha256 "32a9745277bfdda80e77ac9ca2f5990897418e9416880f3c31553ca673e80546"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://www.clamav.net/downloads"
+    regex(/href=.*?clamav[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "a5bc9cce487de2b2d65f536f088343507e7e3b4f6918810624d02a2f21c24a89" => :sierra
-    sha256 "0e8fa7cfafc6a8c2fefd2f0c2044d7ef6c7efa3839444609c326c4ed0cf5520f" => :el_capitan
-    sha256 "7f0d14eb642997a856796366e8ff6c1b17fb6076aa198d1255c6bf73c0862a33" => :yosemite
-    sha256 "6b82bf35cd1cc06cf6f736e69763397ed6225f71217c780ae91ebc30df8f1c70" => :mavericks
+    sha256 "2d28fcabebc27f3c72a366c8ebce2ed82a86ac56ae4eafd152c251681666752b" => :big_sur
+    sha256 "223f07db86b0ed0e4e51db8d634111bb842dcc49c01df6dbe5dedcf46e786e44" => :catalina
+    sha256 "8155acb6f0bf2f1fd110612e8eda7ade7845f3fc3310332af6ae182660ab7692" => :mojave
+    sha256 "458d060d70d37beb01b924ada3be7474b25f4a4c8a2bfb33f6bfb0251ab19024" => :high_sierra
   end
 
   head do
-    url "https://github.com/vrtadmin/clamav-devel.git"
+    url "https://github.com/Cisco-Talos/clamav-devel.git"
 
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
   depends_on "pkg-config" => :build
-  depends_on "openssl"
-  depends_on "pcre" => :recommended
-  depends_on "yara" => :optional
-  depends_on "json-c" => :optional
+  depends_on "json-c"
+  depends_on "libiconv"
+  depends_on "libtool"
+  depends_on "openssl@1.1"
+  depends_on "pcre2"
+  depends_on "yara"
+
+  uses_from_macos "bzip2"
+  uses_from_macos "curl"
+  uses_from_macos "libxml2"
+  uses_from_macos "zlib"
 
   skip_clean "share/clamav"
 
@@ -36,15 +49,25 @@ class Clamav < Formula
       --libdir=#{lib}
       --sysconfdir=#{etc}/clamav
       --disable-zlib-vcheck
-      --with-zlib=#{MacOS.sdk_path}/usr
-      --with-openssl=#{Formula["openssl"].opt_prefix}
-      --enable-llvm=no
+      --with-llvm=no
+      --with-libiconv-prefix=#{Formula["libiconv"].opt_prefix}
+      --with-iconv=#{Formula["libiconv"].opt_prefix}
+      --with-libjson=#{Formula["json-c"].opt_prefix}
+      --with-openssl=#{Formula["openssl@1.1"].opt_prefix}
+      --with-pcre=#{Formula["pcre2"].opt_prefix}
     ]
 
-    args << "--with-libjson=#{Formula["json-c"].opt_prefix}" if build.with? "json-c"
-    args << "--with-pcre=#{Formula["pcre"].opt_prefix}" if build.with? "pcre"
-    args << "--disable-yara" if build.without? "yara"
-    args << "--without-pcre" if build.without? "pcre"
+    on_macos do
+      args << "--with-zlib=#{MacOS.sdk_path_if_needed}/usr"
+      args << "--with-libbz2-prefix=#{MacOS.sdk_path_if_needed}/usr"
+      args << "--with-xml=#{MacOS.sdk_path_if_needed}/usr"
+    end
+    on_linux do
+      args << "--with-zlib=#{Formula["zlib"].opt_prefix}"
+      args << "--with-libbz2-prefix=#{Formula["bzip2"].opt_prefix}"
+      args << "--with-xml=#{Formula["libxml2"].opt_prefix}"
+      args << "--with-libcurl=#{Formula["curl"].opt_prefix}"
+    end
 
     pkgshare.mkpath
     system "autoreconf", "-fvi" if build.head?
@@ -52,13 +75,20 @@ class Clamav < Formula
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    To finish installation & run clamav you will need to edit
-    the example conf files at #{etc}/clamav/
+  def caveats
+    <<~EOS
+      To finish installation & run clamav you will need to edit
+      the example conf files at #{etc}/clamav/
     EOS
   end
 
   test do
     system "#{bin}/clamav-config", "--version"
+    (testpath/"freshclam.conf").write <<~EOS
+      DNSDatabaseInfo current.cvd.clamav.net
+      DatabaseMirror database.clamav.net
+    EOS
+    system "#{bin}/freshclam", "--datadir=#{testpath}", "--config-file=#{testpath}/freshclam.conf"
+    system "#{bin}/clamscan", "--database=#{testpath}", testpath
   end
 end

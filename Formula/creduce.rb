@@ -1,73 +1,72 @@
 class Creduce < Formula
   desc "Reduce a C/C++ program while keeping a property of interest"
   homepage "https://embed.cs.utah.edu/creduce/"
-  url "https://embed.cs.utah.edu/creduce/creduce-2.5.0.tar.gz"
-  sha256 "2dcd784e1d27df60f4ea1d92c4c556c02da4152db353d544dce8b7813fa443e4"
-  revision 3
-
+  url "https://embed.cs.utah.edu/creduce/creduce-2.10.0.tar.gz"
+  sha256 "db1c0f123967f24d620b040cebd53001bf3dcf03e400f78556a2ff2e11fea063"
+  license "BSD-3-Clause"
+  revision 1
   head "https://github.com/csmith-project/creduce.git"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?creduce[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "c321367b337d9bbd2c7859016a4beede81d1f44bcd102a6586b5ea5dc513f89c" => :sierra
-    sha256 "88a10e18027577f2c7041265819e09753a1960ecaa6d4316a66e71597c4ae3be" => :el_capitan
-    sha256 "6ff0287cf967ff384d5d136a63d12b9012e759c825508c41a2cdfdb22dbd8d37" => :yosemite
-  end
-
-  # changes from upstream to fix compilation with LLVM 3.9
-  patch do
-    url "https://github.com/csmith-project/creduce/commit/377e4f93790690edcd0cde057bb96300aca22858.diff"
-    sha256 "1bf6201132dd41953f4c7d454a8f383f432e5a3f2fac416d681bc5e8e8065e18"
-  end
-  patch do
-    url "https://github.com/csmith-project/creduce/commit/d09b8f69419d6c65c7b32675962c9aee813713b5.diff"
-    sha256 "995fcb3c5c7aef60ce34ece07a5d225f0bf7886539479988d8b8a6cc0c52de90"
+    sha256 "d460655f84c09cc178e1d678bf0efc517dd10d1a0d8ad3d1c4688d94dac35bde" => :catalina
+    sha256 "4af71fc62c556bb79a9013e23769d307a70df3db07b8f96b51870be05791b238" => :mojave
+    sha256 "04a55dcc4bb5ff291e902317955fa5bb5de5c9aab603d917851cdbd1288bdb11" => :high_sierra
   end
 
   depends_on "astyle"
   depends_on "delta"
-  depends_on "llvm"
-
-  depends_on :macos => :mavericks
-
-  resource "Benchmark::Timer" do
-    url "https://cpan.metacpan.org/authors/id/D/DC/DCOPPIT/Benchmark-Timer-0.7107.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/D/DC/DCOPPIT/Benchmark-Timer-0.7107.tar.gz"
-    sha256 "64f70fabc896236520bfbf43c2683fdcb0f2c637d77333aed0fd926b92226b60"
-  end
+  depends_on "llvm@9"
 
   resource "Exporter::Lite" do
     url "https://cpan.metacpan.org/authors/id/N/NE/NEILB/Exporter-Lite-0.08.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/N/NE/NEILB/Exporter-Lite-0.08.tar.gz"
     sha256 "c05b3909af4cb86f36495e94a599d23ebab42be7a18efd0d141fc1586309dac2"
   end
 
   resource "File::Which" do
-    url "https://cpan.metacpan.org/authors/id/A/AD/ADAMK/File-Which-1.09.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/A/AD/ADAMK/File-Which-1.09.tar.gz"
-    sha256 "b72fec6590160737cba97293c094962adf4f7d44d9e68dde7062ecec13f4b2c3"
+    url "https://cpan.metacpan.org/authors/id/P/PL/PLICEASE/File-Which-1.23.tar.gz"
+    sha256 "b79dc2244b2d97b6f27167fc3b7799ef61a179040f3abd76ce1e0a3b0bc4e078"
   end
 
   resource "Getopt::Tabular" do
     url "https://cpan.metacpan.org/authors/id/G/GW/GWARD/Getopt-Tabular-0.3.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/G/GW/GWARD/Getopt-Tabular-0.3.tar.gz"
     sha256 "9bdf067633b5913127820f4e8035edc53d08372faace56ba6bfa00c968a25377"
   end
 
   resource "Regexp::Common" do
-    url "https://cpan.metacpan.org/authors/id/A/AB/ABIGAIL/Regexp-Common-2016060101.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/A/AB/ABIGAIL/Regexp-Common-2016060101.tar.gz"
-    sha256 "8d052550e1ddc222f498104f4ce3d56d953e7640b55805c59493060ae6f06815"
+    url "https://cpan.metacpan.org/authors/id/A/AB/ABIGAIL/Regexp-Common-2017060201.tar.gz"
+    sha256 "ee07853aee06f310e040b6bf1a0199a18d81896d3219b9b35c9630d0eb69089b"
   end
 
-  resource "Sys::CPU" do
-    url "https://cpan.metacpan.org/authors/id/M/MZ/MZSANFORD/Sys-CPU-0.61.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/M/MZ/MZSANFORD/Sys-CPU-0.61.tar.gz"
-    sha256 "250a86b79c231001c4ae71d2f66428092a4fbb2070971acafd471aa49739c9e4"
+  resource "Term::ReadKey" do
+    url "https://cpan.metacpan.org/authors/id/J/JS/JSTOWE/TermReadKey-2.38.tar.gz"
+    sha256 "5a645878dc570ac33661581fbb090ff24ebce17d43ea53fd22e105a856a47290"
+  end
+
+  resource "URI::Escape" do
+    on_linux do
+      url "https://cpan.metacpan.org/authors/id/E/ET/ETHER/URI-1.72.tar.gz"
+      sha256 "35f14431d4b300de4be1163b0b5332de2d7fbda4f05ff1ed198a8e9330d40a32"
+    end
+  end
+
+  # Use shared libraries.
+  # Remove with the next release.
+  patch do
+    url "https://github.com/csmith-project/creduce/commit/e9bb8686c5ef83a961f63744671c5e70066cba4e.patch?full_index=1"
+    sha256 "d5878a2c8fb6ebc5a43ad25943a513ff5226e42b842bb84f466cdd07d7bd626a"
   end
 
   def install
     ENV.prepend_create_path "PERL5LIB", libexec/"lib/perl5"
+
+    # Avoid ending up with llvm's Cellar path hard coded.
+    ENV["CLANG_FORMAT"] = Formula["llvm@9"].opt_bin/"clang-format"
 
     resources.each do |r|
       r.stage do
@@ -79,16 +78,15 @@ class Creduce < Formula
 
     system "./configure", "--prefix=#{prefix}",
                           "--disable-dependency-tracking",
-                          "--with-llvm=#{Formula["llvm"].opt_prefix}",
                           "--bindir=#{libexec}"
     system "make"
     system "make", "install"
 
-    (bin/"creduce").write_env_script("#{libexec}/creduce", :PERL5LIB => ENV["PERL5LIB"])
+    (bin/"creduce").write_env_script("#{libexec}/creduce", PERL5LIB: ENV["PERL5LIB"])
   end
 
   test do
-    (testpath/"test1.c").write <<-EOS.undent
+    (testpath/"test1.c").write <<~EOS
       #include <stdio.h>
 
       int main() {
@@ -98,7 +96,7 @@ class Creduce < Formula
       }
 
     EOS
-    (testpath/"test1.sh").write <<-EOS.undent
+    (testpath/"test1.sh").write <<~EOS
       #!/usr/bin/env bash
 
       clang -Weverything "$(dirname "${BASH_SOURCE[0]}")"/test1.c 2>&1 | \

@@ -1,30 +1,56 @@
 require "language/node"
+require "json"
 
 class Webpack < Formula
   desc "Bundler for JavaScript and friends"
   homepage "https://webpack.js.org/"
-  url "https://registry.npmjs.org/webpack/-/webpack-2.2.1.tgz"
-  sha256 "14d1bdcc5438d486793e9061eef3adab2a2ed2f5b82d9234463ad5375928737f"
+  url "https://registry.npmjs.org/webpack/-/webpack-5.4.0.tgz"
+  sha256 "98c8b7e0febbc55aa169eb9effd385e81fb938875a442d844897a111356b902e"
+  license "MIT"
   head "https://github.com/webpack/webpack.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "bf53ea2b5e9b0afbc4158ae750a0cc8448eb8924cc10a1f738a5f34874839541" => :sierra
-    sha256 "e5db4fe402fdd59fd8a0e0e7db4314f2ba7809ec82cc5b91b7806fadf0620dc2" => :el_capitan
-    sha256 "a92855382a2368d42f0850dbc7a492c05dee3774e119c6ac1c81e6b6af3b861a" => :yosemite
+    sha256 "c7214ea449ee9930b1be326c0e57f86634b22f934cbfd9b88dfc1928f1e06c32" => :big_sur
+    sha256 "90e0b1c936bd48a4fcba39b9661f20408f01ef82a686375572639516688bbe02" => :catalina
+    sha256 "0c418ac95c753e275a18eb2d81cbf1caa807981249039c8cf97174bf35c0c5d7" => :mojave
   end
 
   depends_on "node"
 
+  resource "webpack-cli" do
+    url "https://registry.npmjs.org/webpack-cli/-/webpack-cli-4.2.0.tgz"
+    sha256 "09ca2de6deee939a4a2f8edf206a776caafb6fe3590ed1a8310a3e3b69ad4a18"
+  end
+
   def install
+    (buildpath/"node_modules/webpack").install Dir["*"]
+    buildpath.install resource("webpack-cli")
+
+    cd buildpath/"node_modules/webpack" do
+      system "npm", "install", *Language::Node.local_npm_install_args, "--production", "--legacy-peer-deps"
+    end
+
+    # declare webpack as a bundledDependency of webpack-cli
+    pkg_json = JSON.parse(IO.read("package.json"))
+    pkg_json["dependencies"]["webpack"] = version
+    pkg_json["bundleDependencies"] = ["webpack"]
+    IO.write("package.json", JSON.pretty_generate(pkg_json))
+
     system "npm", "install", *Language::Node.std_npm_install_args(libexec)
-    bin.install_symlink Dir["#{libexec}/bin/*"]
+
+    bin.install_symlink libexec/"bin/webpack-cli"
+    bin.install_symlink libexec/"bin/webpack-cli" => "webpack"
   end
 
   test do
-    (testpath/"index.js").write <<-EOS.undent
-      function component () {
-        var element = document.createElement('div');
+    (testpath/"index.js").write <<~EOS
+      function component() {
+        const element = document.createElement('div');
         element.innerHTML = 'Hello' + ' ' + 'webpack';
         return element;
       }
@@ -32,7 +58,7 @@ class Webpack < Formula
       document.body.appendChild(component());
     EOS
 
-    system bin/"webpack", "index.js", "bundle.js"
-    assert File.exist?("bundle.js"), "bundle.js was not generated"
+    system bin/"webpack", testpath/"index.js"
+    assert_match "const e=document\.createElement(\"div\");", File.read(testpath/"dist/main.js")
   end
 end

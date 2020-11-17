@@ -1,29 +1,39 @@
 class Gssdp < Formula
   desc "GUPnP library for resource discovery and announcement over SSDP"
   homepage "https://wiki.gnome.org/GUPnP/"
-  url "https://download.gnome.org/sources/gssdp/1.0/gssdp-1.0.1.tar.xz"
-  sha256 "601d67f40bc28c067742b7c46f3018da96b364fd3e83f30ddac6e190e323d2e1"
+  url "https://download.gnome.org/sources/gssdp/1.2/gssdp-1.2.3.tar.xz"
+  sha256 "a263dcb6730e3b3dc4bbbff80cf3fab4cd364021981d419db6dd5a8e148aa7e8"
+  revision 1
 
-  bottle do
-    sha256 "f76be51eb9ee1c9c0d84f2f8a10300e7fe910e5b5600ff11898e0f1c8de3f767" => :sierra
-    sha256 "7cba1c1d6fc42743f5b29a7f600e5da273fc00b203637334917fd1e4ebebbbaf" => :el_capitan
-    sha256 "a764747e0e5e144fdea59b2fae516eec5527ee38272b99c17060122d9811fcac" => :yosemite
+  livecheck do
+    url :stable
   end
 
+  bottle do
+    cellar :any
+    sha256 "9cda1333eede84e831da2553e50989bd5721460b0ab046c95414305c11e29adc" => :catalina
+    sha256 "de497cd6d3225d91ce49ef33b23928bb8af0d5cdebea072e06c8cf022a7a5dda" => :mojave
+    sha256 "c6c767ccfe0b7220929d94ce06d3c4d5f8f172ab03e2a65900d96e1f2b151595" => :high_sierra
+  end
+
+  depends_on "gobject-introspection" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "intltool" => :build
   depends_on "gettext"
   depends_on "glib"
   depends_on "libsoup"
 
   def install
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, "-Dsniffer=false", ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libgssdp/gssdp.h>
 
       int main(int argc, char *argv[]) {
@@ -37,10 +47,10 @@ class Gssdp < Formula
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
-      -I#{include}/gssdp-1.0
+      -I#{include}/gssdp-1.2
       -D_REENTRANT
       -L#{lib}
-      -lgssdp-1.0
+      -lgssdp-1.2
     ]
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"

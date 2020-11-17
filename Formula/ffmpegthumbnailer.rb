@@ -1,27 +1,27 @@
 class Ffmpegthumbnailer < Formula
   desc "Create thumbnails for your video files"
   homepage "https://github.com/dirkvdb/ffmpegthumbnailer"
-  url "https://github.com/dirkvdb/ffmpegthumbnailer/releases/download/2.2.0/ffmpegthumbnailer-2.2.0.tar.bz2"
-  sha256 "e5c31299d064968198cd378f7488e52cd5e738fac998eea780bc77d7f32238c2"
+  url "https://github.com/dirkvdb/ffmpegthumbnailer/archive/2.2.2.tar.gz"
+  sha256 "8c4c42ab68144a9e2349710d42c0248407a87e7dc0ba4366891905322b331f92"
+  license "GPL-2.0"
+  revision 4
   head "https://github.com/dirkvdb/ffmpegthumbnailer.git"
 
   bottle do
     cellar :any
-    sha256 "ffea0f7d8407442caec4844c58c19ec31f25ccaea60ad38ae27d09b016d3334e" => :sierra
-    sha256 "d9cd4573c942fc2d2349d6c3759459b3d41c73507ec6272caaca498e7ba74b22" => :el_capitan
-    sha256 "49e38cce4b81b1033a6745b803fea77ec6b07f22c69269474e04ada7ca0044b5" => :yosemite
-    sha256 "1f8df8ca350cdd5cd49a46aa20170afbdef3421475f5142df6cdbb77c2f21d9e" => :mavericks
+    sha256 "ce055cde5dbe042f8542aca036836f48b0a414168a2474bee0e86b306928b077" => :big_sur
+    sha256 "08386f0b8bef0e4e4d7faf5204226b3a165b03c46b6f77fcd024abc5708e48a4" => :catalina
+    sha256 "2873371242e9835e8b781290d8655b7a28c11ccaabc6abcff9aaf26bed9f28b5" => :mojave
+    sha256 "d1a7c7b565dbe5c045c4cfaaff76a536703b3aa7ffdb7f505d8feafb2ee54d00" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
+  depends_on "ffmpeg"
   depends_on "jpeg"
   depends_on "libpng"
-  depends_on "ffmpeg"
 
   def install
-    ENV.cxx11 if MacOS.version < :mavericks
-
     args = std_cmake_args
     args << "-DENABLE_GIO=ON"
     args << "-DENABLE_THUMBNAILER=ON"
@@ -36,8 +36,8 @@ class Ffmpegthumbnailer < Formula
     png = test_fixtures("test.png")
     system f.to_s, "-loop", "1", "-i", png.to_s, "-c:v", "libx264", "-t", "30",
                    "-pix_fmt", "yuv420p", "v.mp4"
-    assert File.exist?("v.mp4"), "Failed to generate source video!"
+    assert_predicate testpath/"v.mp4", :exist?, "Failed to generate source video!"
     system "#{bin}/ffmpegthumbnailer", "-i", "v.mp4", "-o", "out.jpg"
-    assert File.exist?("out.jpg"), "Failed to create thumbnail!"
+    assert_predicate testpath/"out.jpg", :exist?, "Failed to create thumbnail!"
   end
 end

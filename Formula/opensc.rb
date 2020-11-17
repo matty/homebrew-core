@@ -1,41 +1,54 @@
 class Opensc < Formula
   desc "Tools and libraries for smart cards"
   homepage "https://github.com/OpenSC/OpenSC/wiki"
-  url "https://github.com/OpenSC/OpenSC/releases/download/0.16.0/opensc-0.16.0.tar.gz"
-  sha256 "3ac8c29542bb48179e7086d35a1b8907a4e86aca3de3323c2f48bd74eaaf5729"
+  url "https://github.com/OpenSC/OpenSC/releases/download/0.20.0/opensc-0.20.0.tar.gz"
+  sha256 "bbf4b4f4a44463645c90a525e820a8059b2f742a53b7b944f941de3c97ba4863"
+  license "LGPL-2.1"
   head "https://github.com/OpenSC/OpenSC.git"
 
-  bottle do
-    sha256 "a0885f1ba63438d600212f1adf6c1d03bbc7355fc72778d8a21f0c877eaf97be" => :sierra
-    sha256 "bf69be51f29b45bd0c5f862560748d30f7d8661002b171a03e78823c73c5eeae" => :el_capitan
-    sha256 "1c76d44ec875c6d622a0f6d4ae1f873adb75a789afbe0f2ce3a96231dd3dafd6" => :yosemite
-    sha256 "8ef4c4c62042d5db9c6454a1fb050e79ce8ff0081be44483ce2b8b909d701af3" => :mavericks
+  livecheck do
+    url "https://github.com/OpenSC/OpenSC/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
-  option "without-man-pages", "Skip building manual pages"
+  bottle do
+    sha256 "661819f520da3558c6a0980ab1bef828e33f24050dd94c8caddccbd276f132d7" => :big_sur
+    sha256 "38a3b5cb96dc21a68ecb7a5ec55cb4e16245718f43494442c43c7bf1dfbc9cbd" => :catalina
+    sha256 "a4f9ffe8088a618dc349e74463ac7a846335dc847b8dc37c8037ec8c7e3244de" => :mojave
+    sha256 "ec40e0b292df9c7819244653977a7ce03b1121f2f98cf2960c0e6f611f18eaf1" => :high_sierra
+  end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
+  depends_on "docbook-xsl" => :build
   depends_on "libtool" => :build
   depends_on "pkg-config" => :build
-  depends_on "docbook-xsl" => :build if build.with? "man-pages"
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
-      --enable-sm
       --enable-openssl
       --enable-pcsc
+      --enable-sm
+      --with-xsl-stylesheetsdir=#{Formula["docbook-xsl"].opt_prefix}/docbook-xsl
     ]
-
-    if build.with? "man-pages"
-      args << "--with-xsl-stylesheetsdir=#{Formula["docbook-xsl"].opt_prefix}/docbook-xsl"
-    end
 
     system "./bootstrap"
     system "./configure", *args
     system "make", "install"
+  end
+
+  def caveats
+    <<~EOS
+      The OpenSSH PKCS11 smartcard integration will not work from High Sierra
+      onwards. If you need this functionality, unlink this formula, then install
+      the OpenSC cask.
+    EOS
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/opensc-tool -i")
   end
 end

@@ -1,54 +1,29 @@
 class Proxytunnel < Formula
   desc "Create TCP tunnels through HTTPS proxies"
-  homepage "https://proxytunnel.sourceforge.io/"
-  url "https://downloads.sourceforge.net/proxytunnel/proxytunnel-1.9.0.tgz"
-  sha256 "2ef5bbf8d81ddf291d71f865c5dab89affcc07c4cb4b3c3f23e1e9462721a6b9"
-  revision 1
+  homepage "https://github.com/proxytunnel/proxytunnel"
+  url "https://github.com/proxytunnel/proxytunnel/archive/v1.10.20200907.tar.gz"
+  sha256 "b8740375c4f0f635fd22b197389d4268daeb70829648e15050fd4db2b41ef898"
+  license "GPL-2.0-or-later"
 
   bottle do
     cellar :any
-    sha256 "713f4529f60bc07a7ffc751730907b7f8238395a93a33d2430e272b66aab057a" => :sierra
-    sha256 "6632b143edd3bbe2f8620bec9445e78689193d05279f1bb13766d16168bf871f" => :el_capitan
-    sha256 "6764d4c9ce6bd4fcf08e7b8042a93977cb5788d316b54552bc6f49348a032c09" => :yosemite
-    sha256 "7a0c91840116c8a6cdc492d671f0426dbd1adcf8b20e1d7259ea3c42a3eb1d6f" => :mavericks
+    sha256 "3f06eb49b8c96b0e61876e08198fb5ab21e70b8b211c07cc23d8ece0d5249946" => :big_sur
+    sha256 "18a5771a429cb73cc2f8de55c44ba2ba061238157458533302b5d609478039c7" => :catalina
+    sha256 "257d06dda3279ca934dead8774ac3800bf97404af51d5fbfda7fba4ec99ce36c" => :mojave
+    sha256 "46362f2b3cd8118b315e5eaae4c0fd5e391a2c741399f33c772cac3992221846" => :high_sierra
   end
 
-  depends_on "openssl"
-
-  # Remove conflicting strlcpy/strlcat declarations
-  patch :DATA
+  depends_on "asciidoc" => :build
+  depends_on "xmlto" => :build
+  depends_on "openssl@1.1"
 
   def install
+    ENV["XML_CATALOG_FILES"] = etc/"xml/catalog"
     system "make"
-    bin.install "proxytunnel"
-    man1.install "proxytunnel.1"
+    system "make", "install", "prefix=#{prefix}"
+  end
+
+  test do
+    system "#{bin}/proxytunnel", "--version"
   end
 end
-
-__END__
-diff --git a/Makefile b/Makefile
-index 9e9ac73..8244b55 100644
---- a/Makefile
-+++ b/Makefile
-@@ -56,8 +56,6 @@ PROGNAME = proxytunnel
- # Remove strlcpy/strlcat on (open)bsd/darwin systems
- OBJ = proxytunnel.o	\
- 	base64.o	\
--	strlcpy.o	\
--	strlcat.o	\
- 	strzcat.o	\
- 	setproctitle.o	\
- 	io.o		\
-diff --git a/proxytunnel.h b/proxytunnel.h
-index b948be0..e63c72a 100644
---- a/proxytunnel.h
-+++ b/proxytunnel.h
-@@ -32,8 +32,6 @@ void closeall();
- void do_daemon();
- void initsetproctitle(int argc, char *argv[]);
- void setproctitle(const char *fmt, ...);
--size_t strlcat(char *dst, const char *src, size_t siz);
--size_t strlcpy(char *dst, const char *src, size_t siz);
- size_t strzcat(char *dst, char *format, ...);
- int main( int argc, char *argv[] );
- char * readpassphrase(const char *, char *, size_t, int);

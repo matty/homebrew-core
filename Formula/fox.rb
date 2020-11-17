@@ -1,23 +1,43 @@
 class Fox < Formula
-  desc "Toolkit for developing Graphical User Interfaces easily."
+  desc "Toolkit for developing Graphical User Interfaces easily"
   homepage "http://www.fox-toolkit.org/"
-  url "http://ftp.fox-toolkit.org/pub/fox-1.6.51.tar.gz"
-  sha256 "15a99792965d933a4936e48b671c039657546bdec6a318c223ab1131624403d1"
+  url "http://fox-toolkit.org/ftp/fox-1.6.56.tar.gz"
+  sha256 "c517e5fcac0e6b78ca003cc167db4f79d89e230e5085334253e1d3f544586cb2"
+  license "LGPL-2.1-or-later"
+  revision 2
+
+  livecheck do
+    url "http://www.fox-toolkit.org/news.html"
+    regex(/FOX STABLE v?(\d+(?:\.\d+)+)/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "84e26e4ae534c17cf53eb27f611990d565cf5f942001e131ed9204570cf3c371" => :sierra
-    sha256 "3ae937491777d69408c0062cb7e21e2231037d7e8b3036c6bf0f0e6c83f070ad" => :el_capitan
-    sha256 "06f31b3d710dde932f37b8d24b45791a04cfa3767bee288a03ee31587a156980" => :yosemite
+    sha256 "f7988beb83a1343a270ba6107f8693550fb4b6f92632600849eb11f203bfa2fc" => :big_sur
+    sha256 "e9f946383a4fc88a230622abd2c38386053f20c35eb632bf62ea8e06e43be7ab" => :catalina
+    sha256 "7017807cda0f8aa8e43338d4556ec842db95626984f7a9eaef4b926a9dff7310" => :mojave
+    sha256 "3705392848b062aa09d8be70c0f99b0331eeeceaea685389d684644e86f7fe22" => :high_sierra
   end
 
-  depends_on :x11
+  depends_on "fontconfig"
   depends_on "freetype"
-  depends_on "libpng"
   depends_on "jpeg"
+  depends_on "libpng"
   depends_on "libtiff"
+  depends_on "libx11"
+  depends_on "libxcursor"
+  depends_on "libxext"
+  depends_on "libxfixes"
+  depends_on "libxft"
+  depends_on "libxi"
+  depends_on "libxrandr"
+  depends_on "libxrender"
+  depends_on "mesa"
+  depends_on "mesa-glu"
 
   def install
+    # Needed for libxft to find ftbuild2.h provided by freetype
+    ENV.append "CPPFLAGS", "-I#{Formula["freetype"].opt_include}/freetype2"
     system "./configure", "--disable-dependency-tracking",
                           "--enable-release",
                           "--prefix=#{prefix}",

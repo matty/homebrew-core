@@ -1,39 +1,50 @@
 class Dbxml < Formula
   desc "Embeddable XML database with XQuery support and other advanced features"
-  homepage "https://www.oracle.com/us/products/database/berkeley-db/xml/overview/index.html"
-  url "http://download.oracle.com/berkeley-db/dbxml-6.0.18.tar.gz"
-  sha256 "5851f60a47920718b701752528a449f30b16ddbf5402a2a5e8cde8b4aecfabc8"
-  revision 2
+  homepage "https://www.oracle.com/database/berkeley-db/xml.html"
+  url "https://download.oracle.com/berkeley-db/dbxml-6.1.4.tar.gz"
+  sha256 "a8fc8f5e0c3b6e42741fa4dfc3b878c982ff8f5e5f14843f6a7e20d22e64251a"
+  revision 3
 
   bottle do
-    cellar :any
-    sha256 "f12996781a7a784ff65b5fbb33b5285f996fda729e7fcd4104890ea55010c549" => :sierra
-    sha256 "babca444db17952084979d91bb17680f3a8a3d009f03cef87686bb7bd4ae6054" => :el_capitan
-    sha256 "3a64c61d48a1f0c864d6f780c0b73ccd82a26f24958d64c1ddff6c5f35ea9b2f" => :yosemite
+    sha256 "59c12069d26a6be4f542d4c7869841c2bd71e8cb08a1c809d559818fb1cb156a" => :catalina
+    sha256 "b525b9d21d149d533aeb62a169becfe1e140f143d34291d0a8fddf2ada41a018" => :mojave
+    sha256 "1886b654f152fc03a6a6e781ca94e5ca3a08f7f190bc1168326bf46b337c02e9" => :high_sierra
+    sha256 "2a350300c31d639d46e9fafc16747d5cbe1897035acf1c365f795127535693b3" => :sierra
+    sha256 "e2c82383d79f243654a0bbebdfb141334bbf683c6925b5a8f3ce0d1568024fec" => :el_capitan
   end
 
+  depends_on "berkeley-db"
   depends_on "xerces-c"
   depends_on "xqilla"
-  depends_on "berkeley-db"
+
+  # No public bug tracker or mailing list to submit this to, unfortunately.
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/4d337833ef2e10c1f06a72170f22b1cafe2b6a78/dbxml/c%2B%2B11.patch"
+    sha256 "98d518934072d86c15780f10ceee493ca34bba5bc788fd9db1981a78234b0dc4"
+  end
 
   def install
+    ENV.cxx11
+
     inreplace "dbxml/configure" do |s|
-      s.gsub! "lib/libdb-*.la | sed 's\/.*db-\\\(.*\\\).la", "lib/libdb-*.a | sed 's/.*db-\\(.*\\).a"
+      s.gsub! "lib/libdb-*.la | sed -e 's\/.*db-\\\(.*\\\).la", "lib/libdb-*.a | sed -e 's/.*db-\\(.*\\).a"
       s.gsub! "lib/libdb-*.la", "lib/libdb-*.a"
+      s.gsub! "libz.a", "libz.dylib"
     end
 
     cd "dbxml" do
-      system "./configure", "--disable-debug", "--disable-dependency-tracking",
+      system "./configure", "--disable-debug",
+                            "--disable-dependency-tracking",
                             "--prefix=#{prefix}",
-                            "--with-xqilla=#{HOMEBREW_PREFIX}",
-                            "--with-xerces=#{HOMEBREW_PREFIX}",
-                            "--with-berkeleydb=#{HOMEBREW_PREFIX}"
+                            "--with-xqilla=#{Formula["xqilla"].opt_prefix}",
+                            "--with-xerces=#{Formula["xerces-c"].opt_prefix}",
+                            "--with-berkeleydb=#{Formula["berkeley-db"].opt_prefix}"
       system "make", "install"
     end
   end
 
   test do
-    (testpath/"simple.xml").write <<-EOS.undent
+    (testpath/"simple.xml").write <<~EOS
       <breakfast_menu>
         <food>
           <name>Belgian Waffles</name>
@@ -46,7 +57,7 @@ class Dbxml < Formula
       </breakfast_menu>
     EOS
 
-    (testpath/"dbxml.script").write <<-EOS.undent
+    (testpath/"dbxml.script").write <<~EOS
       createContainer ""
       putDocument simple "simple.xml" f
       cquery 'sum(//food/calories)'

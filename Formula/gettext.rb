@@ -1,32 +1,32 @@
 class Gettext < Formula
   desc "GNU internationalization (i18n) and localization (l10n) library"
   homepage "https://www.gnu.org/software/gettext/"
-  url "https://ftpmirror.gnu.org/gettext/gettext-0.19.8.1.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz"
-  sha256 "105556dbc5c3fbbc2aa0edb46d22d055748b6f5c7cd7a8d99f8e7eb84e938be4"
+  url "https://ftp.gnu.org/gnu/gettext/gettext-0.21.tar.xz"
+  mirror "https://ftpmirror.gnu.org/gettext/gettext-0.21.tar.xz"
+  sha256 "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"
+  license "GPL-3.0"
 
-  bottle do
-    sha256 "8368522242c5fe33acd5c80b5f1321559da9efe20878da6e4b9507683a740c21" => :sierra
-    sha256 "311475f36f3fd314ae0db4fb52e4ab769f62ded6c8c81678ad8295f41762e4ba" => :el_capitan
-    sha256 "ca8fe572e7c8db00bb1bdfd66c379ba4a960927f4b829f47f9e2335c51dc7376" => :yosemite
-    sha256 "e3091192716347fc54f6e8a8184d892feed5309672daa061a1407b071af80c05" => :mavericks
+  livecheck do
+    url :stable
   end
 
-  keg_only :shadowed_by_osx, "macOS provides the BSD gettext library and some software gets confused if both are in the library path."
+  bottle do
+    sha256 "a025e143fe3f5f7e24a936b8b0a4926acfdd025b11d62024e3d355c106536d56" => :big_sur
+    sha256 "cdea54f52b7c36ebcb5fe26a1cf736d7cd6fd5f2fd016dd8357a8624ffd6b5f8" => :catalina
+    sha256 "99707d4dcc731faf980333365a694e9500f2f012f84c0bcb6d8cb5d620c2ce08" => :mojave
+    sha256 "5ac5783e31205b92907b46bfaaa142620aea7ee3fc4d996876b0913fd2315695" => :high_sierra
+  end
 
-  option :universal
-
-  # https://savannah.gnu.org/bugs/index.php?46844
-  depends_on "libxml2" if MacOS.version <= :mountain_lion
+  uses_from_macos "ncurses"
 
   def install
-    ENV.universal_binary if build.universal?
-
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--disable-debug",
                           "--prefix=#{prefix}",
                           "--with-included-gettext",
+                          # Work around a gnulib issue with macOS Catalina
+                          "gl_cv_func_ftello_works=yes",
                           "--with-included-glib",
                           "--with-included-libcroco",
                           "--with-included-libunistring",

@@ -1,43 +1,43 @@
 class Ffmpeg2theora < Formula
   desc "Convert video files to Ogg Theora format"
   homepage "https://v2v.cc/~j/ffmpeg2theora/"
-  revision 1
-
-  stable do
-    url "https://v2v.cc/~j/ffmpeg2theora/downloads/ffmpeg2theora-0.30.tar.bz2"
-    sha256 "4f6464b444acab5d778e0a3359d836e0867a3dcec4ad8f1cdcf87cb711ccc6df"
-
-    depends_on "libkate" => :optional
-  end
+  url "https://v2v.cc/~j/ffmpeg2theora/downloads/ffmpeg2theora-0.30.tar.bz2"
+  sha256 "4f6464b444acab5d778e0a3359d836e0867a3dcec4ad8f1cdcf87cb711ccc6df"
+  revision 8
+  head "https://gitlab.xiph.org/xiph/ffmpeg2theora.git"
 
   bottle do
     cellar :any
-    sha256 "211e0c77738398710c757d4d9ea0380485a0a7afef072b3940a9fb0408912c7f" => :sierra
-    sha256 "a5083a14925664a830e8af88404e4668e5e48546c8ca283f5494fe26dca76f86" => :el_capitan
-    sha256 "1d40350a4a67d4ac2da6c55c67d45adee2ca537e1ecd1ccbb59d0c22968fca79" => :yosemite
-    sha256 "8e750ddb6435e83d99f6b77ed4736743f361ade2a89efd11868e67b18c114ece" => :mavericks
-  end
-
-  head do
-    url "https://git.xiph.org/ffmpeg2theora.git"
-
-    depends_on "libkate" => :recommended
+    sha256 "914a37d9ae9fa3a53d0031d0ad74ff845ab697ebdc3cbf49a5779fdc612019b1" => :big_sur
+    sha256 "c528b2081e23bf7f61a613e3d1a806063a588cac7221eb8cfb3498c677a70ca9" => :catalina
+    sha256 "409ecd351e9dd14422899583335fca3d7f49c3c605cbd2dda692fab55935b279" => :mojave
+    sha256 "69208fef6137d77c75ff41f2cdc3154cf33516de1b60b20d243d99872729c06b" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "scons" => :build
   depends_on "ffmpeg"
+  depends_on "libkate"
   depends_on "libogg"
   depends_on "libvorbis"
   depends_on "theora"
 
+  # Use python3 print()
+  patch do
+    url "https://salsa.debian.org/multimedia-team/ffmpeg2theora/-/raw/master/debian/patches/0002-Use-python3-print.patch"
+    sha256 "8cf333e691cf19494962b51748b8246502432867d9feb3d7919d329cb3696e97"
+  end
+
   def install
+    # Fix unrecognized "PRId64" format specifier
+    inreplace "src/theorautils.c", "#include <limits.h>", "#include <limits.h>\n#include <inttypes.h>"
+
     args = [
       "prefix=#{prefix}",
       "mandir=PREFIX/share/man",
       "APPEND_LINKFLAGS=-headerpad_max_install_names",
     ]
-    scons "install", *args
+    system "scons", "install", *args
   end
 
   test do

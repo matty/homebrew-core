@@ -1,32 +1,35 @@
 class Homebank < Formula
   desc "Manage your personal accounts at home"
   homepage "http://homebank.free.fr"
-  url "http://homebank.free.fr/public/homebank-5.1.3.tar.gz"
-  sha256 "22b2baf2e66fee2f97c7a6050298aa6d2502d75f02f046259e4181512714fb73"
+  url "http://homebank.free.fr/public/homebank-5.4.3.tar.gz"
+  sha256 "9222d7ed7cc44fcfff3f1fe20935a1b7fe91bb4d9f90003cb3c6f3b893298d0b"
+  license "GPL-2.0-or-later"
 
-  bottle do
-    sha256 "933eef64969c5be645c0025439fd89b5fc7c7d3ffed6f3a0edbee85975ef70d8" => :sierra
-    sha256 "eab5d6f05426ccb46f6bc24d6462f1185ad32cd7e77d4f14c2e8e330f8c84af7" => :el_capitan
-    sha256 "03852ca34e14fdb4de307e8c513be4bcb795ec831588bb59daed61e42891c70e" => :yosemite
+  livecheck do
+    url "http://homebank.free.fr/public/"
+    regex(/href=.*?homebank[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "a619932ee182db41e813df9229aa82ca6fc3c61f37c1e4f6cdd688010ac0736b" => :catalina
+    sha256 "f22d80fc1de3ee5075505c6d2bdc7a168f875ab6351cbda7c6ac2394d1281f8e" => :mojave
+    sha256 "871e8f75ea31d3c362497f0cf3a4ab87072efb6a3adf8e546763e182046720be" => :high_sierra
+  end
+
   depends_on "intltool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "adwaita-icon-theme"
+  depends_on "fontconfig"
+  depends_on "freetype"
   depends_on "gettext"
   depends_on "gtk+3"
-  depends_on "gnome-icon-theme"
   depends_on "hicolor-icon-theme"
-  depends_on "freetype"
-  depends_on "fontconfig"
+  depends_on "libofx"
   depends_on "libsoup"
-  depends_on "libofx" => :optional
 
   def install
-    args = ["--disable-dependency-tracking",
-            "--prefix=#{prefix}"]
-    args << "--with-ofx" if build.with? "libofx"
-
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}", "--with-ofx"
     chmod 0755, "./install-sh"
     system "make", "install"
   end

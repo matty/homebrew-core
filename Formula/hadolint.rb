@@ -1,33 +1,38 @@
-require "language/haskell"
-
 class Hadolint < Formula
-  include Language::Haskell::Cabal
-
-  desc "Smarter Dockerfile linter to validate best practices."
-  homepage "http://hadolint.lukasmartinelli.ch/"
-  url "https://github.com/lukasmartinelli/hadolint/archive/v1.2.2.tar.gz"
-  sha256 "600731b0ebf8b86d561ea7ff37424d3249ccd36b91c440551200829c2f80f646"
+  desc "Smarter Dockerfile linter to validate best practices"
+  homepage "https://github.com/hadolint/hadolint"
+  url "https://github.com/hadolint/hadolint/archive/v1.18.2.tar.gz"
+  sha256 "5acbe40d2d9cc56955fda33572ce7283cb26b5b254fd557f4f1261937125b66f"
+  license "GPL-3.0-only"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e50b8e3ecbaa931e47a6eef649c041af70569f3812433707e22502cfe281c186" => :sierra
-    sha256 "8e2cf9aa35ef51c0ffe475af366a97149b15a64558c97445e34574f6a66ce43d" => :el_capitan
-    sha256 "c079436775b7811e6e3b566fa040d9c39580c31e9362fad7386f2527212fde10" => :yosemite
+    sha256 "64d6d63f6daefe1e8a72ee02c7691396bde29d247585212a088748a7e143ecef" => :catalina
+    sha256 "d3fa0fd39ce578432959f910b30bcd03419cc4b8f31aed34850dc5917d995861" => :mojave
+    sha256 "d53fee21f0473583d3214f999f4de2a9367928f09085b67335e75a2cddf883b1" => :high_sierra
   end
 
   depends_on "ghc" => :build
-  depends_on "cabal-install" => :build
+  depends_on "haskell-stack" => :build
+
+  uses_from_macos "xz"
+
+  on_linux do
+    depends_on "gmp"
+  end
 
   def install
-    # Fix "src/Hadolint/Bash.hs:9:20: error: The constructor 'PositionedComment'
-    # should have 3 arguments, but has been given 2"
-    # Reported 9 Dec 2016 https://github.com/lukasmartinelli/hadolint/issues/72
-    install_cabal_package "--constraint=ShellCheck<0.4.5"
+    # Let `stack` handle its own parallelization
+    jobs = ENV.make_jobs
+    ENV.deparallelize
+
+    system "stack", "-j#{jobs}", "build"
+    system "stack", "-j#{jobs}", "--local-bin-path=#{bin}", "install"
   end
 
   test do
     df = testpath/"Dockerfile"
-    df.write <<-EOS.undent
+    df.write <<~EOS
       FROM debian
     EOS
     assert_match "DL3006", shell_output("#{bin}/hadolint #{df}", 1)

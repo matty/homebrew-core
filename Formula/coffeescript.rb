@@ -2,19 +2,27 @@ require "language/node"
 
 class Coffeescript < Formula
   desc "Unfancy JavaScript"
-  homepage "http://coffeescript.org"
-  url "https://registry.npmjs.org/coffee-script/-/coffee-script-1.12.4.tgz"
-  sha256 "7c6065dc1c2250cd20238f8daefac4bb988e061f6df9eba371db91389d3de2c0"
+  homepage "https://coffeescript.org/"
+  url "https://registry.npmjs.org/coffeescript/-/coffeescript-2.5.1.tgz"
+  sha256 "0ab43e873a859d323f2f5a0069a8bef3acfa72b09769be3350c9d43c5bb489a0"
+  license "MIT"
   head "https://github.com/jashkenas/coffeescript.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ac3ec0e5d05b40a3a6023449ff96fdf313569128cc2fd1079e68faba90101123" => :sierra
-    sha256 "951cbca1a5cee5c23d388259cf1a8e81deff342ad0482d43dfe9da190a8774ff" => :el_capitan
-    sha256 "8d4fca05564928080b06fe2c2567eced775cc3548094f06014f50f251c45442e" => :yosemite
+    sha256 "203638208a42d33debe48c9e5c4cea7adfec2fb30b0afeb4d0dea77bcb506863" => :big_sur
+    sha256 "090fe2a4161fbcf4e7615cded97c8e9736f7939c1a70a863f37d83141f5cb118" => :catalina
+    sha256 "acd2a08cb5db976c36508582ac5ff82476ad9dc037ab065353d071cf46c211f5" => :mojave
+    sha256 "4ee049a8e7bb8a0c67452cb0b912ef5fd4e402c4948cf1b4cb8a5022640df19e" => :high_sierra
   end
 
   depends_on "node"
+
+  conflicts_with "cake", because: "both install `cake` binaries"
 
   def install
     system "npm", "install", *Language::Node.std_npm_install_args(libexec)
@@ -22,7 +30,7 @@ class Coffeescript < Formula
   end
 
   test do
-    (testpath/"test.coffee").write <<-EOS.undent
+    (testpath/"test.coffee").write <<~EOS
       square = (x) -> x * x
       list = [1, 2, 3, 4, 5]
 
@@ -35,6 +43,6 @@ class Coffeescript < Formula
     EOS
 
     system bin/"coffee", "--compile", "test.coffee"
-    assert File.exist?("test.js"), "test.js was not generated"
+    assert_predicate testpath/"test.js", :exist?, "test.js was not generated"
   end
 end

@@ -1,21 +1,27 @@
 class SshAudit < Formula
-  desc "SSH server auditing"
-  homepage "https://github.com/arthepsy/ssh-audit"
-  url "https://github.com/arthepsy/ssh-audit/archive/v1.7.0.tar.gz"
-  sha256 "cba29cc19ec2932e4f43c720b2c49a7d179219e23482476aeb472f7463713b68"
+  include Language::Python::Virtualenv
 
-  head "https://github.com/arthepsy/ssh-audit.git"
+  desc "SSH server & client auditing"
+  homepage "https://github.com/jtesta/ssh-audit"
+  url "https://files.pythonhosted.org/packages/61/09/d4ec73164f4548b7352389117ed0a30e47c444a76c18046421e22311f8ea/ssh-audit-2.3.1.tar.gz"
+  sha256 "84d3294b25f3a1ce0a5f14094e80d85cfded3b5ef941c0df131cf7485d449b6b"
+  license "MIT"
+  head "https://github.com/jtesta/ssh-audit.git"
 
-  bottle :unneeded
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "6898d35256e2463dc6710f06133a29c07ca9f77b3e13f01671ce9e7a98a95278" => :catalina
+    sha256 "227e07ecf11af9dc5a1b4a1a7017c390a3caa5183327e73dba8a2607c648a01d" => :mojave
+    sha256 "cb1337c15074044b1dd7aa3a7026c7226bab0469dcee1ec0ed4eb960bc50dd4a" => :high_sierra
+  end
 
-  depends_on :python
+  depends_on "python@3.9"
 
   def install
-    bin.install "ssh-audit.py" => "ssh-audit"
+    virtualenv_install_with_resources
   end
 
   test do
-    output = shell_output("#{bin}/ssh-audit -h 2>&1", 1)
-    assert_match "force ssh version 1 only", output
+    assert_match "[exception]", shell_output("#{bin}/ssh-audit -nt 0 ssh.github.com", 1)
   end
 end

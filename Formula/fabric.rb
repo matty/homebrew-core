@@ -1,105 +1,82 @@
 class Fabric < Formula
+  include Language::Python::Virtualenv
+
   desc "Library and command-line tool for SSH"
-  homepage "http://www.fabfile.org"
-  url "https://github.com/fabric/fabric/archive/1.13.1.tar.gz"
-  sha256 "59ee3b780e0cd3b8c5db7333d2006a5f932e8e79e2f334aec76c6f97b298bac6"
-  revision 1
+  homepage "https://www.fabfile.org/"
+  url "https://github.com/fabric/fabric/archive/2.5.0.tar.gz"
+  sha256 "4b3f4c79bcc372de575e7756b50c89373ce1acb8565902a5e406b5e78c41389c"
+  license "BSD-2-Clause"
+  revision 5
   head "https://github.com/fabric/fabric.git"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "d48eb3d28f2b9ad592dc091114a589de3057815057b686a124cd6e31838843b2" => :sierra
-    sha256 "518acfd7457a5d31375591da6496eb2084efa08c3cec1f93fb250ade4ae1b9d5" => :el_capitan
-    sha256 "6c56c3d10921be289032f3dd561047ed26db67dcfca686a9092f587709f02f7f" => :yosemite
+    sha256 "041fcb1e0fdf1c1c95066e7f1fe44e4387f278280e73e24e072d4ff272530daa" => :big_sur
+    sha256 "04934edc304b31052b781cc226854113d3994eb09a96284b85cc187e8911f244" => :catalina
+    sha256 "8a2a62d467da22a77ce80f64f1e4ed91f1bdfc677aa2d5e8ec9c97664813a693" => :mojave
+    sha256 "0d3e288fe572c37ee0bb8388ac7adaac77ef96618d766d798383139a7f19aa0f" => :high_sierra
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
-  depends_on "openssl"
+  depends_on "openssl@1.1"
+  depends_on "python@3.9"
 
-  resource "setuptools" do
-    url "https://files.pythonhosted.org/packages/6b/b2/b79df1b728dc14469269844cbd6cbe82c71a16839a131c60357b13117c96/setuptools-32.1.1.tar.gz"
-    sha256 "8303fb24306385f09bf8b0e5a385c1548e42e8efc08558d64049bc0d55ea012d"
-  end
-
-  resource "six" do
-    url "https://files.pythonhosted.org/packages/b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz"
-    sha256 "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a"
-  end
-
-  resource "idna" do
-    url "https://pypi.python.org/packages/fb/84/8c27516fbaa8147acd2e431086b473c453c428e24e8fb99a1d89ce381851/idna-2.1.tar.gz"
-    sha256 "ed36f281aebf3cd0797f163bb165d84c31507cedd15928b095b1675e2d04c676"
-  end
-
-  resource "ipaddress" do
-    url "https://files.pythonhosted.org/packages/bb/26/3b64955ff73f9e3155079b9ed31812afdfa5333b5c76387454d651ef593a/ipaddress-1.0.17.tar.gz"
-    sha256 "3a21c5a15f433710aaa26f1ae174b615973a25182006ae7f9c26de151cd51716"
-  end
-
-  resource "enum34" do
-    url "https://files.pythonhosted.org/packages/bf/3e/31d502c25302814a7c2f1d3959d2a3b3f78e509002ba91aea64993936876/enum34-1.1.6.tar.gz"
-    sha256 "8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
-  end
-
-  resource "pyasn1" do
-    url "https://files.pythonhosted.org/packages/f7/83/377e3dd2e95f9020dbd0dfd3c47aaa7deebe3c68d3857a4e51917146ae8b/pyasn1-0.1.9.tar.gz"
-    sha256 "853cacd96d1f701ddd67aa03ecc05f51890135b7262e922710112f12a2ed2a7f"
-  end
-
-  resource "pycparser" do
-    url "https://files.pythonhosted.org/packages/be/64/1bb257ffb17d01f4a38d7ce686809a736837ad4371bcc5c42ba7a715c3ac/pycparser-2.17.tar.gz"
-    sha256 "0aac31e917c24cb3357f5a4d5566f2cc91a19ca41862f6c3c22dc60a629673b6"
+  resource "bcrypt" do
+    url "https://files.pythonhosted.org/packages/fa/aa/025a3ab62469b5167bc397837c9ffc486c42a97ef12ceaa6699d8f5a5416/bcrypt-3.1.7.tar.gz"
+    sha256 "0b0069c752ec14172c5f78208f1863d7ad6755a6fae6fe76ec2c80d13be41e42"
   end
 
   resource "cffi" do
-    url "https://files.pythonhosted.org/packages/a1/32/e3d6c3a8b5461b903651dd6ce958ed03c093d2e00128e3f33ea69f1d7965/cffi-1.9.1.tar.gz"
-    sha256 "563e0bd53fda03c151573217b3a49b3abad8813de9dd0632e10090f6190fdaf8"
+    url "https://files.pythonhosted.org/packages/05/54/3324b0c46340c31b909fcec598696aaec7ddc8c18a63f2db352562d3354c/cffi-1.14.0.tar.gz"
+    sha256 "2d384f4a127a15ba701207f7639d94106693b6cd64173d6c8988e2c25f3ac2b6"
   end
 
   resource "cryptography" do
-    url "https://files.pythonhosted.org/packages/82/f7/d6dfd7595910a20a563a83a762bf79a253c4df71759c3b228accb3d7e5e4/cryptography-1.7.1.tar.gz"
-    sha256 "953fef7d40a49a795f4d955c5ce4338abcec5dea822ed0414ed30348303fdb4c"
+    url "https://files.pythonhosted.org/packages/9d/0a/d7060601834b1a0a84845d6ae2cd59be077aafa2133455062e47c9733024/cryptography-2.9.tar.gz"
+    sha256 "0cacd3ef5c604b8e5f59bf2582c076c98a37fe206b31430d0cd08138aff0986e"
+  end
+
+  resource "invoke" do
+    url "https://files.pythonhosted.org/packages/b6/08/b345475cfaaa542ae78a172d5b23979ad0577f15a32b16e5e54b2a7e80c6/invoke-1.4.1.tar.gz"
+    sha256 "de3f23bfe669e3db1085789fd859eb8ca8e0c5d9c20811e2407fa042e8a5e15d"
   end
 
   resource "paramiko" do
-    url "https://files.pythonhosted.org/packages/d1/5a/ebd00d884f30baf208359a027eb7b38372d81d0c004724bb1aa71ae43b37/paramiko-2.1.1.tar.gz"
-    sha256 "d51dada7ad0736c116f8bfe3263627925947e4a50e61436a83d58bfe7055b575"
+    url "https://files.pythonhosted.org/packages/ac/15/4351003352e11300b9f44a13576bff52dcdc6e4a911129c07447bda0a358/paramiko-2.7.1.tar.gz"
+    sha256 "920492895db8013f6cc0179293147f830b8c7b21fdfc839b6bad760c27459d9f"
+  end
+
+  resource "pycparser" do
+    url "https://files.pythonhosted.org/packages/0f/86/e19659527668d70be91d0369aeaa055b4eb396b0f387a4f92293a20035bd/pycparser-2.20.tar.gz"
+    sha256 "2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0"
+  end
+
+  resource "PyNaCl" do
+    url "https://files.pythonhosted.org/packages/61/ab/2ac6dea8489fa713e2b4c6c5b549cc962dd4a842b5998d9e80cf8440b7cd/PyNaCl-1.3.0.tar.gz"
+    sha256 "0c6100edd16fefd1557da078c7a31e7b7d7a52ce39fdca2bec29d4f7b6e7600c"
+  end
+
+  resource "six" do
+    url "https://files.pythonhosted.org/packages/21/9f/b251f7f8a76dec1d6651be194dfba8fb8d7781d10ab3987190de8391d08e/six-1.14.0.tar.gz"
+    sha256 "236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a"
   end
 
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-    resources.each do |r|
-      r.stage do
-        if r.name == "cryptography" && MacOS.version < :sierra
-          # Fixes .../cryptography/hazmat/bindings/_openssl.so: Symbol not found: _getentropy
-          # Reported 20 Dec 2016 https://github.com/pyca/cryptography/issues/3332
-          inreplace "src/_cffi_src/openssl/src/osrandom_engine.h",
-            "#elif defined(BSD) && defined(SYS_getentropy)",
-            "#elif defined(BSD) && defined(SYS_getentropy) && 0"
-        end
-        system "python", *Language::Python.setup_install_args(libexec/"vendor")
-      end
-    end
-
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
-
-    bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    virtualenv_install_with_resources
   end
 
   test do
-    (testpath/"fabfile.py").write <<-EOS.undent
-      from fabric.api import task, puts, env
+    (testpath/"fabfile.py").write <<~EOS
+      from invoke import task
+      import fabric
       @task
-      def hello():
-        puts("fabric " + env.version)
+      def hello(c):
+        c.run("echo {}".format(fabric.__version__))
     EOS
-    expected = <<-EOS.undent
-      fabric #{version}
-
-      Done.
-    EOS
-    assert_equal expected, shell_output("#{bin}/fab hello")
+    assert_equal version.to_s, shell_output("#{bin}/fab hello").chomp
   end
 end

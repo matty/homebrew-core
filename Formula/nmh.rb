@@ -1,20 +1,35 @@
 class Nmh < Formula
-  desc "The new version of the MH mail handler"
-  homepage "http://www.nongnu.org/nmh/"
-  url "https://download.savannah.gnu.org/releases/nmh/nmh-1.6.tar.gz"
-  sha256 "29338ae2bc8722fe8a5904b7b601a63943b72b07b6fcda53f3a354edb6a64bc3"
+  desc "New version of the MH mail handler"
+  homepage "https://www.nongnu.org/nmh/"
+  url "https://download.savannah.gnu.org/releases/nmh/nmh-1.7.1.tar.gz"
+  sha256 "f1fb94bbf7d95fcd43277c7cfda55633a047187f57afc6c1bb9321852bd07c11"
+  revision 1
 
-  bottle do
-    sha256 "62b6f1754f82dcf84674eeddfe2bf7637262324b384e6d90a52bd2a694061da0" => :sierra
-    sha256 "8c508d92233154eb888357f62d84440526fd2acea65566ef5d3325fd0b57caa8" => :el_capitan
-    sha256 "bdd5c9d0e4bd341df41972b4e651761798660eadbac1332409e184e5e8e2b877" => :yosemite
+  livecheck do
+    url "https://download.savannah.gnu.org/releases/nmh/"
+    regex(/href=.*?nmh[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  depends_on "openssl"
+  bottle do
+    sha256 "5ed10257c9024848ec26fc4c80e1ddbbba3cca6199b83cf62fbbdc9a1970e404" => :catalina
+    sha256 "9c53df993c2f8f0dd45dea112d082d7cfc67efd34e58be2f62d95bfb44d3c9b7" => :mojave
+    sha256 "f46c5ca5a87081a9a8f7f454e0cb36de543dff666ac0ba8e1bcb867a2f7e7763" => :high_sierra
+    sha256 "8b70320e7046fc756ba490a44d5f7923a0e45db4f645dc02f80c19823eefa823" => :sierra
+  end
+
+  head do
+    url "https://git.savannah.nongnu.org/git/nmh.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+  end
+
+  depends_on "openssl@1.1"
+  depends_on "w3m"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
+    system "./autogen.sh" if build.head?
+    system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}", "--libdir=#{libexec}",
                           "--with-cyrus-sasl",
@@ -24,14 +39,14 @@ class Nmh < Formula
 
   test do
     (testpath/".mh_profile").write "Path: Mail"
-    (testpath/"Mail/inbox/1").write <<-EOM.undent
+    (testpath/"Mail/inbox/1").write <<~EOS
       From: Mister Test <test@example.com>
       To: Mister Nobody <nobody@example.com>
       Date: Tue, 5 May 2015 12:00:00 -0000
       Subject: Hello!
 
       How are you?
-    EOM
+    EOS
     ENV["TZ"] = "GMT"
     output = shell_output("#{bin}/scan -width 80")
     assert_equal("   1  05/05 Mister Test        Hello!<<How are you? >>\n", output)

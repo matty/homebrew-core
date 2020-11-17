@@ -1,148 +1,91 @@
 class Node < Formula
   desc "Platform built on V8 to build network applications"
   homepage "https://nodejs.org/"
-  url "https://nodejs.org/dist/v7.5.0/node-v7.5.0.tar.xz"
-  sha256 "f99ee74647fe223eb03f2dd1dc6acdc14d9a881621376c848236c8d2ac8afd03"
+  url "https://nodejs.org/dist/v15.2.1/node-v15.2.1.tar.gz"
+  sha256 "a64aa96e01c097d5bc16c191a647154315e12c5421e38ae985c197c6a20a69f9"
+  license "MIT"
   head "https://github.com/nodejs/node.git"
 
+  livecheck do
+    url "https://nodejs.org/dist/"
+    regex(%r{href=["']?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
+
   bottle do
-    sha256 "421071a942e3f2ab22dd304ccc78d88b5093eb51c805731791ff55dd5bf7fc78" => :sierra
-    sha256 "363eb6dbb4c5534e69de909eb11c9a73255f33319a8d01b5cb550d37e9613124" => :el_capitan
-    sha256 "59525a77b38e553d0a7b6faedeaa996b296aaae30394cb0c7a132d46eeea67f4" => :yosemite
+    cellar :any
+    sha256 "a1943d277540cea6968b516535df3d81d6295d5997504044c59cb03d8a09d8c6" => :big_sur
+    sha256 "84f1c73b336d2bfd35c436f22ac4b7bfc4dfd15530edddfe82624b26f1855799" => :catalina
+    sha256 "d78af40b5bc055f46aec59c5d0f1d8b85860a7838ddc0cd187ae6b79a28a2649" => :mojave
   end
 
-  option "with-debug", "Build with debugger hooks"
-  option "with-openssl", "Build against Homebrew's OpenSSL instead of the bundled OpenSSL"
-  option "without-npm", "npm will not be installed"
-  option "without-completion", "npm bash completion will not be installed"
-  option "without-icu4c", "Build with small-icu (English only) instead of system-icu (all locales)"
-
-  deprecated_option "enable-debug" => "with-debug"
-
-  depends_on :python => :build if MacOS.version <= :snow_leopard
   depends_on "pkg-config" => :build
-  depends_on "icu4c" => :recommended
-  depends_on "openssl" => :optional
-
-  # Per upstream - "Need g++ 4.8 or clang++ 3.4".
-  fails_with :clang if MacOS.version <= :snow_leopard
-  fails_with :gcc_4_0
-  fails_with :gcc
-  ("4.3".."4.7").each do |n|
-    fails_with :gcc => n
-  end
+  depends_on "python@3.9" => :build
+  depends_on "icu4c"
 
   # We track major/minor from upstream Node releases.
   # We will accept *important* npm patch releases when necessary.
-  # https://github.com/Homebrew/homebrew/pull/46098#issuecomment-157802319
   resource "npm" do
-    url "https://registry.npmjs.org/npm/-/npm-4.1.2.tgz"
-    sha256 "87f2c95f98ac53d14d9e2c506f8ecfe1d891cd7c970450c74bf0daff24d65cfd"
-  end
-
-  # Fix run-time failure "Symbol not found: _clock_gettime"
-  # Upstream issue "7.5.0 clock_gettime runtime failure built with macOS 10.11
-  # and Xcode 8.x"
-  # Reported 1 Feb 2017 https://github.com/nodejs/node/issues/11104
-  if MacOS.version == :el_capitan && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
-    patch :DATA
+    url "https://registry.npmjs.org/npm/-/npm-7.0.10.tgz"
+    sha256 "fcb04ab78f85b5cb579313b5c96ccd73c584681b8c48030c6be7a0a9b3105157"
   end
 
   def install
+    # make sure subprocesses spawned by make are using our Python 3
+    ENV["PYTHON"] = Formula["python@3.9"].opt_bin/"python3"
+
     # Never install the bundled "npm", always prefer our
     # installation from tarball for better packaging control.
-    args = %W[--prefix=#{prefix} --without-npm]
-    args << "--debug" if build.with? "debug"
-    args << "--with-intl=system-icu" if build.with? "icu4c"
-    args << "--shared-openssl" if build.with? "openssl"
+    args = %W[--prefix=#{prefix} --without-npm --with-intl=system-icu]
     args << "--tag=head" if build.head?
 
     system "./configure", *args
     system "make", "install"
 
-    if build.with? "npm"
-      resource("npm").stage buildpath/"npm_install"
+    # Allow npm to find Node before installation has completed.
+    ENV.prepend_path "PATH", bin
 
-      # make sure npm can find node
-      ENV.prepend_path "PATH", bin
-      # set log level temporarily for npm's `make install`
-      ENV["NPM_CONFIG_LOGLEVEL"] = "verbose"
-      # unset prefix temporarily for npm's `make install`
-      ENV.delete "NPM_CONFIG_PREFIX"
+    bootstrap = buildpath/"npm_bootstrap"
+    bootstrap.install resource("npm")
+    # These dirs must exists before npm install.
+    mkdir_p libexec/"lib"
+    system "node", bootstrap/"bin/npm-cli.js", "install", "-ddd", "--global",
+            "--prefix=#{libexec}", resource("npm").cached_download
 
-      cd buildpath/"npm_install" do
-        system "./configure", "--prefix=#{libexec}/npm"
-        system "make", "install"
-        # `package.json` has relative paths to the npm_install directory.
-        # This copies back over the vanilla `package.json` that is expected.
-        # https://github.com/Homebrew/homebrew/issues/46131#issuecomment-157845008
-        cp buildpath/"npm_install/package.json", libexec/"npm/lib/node_modules/npm"
-        # Remove manpage symlinks from the buildpath, they are breaking bottle
-        # creation. The real manpages are living in libexec/npm/lib/node_modules/npm/man/
-        # https://github.com/Homebrew/homebrew/pull/47081#issuecomment-165280470
-        rm_rf libexec/"npm/share/"
-      end
+    # The `package.json` stores integrity information about the above passed
+    # in `cached_download` npm resource, which breaks `npm -g outdated npm`.
+    # This copies back over the vanilla `package.json` to fix this issue.
+    cp bootstrap/"package.json", libexec/"lib/node_modules/npm"
+    # These symlinks are never used & they've caused issues in the past.
+    rm_rf libexec/"share"
 
-      if build.with? "completion"
-        bash_completion.install \
-          buildpath/"npm_install/lib/utils/completion.sh" => "npm"
-      end
-    end
+    bash_completion.install bootstrap/"lib/utils/completion.sh" => "npm"
   end
 
   def post_install
-    return if build.without? "npm"
-
     node_modules = HOMEBREW_PREFIX/"lib/node_modules"
     node_modules.mkpath
-    npm_exec = node_modules/"npm/bin/npm-cli.js"
     # Kill npm but preserve all other modules across node updates/upgrades.
     rm_rf node_modules/"npm"
 
-    cp_r libexec/"npm/lib/node_modules/npm", node_modules
+    cp_r libexec/"lib/node_modules/npm", node_modules
     # This symlink doesn't hop into homebrew_prefix/bin automatically so
-    # remove it and make our own. This is a small consequence of our bottle
-    # npm make install workaround. All other installs **do** symlink to
-    # homebrew_prefix/bin correctly. We ln rather than cp this because doing
-    # so mimics npm's normal install.
-    ln_sf npm_exec, "#{HOMEBREW_PREFIX}/bin/npm"
+    # we make our own. This is a small consequence of our
+    # bottle-npm-and-retain-a-private-copy-in-libexec setup
+    # All other installs **do** symlink to homebrew_prefix/bin correctly.
+    # We ln rather than cp this because doing so mimics npm's normal install.
+    ln_sf node_modules/"npm/bin/npm-cli.js", HOMEBREW_PREFIX/"bin/npm"
+    ln_sf node_modules/"npm/bin/npx-cli.js", HOMEBREW_PREFIX/"bin/npx"
 
-    # Let's do the manpage dance. It's just a jump to the left.
-    # And then a step to the right, with your hand on rm_f.
-    ["man1", "man3", "man5", "man7"].each do |man|
-      # Dirs must exist first: https://github.com/Homebrew/homebrew/issues/35969
+    # Create manpage symlinks (or overwrite the old ones)
+    %w[man1 man5 man7].each do |man|
+      # Dirs must exist first: https://github.com/Homebrew/legacy-homebrew/issues/35969
       mkdir_p HOMEBREW_PREFIX/"share/man/#{man}"
-      rm_f Dir[HOMEBREW_PREFIX/"share/man/#{man}/{npm.,npm-,npmrc.,package.json.}*"]
-      ln_sf Dir[libexec/"npm/lib/node_modules/npm/man/#{man}/{npm,package.json}*"], HOMEBREW_PREFIX/"share/man/#{man}"
+      # still needed to migrate from copied file manpages to symlink manpages
+      rm_f Dir[HOMEBREW_PREFIX/"share/man/#{man}/{npm.,npm-,npmrc.,package.json.,npx.}*"]
+      ln_sf Dir[node_modules/"npm/man/#{man}/{npm,package-,shrinkwrap-,npx}*"], HOMEBREW_PREFIX/"share/man/#{man}"
     end
 
-    npm_root = node_modules/"npm"
-    npmrc = npm_root/"npmrc"
-    npmrc.atomic_write("prefix = #{HOMEBREW_PREFIX}\n")
-  end
-
-  def caveats
-    s = ""
-
-    if build.without? "npm"
-      s += <<-EOS.undent
-        Homebrew has NOT installed npm. If you later install it, you should supplement
-        your NODE_PATH with the npm module folder:
-          #{HOMEBREW_PREFIX}/lib/node_modules
-      EOS
-    end
-
-    if build.without? "full-icu"
-      s += <<-EOS.undent
-        Please note by default only English locale support is provided. If you need
-        full locale support you should either rebuild with full icu:
-          `brew reinstall node --with-full-icu`
-        or add full icu data at runtime following:
-          https://github.com/nodejs/node/wiki/Intl#using-and-customizing-the-small-icu-build
-      EOS
-    end
-
-    s
+    (node_modules/"npm/npmrc").atomic_write("prefix = #{HOMEBREW_PREFIX}\n")
   end
 
   test do
@@ -153,82 +96,21 @@ class Node < Formula
     assert_equal "hello", output
     output = shell_output("#{bin}/node -e 'console.log(new Intl.NumberFormat(\"en-EN\").format(1234.56))'").strip
     assert_equal "1,234.56", output
-    if build.with? "full-icu"
-      output = shell_output("#{bin}/node -e 'console.log(new Intl.NumberFormat(\"de-DE\").format(1234.56))'").strip
-      assert_equal "1.234,56", output
-    end
 
-    if build.with? "npm"
-      # make sure npm can find node
-      ENV.prepend_path "PATH", opt_bin
-      ENV.delete "NVM_NODEJS_ORG_MIRROR"
-      assert_equal which("node"), opt_bin/"node"
-      assert (HOMEBREW_PREFIX/"bin/npm").exist?, "npm must exist"
-      assert (HOMEBREW_PREFIX/"bin/npm").executable?, "npm must be executable"
-      system "#{HOMEBREW_PREFIX}/bin/npm", "--verbose", "install", "npm@latest"
-      system "#{HOMEBREW_PREFIX}/bin/npm", "--verbose", "install", "bignum" unless head?
-    end
+    output = shell_output("#{bin}/node -e 'console.log(new Intl.NumberFormat(\"de-DE\").format(1234.56))'").strip
+    assert_equal "1.234,56", output
+
+    # make sure npm can find node
+    ENV.prepend_path "PATH", opt_bin
+    ENV.delete "NVM_NODEJS_ORG_MIRROR"
+    assert_equal which("node"), opt_bin/"node"
+    assert_predicate HOMEBREW_PREFIX/"bin/npm", :exist?, "npm must exist"
+    assert_predicate HOMEBREW_PREFIX/"bin/npm", :executable?, "npm must be executable"
+    npm_args = ["-ddd", "--cache=#{HOMEBREW_CACHE}/npm_cache", "--build-from-source"]
+    system "#{HOMEBREW_PREFIX}/bin/npm", *npm_args, "install", "npm@latest"
+    system "#{HOMEBREW_PREFIX}/bin/npm", *npm_args, "install", "bufferutil" unless head?
+    assert_predicate HOMEBREW_PREFIX/"bin/npx", :exist?, "npx must exist"
+    assert_predicate HOMEBREW_PREFIX/"bin/npx", :executable?, "npx must be executable"
+    assert_match "< hello >", shell_output("#{HOMEBREW_PREFIX}/bin/npx cowsay hello")
   end
 end
-
-__END__
-diff --git a/deps/openssl/openssl/apps/apps.c b/deps/openssl/openssl/apps/apps.c
-index c487bd9..9456e47 100644
---- a/deps/openssl/openssl/apps/apps.c
-+++ b/deps/openssl/openssl/apps/apps.c
-@@ -150,6 +150,10 @@ static int WIN32_rename(const char *from, const char *to);
- # define rename(from,to) WIN32_rename((from),(to))
- #endif
- 
-+#ifdef __APPLE__
-+#include <AvailabilityMacros.h>
-+#endif
-+
- typedef struct {
-     const char *name;
-     unsigned long flag;
-@@ -3041,7 +3045,7 @@ double app_tminterval(int stop, int usertime)
- double app_tminterval(int stop, int usertime)
- {
-     double ret = 0;
--# ifdef CLOCK_REALTIME
-+# if (defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 101200) || (!defined(__APPLE__) && defined(CLOCK_REALTIME))
-     static struct timespec tmstart;
-     struct timespec now;
- # else
-@@ -3055,7 +3059,13 @@ double app_tminterval(int stop, int usertime)
-                    "this program on idle system.\n");
-         warning = 0;
-     }
--# ifdef CLOCK_REALTIME
-+# if (defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 101200) || (!defined(__APPLE__) && defined(CLOCK_REALTIME))
-+    clock_gettime(CLOCK_REALTIME, &now);
-+    if (stop == TM_START)
-+        tmstart = now;
-+    else
-+        ret = ((now.tv_sec + now.tv_nsec * 1e-9)
-+               - (tmstart.tv_sec + tmstart.tv_nsec * 1e-9));
-     clock_gettime(CLOCK_REALTIME, &now);
-     if (stop == TM_START)
-         tmstart = now;
-diff --git a/deps/uv/src/unix/darwin.c b/deps/uv/src/unix/darwin.c
-index b1ffbc3..23e91db 100644
---- a/deps/uv/src/unix/darwin.c
-+++ b/deps/uv/src/unix/darwin.c
-@@ -36,6 +36,7 @@
- #include <sys/sysctl.h>
- #include <time.h>
- #include <unistd.h>  /* sysconf */
-+#include <AvailabilityMacros.h>
- 
- #undef NANOSEC
- #define NANOSEC ((uint64_t) 1e9)
-@@ -57,7 +58,7 @@ void uv__platform_loop_delete(uv_loop_t* loop) {
- 
- 
- uint64_t uv__hrtime(uv_clocktype_t type) {
--#ifdef MAC_OS_X_VERSION_10_12
-+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
-   struct timespec ts;
-   clock_gettime(CLOCK_MONOTONIC, &ts);
-   return (((uint64_t) ts.tv_sec) * NANOSEC + ts.tv_nsec);

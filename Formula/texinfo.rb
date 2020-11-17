@@ -1,21 +1,28 @@
 class Texinfo < Formula
   desc "Official documentation format of the GNU project"
   homepage "https://www.gnu.org/software/texinfo/"
-  url "https://ftpmirror.gnu.org/texinfo/texinfo-6.3.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/texinfo/texinfo-6.3.tar.xz"
-  sha256 "246cf3ffa54985118ec2eea2b8d0c71b92114efe6282c2ae90d65029db4cf93a"
+  url "https://ftp.gnu.org/gnu/texinfo/texinfo-6.7.tar.xz"
+  mirror "https://ftpmirror.gnu.org/texinfo/texinfo-6.7.tar.xz"
+  sha256 "988403c1542d15ad044600b909997ba3079b10e03224c61188117f3676b02caa"
+  license "GPL-3.0"
 
-  bottle do
-    sha256 "ddcd68fb9757b11e5b8ea39e22996815aaf763b05711e21e17e45ba4ea68741a" => :sierra
-    sha256 "f0fcad49893de2e4167658cf13dc6b6ef0a458e764637b63ff2ba623959e4928" => :el_capitan
-    sha256 "91d4ca04c9b42751af95b6114b477afe01221758ba152763d4177332a67399d9" => :yosemite
-    sha256 "5990ad5d13570b6991156fa2db000dfe25273614c27912d46d8802577d85fe8c" => :mavericks
+  livecheck do
+    url :stable
   end
 
-  keg_only :provided_by_osx, <<-EOS.undent
-    Software that uses TeX, such as lilypond and octave, require a newer version
-    of these files.
-  EOS
+  bottle do
+    sha256 "7332c7a1665fc64484fff626116928630d4ee21983f1e221bda360a4d590a396" => :big_sur
+    sha256 "0686381d97b0448c10d11eaba59722c029d17c8423c17ad524b76ec086790f44" => :catalina
+    sha256 "419fccc89f850de008e954984c65eea9b7f82940178f7ee439e42c2c892a2e52" => :mojave
+    sha256 "a634a1bd15d3d7735e4934fcf26bfa295ce17108912ae7451d2761c6d578de6a" => :high_sierra
+  end
+
+  depends_on "gettext" if MacOS.version <= :high_sierra
+
+  keg_only :provided_by_macos
+
+  uses_from_macos "ncurses"
+  uses_from_macos "perl"
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -26,7 +33,7 @@ class Texinfo < Formula
   end
 
   test do
-    (testpath/"test.texinfo").write <<-EOS.undent
+    (testpath/"test.texinfo").write <<~EOS
       @ifnottex
       @node Top
       @top Hello World!
@@ -34,6 +41,6 @@ class Texinfo < Formula
       @bye
     EOS
     system "#{bin}/makeinfo", "test.texinfo"
-    assert_match /Hello World!/, File.read("test.info")
+    assert_match "Hello World!", File.read("test.info")
   end
 end

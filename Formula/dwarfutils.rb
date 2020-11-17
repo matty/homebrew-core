@@ -1,35 +1,33 @@
 class Dwarfutils < Formula
-  desc "lib and utility to dump and produce DWARF debug info in ELF objects"
+  desc "Dump and produce DWARF debug information in ELF objects"
   homepage "https://www.prevanders.net/dwarf.html"
-  url "https://www.prevanders.net/libdwarf-20161124.tar.gz"
-  sha256 "bd3d6dc7da0509876fb95b8681f165febd898845dc66714aa58e69b8feca988f"
+  url "https://www.prevanders.net/libdwarf-20201020.tar.gz"
+  sha256 "1c5ce59e314c6fe74a1f1b4e2fa12caea9c24429309aa0ebdfa882f74f016eff"
+
+  livecheck do
+    url :homepage
+    regex(%r{href=(?:["']?|.*?/)libdwarf[._-]v?(\d{6,8})\.t}i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "1cfcd1316ed75c66db70f5aa450d9808de5be9535e6b99fef6b2c81374d6274d" => :sierra
-    sha256 "9f22aea1978e9f3df7f2aaf2475341e9d901ded7f58a6cc75458d6b497e4c32d" => :el_capitan
-    sha256 "da3a66a5b440cd42329c5f2e1729657328d9cdae0a8e4306142748de4c25b42e" => :yosemite
+    sha256 "3f38cc1aefc659c6acf1ba09ff229b71f31cbbe1ac8928c164ad05895c202eff" => :big_sur
+    sha256 "1b9a9f2aaae5e305ff265839fe0f71e709814c8c9f0249dc3410b6cac702cadd" => :catalina
+    sha256 "1640ed20f01ce164951d84ae103e797c11545e6aee99fa27eb20335abe38a288" => :mojave
+    sha256 "da07cd4af006c48927a261cce0377289ff738f3d7cf12adf4f7ecb390a01a66d" => :high_sierra
   end
 
-  option "with-sanitize", "Use -fsanitize"
-
   depends_on "libelf" => :build
-  depends_on "gcc" if build.with? "sanitize"
+
+  uses_from_macos "zlib"
 
   def install
-    args = ""
-
-    if build.with? "sanitize"
-      ENV["CC"] = "#{Formula["gcc"].bin}/gcc-6"
-      args << "--enable-sanitize"
-    end
-
-    system "./configure", args
+    system "./configure"
     system "make"
 
     bin.install "dwarfdump/dwarfdump"
     man1.install "dwarfdump/dwarfdump.1"
-    lib.install "libdwarf/libdwarf.a"
+    lib.install "libdwarf/.libs/libdwarf.a"
     include.install "libdwarf/dwarf.h"
     include.install "libdwarf/libdwarf.h"
   end
@@ -37,7 +35,7 @@ class Dwarfutils < Formula
   test do
     system "#{bin}/dwarfdump", "-V"
 
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <dwarf.h>
       #include <libdwarf.h>
       #include <stdio.h>

@@ -1,29 +1,31 @@
 class Wartremover < Formula
   desc "Flexible Scala code linting tool"
-  homepage "https://github.com/puffnfresh/wartremover"
-  url "https://github.com/puffnfresh/wartremover/archive/v2.0.2.tar.gz"
-  sha256 "575a73c53cf2a40aa395fad3366f927225b85cc94301b67b2f2f79eed16b0eee"
-  head "https://github.com/puffnfresh/wartremover.git"
+  homepage "https://github.com/wartremover/wartremover"
+  url "https://github.com/wartremover/wartremover/archive/v2.4.13.tar.gz"
+  sha256 "d8fb123dc4f9327adf17e4a59c6004e6eece840725175968049d6d9f3b3e545e"
+  license "Apache-2.0"
+  head "https://github.com/wartremover/wartremover.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "68c1d18e8dc9fa0458b948a346b2c29e79c5335f03d8af233200794837fe3898" => :sierra
-    sha256 "610c613012ba9c04494688bf45a8ca4817b602f3fe3460f4733922c36c640783" => :el_capitan
-    sha256 "ab6fece8e11872fc3de9bc5c41380d061192ee8769644f8a453c548dd545f5c2" => :yosemite
+    sha256 "4917537fc324d707919f8fffbce15b779a9a85a5534d9800bcaa2928a5d4ab47" => :big_sur
+    sha256 "3cf1ce30e281fc782c0463c14b6770ff3901a882284942438fb060dd2ebb1120" => :catalina
+    sha256 "c50a74a7a86bf484bfdb8efcf66a41526b80ebc511af0353093006c2e220a0cc" => :mojave
+    sha256 "ed0dbc9e416d425b93070435d5c17620aa81642f9f1b7bca4c76cf4a36b5cdf0" => :high_sierra
   end
 
   depends_on "sbt" => :build
+  depends_on "openjdk@8"
 
   def install
-    # Prevents sandbox violation
-    ENV.java_cache
-    system "sbt", "core/assembly"
-    libexec.install Dir["core/target/scala-*/wartremover-assembly-*.jar"]
-    bin.write_jar_script Dir[libexec/"wartremover-assembly-*.jar"][0], "wartremover"
+    system "sbt", "-sbt-jar", Formula["sbt"].opt_libexec/"bin/sbt-launch.jar",
+                    "core/assembly"
+    libexec.install "wartremover-assembly.jar"
+    bin.write_jar_script libexec/"wartremover-assembly.jar", "wartremover", java_version: "1.8"
   end
 
   test do
-    (testpath/"foo").write <<-EOS.undent
+    (testpath/"foo").write <<~EOS
       object Foo {
         def foo() {
           var msg = "Hello World"

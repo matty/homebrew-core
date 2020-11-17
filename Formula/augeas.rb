@@ -1,13 +1,21 @@
 class Augeas < Formula
   desc "Configuration editing tool and API"
-  homepage "http://augeas.net"
-  url "http://download.augeas.net/augeas-1.7.0.tar.gz"
-  sha256 "b9315575d07f7ba28ca2f9f60b4987dfe77b5970c98b59dc6ca7873fc4979763"
+  homepage "https://augeas.net/"
+  url "http://download.augeas.net/augeas-1.12.0.tar.gz"
+  sha256 "321942c9cc32185e2e9cb72d0a70eea106635b50269075aca6714e3ec282cb87"
+  license "LGPL-2.1"
+
+  livecheck do
+    url "http://download.augeas.net/"
+    regex(/href=.*?augeas[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "5aea6d7dacc6810656d1818aaf7ef9a57bd086dad1ec2e2ad57a3c37b35438a5" => :sierra
-    sha256 "09deb1d25802e17034606b4fdd2509e59b50b25c4ff481a73ee5509770c9e265" => :el_capitan
-    sha256 "fe5a04d2e9d02a1bdc013e4db6bd3047e9c7e12b2ab400cdb21f34b9d0a1ff63" => :yosemite
+    sha256 "339c6898b7b3fd115fc3cc3c9a0cdb3eb6a1eab3f492e5f2de6513d7c6171c0e" => :big_sur
+    sha256 "00a45b8b446df0a95c2c45cbe608410df2d7be7787247f4b3a8fc1c2c19b41b6" => :catalina
+    sha256 "9a561491e3574dfe2cfe7da2a618c12d02218f88f760de46722d9b603e4f27ba" => :mojave
+    sha256 "0e1477f692cf67442dfcaf7c20a24733838df072ec867f59322070a7eaf3f925" => :high_sierra
+    sha256 "55b3fab93f2ec4a703dc2bb3b3d58c47375456bdb5f0308e0856b231d309c02d" => :sierra
   end
 
   head do
@@ -15,13 +23,14 @@ class Augeas < Formula
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
-    depends_on "libtool" => :build
     depends_on "bison" => :build
+    depends_on "libtool" => :build
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libxml2"
   depends_on "readline"
+
+  uses_from_macos "libxml2"
 
   def install
     args = %W[--disable-debug --disable-dependency-tracking --prefix=#{prefix}]
@@ -35,9 +44,10 @@ class Augeas < Formula
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    Lenses have been installed to:
-      #{HOMEBREW_PREFIX}/share/augeas/lenses/dist
+  def caveats
+    <<~EOS
+      Lenses have been installed to:
+        #{HOMEBREW_PREFIX}/share/augeas/lenses/dist
     EOS
   end
 

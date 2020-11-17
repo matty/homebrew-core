@@ -1,44 +1,39 @@
 class Pdnsrec < Formula
   desc "Non-authoritative/recursing DNS server"
   homepage "https://www.powerdns.com/recursor.html"
-  url "https://downloads.powerdns.com/releases/pdns-recursor-4.0.4.tar.bz2"
-  sha256 "2338778f49ccd03401e65f6f4b39047890e691c8ff6d810ecee45321fb4f1e4d"
+  url "https://downloads.powerdns.com/releases/pdns-recursor-4.4.0.tar.bz2"
+  sha256 "06bc932e00f13c95ef077a2eb61f64425534042cc50f86408b53c7615c4fe58b"
+  license "GPL-2.0-only"
+
+  livecheck do
+    url "https://downloads.powerdns.com/releases/"
+    regex(/href=.*?pdns-recursor[._-]v?(\d+(?:\.\d+)*)\.t/i)
+  end
 
   bottle do
-    sha256 "2cdc2cca4313b14afa5f744a2f2fa9bf9a6d56a32a9d13b5fb04cbe976f430d3" => :sierra
-    sha256 "e529af26e330e54cb114e8adde9f458d83470da4f371bedac01a5c2dc724a339" => :el_capitan
-    sha256 "149d602439855b0b8a09854d746ab4f31d340db26179530e73309e77ac3878ef" => :yosemite
+    sha256 "95d9be202a5f58a8b18a6620d02bc3ad9e3f088c66c2e55bf97c44a41eadac4c" => :big_sur
+    sha256 "795fb2e62f31fb0c13516cffccd35d4d7bc60f61b3e22e34801073a550cca88f" => :catalina
+    sha256 "237f535f843c8dec4330b59787b47c6b2c43329c8229781d6e9e9f12dca210c4" => :mojave
+    sha256 "65313fdb9d7482410b9ed3ee768fda93b64b9eca449b8d1620fcc59bb2ff9e73" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
   depends_on "boost"
-  depends_on "openssl"
+  depends_on "gcc" if DevelopmentTools.clang_build_version == 600
   depends_on "lua"
-  depends_on "gcc" if DevelopmentTools.clang_build_version <= 600
-
-  needs :cxx11
-
-  fails_with :clang do
-    build 600
-    cause "incomplete C++11 support"
-  end
+  depends_on "openssl@1.1"
 
   def install
     ENV.cxx11
-
-    # Remove for > 4.0.3; using inreplace avoids Autotools dependencies
-    # Upstream PR "Fall back to SystemV ucontexts on boost >= 1.61"
-    # See https://github.com/PowerDNS/pdns/commit/fbf562c
-    inreplace "configure", "boost/context/detail/fcontext.hpp",
-                           "boost/context/fcontext.hpp"
 
     args = %W[
       --prefix=#{prefix}
       --sysconfdir=#{etc}/powerdns
       --disable-silent-rules
       --with-boost=#{Formula["boost"].opt_prefix}
-      --with-openssl=#{Formula["openssl"].opt_prefix}
+      --with-libcrypto=#{Formula["openssl@1.1"].opt_prefix}
       --with-lua
+      --without-net-snmp
     ]
 
     system "./configure", *args

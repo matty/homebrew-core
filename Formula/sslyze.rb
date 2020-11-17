@@ -3,27 +3,24 @@ class Sslyze < Formula
 
   desc "SSL scanner"
   homepage "https://github.com/nabla-c0d3/sslyze"
+  license "AGPL-3.0-only"
 
   stable do
-    url "https://github.com/nabla-c0d3/sslyze/archive/1.0.0.tar.gz"
-    sha256 "5117f10cda0d041816ebef78dc73fcb0ba16e4f3fe2a9a28f7a73eadbab2b921"
+    url "https://files.pythonhosted.org/packages/44/07/c4e389c55664524869b06043112ab5bbca6ea7fd39d7c03947cb475df85e/sslyze-3.1.0.tar.gz"
+    sha256 "8b562bd4a50d816ec59c3b3440c6b6b2909c9470111ff29215a22447c93ee5b8"
 
     resource "nassl" do
-      url "https://github.com/nabla-c0d3/nassl/archive/0.15.1.tar.gz"
-      sha256 "b25020074d0838837531b2ed30635ec715f60e13f11f416a89588edd08653f1f"
-    end
-
-    resource "openssl" do
-      url "https://github.com/PeterMosmans/openssl.git",
-          :revision => "2622e9bff72f4949c285f2d955c2f78663d79776"
+      url "https://github.com/nabla-c0d3/nassl/archive/3.1.0.tar.gz"
+      sha256 "a94b7e8ac29fbdf8112efb8aa65e49d5d74ce2aeebbf3f00364a10016427ef63"
     end
   end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "d200e3d39344be2cebc3b0ffdaec99ea63c57e6cc7104b2b1128b7d6d91d91bd" => :sierra
-    sha256 "4a7dad0da43827483982171fc1fc8b5e90581dc093668c13960fd9adddbb1b80" => :el_capitan
-    sha256 "cd77953720ef441f9981e890f04ebb3b0990bf77de1d08ed943446df8e1c41a5" => :yosemite
+    cellar :any
+    sha256 "2dc261a64f7ffad3ee8de2f649a3570c1da0fddb5addeae636abcb9219a33847" => :big_sur
+    sha256 "65a3500ec8f4939da7af32c9e44ece53524c5e17577872b30464110266cb9974" => :catalina
+    sha256 "bf6cd4aefb0030cdf3be9c6ccfd209949fa9447b62d10825d3fe1abb14fbdc04" => :mojave
+    sha256 "5252621ac2049df5284318ef94252da0601707ecf831726c1df69536c8bc8706" => :high_sierra
   end
 
   head do
@@ -32,60 +29,62 @@ class Sslyze < Formula
     resource "nassl" do
       url "https://github.com/nabla-c0d3/nassl.git"
     end
-
-    resource "openssl" do
-      url "https://github.com/PeterMosmans/openssl.git",
-          :branch => "1.0.2-chacha"
-    end
   end
 
-  depends_on :arch => :x86_64
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "pipenv" => :build
+  depends_on arch: :x86_64
+  depends_on "libffi"
+  depends_on "openssl@1.1"
+  depends_on "python@3.9"
 
-  resource "enum34" do
-    url "https://files.pythonhosted.org/packages/bf/3e/31d502c25302814a7c2f1d3959d2a3b3f78e509002ba91aea64993936876/enum34-1.1.6.tar.gz"
-    sha256 "8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
+  resource "cffi" do
+    url "https://files.pythonhosted.org/packages/cb/ae/380e33d621ae301770358eb11a896a34c34f30db188847a561e8e39ee866/cffi-1.14.3.tar.gz"
+    sha256 "f92f789e4f9241cd262ad7a555ca2c648a98178a953af117ef7fad46aa1d5591"
   end
 
-  resource "typing" do
-    url "https://files.pythonhosted.org/packages/b6/0c/53c42edca789378b8c05a5496e689f44e5dd82bc6861d1ae5a926ee51b84/typing-3.5.3.0.tar.gz"
-    sha256 "ca2daac7e393e8ee86e9140cd0cf0172ff6bb50ebdf0b06281770f98f31bff21"
+  resource "cryptography" do
+    url "https://files.pythonhosted.org/packages/94/5c/42de91c7fbdb817b2d9a4e64b067946eb38a4eb36c1a09c96c87a0f86a82/cryptography-3.2.1.tar.gz"
+    sha256 "d3d5e10be0cf2a12214ddee45c6bd203dab435e3d83b4560c03066eda600bfe3"
   end
 
-  resource "zlib" do
-    url "http://zlib.net/zlib-1.2.11.tar.gz"
-    mirror "https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.gz"
-    sha256 "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
+  resource "pycparser" do
+    url "https://files.pythonhosted.org/packages/0f/86/e19659527668d70be91d0369aeaa055b4eb396b0f387a4f92293a20035bd/pycparser-2.20.tar.gz"
+    sha256 "2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0"
+  end
+
+  resource "six" do
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
+  end
+
+  resource "tls-parser" do
+    url "https://files.pythonhosted.org/packages/66/4e/da7f727a76bd9abee46f4035dbd7a4711cde408f286dae00c7a1f9dd9cbb/tls_parser-1.2.2.tar.gz"
+    sha256 "83e4cb15b88b00fad1a856ff54731cc095c7e4f1ff90d09eaa24a5f48854da93"
   end
 
   def install
-    venv = virtualenv_create(libexec)
+    venv = virtualenv_create(libexec, "python3.9")
 
-    venv.pip_install resource("enum34")
-    venv.pip_install resource("typing")
+    res = resources.map(&:name).to_set
+    res -= %w[nassl]
 
-    ENV.prepend_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
+    res.each do |r|
+      venv.pip_install resource(r)
+    end
 
     resource("nassl").stage do
       nassl_path = Pathname.pwd
-      # openssl fails on parallel build. Related issues:
-      # - https://rt.openssl.org/Ticket/Display.html?id=3736&user=guest&pass=guest
-      # - https://rt.openssl.org/Ticket/Display.html?id=3737&user=guest&pass=guest
-      ENV.deparallelize do
-        mv "bin/openssl/include", "nassl_openssl_include"
-        rm_rf "bin" # make sure we don't use the prebuilt binaries
-        (nassl_path/"bin/openssl").install "nassl_openssl_include" => "include"
-        (nassl_path/"zlib-#{resource("zlib").version}").install resource("zlib")
-        (nassl_path/"openssl").install resource("openssl")
-        system "python", "build_from_scratch.py"
-      end
-      system "python", "run_tests.py"
+      inreplace "Pipfile", 'python_version = "3.7"', 'python_version = "3.9"'
+      system "pipenv", "install", "--dev"
+      system "pipenv", "run", "invoke", "build.all"
       venv.pip_install nassl_path
     end
+
     venv.pip_install_and_link buildpath
   end
 
   test do
     assert_match "SCAN COMPLETED", shell_output("#{bin}/sslyze --regular google.com")
+    assert_no_match /exception/, shell_output("#{bin}/sslyze --certinfo letsencrypt.org")
   end
 end

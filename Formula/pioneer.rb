@@ -1,49 +1,41 @@
 class Pioneer < Formula
   desc "Game of lonely space adventure"
-  homepage "http://pioneerspacesim.net/"
-  url "https://github.com/pioneerspacesim/pioneer/archive/20161129.tar.gz"
-  sha256 "1c6fcc9a16da2c6d664ab88764718b94d7fdf5016bc5b4f97d7b00f8eccd9336"
+  homepage "https://pioneerspacesim.net/"
+  url "https://github.com/pioneerspacesim/pioneer/archive/20200203.tar.gz"
+  sha256 "3055d63c1bd3377c3794eee830a8adbd650b178bad9e927531e38cb5d5838694"
+  license "GPL-3.0"
+  revision 1
   head "https://github.com/pioneerspacesim/pioneer.git"
 
   bottle do
-    sha256 "1ee88d6947ab3bb20898fce0e686a4c807ab0d97b8955b0437929a90aedbcc57" => :sierra
-    sha256 "c9ad6ca3693934d10998d6186518b8fa8b137335a2093a6f4b3769e9e3f66c78" => :el_capitan
-    sha256 "f3f80872e3e47925679a1583df1526efcfb74a51649d55b571b3237d84cc00a6" => :yosemite
+    sha256 "32222be9e17bca08aef700f3995b7e15a5bab1f8055f5da70241668ad192d9d6" => :big_sur
+    sha256 "dd740d3f1f48b444c2c4954621174f27bb5e58f0f337577fe17ca1e0bcc27ebf" => :catalina
+    sha256 "e76632b5f3ffee2f88485a9dfdd55d6bb64566c5a78045a8d6e7e33fef254468" => :mojave
+    sha256 "1485110ccb049479063b6a94cd1385e678251da599d3ef92ca99f8fc69a99000" => :high_sierra
   end
 
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "assimp"
   depends_on "freetype"
+  depends_on "glew"
+  depends_on "libpng"
+  depends_on "libsigc++@2"
+  depends_on "libvorbis"
   depends_on "sdl2"
   depends_on "sdl2_image"
-  depends_on "libsigc++"
-  depends_on "libvorbis"
-  depends_on "libpng"
-  depends_on "lua"
-
-  needs :cxx11
 
   def install
     ENV.cxx11
-    ENV["PIONEER_DATA_DIR"] = "#{pkgshare}/data"
 
-    # Remove as soon as possible
-    # https://github.com/pioneerspacesim/pioneer/issues/3839
-    ENV["ARFLAGS"] = "cru"
-
-    system "./bootstrap"
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}",
-                          "--with-version=#{version}",
-                          "--with-external-liblua"
+    # Set PROJECT_VERSION to be the date of release, not the build date
+    inreplace "CMakeLists.txt", "string(TIMESTAMP PROJECT_VERSION \"\%Y\%m\%d\")", "set(PROJECT_VERSION #{version})"
+    system "cmake", ".", *std_cmake_args
     system "make", "install"
   end
 
   test do
-    assert_equal "#{name} #{version}", shell_output("#{bin}/pioneer -v 2>&1").chomp
-    assert_equal "modelcompiler #{version}", shell_output("#{bin}/modelcompiler -v 2>&1").chomp
+    assert_match "#{name} #{version}", shell_output("#{bin}/pioneer -v 2>&1").chomp
+    assert_match "modelcompiler #{version}", shell_output("#{bin}/modelcompiler -v 2>&1").chomp
   end
 end

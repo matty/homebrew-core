@@ -1,37 +1,84 @@
 class Libogg < Formula
   desc "Ogg Bitstream Library"
   homepage "https://www.xiph.org/ogg/"
-  url "http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz"
-  sha256 "e19ee34711d7af328cb26287f4137e70630e7261b17cbe3cd41011d73a654692"
+  license "BSD-3-Clause"
+
+  stable do
+    url "https://downloads.xiph.org/releases/ogg/libogg-1.3.4.tar.gz"
+    sha256 "fe5670640bd49e828d64d2879c31cb4dde9758681bb664f9bdbf159a01b0c76e"
+
+    # os_types: fix unsigned typedefs for MacOS. This is already merged upstream; remove on next version
+    patch do
+      url "https://github.com/xiph/ogg/commit/c8fca6b4a02d695b1ceea39b330d4406001c03ed.patch?full_index=1"
+      sha256 "0f4d289aecb3d5f7329d51f1a72ab10c04c336b25481a40d6d841120721be485"
+    end
+  end
 
   bottle do
     cellar :any
-    sha256 "652ed73b78106579014bfb727464094004da85ad15aa7655c3076a2d1e587916" => :sierra
-    sha256 "dde4684a0247e6b6b27025ff66a35035a9c58492516b6d5c227e8be1eb880685" => :el_capitan
-    sha256 "5d203c8e978aee2005f8ae4e85ba1e0451d4a29c8d6f878ada8da5d45f60fe84" => :yosemite
-    sha256 "eafa300fd404b5f2a48b9327b8cb320712faf228ff2fbfdac53ad99060f82350" => :mavericks
-    sha256 "795ebc059c77ca0087ead3f642a888bfc470953c98104dacee5b6e5d7c5aeaa9" => :mountain_lion
-    sha256 "b2b1a8a3bf34fd5f7ea7d60a10fe38e3d699b7344a843599938d1669871c9c8a" => :lion
+    rebuild 1
+    sha256 "47c3224ac25b17a201e234f8fabcb9249b7d1587e69c63e025578c5a6d448ab3" => :big_sur
+    sha256 "b95bbf935f48878bd96d1c0e6557a017aa18cb17a080bc3ef9308b6415c278ef" => :catalina
+    sha256 "3cc7656859154f6eb98d3ddbe4b74c810b505e2162af1357b3ed6b70cad35125" => :mojave
+    sha256 "95f271ec181f6b999674636272a3414db4242eabd0a0b0572cfa0f1f324f5ef8" => :high_sierra
   end
 
   head do
-    url "https://svn.xiph.org/trunk/ogg"
+    url "https://gitlab.xiph.org/xiph/ogg.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  option :universal
+  resource("oggfile") do
+    url "https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg"
+    sha256 "379071af4fa77bc7dacf892ad81d3f92040a628367d34a451a2cdcc997ef27b0"
+  end
 
   def install
-    ENV.universal_binary if build.universal?
-
     system "./autogen.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make"
     ENV.deparallelize
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <ogg/ogg.h>
+      #include <stdio.h>
+
+      int main (void) {
+        ogg_sync_state oy;
+        ogg_stream_state os;
+        ogg_page og;
+        ogg_packet op;
+        char *buffer;
+        int bytes;
+
+        ogg_sync_init (&oy);
+        buffer = ogg_sync_buffer (&oy, 4096);
+        bytes = fread(buffer, 1, 4096, stdin);
+        ogg_sync_wrote (&oy, bytes);
+        if (ogg_sync_pageout (&oy, &og) != 1)
+          return 1;
+        ogg_stream_init (&os, ogg_page_serialno (&og));
+        if (ogg_stream_pagein (&os, &og) < 0)
+          return 1;
+        if (ogg_stream_packetout (&os, &op) != 1)
+         return 1;
+
+        return 0;
+      }
+    EOS
+    testpath.install resource("oggfile")
+    system ENV.cc, "test.c", "-I#{include}", "-L#{lib}", "-logg",
+                   "-o", "test"
+    # Should work on an OGG file
+    shell_output("./test < Example.ogg")
+    # Expected to fail on a non-OGG file
+    shell_output("./test < #{test_fixtures("test.wav")}", 1)
   end
 end

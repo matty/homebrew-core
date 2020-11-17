@@ -1,30 +1,30 @@
 class Jbig2dec < Formula
   desc "JBIG2 decoder and library (for monochrome documents)"
-  homepage "http://ghostscript.com/jbig2dec.html"
-  url "http://downloads.ghostscript.com/public/jbig2dec/jbig2dec-0.12.tar.gz"
-  sha256 "bcc5f2cc75ee46e9a2c3c68d4a1b740280c772062579a5d0ceda24bee2e5ebf0"
+  homepage "https://jbig2dec.com/"
+  url "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9531/jbig2dec-0.19.tar.gz"
+  sha256 "279476695b38f04939aa59d041be56f6bade3422003a406a85e9792c27118a37"
+  license "AGPL-3.0-or-later"
+
+  livecheck do
+    url "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/latest"
+    regex(%r{href=.*?/jbig2dec[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "a46edad05083874510463f4638100765a4f2fb451fad2cfad4b5276cdcb632f7" => :sierra
-    sha256 "38ad008992a9c273162238783b31bbcc4be8558d82c0a87b947ef0be699c437c" => :el_capitan
-    sha256 "d1de5bcbceaca8669c847ec754e7d44b844ad08abdef377efdd704e768d13c86" => :yosemite
-    sha256 "e42e117812549edeae1f60e1900b0692994c75ebae186f611e16528fe0521c89" => :mavericks
-    sha256 "42039ee0b62ad6b4a153c5a5e93609ac1b668626b044a23a450a58d4d71338a5" => :mountain_lion
+    sha256 "44aa9639d58ac2e176c37538c3fe652e077bcbf82264b756b4ba9db041e9273c" => :big_sur
+    sha256 "7e70d2b2472b4116d1f98b7518f124067dbfa8e4d3d73b552af38440e7770bdd" => :catalina
+    sha256 "d02d163a886d1f3a9e1af50418ed2f19f66981b44a58f3228b3580f585929ee4" => :mojave
+    sha256 "8ec515805d2fab8f4db3b27afba0363428f341bb16fbda7d2708ef44fffc5285" => :high_sierra
   end
 
-  depends_on "automake" => :build
   depends_on "autoconf" => :build
+  depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "libpng" => :optional
 
-  # http://bugs.ghostscript.com/show_bug.cgi?id=695890
-  # Remove on next release.
-  patch do
-    # Original URL: http://git.ghostscript.com/?p=jbig2dec.git;a=commitdiff_plain;h=70c7f1967f43a94f9f0d6808d6ab5700a120d2fc
-    url "https://raw.githubusercontent.com/Homebrew/formula-patches/7dc28b82/jbig2dec/bug-695890.patch"
-    sha256 "5239e4eb991f198d2ba30d08011c2887599b5cead9db8b1d3eacec4b8912c2d0"
+  resource("test") do
+    url "https://github.com/apache/tika/raw/master/tika-parsers/src/test/resources/test-documents/testJBIG2.jb2"
+    sha256 "40764aed6c185f1f82123f9e09de8e4d61120e35d2b5c6ede082123749c22d91"
   end
 
   def install
@@ -32,33 +32,17 @@ class Jbig2dec < Formula
       --disable-dependency-tracking
       --prefix=#{prefix}
       --disable-silent-rules
+      --without-libpng
     ]
 
-    args << "--without-libpng" if build.without? "libpng"
-
-    system "autoreconf", "-fvi" # error: cannot find install-sh
-    system "./configure", *args
+    system "./autogen.sh", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
-      #include <stdint.h>
-      #include <stdlib.h>
-      #include <jbig2.h>
-
-      int main()
-      {
-        Jbig2Ctx *ctx;
-        Jbig2Image *image;
-        ctx = jbig2_ctx_new(NULL, 0, NULL, NULL, NULL);
-        image = jbig2_image_new(ctx, 10, 10);
-        jbig2_image_release(ctx, image);
-        jbig2_ctx_free(ctx);
-        return 0;
-      }
-    EOS
-    system ENV.cc, "test.c", "-DJBIG_NO_MEMENTO", "-L#{lib}", "-ljbig2dec", "-o", "test"
-    system "./test"
+    resource("test").stage testpath
+    output = shell_output("#{bin}/jbig2dec -t pbm --hash testJBIG2.jb2")
+    assert_match "aa35470724c946c7e953ddd49ff5aab9f8289aaf", output
+    assert_predicate testpath/"testJBIG2.pbm", :exist?
   end
 end

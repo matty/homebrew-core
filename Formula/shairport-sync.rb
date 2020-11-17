@@ -1,34 +1,43 @@
 class ShairportSync < Formula
-  desc "AirTunes emulator. Shairport Sync adds multi-room capability."
+  desc "AirTunes emulator that adds multi-room capability"
   homepage "https://github.com/mikebrady/shairport-sync"
-  url "https://github.com/mikebrady/shairport-sync/archive/2.8.6.tar.gz"
-  sha256 "2e73416ac8fdda1657034afaa143f1710852ebed06e0aa43dafc2b7dc5eb653d"
-  head "https://github.com/mikebrady/shairport-sync.git", :branch => "development"
+  url "https://github.com/mikebrady/shairport-sync/archive/3.3.6.tar.gz"
+  sha256 "a8382affd25c473fa38ead5690148c6c3902098f359f9c881eefe139e1f49f49"
+  license "MIT"
+  head "https://github.com/mikebrady/shairport-sync.git", branch: "development"
 
-  bottle do
-    sha256 "a04c78637cd7e8293a864f841b9e7ce62ee42458a5d97fd0eff0f2a2d90f4f9f" => :sierra
-    sha256 "d2f5d7c32ceb9e726aa3caff7364b1f0c450509e10d3e2cbaf50d7c4f19a209a" => :el_capitan
-    sha256 "9d9a2bcd15d54cdaefe04f4f1a585f6bb4aef311508dae22a1e16e045d64f585" => :yosemite
+  livecheck do
+    url "https://github.com/mikebrady/shairport-sync/releases/latest"
+    regex(%r{href=.*?/tag/v?(\d+(?:\.\d+)+)["' >]}i)
   end
 
-  depends_on "pkg-config" => :build
+  bottle do
+    sha256 "3c2a973fbbe200704e35737226fd4e7ed6edad9f389253602fe5d14c50bb171e" => :catalina
+    sha256 "afe30af9e783c581888b525d7e3aab13e09e9812e9f717ad258c9cbb996da8a4" => :mojave
+    sha256 "d08952f97ce3a3f7e10a602322d0fdb23d8553586b4a7ad6b01af927f9969e1f" => :high_sierra
+  end
+
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "openssl"
-  depends_on "popt"
-  depends_on "libsoxr"
+  depends_on "pkg-config" => :build
   depends_on "libao"
-  depends_on "libdaemon"
   depends_on "libconfig"
+  depends_on "libdaemon"
+  depends_on "libsoxr"
+  depends_on "openssl@1.1"
+  depends_on "popt"
+  depends_on "pulseaudio"
 
   def install
     system "autoreconf", "-fvi"
     args = %W[
-      --with-os-type=darwin
+      --with-os=darwin
+      --with-libdaemon
       --with-ssl=openssl
       --with-dns_sd
       --with-ao
       --with-stdout
+      --with-pa
       --with-pipe
       --with-soxr
       --with-metadata
@@ -45,7 +54,7 @@ class ShairportSync < Formula
   end
 
   test do
-    output = shell_output("#{bin}/shairport-sync -V", 1)
-    assert_match "OpenSSL-ao-stdout-pipe-soxr-metadata", output
+    output = shell_output("#{bin}/shairport-sync -V")
+    assert_match "libdaemon-OpenSSL-dns_sd-ao-pa-stdout-pipe-soxr-metadata", output
   end
 end

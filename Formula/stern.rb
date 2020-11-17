@@ -1,37 +1,26 @@
 class Stern < Formula
-  desc "Tail multiple Kubernetes pods & their containers."
-  homepage "https://github.com/wercker/stern"
-  url "https://github.com/wercker/stern/archive/1.2.0.tar.gz"
-  sha256 "d8a72f772f52482cf3c5e29869e793ef5b6b8ed7916f092f94d2ded2cccc324f"
-
-  head "https://github.com/wercker/stern",
-    :shallow => false
+  desc "Tail multiple Kubernetes pods & their containers"
+  homepage "https://github.com/stern/stern"
+  url "https://github.com/stern/stern/archive/v1.13.0.tar.gz"
+  sha256 "17f41fb51e61ae396979c6d1007fc5dd2913e51c21c0c01f35019d94db65f1b6"
+  license "Apache-2.0"
+  head "https://github.com/stern/stern.git"
 
   bottle do
-    sha256 "9d4132b959e849104478bee303de9d8e3072ce92c8b185650f8eca251c2aef7c" => :sierra
-    sha256 "ffd3fe0afd636bf2724e53f01658fd0819e7af4007ccbacf09f73a2899f21ac2" => :el_capitan
-    sha256 "388d15c31e4e1e7991b1c91e8b95a4955883e1a5a412a6ca63d1e45c96afd46d" => :yosemite
+    cellar :any_skip_relocation
+    sha256 "0f8f6af5554f315bd5865e29df96c78227adf7dc3b760ce4405a78aef46842a5" => :big_sur
+    sha256 "d6dbc6b4d2bc279d0fe11f755ff22076275dc63f860507fea7c25b290cf4923a" => :catalina
+    sha256 "888437271eb402c05e692d69bc469d6a471c475a4f8a1c2434c097470b79ace1" => :mojave
+    sha256 "36b25df7f6bdd4efdd90bb379e00e423da5e1123151c040b707cbf3f0f049d09" => :high_sierra
   end
 
   depends_on "go" => :build
-  depends_on "govendor" => :build
 
   def install
-    contents = Dir["{*,.git,.gitignore}"]
-    gopath = buildpath/"gopath"
-    (gopath/"src/github.com/wercker/stern").install contents
-
-    ENV["GOPATH"] = gopath
-    ENV.prepend_create_path "PATH", gopath/"bin"
-
-    cd gopath/"src/github.com/wercker/stern" do
-      system "govendor", "sync"
-      system "go", "build", "-o", "bin/stern"
-      bin.install "bin/stern"
-    end
+    system "go", "build", "-ldflags", "-s -w -X github.com/stern/stern/cmd.version=#{version}", *std_go_args
   end
 
   test do
-    system "#{bin}/stern", "--version"
+    assert_match "version: #{version}", shell_output("#{bin}/stern --version")
   end
 end

@@ -1,15 +1,22 @@
 class Xmlto < Formula
   desc "Convert XML to another format (based on XSL or other tools)"
-  homepage "https://fedorahosted.org/xmlto/"
-  url "https://fedorahosted.org/releases/x/m/xmlto/xmlto-0.0.28.tar.bz2"
+  homepage "https://pagure.io/xmlto/"
+  url "https://releases.pagure.org/xmlto/xmlto-0.0.28.tar.bz2"
   sha256 "1130df3a7957eb9f6f0d29e4aa1c75732a7dfb6d639be013859b5c7ec5421276"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url "https://releases.pagure.org/xmlto/?C=M&O=D"
+    regex(/href=.*?xmlto[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "55b1bf9e049e2e70ea31baa5a1e64d48ef98cab1de1b13b99f5cf2b446b741d2" => :sierra
-    sha256 "25c7921f993a9cc8c4b9e2bd8a4e6f1a90b7f755f747b55f391ed063f123f64d" => :el_capitan
-    sha256 "add17a1f3fd3569e3a8ed9e970f5d9397bdf1cca185c47b50af4f56492f8afff" => :yosemite
-    sha256 "afd12ae6c79db17692175c1da036fbcf3df0c33592c0c6d7a686ce37f2443838" => :mavericks
+    rebuild 2
+    sha256 "95502b71000319da58971ea17c0dab0f326d20ce4c09d074fe4c7fe89c66d002" => :big_sur
+    sha256 "d2c21b9b398191e21dcf6e7ac53e4dd46fb59d29173e4d8443ac296101cce58f" => :catalina
+    sha256 "8fca3be2271ae8e7fb646b011969ba4030f7421118a4ea6b11eca1ac0fe6979b" => :mojave
+    sha256 "1214da1d14a8f01d8b8d0ead6606207ff5a29fb7ab104d6af47e57fbca4ffcc7" => :high_sierra
   end
 
   depends_on "docbook"
@@ -18,6 +25,8 @@ class Xmlto < Formula
   # does not support longopts in the optstring, so use GNU getopt.
   depends_on "gnu-getopt"
 
+  uses_from_macos "libxslt"
+
   # xmlto forces --nonet on xsltproc, which causes it to fail when
   # DTDs/entities aren't available locally.
   patch :DATA
@@ -25,12 +34,23 @@ class Xmlto < Formula
   def install
     # GNU getopt is keg-only, so point configure to it
     ENV["GETOPT"] = Formula["gnu-getopt"].opt_bin/"getopt"
+    # Prevent reference to Homebrew shim
+    ENV["SED"] = "/usr/bin/sed"
     # Find our docbook catalog
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     ENV.deparallelize
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test").write <<~EOS
+      <?xmlif if foo='bar'?>
+      Passing test.
+      <?xmlif fi?>
+    EOS
+    assert_equal "Passing test.", shell_output("cat test | #{bin}/xmlif foo=bar").strip
   end
 end
 

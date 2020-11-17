@@ -1,16 +1,17 @@
 class Sparkey < Formula
   desc "Constant key-value store, best for frequent read/infrequent write uses"
   homepage "https://github.com/spotify/sparkey/"
-  url "https://github.com/spotify/sparkey/archive/sparkey-0.2.0.tar.gz"
-  sha256 "a06caf23c64e7ebae5b8b67272b21ab4c57f21a66d190bfe0a95f5af1dc69154"
+  url "https://github.com/spotify/sparkey/archive/sparkey-1.0.0.tar.gz"
+  sha256 "d607fb816d71d97badce6301dd56e2538ef2badb6530c0a564b1092788f8f774"
+  license "Apache-2.0"
+  revision 1
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "035ae7c18eb13ee8ae2167aafecade136cec43816aeff76df790f7a5e3350408" => :sierra
-    sha256 "fb1e14e774cf28b43cda024e73aa1201967dfa3c8d192500e56b3d42bdf41850" => :el_capitan
-    sha256 "40bb3d9f1937bcfc3ddb1608228affa3676bafea61665f9aa1525936d2887260" => :yosemite
-    sha256 "b7a5df3013850fbb10e2e46ffde968972bed654dfab6964784b7b2b00b054e2d" => :mavericks
+    sha256 "6f469c28584124f46a7fa9835dee3311ef02d5a48f2d8fb8c8eb29f2c6688986" => :big_sur
+    sha256 "b7e64101995d257df010edb67bafcd60745f09c7b0ebb9650c817eb7343f1899" => :catalina
+    sha256 "438c323c343b7aade2da46316d24bcc4d5c7a95910a43914d70125af14a17636" => :mojave
+    sha256 "4acbb473ce3be942b808af45789ccb7ede8199c728f7c381cd0dda1a105c8a9e" => :high_sierra
   end
 
   depends_on "autoconf" => :build
@@ -25,6 +26,7 @@ class Sparkey < Formula
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
     system "make", "install"
+    mv bin/"bench", bin/"sparkey_bench"
   end
 
   test do

@@ -1,22 +1,27 @@
 class Libmonome < Formula
   desc "Interact with monome devices via C, Python, or FFI"
-  homepage "http://illest.net/libmonome/"
-  url "https://github.com/monome/libmonome/releases/download/v1.4.0/libmonome-1.4.0.tar.bz2"
-  sha256 "0a04ae4b882ea290f3578bcba8e181c7a3b333b35b3c2410407126d5418d149a"
-
+  homepage "https://monome.org/"
+  url "https://github.com/monome/libmonome/archive/v1.4.3.tar.gz"
+  sha256 "018e8bf64fda20c09a6de57fee484d7327d9176df27a81b015fa9da4853d8b5d"
+  license "ISC"
   head "https://github.com/monome/libmonome.git"
 
   bottle do
-    sha256 "6473c190c553546e9f648b7dbcc5c43b1b4cfeff54898d7f373c309092c5ad86" => :sierra
-    sha256 "b6553b4ce4d56cca44493acd9615cc399d5e20b6acb403a36914a0df5151926e" => :el_capitan
-    sha256 "0c730849c05d8899a6e4bd0f1c3bfdeb791de8fd5d8b10d5c29800b68a2a0906" => :yosemite
-    sha256 "b79cc0774b4c270336b57092741d4387feea8d60484be10c0fef7c2af61c65f1" => :mavericks
+    cellar :any
+    sha256 "c80ff6b83563bd1ea8f6d03b79b6f152713aaa5c8f82d94c1616aa1fe31dcdb0" => :big_sur
+    sha256 "b9be8943cd4758aec068ac75cb966a88e2119063873f7c29913936cc775fba13" => :catalina
+    sha256 "44eed89ac8eeec932fde1b7baaf7059c0bd0030ac84be0a6f7695de91954ef5c" => :mojave
+    sha256 "95892a3038d8ec5b1ff36438f02165d200a0a1d548af060d1197ae57e3a73e89" => :high_sierra
   end
 
   depends_on "liblo"
 
   def install
-    inreplace "wscript", "-Werror", ""
+    # Fix build on Mojave
+    # https://github.com/monome/libmonome/issues/62
+    inreplace "wscript", /conf.env.append_unique.*-mmacosx-version-min=10.5.*/,
+                         "pass"
+
     system "./waf", "configure", "--prefix=#{prefix}"
     system "./waf", "build"
     system "./waf", "install"

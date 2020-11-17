@@ -1,16 +1,25 @@
 class Lzop < Formula
   desc "File compressor"
   homepage "https://www.lzop.org/"
-  url "https://www.lzop.org/download/lzop-1.03.tar.gz"
-  sha256 "c1425b8c77d49f5a679d5a126c90ea6ad99585a55e335a613cae59e909dbb2c9"
+  url "https://dl.bintray.com/homebrew/mirror/lzop-1.04.tar.gz"
+  mirror "https://www.lzop.org/download/lzop-1.04.tar.gz"
+  sha256 "7e72b62a8a60aff5200a047eea0773a8fb205caf7acbe1774d95147f305a2f41"
+  license "GPL-2.0"
+
+  livecheck do
+    url "https://www.lzop.org/download/"
+    regex(/href=.*?lzop[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "6d0637dd2d12db57881ffdd672ee6fd0ae743fe3f1f14a8175d2047e9d191c60" => :sierra
-    sha256 "441a5396549a826b805a181f3b7c6115ee81714acd06978ebf18396ab2fda717" => :el_capitan
-    sha256 "8948b68bd5f6ca91371dfbd3522c60015f1010e389ff138e12460bec3ade52b6" => :yosemite
-    sha256 "dd86655bbf09a2d39c2b357fd8d19daec04516ed6d9d471e5d7031aed1a64d0d" => :mavericks
-    sha256 "0fe2af0dba0474808f9f4979e4db3cd2c1be4df1f2237c75a9a323283c894280" => :mountain_lion
+    sha256 "f04a876a2b69220632fb027546104d9c6cb9ee8bdb1d9f6a2845a054500d8bb7" => :big_sur
+    sha256 "3aa57a50254d383c0fe0e4d0d0585e1525d50d0cd30f87390d087523348044a0" => :catalina
+    sha256 "0ec93aa163500d45c456bce3ee100dbe61c4db080494ee41383286ca10f4d246" => :mojave
+    sha256 "d42fafd3f1f39d9ab512f755bd216edd24002caf8a4da82f80818fe2c29f0556" => :high_sierra
+    sha256 "73c2ce334be9317ca79509aec3acef2fa1eff0ffb69fdc10b3850b7f51101f72" => :sierra
+    sha256 "26e49bf0d06fb60d7cd5c431634966f28993edc250c4d06b0db26b28aae3cd0d" => :el_capitan
+    sha256 "d9e12c4bb51c43dd306d5283fde5c3350e3e1f7f1d48c05c831a57b058db1354" => :yosemite
   end
 
   depends_on "lzo"
@@ -27,7 +36,7 @@ class Lzop < Formula
     path.write text
 
     system "#{bin}/lzop", "test"
-    assert File.exist?("test.lzo")
+    assert_predicate testpath/"test.lzo", :exist?
     rm path
 
     system "#{bin}/lzop", "-d", "test.lzo"

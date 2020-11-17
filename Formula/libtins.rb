@@ -1,40 +1,38 @@
 class Libtins < Formula
   desc "C++ network packet sniffing and crafting library"
   homepage "https://libtins.github.io/"
-  url "https://github.com/mfontanini/libtins/archive/v3.4.tar.gz"
-  sha256 "b94935b5fb40668ce5acb87d4f26970b47bfa25ba5f34aeaab70d8a422a9b192"
+  url "https://github.com/mfontanini/libtins/archive/v4.3.tar.gz"
+  sha256 "c70bce5a41a27258bf0e3ad535d8238fb747d909a4b87ea14620f25dd65828fd"
+  license "BSD-2-Clause"
   head "https://github.com/mfontanini/libtins.git"
 
   bottle do
     cellar :any
-    sha256 "60acec0b1c70aeb7d989c458cb161e54e095b2fa97c7c416110d9eac95644d62" => :sierra
-    sha256 "6b4deb14daedc0aa3b04135c03af037dcfe2bfec1530b936fb0d53faf3625935" => :el_capitan
-    sha256 "a5b719826e8489a77d4876dc2830d3b0f2bca958eb75522a2a4efc016a80edf5" => :yosemite
-    sha256 "8ab57bfc2aeb4a03ced61069901744de9f328b37cd2f1f79d351c58e53f6a730" => :mavericks
+    sha256 "fbde141533f922dd195e69f432fef3d8fc3fa3234de841ae832e1513427ca528" => :big_sur
+    sha256 "698edf1fd2794c4bf81e1debcddadf1fcad906f98cde53c7240705578ec3a584" => :catalina
+    sha256 "0cc57b006a581a0da50ef3b365f1cbd292e9ae054a552751cc7af3d93860ebce" => :mojave
+    sha256 "0a15741675e5c3f65f98fd89a25f0a1167294b95ba596620b63a45ad71dedea8" => :high_sierra
   end
 
-  option :cxx11
-
   depends_on "cmake" => :build
-  depends_on "openssl"
+  depends_on "openssl@1.1"
 
   def install
-    ENV.cxx11 if build.cxx11?
-    args = std_cmake_args
-    args << "-DLIBTINS_ENABLE_CXX11=1" if build.cxx11?
-
-    system "cmake", ".", *args
+    system "cmake", ".", *std_cmake_args
     system "make", "install"
     doc.install "examples"
+
+    # Clean up the build file garbage that has been installed.
+    rm_r Dir["#{share}/doc/libtins/**/CMakeFiles/"]
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <tins/tins.h>
       int main() {
         Tins::Sniffer sniffer("en0");
       }
     EOS
-    system ENV.cxx, "test.cpp", "-ltins", "-o", "test"
+    system ENV.cxx, "test.cpp", "-L#{lib}", "-ltins", "-o", "test"
   end
 end
